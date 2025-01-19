@@ -1,5 +1,10 @@
 @import "tailwindcss";
-@plugin "daisyui";
+@plugin "daysiui";
+
+* {
+  scroll-behavior: smooth;
+  display: flex;
+}
 
 .poppins-thin {
   font-family: "Poppins", serif;
@@ -109,11 +114,9 @@
   font-style: italic;
 }
 
-
-@plugin "daisyui/theme" {
+/* @plugin "daisyui/theme" {
   name: "sm-bot";
   default: true;
-  prefersdark: true;
   color-scheme: "dark";
   --color-base-100: oklch(27% 0.041 260.031);
   --color-base-200: oklch(20% 0.042 265.755);
@@ -143,4 +146,4 @@
   --border: 1px;
   --depth: 1;
   --noise: 0;
-}
+} */

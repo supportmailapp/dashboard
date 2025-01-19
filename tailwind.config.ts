@@ -28,5 +28,7 @@ export default {
     extend: {},
   },
 
-  plugins: [daisyui, tailwindcss],
+  plugins: [tailwindcss, daisyui],
+
+  darkMode: 'class',
 } satisfies Config;
