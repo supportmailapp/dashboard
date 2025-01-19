@@ -2,7 +2,7 @@ import { Config } from 'tailwindcss';
 
 /** @type {import('tailwindcss').Config} */
 export default {
-  // content: ['./src/**/*.{html,svelte,js,ts}'], | Is this needed?
+  content: ['./src/**/*.{html,svelte,js,ts}'],
 
   theme: {
     colors: {
@@ -26,6 +26,4 @@ export default {
     },
     extend: {},
   },
-
-  darkMode: 'class',
 } satisfies Config;

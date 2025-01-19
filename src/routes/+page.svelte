@@ -1,4 +1,4 @@
 <h1 class="font-sans">Welcome to SvelteKit</h1>
-<p>
-  Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation
+<p class="">
+  Visit <a href="https://svelte.dev/docs/kit" class="link-primary">svelte.dev/docs/kit</a> to read the documentation
 </p>
