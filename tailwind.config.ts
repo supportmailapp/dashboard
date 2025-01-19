@@ -1,10 +1,8 @@
 import { Config } from 'tailwindcss';
 
-import daisyui from 'daisyui';
-
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ['./src/**/*.{html,svelte,js,ts}'],
+  // content: ['./src/**/*.{html,svelte,js,ts}'], | Is this needed?
 
   theme: {
     colors: {
@@ -28,8 +26,6 @@ export default {
     },
     extend: {},
   },
-
-  plugins: [daisyui],
 
   darkMode: 'class',
 } satisfies Config;
