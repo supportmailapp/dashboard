@@ -1,14 +1,7 @@
-import containerQueries from '@tailwindcss/container-queries';
-import forms from '@tailwindcss/forms';
-import typography from '@tailwindcss/typography';
-
 import { defineConfig } from 'vite';
 import tailwindcss from '@tailwindcss/vite';
 
-import daisyui from 'daisyui';
-
 export default defineConfig({
-
   // theme: {
   //   colors: {
   //     'dodger-blue': {
@@ -32,8 +25,8 @@ export default defineConfig({
   //   extend: {},
   // },
 
-  plugins: [tailwindcss(), typography, forms, containerQueries, daisyui],
+  plugins: [tailwindcss()],
 
-  appType: "custom",
+  appType: 'custom',
   clearScreen: true,
 });

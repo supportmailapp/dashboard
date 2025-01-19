@@ -13,6 +13,7 @@
     "module": "ES6",
     "moduleResolution": "bundler"
   },
-  "include": ["src/**/*", "static/**/*"],
-  "exclude": ["node_modules", "build", ".svelte-kit"]
+
+  "include": [ "src/**/*", "static/**/*" ],
+  "exclude": [ "node_modules", "build", ".svelte-kit" ]
 }
