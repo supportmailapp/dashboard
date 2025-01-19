@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@plugin "daysiui";
+@plugin "daysiui"; /* WHY DA HELL IS THIS NOT WORKING? */
 
 * {
   scroll-behavior: smooth;
