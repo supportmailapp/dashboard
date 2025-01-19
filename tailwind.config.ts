@@ -1,4 +1,3 @@
-import tailwindcss from '@tailwindcss/vite';
 import { Config } from 'tailwindcss';
 
 import daisyui from 'daisyui';
@@ -30,7 +29,7 @@ export default {
     extend: {},
   },
 
-  plugins: [tailwindcss, daisyui],
+  plugins: [daisyui],
 
   darkMode: 'class',
 } satisfies Config;

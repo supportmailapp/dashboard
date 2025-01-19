@@ -7,6 +7,9 @@ export default defineConfig({
 
   server: {
     port: 5050,
+    cors: {
+      credentials: true,
+    },
   },
 
   appType: 'custom',
