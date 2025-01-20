@@ -1,24 +1,18 @@
-import { Config } from 'tailwindcss';
+import type { Config } from 'tailwindcss';
 
-/** @type {import('tailwindcss').Config} */
 export default {
   content: ['./src/**/*.{html,svelte,js,ts}'],
 
   theme: {
     colors: {
-      'dodger-blue': {
-        '50': '#edfcff',
-        '100': '#d6f6ff',
-        '200': '#b5f1ff',
-        '300': '#83eaff',
-        '400': '#48dbff',
-        '500': '#1ec0ff',
-        '600': '#06a4ff',
-        '700': '#0091ff',
-        '800': '#086ec5',
-        '900': '#0d5e9b',
-        '950': '#0e385d',
-      },
+      'dodger-blue-50': '#edfcff',
+      'dodger-blue-100': '#d6f6ff',
+      'dodger-blue-200': '#b5f1ff',
+      'dodger-blue-400': '#48dbff',
+      'dodger-blue-500': '#1ec0ff',
+      'dodger-blue-600': '#06a4ff',
+      'dodger-blue-800': '#086ec5',
+      'dodger-blue-950': '#0e385d',
     },
     fontFamily: {
       sans: ['Poppins', 'sans-serif'],
