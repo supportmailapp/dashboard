@@ -51,5 +51,16 @@
         }
       ]
     }
+  ,
+  {
+    "name": "@plugin",
+    "description": "Use the `@plugin` directive to register a new plugin with Tailwind CSS. Plugins can add new utilities, components, base styles, or even extend the Tailwind config.",
+    "references": [
+      {
+        "name": "Tailwind Documentation",
+        "url": "https://tailwindcss.com/docs/v4-beta#using-plugins"
+      }
+    ]
+  }
   ]
 }
