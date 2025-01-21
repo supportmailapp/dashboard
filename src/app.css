@@ -1,12 +1,13 @@
 @import "tailwindcss";
-@plugin "daisyui";
+/* @plugin "daisyui"; */
 
 @plugin "daisyui" {
   themes: night --default;
+  prefix: "dy-";
 }
 
 @plugin "daisyui/theme" {
-  name: "night";
+  name: "smbot";
   default: true;
   prefersdark: true;
   color-scheme: "dark";
@@ -35,7 +36,7 @@
   --radius-box: 0.5rem;
   --size-selector: 0.25rem;
   --size-field: 0.21875rem;
-  --border: 0.5px;
+  --border: 0.0px;
   --depth: 1;
   --noise: 0;
 }
@@ -52,5 +53,16 @@
     line-height: 1.5;
     color: var(--color-base-content);
     background-color: var(--color-base-100);
+  }
+}
+
+/* Components */
+
+@layer components {
+  .svelte-navbar {
+    @apply dy-navbar sticky top-0 right-0 left-0 m-auto h-[4rem] items-center justify-center;
+    background-color: var(--color-base-200);
+    color: var(--color-base-content);
+    width: 100vw;
   }
 }
