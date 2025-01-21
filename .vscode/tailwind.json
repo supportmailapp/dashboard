@@ -12,6 +12,16 @@
       ]
     },
     {
+      "name": "@layer",
+      "description": "Use the `@layer` directive to insert styles into the `base`, `components`, or `utilities` layers of your CSS. Valid layers are `base`, `components`, and `utilities`.",
+      "references": [
+        {
+          "name": "Tailwind Documentation",
+          "url": "https://tailwindcss.com/docs/functions-and-directives#layer"
+        }
+      ]
+    },
+    {
       "name": "@apply",
       "description": "Use the `@apply` directive to inline any existing utility classes into your own custom CSS. This is useful when you find a common utility pattern in your HTML that you’d like to extract to a new component.",
       "references": [
@@ -50,17 +60,16 @@
           "url": "https://tailwindcss.com/docs/functions-and-directives#variants"
         }
       ]
+    },
+    {
+      "name": "@plugin",
+      "description": "Use the `@plugin` directive to register a new plugin with Tailwind CSS. Plugins can add new utilities, components, base styles, or even extend the Tailwind config.",
+      "references": [
+        {
+          "name": "Tailwind Documentation",
+          "url": "https://tailwindcss.com/docs/v4-beta#using-plugins"
+        }
+      ]
     }
-  ,
-  {
-    "name": "@plugin",
-    "description": "Use the `@plugin` directive to register a new plugin with Tailwind CSS. Plugins can add new utilities, components, base styles, or even extend the Tailwind config.",
-    "references": [
-      {
-        "name": "Tailwind Documentation",
-        "url": "https://tailwindcss.com/docs/v4-beta#using-plugins"
-      }
-    ]
-  }
   ]
 }
