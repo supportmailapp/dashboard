@@ -24,7 +24,7 @@
 </div>
 
 {#if clientWidth <= mediaQuery.sm}
-  <div id="mobileNav" class="w-full" >
+  <div id="mobileNav" class="w-full">
     <MobileNavigation />
   </div>
 {/if}

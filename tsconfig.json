@@ -11,10 +11,10 @@
     "strict": true,
     "target": "ES6",
     "module": "ESNext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "bundler"
     // "allowArbitraryExtensions": true /* Why tf is this needed? Remove it and see the root +layout.svelte */
   },
 
-  "include": [ "src/**/*", "static/**/*" ],
-  "exclude": [ "node_modules", "build", ".svelte-kit" ]
+  "include": ["src/**/*", "static/**/*"],
+  "exclude": ["node_modules", "build", ".svelte-kit"]
 }

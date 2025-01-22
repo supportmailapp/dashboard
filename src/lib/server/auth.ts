@@ -7,6 +7,6 @@ export type CookieToken = {
 };
 
 export function decodeToken(token: string): CookieToken {
-  // return jwt.verify(token) as CookieToken;#
+  // return jwt.verify(token) as CookieToken;
   return {} as CookieToken;
 }
