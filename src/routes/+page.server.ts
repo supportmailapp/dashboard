@@ -12,7 +12,10 @@ export async function load({ params, cookies, fetch, locals, request, url }) {
     return { status: 401, redirect: '/login' };
   }
 
-  let tokenData = decodeToken(cookieToken);
+  const tokenData = decodeToken(cookieToken);
+  if (!tokenData) {
+    return { status: 401, redirect: '/login' };
+  }
 
   // Fetch user data from Discord API
   // Return server list
