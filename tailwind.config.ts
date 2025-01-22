@@ -17,6 +17,7 @@ export default {
     fontFamily: {
       sans: ['Poppins', 'sans-serif'],
       serif: ['Merriweather', 'serif'],
+      roboto: ['Roboto'],
     },
     extend: {},
   },
