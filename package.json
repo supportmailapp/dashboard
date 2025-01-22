@@ -26,6 +26,7 @@
     "@types/jsonwebtoken": "^9.0.7",
     "autoprefixer": "^10.4.20",
     "daisyui": "^5.0.0-beta.1",
+    "discord-api-types": "^0.37.117",
     "prettier": "^3.4.2",
     "prettier-plugin-svelte": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.10",
@@ -35,9 +36,12 @@
     "vite": "^5.4.14"
   },
   "dependencies": {
+    "@discordjs/rest": "^2.4.2",
     "@tailwindcss/postcss": "^4.0.0-beta.9",
     "@tailwindcss/vite": "^4.0.0-beta.9",
     "jsonwebtoken": "^9.0.2",
+    "node-cache": "^5.1.2",
+    "rate-limiter-flexible": "^5.0.5",
     "tailwind-scrollbar-hide": "^2.0.0",
     "tailwindcss": "^4.0.0-beta.10"
   },
