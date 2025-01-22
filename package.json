@@ -23,6 +23,7 @@
     "@sveltejs/vite-plugin-svelte": "^4.0.0",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/typography": "^0.5.16",
+    "@types/jsonwebtoken": "^9.0.7",
     "autoprefixer": "^10.4.20",
     "daisyui": "^5.0.0-beta.1",
     "prettier": "^3.4.2",
@@ -36,8 +37,12 @@
   "dependencies": {
     "@tailwindcss/postcss": "^4.0.0-beta.9",
     "@tailwindcss/vite": "^4.0.0-beta.9",
+    "jsonwebtoken": "^9.0.2",
     "tailwind-scrollbar-hide": "^2.0.0",
     "tailwindcss": "^4.0.0-beta.10"
   },
-  "overrides": {}
+  "overrides": {
+    "tailwindcss": "^4.0.0-beta.10",
+    "daisyui": "^5.0.0-beta.1"
+  }
 }
