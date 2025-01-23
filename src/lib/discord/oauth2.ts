@@ -21,7 +21,6 @@ export async function loginHandler() {
   // Redirect to Discord OAuth2 login page
 }
 
-
 export async function callbackHandler() {
   // Verify state token, remove it from cache
   // Exchange code for token
@@ -29,13 +28,11 @@ export async function callbackHandler() {
   // Redirect to server-select page or redirect url
 }
 
-
 export async function logoutHandler() {
   // Revoke token, remove it from cache
   // Clear cookie
   // Redirect to home page
 }
-
 
 export async function refreshHandler() {
   // Get refresh token from cache
@@ -44,20 +41,17 @@ export async function refreshHandler() {
   // Return new token
 }
 
-
 export async function getUserData() {
   // Get user data from API
   // Set user data in cache for 15 seconds
   // Return user data
 }
 
-
 export async function getUserGuilds() {
   // Get user guilds from API
   // Set guilds in cache for 15 seconds
   // Return guilds
 }
-
 
 export async function getGuildMemberData() {
   // Get member data from API

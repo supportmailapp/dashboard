@@ -1,7 +1,7 @@
 import jwt, { type JwtPayload } from 'jsonwebtoken';
 
 import { JWT_SECRET } from '$env/static/private';
-import { authData } from '$lib/constants';
+import { authData } from './constants';
 
 export type CookieToken = {
   access_token?: string;

@@ -57,7 +57,7 @@
 
 /* Components */
 
-@layer components {  
+@layer components {
   .svelte-navbar {
     @apply dy-navbar sticky top-0 right-0 left-0 m-auto items-center;
     height: 4rem;
@@ -71,16 +71,18 @@
     @apply relative flex h-full w-fit gap-1.5 object-contain;
   }
 
-  --dc-blurple: #5a65db;
+  :root {
+    --dc-blurple: #5a65db;
+  }
 
   .discord-channel {
     @apply bg-(--dc-blurple)/70 text-sm font-medium;
-    @apply hover:bg-(--dc-blurple)/100 transition-colors duration-200 ease-in-out;
+    @apply transition-colors duration-200 ease-in-out hover:bg-(--dc-blurple)/100;
     cursor: pointer;
     color: #ffffff;
     display: inline-flex;
     align-items: center;
-    padding: 0.20rem 0.25rem;
+    padding: 0.2rem 0.25rem;
     border-radius: 0.5rem;
     user-select: none;
   }

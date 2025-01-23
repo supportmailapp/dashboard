@@ -9,9 +9,10 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
+    "outDir": "build",
     "target": "ES6",
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowArbitraryExtensions": true /* Why tf is this needed? Remove it and see the root +layout.svelte */
-  },
+  }
 }
