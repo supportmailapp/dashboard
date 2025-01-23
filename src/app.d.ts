@@ -1,6 +1,8 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
 
+import type { GuildChannelType } from "discord-api-types/v10";
+
 declare global {
   namespace App {
     interface Error {
@@ -10,6 +12,7 @@ declare global {
     }
 
     interface Locals {
+      guilds: Utils.PartialGuild[];
       currentGuild?: Utils.CurrentGuild | null;
       currentUser?: Utils.CurrentUser | null;
     }
@@ -33,15 +36,17 @@ declare global {
     type PartialChannel = {
       id: string;
       name: string;
-      type: number;
+      type: GuildChannelType;
       position: number;
-      parentId?: string | null;
     };
 
-    type CurrentGuild = {
+    type PartialGuild = {
       id: string;
       name: string;
-      iconHash: string;
+      iconHash: string | null;
+    };
+
+    type CurrentGuild = PartialGuild & {
       roles: Utils.PartialRole[];
       channels: Utils.PartialChannel[];
     };
@@ -50,7 +55,7 @@ declare global {
       id: string;
       username: string;
       displayName: string;
-      avatarHash: string;
+      avatarHash: string | null;
     };
   }
 }
