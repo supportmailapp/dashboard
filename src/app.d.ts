@@ -1,14 +1,57 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
+
 declare global {
   namespace App {
-    // interface Error {}
-    interface Locals {
-      loggedIn?: boolean;
+    interface Error {
+      status?: number;
+      message?: string;
+      details?: any;
     }
+
+    interface Locals {
+      currentGuild?: Utils.CurrentGuild | null;
+      currentUser?: Utils.CurrentUser | null;
+    }
+
     // interface PageData {}
+
     // interface PageState {}
+
     // interface Platform {}
+  }
+
+  namespace Utils {
+    type PartialRole = {
+      id: string;
+      name: string;
+      color: number;
+      position: number;
+      // permissions: string; // ? Is this needed?
+    };
+
+    type PartialChannel = {
+      id: string;
+      name: string;
+      type: number;
+      position: number;
+      parentId?: string | null;
+    };
+
+    type CurrentGuild = {
+      id: string;
+      name: string;
+      iconHash: string;
+      roles: Utils.PartialRole[];
+      channels: Utils.PartialChannel[];
+    };
+
+    type CurrentUser = {
+      id: string;
+      username: string;
+      displayName: string;
+      avatarHash: string;
+    };
   }
 }
 
