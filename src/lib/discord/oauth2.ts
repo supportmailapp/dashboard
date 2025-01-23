@@ -20,6 +20,7 @@ import { error, json, redirect, type RequestHandler } from "@sveltejs/kit";
 import {
   OAuth2Routes,
   Routes,
+  type APIGuildMember,
   type APIPartialGuild,
   type APIUser,
   type RESTPostOAuth2AccessTokenResult,
@@ -266,19 +267,24 @@ export async function getUserData(accessToken: string, fetch: Function, userId: 
 // User guilds cache
 let userGuildsCache = new NodeCache({ stdTTL: 15, checkperiod: 10, errorOnMissing: false });
 
+/**
+ * Fetches the guilds that the user is a member of from the Discord API.
+ * 
+ * @param userId - The ID of the user whose guilds are being fetched.
+ * @param accessToken - The OAuth2 access token for the user.
+ * @param fetch - The fetch function to use for making the API request.
+ * @param bypassCache - Whether to bypass the cache and fetch fresh data from the API. Defaults to false.
+ * @returns A promise that resolves to an array of partial guild objects.
+ * @throws An error if the fetch operation fails.
+ */
 export async function getUserGuilds(
   userId: string,
   accessToken: string,
   fetch: Function,
   bypassCache = false,
 ): Promise<APIPartialGuild[]> {
-  // Get user guilds from API
-  // Set guilds in cache for 15 seconds
-  // Return guilds
-
   if (!bypassCache) {
     const cachedGuilds = userGuildsCache.get(accessToken) as APIPartialGuild[];
-
     if (cachedGuilds) {
       return cachedGuilds;
     }
@@ -310,9 +316,50 @@ export async function getUserGuilds(
 // Guild member data cache
 let guildMemberDataCache = new NodeCache({ stdTTL: 15, checkperiod: 10, errorOnMissing: false });
 
-// TODO: Implement this function
-export async function getGuildMemberData() {
-  // Get member data from API
-  // Set member data in cache for 15 seconds
-  // Return member data
+/**
+ * Fetches guild member data from the Discord API and caches it.
+ *
+ * @param guildId - The ID of the guild.
+ * @param userId - The ID of the user.
+ * @param accessToken - The access token for authentication.
+ * @param fetch - The fetch function to make the API request.
+ * @param bypassCache - Whether to bypass the cache and fetch fresh data. Defaults to false.
+ * @returns A promise that resolves to the guild member data or null if not found.
+ * @throws An error if the fetch operation fails. Format: `{ status: number, message: string }`
+ */
+export async function getGuildMemberData(
+  guildId: string,
+  userId: string,
+  accessToken: string,
+  fetch: Function,
+  bypassCache = false,
+): Promise<APIGuildMember | null> {
+  if (!bypassCache) {
+    const cachedData = guildMemberDataCache.get(`${guildId}-${userId}`) as APIGuildMember;
+    if (cachedData) {
+      return cachedData;
+    }
+  }
+
+  let memberRes: Response;
+  try {
+    memberRes = await fetch(Routes.userGuildMember(guildId), {
+      method: "GET",
+      headers: {
+        "content-type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    if (!memberRes.ok) {
+      throw { status: 500, message: "Failed to fetch user member data" };
+    }
+  } catch (err: any) {
+    console.debug("Error fetching user member data:", err);
+    throw { status: 500, message: err.message || "Failed to fetch user member data" };
+  }
+
+  const memberResJson = (await memberRes.json()) as APIGuildMember;
+  guildMemberDataCache.set(`${guildId}-${userId}`, memberResJson);
+  return memberResJson;
 }
