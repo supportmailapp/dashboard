@@ -1,6 +1,7 @@
 // Private constants
 
 import { env } from '$env/dynamic/private';
+import { env as publicEnv } from '$env/dynamic/public';
 
 export const mediaQuery = {
   sm: 640,
@@ -18,6 +19,6 @@ export const authData = {
 export const discord = {
   clientId: env.clientId,
   clientSecret: env.clientSecret,
-  redirectUri: env.discordRedirectUri,
+  redirectUri: publicEnv.PUBLIC_discordRedirectUri,
   scopes: ['identify', 'guilds', 'guilds.members.read'],
 } as const;
