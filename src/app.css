@@ -52,6 +52,23 @@
     line-height: 1.5;
     color: var(--color-base-content);
     background-color: var(--color-base-100);
+    width: 100%;
+    min-height: 100vh;
+    overflow-y: inherit;
+    overflow-x: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    place-items: center;
+    min-height: 100vh;
+    width: 100%;
   }
 }
 
@@ -89,6 +106,12 @@
 }
 
 @layer utilities {
+  .xy-center-items {
+    justify-content: center;
+    align-items: center;
+    place-items: center;
+  }
+
   .branding-container {
     @apply mx-auto my-auto gap-x-3 px-2 py-1;
     margin-inline: auto;
