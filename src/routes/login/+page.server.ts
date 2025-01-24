@@ -13,7 +13,7 @@ export const actions = {
     try {
       const res = loginHandler(url);
       console.log("res", res);
-      return goto(res.url);
+      return redirect(303, res.url);
     } catch (err: any) {
       return error(err);
     }

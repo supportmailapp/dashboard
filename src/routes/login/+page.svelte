@@ -16,7 +16,7 @@
 
       <div class="h-5"></div>
 
-      <form method="POST" action="/?login" use:enhance onsubmit={(e) => console.log(e)}>
+      <form method="POST" action="/?login" onsubmit={(e) => console.log(e)}>
         <!-- {#if !buttonClicked} -->
         <button class={buttonBaseClasses} type="submit" onclick={() => (buttonClicked = true)}>
           <img src="/discord-mark-white.svg" alt="Discord Logo" class="aspect-auto h-6 w-6" />
