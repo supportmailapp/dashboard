@@ -1,8 +1,7 @@
 import { getUserData, getUserGuilds } from "$lib/discord/oauth2";
-import { decodeToken, verifyTokenPayload, type CookieToken, type FullCookieToken } from "$lib/server/auth";
+import { decodeToken, verifyTokenPayload, type FullCookieToken } from "$lib/server/auth";
 import { apiPartialGuildToCurrentGuild, apiPartialGuildToPartialGuild, apiUserToCurrentUser } from "$lib/utils/formatting";
 import { redirect, type Handle, type ServerInit } from "@sveltejs/kit";
-import { Routes, type APIPartialGuild, type APIUser } from "discord-api-types/v10";
 
 export const init: ServerInit = async () => {
   // DB Connection
@@ -16,7 +15,11 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   const token = event.cookies.get("discord-token");
   if (!token) {
-    return redirect(401, "/login");
+    console.log("No token found, redirecting to login");
+    if (!event.url.pathname.startsWith("/login")) {
+      return redirect(303, "/login");
+    }
+    return resolve(event);
   }
 
   let verifedToken: FullCookieToken | null = null;

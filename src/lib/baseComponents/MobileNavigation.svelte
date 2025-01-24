@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Home from '$lib/svgs/home.svelte';
+  import Home from '$lib/assets/home.svelte';
   import { slide } from 'svelte/transition';
 </script>
 

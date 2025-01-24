@@ -1,6 +1,6 @@
 // Public constants
 
-import { env } from '$env/dynamic/public';
+import { env } from "$env/dynamic/public";
 
 export const mediaQuery = {
   sm: 640,
@@ -18,19 +18,19 @@ interface AuthorizeUrlParams {
 }
 
 export const urls = {
-  authorize: function ({ clientId, scope, state, promt = 'none' }: AuthorizeUrlParams): string {
+  authorize: function ({ clientId, scope, state, promt = "none" }: AuthorizeUrlParams): string {
     return (
-      'https://discord.com/oauth2/authorize?' +
+      "https://discord.com/oauth2/authorize?" +
       new URLSearchParams({
         client_id: clientId,
-        response_type: 'code',
+        response_type: "code",
         prompt: promt,
         scope: scope,
-        redirect_uri: `${env.PUBLIC_discordRedirectUri}/discord/callback`,
+        redirect_uri: `${env.PUBLIC_discordRedirectUri}/api/v1/discord-auth`,
         state: state,
       }).toString()
     );
   },
-  token: () => 'https://discord.com/api/oauth2/token',
-  revocation: () => 'https://discord.com/api/oauth2/token/revoke',
+  token: () => "https://discord.com/api/oauth2/token",
+  revocation: () => "https://discord.com/api/oauth2/token/revoke",
 } as const;

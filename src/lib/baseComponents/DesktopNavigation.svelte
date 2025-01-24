@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Home from '$lib/svgs/home.svelte';
+  import Home from '$lib/assets/home.svelte';
   import type { Snippet } from 'svelte';
 </script>
 
@@ -26,7 +26,7 @@
 {/snippet}
 
 <div class="flex flex-col gap-y-1">
-  <a class="dy-btn dy-btn-ghost container" href="/home">
+  <a class="dy-btn dy-btn-ghost container" href="/">
     <div class="flex items-center gap-1.5 pl-1">
       <Home color="white" />
       <h2 class="font-wide text-xl font-semibold">Overview</h2>

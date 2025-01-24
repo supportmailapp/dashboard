@@ -26,36 +26,38 @@ import {
   type RESTPostOAuth2AccessTokenResult,
 } from "discord-api-types/v10";
 import NodeCache from "node-cache";
+import type { PageServerLoad } from "../../routes/$types";
 
 const rest = new REST({ version: "v10", authPrefix: "Bearer", userAgentAppendix: "SupportMailV2" });
 
 let stateCache = new NodeCache({ stdTTL: 600, checkperiod: 10, errorOnMissing: false });
 
-export const loginHandler: RequestHandler = async ({ url, request }) => {
-  // Create state token, store it in cache (default is `true`), optionally store redirect url in node-cache
-  // Redirect to Discord OAuth2 login page
+export const loginHandler = function (url: URL) {
   const redirectParam = url.searchParams.get("redirect");
   const redirectUrl = redirectParam ? decodeURI(redirectParam) : "/";
   try {
     const state = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
     stateCache.set(state, redirectUrl);
-    return redirect(
-      302,
-      urls.authorize({
+    return {
+      status: 302,
+      url: urls.authorize({
         clientId: env.clientId,
         scope: discord.scopes.join(" "),
         state: state,
         promt: "none",
       }),
-    );
+    };
   } catch (error) {
     console.error(error);
-    return json({ error: "Internal Server Error" }, { status: 500 });
+    throw {
+      status: 500,
+      message: "Failed to redirect to Discord OAuth2 login page",
+    };
   }
 };
 
-export const callbackHandler: RequestHandler = async ({ url, request, fetch, cookies }) => {
+export const callbackHandler: RequestHandler = async ({ url, fetch, cookies }) => {
   // Verify state token, take it from cache
   // Exchange code for token
   // Store token in cache, set cookie
@@ -269,7 +271,7 @@ let userGuildsCache = new NodeCache({ stdTTL: 15, checkperiod: 10, errorOnMissin
 
 /**
  * Fetches the guilds that the user is a member of from the Discord API.
- * 
+ *
  * @param userId - The ID of the user whose guilds are being fetched.
  * @param accessToken - The OAuth2 access token for the user.
  * @param fetch - The fetch function to use for making the API request.
