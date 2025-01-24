@@ -3,9 +3,8 @@
   import type { Snippet } from "svelte";
   import type { LayoutData } from "./$types";
 
-  let { data, children }: { data: LayoutData; children: Snippet } = $props();
+  let { children }: { data: LayoutData; children: Snippet } = $props();
 </script>
 
-<div class="bg-secondary mx-auto flex w-screen flex-col items-center justify-center">
-  {@render children()}
-</div>
+<!-- Layout for server selection or login -->
+{@render children()}

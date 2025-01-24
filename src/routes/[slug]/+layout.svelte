@@ -1,10 +1,8 @@
 <script>
-  import "../app.css";
-
   import DesktopNavigation from "$lib/baseComponents/DesktopNavigation.svelte";
   import MobileNavigation from "$lib/baseComponents/MobileNavigation.svelte";
   import { mediaQuery } from "$lib/constants";
-  import { slide, fly } from "svelte/transition";
+  import { slide } from "svelte/transition";
   let { children } = $props();
 
   let clientWidth = $state(1920);
