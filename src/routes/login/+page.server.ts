@@ -12,9 +12,9 @@ export const actions = {
     try {
       const res = loginHandler(url);
       console.log("res", res);
-      redirect(303, res.url);
+      return redirect(303, res.url);
     } catch (err: any) {
-      error(err);
+      return error(err);
     }
   },
 } satisfies Actions;
