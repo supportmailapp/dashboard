@@ -43,7 +43,8 @@
     "node-cache": "^5.1.2",
     "rate-limiter-flexible": "^5.0.5",
     "tailwind-scrollbar-hide": "^2.0.0",
-    "tailwindcss": "^4.0.0"
+    "tailwindcss": "^4.0.0",
+    "thumbhash": "^0.1.1"
   },
   "overrides": {
     "daisyui": "^5.0.0-beta.2"

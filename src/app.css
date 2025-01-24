@@ -87,3 +87,17 @@
     user-select: none;
   }
 }
+
+@layer utilities {
+  .branding-container {
+    @apply my-auto mx-auto gap-x-3 px-2 py-1;
+    margin-inline: auto;
+    margin-block: auto;
+    display: flex;
+    aspect-ratio: 3.5/1;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+  }
+}

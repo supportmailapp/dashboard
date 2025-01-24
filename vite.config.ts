@@ -13,6 +13,5 @@ export default defineConfig({
   },
 
   appType: 'custom',
-  clearScreen: true,
   logLevel: 'silent',
 });
