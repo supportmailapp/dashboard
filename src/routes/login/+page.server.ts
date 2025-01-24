@@ -1,7 +1,6 @@
 import { loginHandler } from "$lib/discord/oauth2";
 import { error, redirect } from "@sveltejs/kit";
 import type { PageServerLoad, Actions } from "../$types";
-import { goto } from "$app/navigation";
 
 export const load = (async () => {
   return {};
@@ -13,9 +12,9 @@ export const actions = {
     try {
       const res = loginHandler(url);
       console.log("res", res);
-      return redirect(303, res.url);
+      redirect(303, res.url);
     } catch (err: any) {
-      return error(err);
+      error(err);
     }
   },
 } satisfies Actions;

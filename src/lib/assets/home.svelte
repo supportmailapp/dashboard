@@ -2,7 +2,7 @@
   type Props = {
     color?: string;
   };
-  let { color = 'white' }: Props = $props();
+  let { color = "white" }: Props = $props();
 </script>
 
 <svg class="size-[1.2em]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -16,6 +16,16 @@
       stroke-miterlimit="10"
       stroke-width="2"
     ></path>
-    <line x1="12" y1="22" x2="12" y2="18" fill="none" stroke={color} stroke-linecap="square" stroke-miterlimit="10" stroke-width="2"></line>
+    <line
+      x1="12"
+      y1="22"
+      x2="12"
+      y2="18"
+      fill="none"
+      stroke={color}
+      stroke-linecap="square"
+      stroke-miterlimit="10"
+      stroke-width="2"
+    ></line>
   </g>
 </svg>

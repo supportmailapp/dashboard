@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Home from '$lib/assets/home.svelte';
-  import type { Snippet } from 'svelte';
+  import Home from "$lib/assets/home.svelte";
+  import type { Snippet } from "svelte";
 </script>
 
 {#snippet dNavbarGroupHeader(name: string, iconPath: string)}
@@ -15,7 +15,7 @@
 {#snippet dNavbarItem(name: string, href: string, icon: string | Snippet, active = false)}
   <a class="dy-btn dy-btn-ghost container" {href}>
     <div class="flex items-center gap-1.5 pl-1">
-      {#if typeof icon == 'string'}
+      {#if typeof icon == "string"}
         <img src={icon} alt={name} class="aspect-square h-5" />
       {:else}
         {@render icon()}
@@ -32,6 +32,6 @@
       <h2 class="font-wide text-xl font-semibold">Overview</h2>
     </div>
   </a>
-  {@render dNavbarGroupHeader('Test', '/icons/controls.svg')}
-  {@render dNavbarItem('Tickets', '/tickets', '/icons/ticket.svg')}
+  {@render dNavbarGroupHeader("Test", "/icons/controls.svg")}
+  {@render dNavbarItem("Tickets", "/tickets", "/icons/ticket.svg")}
 </div>
