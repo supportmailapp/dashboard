@@ -2,18 +2,34 @@ import { decodeToken } from "$lib/server/auth.js";
 
 import "$env/static/private";
 import type { PageServerLoad } from "./$types";
+import { redirect, type Actions } from "@sveltejs/kit";
+import { loginHandler } from "$lib/discord/oauth2";
 
-export const load = async function ({ params, cookies, fetch, locals, request, url }) {
-  const cookieToken = cookies.get("user_token");
+export const load = async function ({ cookies, locals }) {
+  const cookieToken = cookies.get("discord-token");
   if (!cookieToken) {
-    return { status: 401, redirect: "/login" };
+    return {};
   }
 
   const tokenData = decodeToken(cookieToken);
   if (!tokenData) {
-    return { status: 401, redirect: "/login" };
+    return {};
   }
 
   // Fetch user data from Discord API
   // Return server list
+  return {
+    guilds: locals.guilds,
+    currentGuild: locals.currentGuild,
+    currentUser: locals.currentUser,
+  };
 } satisfies PageServerLoad;
+
+export const actions = {
+  login: async ({ url }) => {
+    console.log("login url", url);
+    const res = loginHandler(url);
+    console.log("res", res);
+    redirect(303, res.url);
+  },
+} satisfies Actions;
