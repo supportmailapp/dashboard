@@ -14,47 +14,46 @@ export const handle: Handle = async ({ event, resolve }) => {
   }
 
   const token = event.cookies.get("discord-token");
+  console.log("Token:", token);
   if (!token) {
-    console.log("No token found, redirecting to login");
-    if (!event.url.pathname.startsWith("/login")) {
-      return redirect(303, "/login");
+    console.log("No token found");
+    if (event.url.pathname !== "/") {
+      console.log("1: Redirecting to /");
+      return redirect(303, "/");
+    }
+  } else {
+    console.log("Token found");
+  }
+
+  const dToken = decodeToken(token);
+  const verifedToken = verifyTokenPayload(dToken);
+  if (!verifedToken) {
+    // event.cookies.delete("discord-token", { path: "/" });
+    if (event.url.pathname !== "/") {
+      console.log("2: Redirecting to /");
+      return redirect(303, "/");
     }
     return resolve(event);
   }
 
-  let verifedToken: FullCookieToken | null = null;
-  try {
-    const dToken = decodeToken(token);
-    verifedToken = verifyTokenPayload(dToken);
-    if (!verifedToken) {
-      throw { status: 401, redirect: "/login" };
-    }
+  const userData = await getUserData(verifedToken.access_token, event.fetch);
 
-    const userData = await getUserData(verifedToken.access_token, event.fetch);
-
-    if (!userData) {
-      throw { status: 500, redirect: "/login" };
-    }
-    event.locals.currentUser = apiUserToCurrentUser(userData);
-  } catch (e: any) {
-    return redirect(e.status || 500, e.redirect || "/login");
+  if (!userData) {
+    throw { message: "Invalid user data" };
   }
+  event.locals.currentUser = apiUserToCurrentUser(userData);
 
   // Fetch user guilds
-  try {
-    const guilds = await getUserGuilds(event.locals.currentUser.id, verifedToken.access_token, event.fetch);
+  const guilds = await getUserGuilds(event.locals.currentUser.id, verifedToken.access_token, event.fetch);
 
-    if (!guilds) {
-      throw { status: 500, redirect: "/login" };
-    }
-
-    event.locals.guilds = guilds.map(apiPartialGuildToPartialGuild);
-  } catch (e: any) {
-    return redirect(e.status || 500, e.redirect || "/login");
+  if (!guilds) {
+    throw { message: "Invalid guilds data" };
   }
 
+  event.locals.guilds = guilds.map(apiPartialGuildToPartialGuild);
+
   // Add guild ID to locals
-  if (event.url.pathname != "/") {
+  if (/^\/(\d+)\S+/.test(event.url.pathname)) {
     const guildIdMatch = event.url.pathname.match(/^\/(\d+)\S+/);
 
     if (guildIdMatch) {
