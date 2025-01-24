@@ -37,12 +37,8 @@ export function decodeToken(token: any): JWTCookiePayload | null {
   }
 }
 
-export function verifyTokenPayload(
-  token: any,
-  propsToCheckFor: readonly CookieTokenProps[] = neededProps,
-): Required<CookieToken> | null {
-  // Check if all props are present
-  if (!!token && Object.keys(token).every((key) => propsToCheckFor.includes(key as CookieTokenProps))) {
+export function verifyTokenPayload(token: any): Required<CookieToken> | null {
+  if (token) {
     return token as Required<CookieToken>;
   }
   return null;
