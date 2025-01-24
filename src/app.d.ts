@@ -17,7 +17,13 @@ declare global {
       currentUser?: Utils.CurrentUser | null;
     }
 
-    // interface PageData {}
+    interface PageData {
+      guilds?: Utils.PartialGuild[];
+      currentGuild?: Utils.CurrentGuild;
+      currentUser?: Utils.CurrentUser;
+      status?: number;
+      redirect?: string;
+    }
 
     // interface PageState {}
 
