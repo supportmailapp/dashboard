@@ -9,12 +9,9 @@ export const load = (async () => {
 export const actions = {
   login: async ({ url }) => {
     console.log("login url", url);
-    try {
-      const res = loginHandler(url);
-      console.log("res", res);
-      return redirect(303, res.url);
-    } catch (err: any) {
-      return error(err);
-    }
+    let res: any;
+    res = loginHandler(url);
+    console.log("res", res);
+    redirect(303, res.url);
   },
 } satisfies Actions;

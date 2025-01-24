@@ -35,26 +35,18 @@ let stateCache = new NodeCache({ stdTTL: 600, checkperiod: 10, errorOnMissing: f
 export const loginHandler = function (url: URL) {
   const redirectParam = url.searchParams.get("redirect");
   const redirectUrl = redirectParam ? decodeURI(redirectParam) : "/";
-  try {
-    const state = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  const state = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
-    stateCache.set(state, redirectUrl);
-    return {
-      status: 302,
-      url: urls.authorize({
-        clientId: env.clientId,
-        scope: discord.scopes.join(" "),
-        state: state,
-        promt: "none",
-      }),
-    };
-  } catch (error) {
-    console.error(error);
-    throw {
-      status: 500,
-      message: "Failed to redirect to Discord OAuth2 login page",
-    };
-  }
+  stateCache.set(state, redirectUrl);
+  return {
+    status: 302,
+    url: urls.authorize({
+      clientId: env.clientId,
+      scope: discord.scopes.join(" "),
+      state: state,
+      promt: "none",
+    }),
+  };
 };
 
 export const callbackHandler: RequestHandler = async ({ url, fetch, cookies }) => {
