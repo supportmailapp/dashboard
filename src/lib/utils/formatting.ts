@@ -4,7 +4,7 @@ export function apiUserToCurrentUser(apiUser: APIUser): Utils.CurrentUser {
   return {
     id: apiUser.id,
     username: apiUser.username,
-    displayName: apiUser.username,
+    displayName: apiUser.global_name || apiUser.username,
     avatarHash: apiUser.avatar || null,
   };
 }
