@@ -16,7 +16,7 @@ import { urls } from "$lib/constants";
 import { decodeToken, encodeToken } from "$lib/server/auth";
 import { discord } from "$lib/server/constants";
 import { REST } from "@discordjs/rest";
-import { error, json, redirect, type RequestHandler } from "@sveltejs/kit";
+import { error, redirect, type RequestHandler } from "@sveltejs/kit";
 import {
   OAuth2Routes,
   Routes,
@@ -26,7 +26,6 @@ import {
   type RESTPostOAuth2AccessTokenResult,
 } from "discord-api-types/v10";
 import NodeCache from "node-cache";
-import type { PageServerLoad } from "../../routes/$types";
 
 const rest = new REST({ version: "v10", authPrefix: "Bearer", userAgentAppendix: "SupportMailV2" });
 
@@ -44,7 +43,8 @@ export const loginHandler = function (url: URL) {
       clientId: env.clientId,
       scope: discord.scopes.join(" "),
       state: state,
-      promt: "none",
+      promt: "true",
+      redirectUri: discord.redirectUri,
     }),
   };
 };
@@ -60,12 +60,13 @@ export const callbackHandler: RequestHandler = async ({ url, fetch, cookies }) =
 
   if (!code) {
     return error(405, 'A "code" query parameter must be present in the URL.');
+  } else if (!state) {
+    return error(405, 'A "state" query parameter must be present in the URL.');
   }
 
   const redirectUrl = stateCache.take(String(state)) as string;
-
   if (!redirectUrl) {
-    return redirect(400, "/login");
+    return redirect(307, "/");
   }
 
   let oauthRes: Response;
@@ -237,11 +238,11 @@ export async function getUserData(accessToken: string, fetch: Function, userId: 
 
   let userRes: Response;
   try {
-    userRes = await fetch(Routes.user(), {
+    userRes = await fetch(urls.discordBase + Routes.user(), {
       method: "GET",
       headers: {
         "content-type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
+        authorization: `Bearer ${accessToken}`,
       },
     });
 
@@ -286,7 +287,7 @@ export async function getUserGuilds(
 
   let guildRes: Response;
   try {
-    guildRes = await fetch(Routes.userGuilds(), {
+    guildRes = await fetch(urls.discordBase + Routes.userGuilds(), {
       method: "GET",
       headers: {
         "content-type": "application/json",
@@ -337,7 +338,7 @@ export async function getGuildMemberData(
 
   let memberRes: Response;
   try {
-    memberRes = await fetch(Routes.userGuildMember(guildId), {
+    memberRes = await fetch(urls.discordBase + Routes.userGuildMember(guildId), {
       method: "GET",
       headers: {
         "content-type": "application/json",
