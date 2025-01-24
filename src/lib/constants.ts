@@ -14,11 +14,13 @@ interface AuthorizeUrlParams {
   clientId: string;
   scope: string;
   state: string;
+  redirectUri: string;
   promt?: string;
 }
 
 export const urls = {
-  authorize: function ({ clientId, scope, state, promt = "none" }: AuthorizeUrlParams): string {
+  discordBase: env.PUBLIC_DISCORD_BASE_URL,
+  authorize: function ({ clientId, scope, state, redirectUri, promt = "none" }: AuthorizeUrlParams): string {
     return (
       "https://discord.com/oauth2/authorize?" +
       new URLSearchParams({
@@ -26,7 +28,7 @@ export const urls = {
         response_type: "code",
         prompt: promt,
         scope: scope,
-        redirect_uri: `${env.PUBLIC_discordRedirectUri}/api/v1/discord-auth`,
+        redirect_uri: redirectUri,
         state: state,
       }).toString()
     );
