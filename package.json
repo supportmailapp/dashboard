@@ -37,6 +37,7 @@
   "dependencies": {
     "@crowdin/crowdin-api-client": "^1.41.0",
     "@discordjs/rest": "^2.4.2",
+    "@svelte-plugins/datepicker": "^1.0.11",
     "@tailwindcss/vite": "^4.0.0",
     "daisyui": "^5.0.0-beta.2",
     "jsonwebtoken": "^9.0.2",
@@ -47,6 +48,9 @@
     "thumbhash": "^0.1.1"
   },
   "overrides": {
-    "daisyui": "^5.0.0-beta.2"
+    "daisyui": "^5.0.0-beta.2",
+    "@svelte-plugins/datepicker": {
+      "svelte": "^5.19.2"
+    }
   }
 }
