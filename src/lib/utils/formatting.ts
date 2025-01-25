@@ -1,6 +1,6 @@
 import type { APIGuildChannel, APIPartialGuild, APIRole, APIUser, GuildChannelType } from "discord-api-types/v10";
 
-export function apiUserToCurrentUser(apiUser: APIUser): Utils.CurrentUser {
+export function apiUserToCurrentUser(apiUser: APIUser): CurrentUser {
   return {
     id: apiUser.id,
     username: apiUser.username,
@@ -9,7 +9,10 @@ export function apiUserToCurrentUser(apiUser: APIUser): Utils.CurrentUser {
   };
 }
 
-export function apiPartialGuildToPartialGuild(apiGuild: APIPartialGuild): Utils.PartialGuild {
+/**
+ * Used for the `guilds` locale.
+ */
+export function apiPartialGuildToPartialGuild(apiGuild: APIPartialGuild): PartialGuild {
   return {
     id: apiGuild.id,
     name: apiGuild.name,
@@ -17,11 +20,14 @@ export function apiPartialGuildToPartialGuild(apiGuild: APIPartialGuild): Utils.
   };
 }
 
+/**
+ * Used for the `currentGuild` locale.
+ */
 export function apiPartialGuildToCurrentGuild(
-  apiGuild: APIPartialGuild | Utils.PartialGuild,
+  apiGuild: APIPartialGuild | PartialGuild,
   channels: APIGuildChannel<GuildChannelType>[],
   roles: APIRole[],
-): Utils.CurrentGuild {
+): CurrentGuild {
   const iconHash = "icon" in apiGuild ? apiGuild.icon : apiGuild.iconHash || null;
   return {
     id: apiGuild.id,
