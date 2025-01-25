@@ -59,6 +59,10 @@ export const actions = {
     if (res.redirectUrl) cookies.set("redirect-after-login", res.redirectUrl, { path: "/" });
     redirect(303, res.url);
   },
+  logout: async ({ cookies }) => {
+    cookies.delete("discord-token", { path: "/" });
+    redirect(302, "/");
+  },
   reload: async () => {
     redirect(302, "/");
   },
