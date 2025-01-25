@@ -1,25 +1,39 @@
 <script lang="ts">
-  import { goto, invalidateAll } from "$app/navigation";
   import { env } from "$env/dynamic/public";
   import Branding from "$lib/assets/Branding.svelte";
   import { urls } from "$lib/constants.js";
   import { cdnUrls } from "$lib/utils/formatting";
 
   let { data } = $props();
+
+  let viewProfile = $state(false);
+
+  $effect(() => {
+    if (viewProfile) {
+      const dialog = document.getElementById("profile") as HTMLDialogElement;
+      dialog.showModal();
+    }
+  });
+
+  const handleEsc = (event: KeyboardEvent) => {
+    if (event.key === "Escape") viewProfile = false;
+  };
 </script>
 
-<main class="max-h-screen">
+<svelte:window onkeydown={handleEsc} />
+
+<main class="max-h-screen p-4">
   <div
-    class="xy-center-items z-50 flex max-h-[90%] w-full max-w-[1000px] flex-wrap min-w-[{data.currentUser
+    class="flex max-h-[90%] w-full max-w-[1000px] flex-col place-items-center items-center justify-center min-w-[{data.currentUser
       ? '70%'
-      : '50%'}] flex-col gap-y-5 md:gap-y-10"
+      : '50%'}] h-fit gap-y-5 md:gap-y-10"
   >
     <Branding />
 
     {#if data.currentUser}
-      <div class="xy-center-items bg-base-200 flex items-stretch rounded-xl p-3 select-none">
+      <div class="xy-center-items bg-base-200 flex items-stretch gap-x-5 rounded-xl p-3 select-none">
         <div>
-          <div class="pr-3">
+          <div>
             <img
               src={cdnUrls.userAvatar(data.currentUser.id, data.currentUser.avatarHash)}
               alt="User Avatar"
@@ -27,17 +41,20 @@
             />
           </div>
         </div>
-        <div>
+        <div class="text-2xl font-bold">
           {data.currentUser.displayName}
         </div>
-        <a href="/@me" role="button" class="dy-join dy-join-item">Button</a>
+        <button
+          class="dy-btn dy-btn-md dy-btn-info"
+          onclick={() => {
+            viewProfile = true;
+          }}
+        >
+          <div>
+            <img src="/arrow-right.svg" alt="Arrow Right" class="h-5 w-5" />
+          </div>
+        </button>
       </div>
-      <!-- <div class="xy-center-items flex flex-col gap-y-5 text-center select-none">
-        <h1 class="text-3xl font-bold">
-          Welcome, <span class="text-(--dc-blurple) underline underline-offset-3">{data.currentUser.displayName}</span>!
-        </h1>
-        <p class="text-lg">Select a server to manage</p>
-      </div> -->
     {/if}
 
     <div class="h-full {data.currentUser ? 'w-full' : ''}">
@@ -84,7 +101,7 @@
               </div>
             {/snippet}
 
-            <div class="rounded-box border-base-content/5 bg-base-100 overflow-x-auto border">
+            <div class="rounded-box border-base-content/5 bg-base-100 overflow-x-hidden border">
               <div class="flex flex-row flex-wrap justify-center">
                 {#each data.guilds as guild}
                   {@render guilditem(guild.id, guild.name, guild.iconHash, guild.isConfigured)}
@@ -104,4 +121,47 @@
       </div>
     </div>
   </div>
+
+  <dialog id="profile" class="dy-modal dy-modal-bottom sm:dy-modal-middle text-base-content w-full">
+    <div class="dy-modal-box h-[50%] w-full max-w-full">
+      <div class="flex w-full items-center justify-center">
+        <div class="flex w-full flex-col gap-4 self-center">
+          <div class="flex items-center gap-4">
+            <div class="dy-skeleton h-24 w-24 shrink-0 overflow-hidden rounded-lg">
+              <img
+                src={cdnUrls.userAvatar(String(data.currentUser?.id), String(data.currentUser?.avatarHash))}
+                alt="User Avatar"
+                class="object-cover"
+              />
+            </div>
+            <div class="flex flex-col gap-y-1 select-none">
+              <h1 class="text-xl">@{data.currentUser?.username || ""}</h1>
+              <div class="text-md italic">{data.currentUser?.displayName}</div>
+            </div>
+            <div class="text-error flex grow justify-end">
+              <form method="POST" action="?/logout">
+                <button type="submit" class="dy-btn dy-btn-lg dy-btn-error dy-btn-outline">
+                  <img src="/logout.svg" alt="Logout" class="h-7 w-7" />
+                </button>
+              </form>
+            </div>
+          </div>
+          <div class="dy-skeleton h-32 w-full"></div>
+        </div>
+      </div>
+
+      <div class="dy-modal-action w-full">
+        <form method="dialog" class="w-full">
+          <button
+            class="dy-btn dy-btn-soft w-full max-w-full"
+            onclick={() => {
+              viewProfile = false;
+            }}
+          >
+            Close
+          </button>
+        </form>
+      </div>
+    </div>
+  </dialog>
 </main>
