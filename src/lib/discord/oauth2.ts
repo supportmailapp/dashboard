@@ -111,7 +111,7 @@ export const callbackHandler: RequestHandler = async ({ url, fetch, cookies }) =
     sameSite: "strict",
     httpOnly: true,
   });
-  invalidateAll();
+
   redirect(302, redirectUrl || "/");
 };
 
@@ -254,7 +254,7 @@ export async function getUserData(accessToken: string, fetch: Function, userId: 
 }
 
 // User guilds cache
-let userGuildsCache = new NodeCache({ stdTTL: 15, checkperiod: 10, errorOnMissing: false });
+let userGuildsCache = new NodeCache({ stdTTL: 60, checkperiod: 10, errorOnMissing: false });
 
 /**
  * Fetches the guilds that the user is a member of from the Discord API.
