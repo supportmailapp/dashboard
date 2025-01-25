@@ -15,7 +15,7 @@ class ClientAPIImitator {
 
   constructor() {}
 
-  public async filterMutualGuilds(userGuilds: string[]): string[] {
+  public async filterMutualGuilds(userGuilds: string[]): Promise<string[]> {
     const filtered = userGuilds.filter((gid) => this.relevantGuilds.includes(gid));
     return filtered;
   }
@@ -56,11 +56,7 @@ class ClientAPI {
     try {
       const res = await clientAPIImitate.filterMutualGuilds(userGuilds);
 
-      if (!res.ok) {
-        throw { message: "Failed to fetch mutual guilds", payload: { userGuilds } };
-      }
-
-      return (await res.json()) as string[];
+      return res;
     } catch (err) {
       console.error(err);
       return [];
