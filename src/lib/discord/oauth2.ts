@@ -102,9 +102,7 @@ export const callbackHandler: RequestHandler = async ({ url, fetch, cookies }) =
   cookies.set("discord-token", eToken, {
     path: "/",
     maxAge: 1_209_600,
-    // secure: true, // ! Uncomment for production #f00
-    sameSite: "strict",
-    httpOnly: true,
+    // sameSite: "strict",
   });
 
   redirect(302, redirectUrl || "/");
