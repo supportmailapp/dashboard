@@ -6,8 +6,9 @@ import type { GuildChannelType } from "discord-api-types/v10";
 declare global {
   namespace App {
     interface Error {
-      status?: number;
+      errorId?: string;
       message?: string;
+      status?: number;
       details?: any;
     }
 
@@ -30,8 +31,6 @@ declare global {
     // interface Platform {}
   }
 
-  namespace APIResponses {}
-
   type PartialRole = {
     id: string;
     name: string;
@@ -51,6 +50,7 @@ declare global {
     id: string;
     name: string;
     iconHash: string | null;
+    isConfigured: boolean;
   };
 
   type CurrentGuild = PartialGuild & {
@@ -66,5 +66,4 @@ declare global {
   };
 }
 
-export { };
-
+export {};

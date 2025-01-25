@@ -18,7 +18,7 @@
   --color-primary-content: oklch(15.07% 0.027 232.661);
   --color-secondary: oklch(68.011% 0.158 276.934);
   --color-secondary-content: oklch(13.602% 0.031 276.934);
-  --color-accent: oklch(55% 0.195 38.402);
+  --color-accent: oklch(59% 0.249 0.584);
   --color-accent-content: oklch(95% 0.038 75.164);
   --color-neutral: oklch(27.949% 0.036 260.03);
   --color-neutral-content: oklch(85.589% 0.007 260.03);
@@ -54,8 +54,6 @@
     background-color: var(--color-base-100);
     width: 100%;
     min-height: 100vh;
-    overflow-y: inherit;
-    overflow-x: hidden;
     position: relative;
     display: flex;
     flex-direction: column;
@@ -132,5 +130,26 @@
 
   .color-discord {
     color: var(--dc-blurple);
+  }
+
+  .server-card {
+    @apply dy-card flex w-full flex-col flex-wrap items-center justify-center gap-x-2 p-3 shadow-sm sm:w-[50%] lg:w-1/3;
+    @apply hover:bg-base-300 transition-colors duration-200 ease-in-out;
+  }
+
+  .server-select-icon {
+    @apply aspect-square h-16 w-16 rounded-lg md:h-22 md:w-22 shadow-md;
+  }
+
+  .server-select-actions {
+    @apply dy-card-actions flex w-[75%] grow items-end justify-center md:w-[65%];
+  }
+
+  .server-select-manage-btn {
+    @apply dy-btn dy-btn-md dy-btn-success dy-btn-soft w-full border-2;
+  }
+
+  .server-select-setup-btn {
+    @apply dy-btn dy-btn-md dy-btn-info dy-btn-outline w-full border-[0.1em];
   }
 }

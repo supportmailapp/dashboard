@@ -1,11 +1,11 @@
 import { decodeToken } from "$lib/server/auth.js";
 
-import "$env/static/private";
-import type { PageServerLoad } from "./$types";
-import { redirect, type Actions } from "@sveltejs/kit";
-import { getUserGuilds, loginHandler } from "$lib/discord/oauth2";
+import { createOAuth2Login, getUserGuilds } from "$lib/discord/oauth2";
 import clientAPI from "$lib/server/clientApi";
 import { apiPartialGuildToPartialGuild } from "$lib/utils/formatting";
+import { hasPermission } from "$lib/utils/permissions";
+import { redirect, type Actions } from "@sveltejs/kit";
+import type { PageServerLoad } from "./$types";
 
 export const load = async function ({ cookies, locals, url, fetch }) {
   if (url.pathname == "/?logout=true") {
@@ -26,13 +26,22 @@ export const load = async function ({ cookies, locals, url, fetch }) {
       return {};
     }
 
-    const mutualGuilds = await clientAPI.filterMutualGuilds(userGuilds.map((g) => g.id));
-    locals.guilds = userGuilds.reduce((acc, guild) => {
-      if (mutualGuilds.includes(guild.id)) {
-        acc.push(apiPartialGuildToPartialGuild(guild));
-      }
-      return acc;
-    }, [] as PartialGuild[]);
+    const mutualGuilds = await clientAPI.filterMutualGuilds(
+      userGuilds.map((g) => g.id),
+      locals.currentUser.id,
+    );
+
+    locals.guilds = userGuilds
+      .filter((g) => hasPermission(g.permissions, 0x20))
+      // Sort if setup or not
+      .sort((a, b) => {
+        const isSetupA = mutualGuilds.includes(a.id);
+        const isSetupB = mutualGuilds.includes(b.id);
+        if (isSetupA && !isSetupB) return -1;
+        else if (!isSetupA && isSetupB) return 1;
+        else return 0;
+      })
+      .map((guild) => apiPartialGuildToPartialGuild(guild, mutualGuilds.includes(guild.id)));
   }
 
   return {
@@ -43,10 +52,14 @@ export const load = async function ({ cookies, locals, url, fetch }) {
 } satisfies PageServerLoad;
 
 export const actions = {
-  login: async ({ url }) => {
+  login: async ({ url, cookies }) => {
     console.log("login url", url);
-    const res = loginHandler(url);
-    console.log("res", res);
+    const res = createOAuth2Login(url);
+    cookies.set("discord-oauth2-state", res.state, { path: "/" });
+    if (res.redirectUrl) cookies.set("redirect-after-login", res.redirectUrl, { path: "/" });
     redirect(303, res.url);
+  },
+  reload: async () => {
+    redirect(302, "/");
   },
 } satisfies Actions;

@@ -11,32 +11,26 @@
  * - handler for GET guild member data
  */
 
+import { invalidateAll } from "$app/navigation";
 import { env } from "$env/dynamic/private";
 import { urls } from "$lib/constants";
 import { decodeToken, encodeToken } from "$lib/server/auth";
 import { discord } from "$lib/server/constants";
-import { REST } from "@discordjs/rest";
 import { error, redirect, type RequestHandler } from "@sveltejs/kit";
 import {
   OAuth2Routes,
   Routes,
   type APIGuildMember,
-  type APIPartialGuild,
   type APIUser,
+  type RESTAPIPartialCurrentUserGuild,
   type RESTPostOAuth2AccessTokenResult,
 } from "discord-api-types/v10";
 import NodeCache from "node-cache";
 
-const rest = new REST({ version: "v10", authPrefix: "Bearer", userAgentAppendix: "SupportMailV2" });
+export const createOAuth2Login = function (url: URL) {
+  const redirectUrl = url.searchParams.get("redirect") || null;
+  const state = crypto.randomUUID();
 
-let stateCache = new NodeCache({ stdTTL: 600, checkperiod: 10, errorOnMissing: false });
-
-export const loginHandler = function (url: URL) {
-  const redirectParam = url.searchParams.get("redirect");
-  const redirectUrl = redirectParam ? decodeURI(redirectParam) : "/";
-  const state = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-
-  stateCache.set(state, redirectUrl);
   return {
     status: 302,
     url: urls.authorize({
@@ -46,6 +40,8 @@ export const loginHandler = function (url: URL) {
       promt: "true",
       redirectUri: discord.redirectUri,
     }),
+    state: state,
+    redirectUrl: redirectUrl,
   };
 };
 
@@ -64,10 +60,8 @@ export const callbackHandler: RequestHandler = async ({ url, fetch, cookies }) =
     return error(405, 'A "state" query parameter must be present in the URL.');
   }
 
-  const redirectUrl = stateCache.take(String(state)) as string;
-  if (!redirectUrl) {
-    return redirect(307, "/");
-  }
+  const redirectUrl = cookies.get("redirect-after-login");
+  cookies.delete("redirect-after-login", { path: "/" });
 
   let oauthRes: Response;
   try {
@@ -112,13 +106,13 @@ export const callbackHandler: RequestHandler = async ({ url, fetch, cookies }) =
 
   cookies.set("discord-token", eToken, {
     path: "/",
-    // maxAge: oauthResJson.expires_in, // ? Is this necessary? Maybe set maxAge to 14d for refresh token support (within 14 days)
+    maxAge: 1_209_600,
     // secure: true, // ! Uncomment for production #f00
     sameSite: "strict",
     httpOnly: true,
   });
-
-  redirect(302, redirectUrl);
+  invalidateAll();
+  redirect(302, redirectUrl || "/");
 };
 
 /**
@@ -277,9 +271,9 @@ export async function getUserGuilds(
   accessToken: string,
   fetch: Function,
   bypassCache = false,
-): Promise<APIPartialGuild[]> {
+): Promise<RESTAPIPartialCurrentUserGuild[]> {
   if (!bypassCache) {
-    const cachedGuilds = userGuildsCache.get(accessToken) as APIPartialGuild[];
+    const cachedGuilds = userGuildsCache.get(accessToken) as RESTAPIPartialCurrentUserGuild[];
     if (cachedGuilds) {
       return cachedGuilds;
     }
@@ -303,7 +297,7 @@ export async function getUserGuilds(
     throw { status: 500, message: err.message || "Failed to fetch user guilds" };
   }
 
-  const guildResJson = (await guildRes.json()) as APIPartialGuild[];
+  const guildResJson = (await guildRes.json()) as RESTAPIPartialCurrentUserGuild[];
   userGuildsCache.set(userId, guildResJson);
   return guildResJson;
 }

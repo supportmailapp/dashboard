@@ -20,6 +20,15 @@ interface AuthorizeUrlParams {
 
 export const urls = {
   discordBase: env.PUBLIC_DISCORD_BASE_URL,
+  botAuth: function (clientId: string, guildId: string | null = null): string {
+    const params = new URLSearchParams({
+      client_id: clientId,
+      permissions: env.PUBLIC_botPermissions,
+      scope: "bot applications.commands",
+    });
+    if (guildId) params.append("guild_id", guildId);
+    return "https://discord.com/oauth2/authorize?" + params.toString();
+  },
   authorize: function ({ clientId, scope, state, redirectUri, promt = "none" }: AuthorizeUrlParams): string {
     return (
       "https://discord.com/oauth2/authorize?" +
@@ -36,3 +45,5 @@ export const urls = {
   token: () => "https://discord.com/api/oauth2/token",
   revocation: () => "https://discord.com/api/oauth2/token/revoke",
 } as const;
+
+export const DISCORD_CDN_BASE = "https://cdn.discordapp.com" as const;

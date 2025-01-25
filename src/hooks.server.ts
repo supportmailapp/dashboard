@@ -1,7 +1,8 @@
-import { getUserData, getUserGuilds } from "$lib/discord/oauth2";
-import { decodeToken, type FullCookieToken } from "$lib/server/auth";
-import { apiPartialGuildToCurrentGuild, apiPartialGuildToPartialGuild, apiUserToCurrentUser } from "$lib/utils/formatting";
-import { redirect, type Handle, type ServerInit } from "@sveltejs/kit";
+import { getUserData } from "$lib/discord/oauth2";
+import { decodeToken } from "$lib/server/auth";
+import { apiUserToCurrentUser } from "$lib/utils/formatting";
+import { redirect, type Handle, type HandleServerError, type ServerInit } from "@sveltejs/kit";
+import Sentry from "$lib/server/sentry";
 
 export const init: ServerInit = async () => {
   // DB Connection
@@ -46,4 +47,15 @@ export const handle: Handle = async ({ event, resolve }) => {
   return response;
 };
 
-// export async function handleError() {}
+export const handleError: HandleServerError = async ({ error, event, status, message }) => {
+  const errorId = crypto.randomUUID();
+
+  Sentry.captureException(error, {
+    extra: { event, errorId, status },
+  });
+
+  return {
+    message: message || "Internal server error",
+    errorId: errorId,
+  };
+};

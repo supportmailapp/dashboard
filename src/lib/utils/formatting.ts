@@ -1,4 +1,5 @@
-import type { APIGuildChannel, APIPartialGuild, APIRole, APIUser, GuildChannelType } from "discord-api-types/v10";
+import { DISCORD_CDN_BASE } from "$lib/constants";
+import type { APIGuildChannel, RESTAPIPartialCurrentUserGuild, APIRole, APIUser, GuildChannelType } from "discord-api-types/v10";
 
 export function apiUserToCurrentUser(apiUser: APIUser): CurrentUser {
   return {
@@ -12,11 +13,15 @@ export function apiUserToCurrentUser(apiUser: APIUser): CurrentUser {
 /**
  * Used for the `guilds` locale.
  */
-export function apiPartialGuildToPartialGuild(apiGuild: APIPartialGuild): PartialGuild {
+export function apiPartialGuildToPartialGuild(
+  apiGuild: RESTAPIPartialCurrentUserGuild,
+  isConfigured: boolean = false,
+): PartialGuild {
   return {
     id: apiGuild.id,
     name: apiGuild.name,
     iconHash: apiGuild.icon || null,
+    isConfigured: isConfigured,
   };
 }
 
@@ -24,7 +29,7 @@ export function apiPartialGuildToPartialGuild(apiGuild: APIPartialGuild): Partia
  * Used for the `currentGuild` locale.
  */
 export function apiPartialGuildToCurrentGuild(
-  apiGuild: APIPartialGuild | PartialGuild,
+  apiGuild: RESTAPIPartialCurrentUserGuild | PartialGuild,
   channels: APIGuildChannel<GuildChannelType>[],
   roles: APIRole[],
 ): CurrentGuild {
@@ -33,6 +38,7 @@ export function apiPartialGuildToCurrentGuild(
     id: apiGuild.id,
     name: apiGuild.name,
     iconHash: iconHash,
+    isConfigured: true,
     // TODO: Implement sorting after position, if same position, sort by ID, return new array with adjusted positions
     channels: channels.map((channel) => ({
       id: channel.id,
@@ -48,3 +54,10 @@ export function apiPartialGuildToCurrentGuild(
     })),
   };
 }
+
+export const cdnUrls = {
+  guildIcon: (guildId: string, icon: string | null) =>
+    DISCORD_CDN_BASE + (icon ? `/icons/${guildId}/${icon}.png` : `/embed/avatars/1.png`),
+  userAvatar: (userId: string, avatar: string | null) =>
+    DISCORD_CDN_BASE + (avatar ? `/avatars/${userId}/${avatar}.png` : `/embed/avatars/${(Number(userId) >> 22) % 6}.png`),
+};

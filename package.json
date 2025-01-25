@@ -37,9 +37,13 @@
   "dependencies": {
     "@crowdin/crowdin-api-client": "^1.41.0",
     "@discordjs/rest": "^2.4.2",
+    "@sentry/node": "^8.51.0",
+    "@sentry/profiling-node": "^8.51.0",
+    "@sentry/sveltekit": "^8.51.0",
     "@svelte-plugins/datepicker": "^1.0.11",
     "@tailwindcss/vite": "^4.0.0",
     "daisyui": "^5.0.0-beta.2",
+    "dayjs": "^1.11.13",
     "jsonwebtoken": "^9.0.2",
     "node-cache": "^5.1.2",
     "rate-limiter-flexible": "^5.0.5",
