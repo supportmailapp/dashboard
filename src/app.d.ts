@@ -12,15 +12,15 @@ declare global {
     }
 
     interface Locals {
-      guilds: Utils.PartialGuild[];
-      currentGuild?: Utils.CurrentGuild | null;
-      currentUser?: Utils.CurrentUser | null;
+      guilds?: PartialGuild[] | null;
+      currentGuild?: CurrentGuild | null;
+      currentUser?: CurrentUser | null;
     }
 
     interface PageData {
-      guilds?: Utils.PartialGuild[];
-      currentGuild?: Utils.CurrentGuild;
-      currentUser?: Utils.CurrentUser;
+      guilds?: PartialGuild[];
+      currentGuild?: CurrentGuild;
+      currentUser?: CurrentUser;
       status?: number;
       redirect?: string;
     }
@@ -30,40 +30,41 @@ declare global {
     // interface Platform {}
   }
 
-  namespace Utils {
-    type PartialRole = {
-      id: string;
-      name: string;
-      color: number;
-      position: number;
-      // permissions: string; // ? Is this needed?
-    };
+  namespace APIResponses {}
 
-    type PartialChannel = {
-      id: string;
-      name: string;
-      type: GuildChannelType;
-      position: number;
-    };
+  type PartialRole = {
+    id: string;
+    name: string;
+    color: number;
+    position: number;
+    // permissions: string; // ? Is this needed?
+  };
 
-    type PartialGuild = {
-      id: string;
-      name: string;
-      iconHash: string | null;
-    };
+  type PartialChannel = {
+    id: string;
+    name: string;
+    type: GuildChannelType;
+    position: number;
+  };
 
-    type CurrentGuild = PartialGuild & {
-      roles: Utils.PartialRole[];
-      channels: Utils.PartialChannel[];
-    };
+  type PartialGuild = {
+    id: string;
+    name: string;
+    iconHash: string | null;
+  };
 
-    type CurrentUser = {
-      id: string;
-      username: string;
-      displayName: string;
-      avatarHash: string | null;
-    };
-  }
+  type CurrentGuild = PartialGuild & {
+    roles: PartialRole[];
+    channels: PartialChannel[];
+  };
+
+  type CurrentUser = {
+    id: string;
+    username: string;
+    displayName: string;
+    avatarHash: string | null;
+  };
 }
 
-export {};
+export { };
+
