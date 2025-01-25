@@ -26,20 +26,26 @@ export function encodeToken(token: CookieToken): string {
   });
 }
 
-export function decodeToken(token: any): JWTCookiePayload | null {
+export function decodeToken(token: any, verify?: false): JWTCookiePayload | null;
+export function decodeToken(token: any, verify: true): Required<CookieToken> | null;
+
+export function decodeToken(token: any, verify = false): JWTCookiePayload | Required<CookieToken> | null {
   if (typeof token !== "string") return null;
   try {
-    return jwt.verify(token, JWT_SECRET, {
+    const decoded = jwt.verify(token, JWT_SECRET, {
       algorithms: [authData.algorithm],
     }) as JWTCookiePayload;
+
+    const tokenisValid = () => {
+      return neededProps.every((prop) => prop in decoded);
+    };
+
+    if (verify && tokenisValid()) {
+      return decoded as Required<CookieToken>;
+    } else {
+      return decoded;
+    }
   } catch {
     return null;
   }
-}
-
-export function verifyTokenPayload(token: any): Required<CookieToken> | null {
-  if (token) {
-    return token as Required<CookieToken>;
-  }
-  return null;
 }
