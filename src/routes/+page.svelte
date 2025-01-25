@@ -1,8 +1,10 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
   import { env } from "$env/dynamic/public";
   import Branding from "$lib/assets/Branding.svelte";
   import { urls } from "$lib/constants.js";
   import { cdnUrls } from "$lib/utils/formatting";
+  import { onMount } from "svelte";
 
   let { data } = $props();
 
@@ -18,6 +20,12 @@
   const handleEsc = (event: KeyboardEvent) => {
     if (event.key === "Escape") viewProfile = false;
   };
+
+  onMount(() => {
+    if (data.redirect) {
+      goto(data.redirect);
+    }
+  });
 </script>
 
 <svelte:window onkeydown={handleEsc} />

@@ -48,12 +48,12 @@ export const load = async function ({ cookies, locals, url, fetch }) {
     guilds: locals.guilds,
     currentGuild: locals.currentGuild,
     currentUser: locals.currentUser,
+    redirect: cookies.get("redirect-after-login"),
   };
 } satisfies PageServerLoad;
 
 export const actions = {
   login: async ({ url, cookies }) => {
-    console.log("login url", url);
     const res = createOAuth2Login(url);
     cookies.set("discord-oauth2-state", res.state, { path: "/" });
     if (res.redirectUrl) cookies.set("redirect-after-login", res.redirectUrl, { path: "/" });
