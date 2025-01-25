@@ -111,6 +111,7 @@
 
 @layer utilities {
   .xy-center-items {
+    display: flex;
     justify-content: center;
     align-items: center;
     place-items: center;
@@ -151,5 +152,18 @@
 
   .server-select-setup-btn {
     @apply dy-btn dy-btn-md dy-btn-info dy-btn-outline w-full border-[0.1em];
+  }
+
+  .footer-container {
+    @apply gap-x-2.5 border-t-2 p-4 text-xs md:gap-x-7.5;
+    display: grid;
+    grid-auto-flow: column;
+    width: 100%;
+    background-color: transparent;
+    color: var(--color-neutral-content);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
   }
 }

@@ -17,24 +17,34 @@
     <Branding />
 
     {#if data.currentUser}
-      <div class="xy-center-items flex flex-col gap-y-5 text-center select-none">
+      <div class="xy-center-items bg-base-200 flex items-stretch rounded-xl p-3 select-none">
+        <div>
+          <div class="pr-3">
+            <img
+              src={cdnUrls.userAvatar(data.currentUser.id, data.currentUser.avatarHash)}
+              alt="User Avatar"
+              class="dy-avatar w-16 rounded-xl"
+            />
+          </div>
+        </div>
+        <div>
+          {data.currentUser.displayName}
+        </div>
+        <a href="/@me" role="button" class="dy-join dy-join-item">Button</a>
+      </div>
+      <!-- <div class="xy-center-items flex flex-col gap-y-5 text-center select-none">
         <h1 class="text-3xl font-bold">
           Welcome, <span class="text-(--dc-blurple) underline underline-offset-3">{data.currentUser.displayName}</span>!
         </h1>
         <p class="text-lg">Select a server to manage</p>
-      </div>
+      </div> -->
     {/if}
 
     <div class="h-full {data.currentUser ? 'w-full' : ''}">
       {#if data.currentUser}
         <div class="inline-flex h-fit w-full items-center justify-center py-5 lg:justify-end">
           <form method="POST" action="?/reload">
-            <button
-              type="submit"
-              class="dy-btn dy-btn-md md:dy-btn-sm dy-btn-soft border-2"
-            >
-              Reload Servers
-            </button>
+            <button type="submit" class="dy-btn dy-btn-md md:dy-btn-sm dy-btn-soft border-2"> Reload Servers </button>
           </form>
         </div>
       {/if}
