@@ -46,11 +46,6 @@ export const createOAuth2Login = function (url: URL) {
 };
 
 export const callbackHandler: RequestHandler = async ({ url, fetch, cookies }) => {
-  // Verify state token, take it from cache
-  // Exchange code for token
-  // Store token in cache, set cookie
-  // Redirect to server-select page or redirect url
-
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
 
@@ -124,10 +119,6 @@ export const callbackHandler: RequestHandler = async ({ url, fetch, cookies }) =
  * `hint` can be: `"login"`
  */
 export async function refreshToken(encodedTokenCookie: string, fetch: Function) {
-  // Get refresh token from cookies
-  // Exchange refresh token for new token
-  // Set cookie with new token
-
   const token = decodeToken(encodedTokenCookie);
   if (!token || typeof token?.refresh_token !== "string") {
     throw { status: 400, message: "Invalid token", hint: "login" };
@@ -219,10 +210,6 @@ let userDataCache = new NodeCache({ stdTTL: 15, checkperiod: 10, errorOnMissing:
  * @throws Will throw an error if the API request fails. Format: `{ status: number, message: string }`
  */
 export async function getUserData(accessToken: string, fetch: Function, userId: string | null = null): Promise<APIUser> {
-  // Get user data from cache; if undefined then from API
-  // Set user data in cache for 15 seconds
-  // Return user data
-
   if (userId) {
     const cachedData = userDataCache.get(userId) as APIUser;
     if (cachedData) {
