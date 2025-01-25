@@ -19,8 +19,11 @@ export const handle: Handle = async ({ event, resolve }) => {
   if (!token) {
     console.log("No token found");
     if (event.url.pathname !== "/") {
-      console.log("1: Redirecting to /");
-      return redirect(303, "/");
+      if (event.url.searchParams.size > 0) {
+        return redirect(302, "/?redirect=" + event.url.toString());
+      } else {
+        return redirect(302, "/");
+      }
     }
   } else {
     console.log("Token found");
