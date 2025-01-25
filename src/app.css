@@ -118,12 +118,10 @@
   }
 
   .branding-container {
-    @apply mx-auto my-auto gap-x-3 px-2 py-1;
-    margin-inline: auto;
-    margin-block: auto;
     display: flex;
-    aspect-ratio: 3.5/1;
-    flex-direction: row;
+    @apply gap-x-3 gap-y-2 px-2 py-1;
+    @apply flex-col sm:flex-row;
+    max-width: screen;
     justify-content: center;
     align-items: center;
     user-select: none;
