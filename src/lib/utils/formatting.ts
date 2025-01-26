@@ -56,8 +56,9 @@ export function apiPartialGuildToCurrentGuild(
 }
 
 export const cdnUrls = {
-  guildIcon: (guildId: string, icon: string | null) =>
-    DISCORD_CDN_BASE + (icon ? `/icons/${guildId}/${icon}.png` : `/embed/avatars/1.png`),
-  userAvatar: (userId: string, avatar: string | null) =>
-    DISCORD_CDN_BASE + (avatar ? `/avatars/${userId}/${avatar}.png` : `/embed/avatars/${(Number(userId) >> 22) % 6}.png`),
+  guildIcon: (guildId: string, icon: string | null, size = "512") =>
+    DISCORD_CDN_BASE + (icon ? `/icons/${guildId}/${icon}.webp?size=${size}` : `/embed/avatars/1.png`),
+  userAvatar: (userId: string, avatar: string | null, size = "512") =>
+    DISCORD_CDN_BASE +
+    (avatar ? `/avatars/${userId}/${avatar}.webp?size=${size}` : `/embed/avatars/${(Number(userId) >> 22) % 6}.png`),
 };
