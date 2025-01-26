@@ -1,12 +1,25 @@
 # TODO
 
-- Fix hooks.server.ts - Ist it a good practice to fetch all data on server? Maybe it's better to fetch only data that is needed?
+- Build navigation for dashboard (bottom nav bar)
 
-- How (esp. WHERE) to do auth check?
-- How to access API from root page?
+  - features-button for mobile (sidebar dor desktop), server-changer, user-settings
+
+- Server-changer
+
+  - Dialog everytime when clicked, a table with all servers
+  - Clicking on a server will change the server
+
+- User-settings
+
+  - Dialog everytime when clicked, a form with user settings
+  - Change user settings
+
+- Sidebar for desktop
+
+  - Sidebar with all features
+  - Contents: Groups (grouping features), features (buttons)
 
 ## Later
 
-- Implement oauth2 logout route
 - Ask: How to determine when refreshToken should be used? Maybe when accessToken is expired? How to determine accessToken expired?
 - Implement functionality for refreshToken
