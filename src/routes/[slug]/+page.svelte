@@ -1,7 +1,30 @@
 <script lang="ts">
-  import type { PageData } from "./$types";
+  import { goto } from "$app/navigation";
 
-  let { data }: { data: PageData } = $props();
+  let { data }: { data: App.FullPageData } = $props();
 
-  console.log(data.slug);
+  // This can still be null!
+  if (!data.guild) {
+    goto("/");
+  }
 </script>
+
+<h1>{data.guild?.name}</h1>
+
+<div class="dy-divider-neutral my-2"></div>
+
+<h2>Channels</h2>
+
+{#each data.guild.channels as channel}
+  <p>{channel.name}</p>
+{/each}
+
+<div class="dy-divider-neutral my-2"></div>
+
+<h2>Roles</h2>
+
+{#if data.guild.roles}
+  {#each data.guild.roles as role}
+    <p class="text-[{role.color}]">{role.name} ({role.id})</p>
+  {/each}
+{/if}
