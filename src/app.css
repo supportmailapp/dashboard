@@ -121,6 +121,7 @@
     display: flex;
     @apply gap-x-3 gap-y-2 px-2 py-1;
     @apply flex-col sm:flex-row;
+    object-fit: contain;
     max-width: screen;
     justify-content: center;
     align-items: center;
@@ -132,8 +133,8 @@
   }
 
   .server-card {
-    @apply dy-card flex w-full flex-col flex-wrap items-center justify-center gap-x-2 p-3 shadow-sm sm:w-[50%] lg:w-1/3;
-    @apply hover:bg-base-300 transition-colors duration-200 ease-in-out;
+    @apply bg-base-200 rounded-md flex w-full flex-col items-center p-3 shadow-sm sm:w-[40%] lg:w-[30%] justify-center min-w-[50px];
+    @apply hover:bg-base-300 transition-colors duration-150 ease-in-out;
   }
 
   .server-select-icon {
@@ -145,7 +146,7 @@
   }
 
   .server-select-manage-btn {
-    @apply dy-btn dy-btn-md dy-btn-success dy-btn-soft w-full border-2;
+    @apply dy-btn dy-btn-md dy-btn-success w-full border-2;
   }
 
   .server-select-setup-btn {
