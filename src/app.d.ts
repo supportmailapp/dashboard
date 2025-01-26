@@ -64,6 +64,14 @@ declare global {
     displayName: string;
     avatarHash: string | null;
   };
+
+  type FormValidationRateimitError = {
+    error: "Rate limited";
+    /**
+     * The number of milliseconds before the rate limit resets.
+     */
+    retryAfter: number;
+  };
 }
 
 export {};
