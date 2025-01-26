@@ -5,8 +5,8 @@ import clientAPI from "$lib/server/clientApi";
 import { apiPartialGuildToPartialGuild } from "$lib/utils/formatting";
 import { hasPermission } from "$lib/utils/permissions";
 import { error, redirect, type Actions } from "@sveltejs/kit";
-import type { PageServerLoad } from "./$types";
 import { RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
+import type { PageServerLoad } from "./$types";
 
 const ratelimitBucket = new RateLimiterMemory({
   points: 5,
@@ -21,14 +21,14 @@ export const load = async function ({ cookies, locals, url, fetch }) {
 
   const cookieToken = cookies.get("discord-token");
   const tokenData = decodeToken(cookieToken, true);
-  if (!tokenData || !locals.currentUser) {
+  if (!tokenData || !locals.user) {
     return {};
   }
 
   // Ratelimiting
   let ratelimit: (RateLimiterRes & { block?: boolean }) | null = null;
   try {
-    ratelimit = await ratelimitBucket.consume(locals.currentUser.id, 1);
+    ratelimit = await ratelimitBucket.consume(locals.user.id, 1);
   } catch (rejRes) {
     ratelimit = rejRes as RateLimiterRes;
     ratelimit.block = true;
@@ -40,7 +40,7 @@ export const load = async function ({ cookies, locals, url, fetch }) {
 
   // Fetch user guilds
   if (!locals.guilds) {
-    const userGuilds = await getUserGuilds(locals.currentUser.id, tokenData.access_token, fetch);
+    const userGuilds = await getUserGuilds(locals.user.id, tokenData.access_token, fetch);
 
     if (!userGuilds) {
       return error(500, { message: "Failed to fetch user guilds" });
@@ -48,7 +48,7 @@ export const load = async function ({ cookies, locals, url, fetch }) {
 
     const mutualGuilds = await clientAPI.filterMutualGuilds(
       userGuilds.map((g) => g.id),
-      locals.currentUser.id,
+      locals.user.id,
     );
 
     locals.guilds = userGuilds
@@ -64,10 +64,12 @@ export const load = async function ({ cookies, locals, url, fetch }) {
       .map((guild) => apiPartialGuildToPartialGuild(guild, mutualGuilds.includes(guild.id)));
   }
 
+  console.log("root-page locals", locals);
+
   return {
     guilds: locals.guilds,
-    currentGuild: locals.currentGuild,
-    currentUser: locals.currentUser,
+    guild: locals.guild,
+    user: locals.user,
     redirect: cookies.get("redirect-after-login") || url.searchParams.get("redirect") || null,
   };
 } satisfies PageServerLoad;

@@ -1,9 +1,9 @@
 <script lang="ts">
   import { enhance } from "$app/forms";
   import { goto } from "$app/navigation";
-  import { page } from "$app/state";
   import { env } from "$env/dynamic/public";
   import Branding from "$lib/assets/Branding.svelte";
+  import Footer from "$lib/baseComponents/Footer.svelte";
   import { urls } from "$lib/constants.js";
   import { cdnUrls } from "$lib/utils/formatting";
   import { onMount } from "svelte";
@@ -33,7 +33,7 @@
 <svelte:window onkeydown={handleEsc} />
 
 <main class="min-h-screen p-4">
-  {#if data.currentUser}
+  {#if data.user}
     <div class="flex flex-col lg:flex-row">
       <div class="w-full md:basis-1/3">
         <div class="flex h-full w-full flex-col items-center justify-center">
@@ -43,14 +43,14 @@
             <div>
               <div>
                 <img
-                  src={cdnUrls.userAvatar(data.currentUser.id, data.currentUser.avatarHash)}
+                  src={cdnUrls.userAvatar(data.user.id, data.user.avatarHash)}
                   alt="User Avatar"
                   class="dy-avatar w-16 rounded-xl"
                 />
               </div>
             </div>
             <div class="text-2xl font-bold">
-              {data.currentUser.displayName}
+              {data.user.displayName}
             </div>
             <button
               class="dy-btn dy-btn-md dy-btn-primary"
@@ -126,14 +126,14 @@
             <div class="flex items-center gap-4">
               <div class="dy-skeleton h-24 w-24 shrink-0 overflow-hidden rounded-lg">
                 <img
-                  src={cdnUrls.userAvatar(String(data.currentUser?.id), String(data.currentUser?.avatarHash))}
+                  src={cdnUrls.userAvatar(String(data.user?.id), String(data.user?.avatarHash))}
                   alt="User Avatar"
                   class="object-cover"
                 />
               </div>
               <div class="flex flex-col gap-y-1 select-none">
-                <h1 class="text-xl">@{data.currentUser?.username || ""}</h1>
-                <div class="text-md italic">{data.currentUser?.displayName}</div>
+                <h1 class="text-xl">@{data.user?.username || ""}</h1>
+                <div class="text-md italic">{data.user?.displayName}</div>
               </div>
               <div class="text-error flex grow justify-end">
                 <form method="POST" action="?/logout">
@@ -175,3 +175,5 @@
     </div>
   {/if}
 </main>
+
+<Footer year={data.date.getFullYear()} />
