@@ -4,8 +4,14 @@ import { createOAuth2Login, getUserGuilds } from "$lib/discord/oauth2";
 import clientAPI from "$lib/server/clientApi";
 import { apiPartialGuildToPartialGuild } from "$lib/utils/formatting";
 import { hasPermission } from "$lib/utils/permissions";
-import { redirect, type Actions } from "@sveltejs/kit";
+import { error, redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
+import { RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
+
+const ratelimitBucket = new RateLimiterMemory({
+  points: 5,
+  duration: 5,
+});
 
 export const load = async function ({ cookies, locals, url, fetch }) {
   if (url.pathname == "/?logout=true") {
@@ -19,11 +25,25 @@ export const load = async function ({ cookies, locals, url, fetch }) {
     return {};
   }
 
+  // Ratelimiting
+  let ratelimit: (RateLimiterRes & { block?: boolean }) | null = null;
+  try {
+    ratelimit = await ratelimitBucket.consume(locals.currentUser.id, 1);
+  } catch (rejRes) {
+    ratelimit = rejRes as RateLimiterRes;
+    ratelimit.block = true;
+  }
+
+  if (ratelimit.block) {
+    return error(429, { message: "Rate limited", details: { retryAfter: ratelimit.msBeforeNext } });
+  }
+
   // Fetch user guilds
   if (!locals.guilds) {
     const userGuilds = await getUserGuilds(locals.currentUser.id, tokenData.access_token, fetch);
+
     if (!userGuilds) {
-      return {};
+      return error(500, { message: "Failed to fetch user guilds" });
     }
 
     const mutualGuilds = await clientAPI.filterMutualGuilds(
@@ -57,13 +77,14 @@ export const actions = {
     const res = createOAuth2Login(url);
     cookies.set("discord-oauth2-state", res.state, { path: "/" });
     if (res.redirectUrl) cookies.set("redirect-after-login", res.redirectUrl, { path: "/" });
-    redirect(303, res.url);
+    return redirect(303, res.url);
   },
   logout: async ({ cookies }) => {
     cookies.delete("discord-token", { path: "/" });
-    redirect(302, "/");
+    return redirect(302, "/");
   },
-  reload: async () => {
-    redirect(302, "/");
+  reload: ({ url, locals }) => {
+    locals.guilds = null;
+    return redirect(303, url);
   },
 } satisfies Actions;
