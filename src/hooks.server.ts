@@ -1,7 +1,7 @@
 import { getUserData } from "$lib/discord/oauth2";
 import { decodeToken } from "$lib/server/auth";
 import { apiUserToCurrentUser } from "$lib/utils/formatting";
-import { redirect, type Handle, type HandleServerError, type ServerInit } from "@sveltejs/kit";
+import { redirect, type Handle, type HandleServerError, type RequestEvent, type ServerInit } from "@sveltejs/kit";
 import Sentry from "$lib/server/sentry";
 
 export const init: ServerInit = async () => {
@@ -31,12 +31,12 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   const dToken = decodeToken(token, true);
   if (!dToken) {
-    // event.cookies.delete("discord-token", { path: "/" });
+    event.cookies.delete("discord-token", { path: "/" });
     if (event.url.pathname !== "/") {
-      console.log("2: Redirecting to /");
-      return redirect(303, "/");
+      return redirect(307, "/");
     }
-    return resolve(event);
+    // If token is invalid and the user accesses the home page, we don't want to redirect them to the home page again
+    return await resolve(event);
   }
 
   const userData = await getUserData(dToken.access_token, event.fetch);
