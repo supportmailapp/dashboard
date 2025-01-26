@@ -1,7 +1,8 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
 
-import type { GuildChannelType } from "discord-api-types/v10";
+import type { ActiveGuild, BasicGuild } from "$lib/classes/guilds";
+import type { APIGuildChannel, ChannelType, GuildChannelType } from "discord-api-types/v10";
 
 declare global {
   namespace App {
@@ -13,15 +14,23 @@ declare global {
     }
 
     interface Locals {
-      guilds?: PartialGuild[] | null;
-      currentGuild?: CurrentGuild | null;
-      currentUser?: CurrentUser | null;
+      guilds?: BasicGuild[] | null;
+      guild?: ActiveGuild | null;
+      user?: BaseUser | null;
     }
 
     interface PageData {
-      guilds?: PartialGuild[];
-      currentGuild?: CurrentGuild;
-      currentUser?: CurrentUser;
+      guilds?: BasicGuild[];
+      guild?: ActiveGuild;
+      user?: BaseUser;
+      status?: number;
+      redirect?: string;
+    }
+
+    interface FullPageData extends PageData {
+      guilds: BasicGuild[];
+      guild: ActiveGuild;
+      user: BaseUser;
       status?: number;
       redirect?: string;
     }
@@ -31,34 +40,34 @@ declare global {
     // interface Platform {}
   }
 
-  type PartialRole = {
+  type BasicRole = {
     id: string;
     name: string;
     color: number;
     position: number;
-    // permissions: string; // ? Is this needed?
+    permissions: string; // ? Is this needed?
   };
 
-  type PartialChannel = {
+  type BasicChannel = {
     id: string;
     name: string;
-    type: GuildChannelType;
+    type: ChannelType;
     position: number;
   };
 
-  type PartialGuild = {
+  type BaseGuild = {
     id: string;
     name: string;
     iconHash: string | null;
     isConfigured: boolean;
   };
 
-  type CurrentGuild = PartialGuild & {
-    roles: PartialRole[];
-    channels: PartialChannel[];
+  type IActiveGuild = BaseGuild & {
+    roles: BasicRole[];
+    channels: BasicChannel[];
   };
 
-  type CurrentUser = {
+  type BaseUser = {
     id: string;
     username: string;
     displayName: string;
@@ -72,6 +81,13 @@ declare global {
      */
     retryAfter: number;
   };
+
+  /**
+   * An API guild channel which is not a thread.
+   */
+  type APIGuildCoreChannel = APIGuildChannel<
+    Exclude<GuildChannelType, ChannelType.PublicThread | ChannelType.PrivateThread | ChannelType.AnnouncementThread>
+  >;
 }
 
 export {};
