@@ -19,7 +19,7 @@ interface AuthorizeUrlParams {
 }
 
 export const urls = {
-  discordBase: env.PUBLIC_DISCORD_BASE_URL,
+  discordBase: env.PUBLIC_DISCORD_API_BASE,
   botAuth: function (clientId: string, guildId: string | null = null): string {
     const params = new URLSearchParams({
       client_id: clientId,
