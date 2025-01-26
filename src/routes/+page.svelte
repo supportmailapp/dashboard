@@ -53,14 +53,12 @@
               {data.currentUser.displayName}
             </div>
             <button
-              class="dy-btn dy-btn-md dy-btn-info"
+              class="dy-btn dy-btn-md dy-btn-primary"
               onclick={() => {
                 viewProfile = true;
               }}
             >
-              <div>
-                <img src="/arrow-right.svg" alt="Arrow Right" class="h-5 w-5" />
-              </div>
+              <img src="/arrow-right.svg" alt="Arrow Right" class="h-5 w-5" />
             </button>
           </div>
           <div>
@@ -157,6 +155,7 @@
                 viewProfile = false;
               }}
             >
+              <kbd class="dy-kbd">ESC</kbd>
               Close
             </button>
           </form>

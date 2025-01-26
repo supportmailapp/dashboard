@@ -146,11 +146,13 @@
   }
 
   .server-select-manage-btn {
-    @apply dy-btn dy-btn-md dy-btn-success w-full border-2;
+    @apply dy-btn dy-btn-md dy-btn-success w-full border-2 transition-colors duration-150 ease-linear;
+    @apply hover:dy-btn-warning focus:dy-btn-warning;
   }
 
   .server-select-setup-btn {
-    @apply dy-btn dy-btn-md dy-btn-info dy-btn-outline w-full border-[0.1em];
+    @apply dy-btn dy-btn-md dy-btn-info dy-btn-outline w-full border-[0.1em] transition-colors duration-150 ease-linear;
+    @apply hover:dy-btn-secondary focus:dy-btn-secondary;
   }
 
   .footer-container {
