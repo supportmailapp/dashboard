@@ -47,13 +47,16 @@ export const createOAuth2Login = function (url: URL) {
 
 export const callbackHandler: RequestHandler = async ({ url, fetch, cookies }) => {
   const code = url.searchParams.get("code");
-  const state = url.searchParams.get("state");
 
   if (!code) {
     return error(405, 'A "code" query parameter must be present in the URL.');
-  } else if (!state) {
-    return error(405, 'A "state" query parameter must be present in the URL.');
   }
+
+  if (url.searchParams.get("state") !== cookies.get("discord-oauth2-state")) {
+    return error(403, "Invalid state parameter");
+  }
+
+  cookies.delete("discord-oauth2-state", { path: "/" });
 
   const redirectUrl = cookies.get("redirect-after-login");
   cookies.delete("redirect-after-login", { path: "/" });

@@ -48,7 +48,7 @@ export const load = async function ({ cookies, locals, url, fetch }) {
     guilds: locals.guilds,
     currentGuild: locals.currentGuild,
     currentUser: locals.currentUser,
-    redirect: cookies.get("redirect-after-login"),
+    redirect: cookies.get("redirect-after-login") || url.searchParams.get("redirect") || null,
   };
 } satisfies PageServerLoad;
 
