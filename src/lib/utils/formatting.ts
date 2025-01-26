@@ -1,7 +1,25 @@
+import { ActiveGuild } from "$lib/classes/guilds";
 import { DISCORD_CDN_BASE } from "$lib/constants";
-import type { APIGuildChannel, RESTAPIPartialCurrentUserGuild, APIRole, APIUser, GuildChannelType } from "discord-api-types/v10";
+import type { APIRole, APIUser, RESTAPIPartialCurrentUserGuild } from "discord-api-types/v10";
 
-export function apiUserToCurrentUser(apiUser: APIUser): CurrentUser {
+/**
+ * Sorts an array of items by their position property in ascending order.
+ * If two items have the same position, they are sorted by their id property in lexicographical order.
+ *
+ * @template T - The type of the objects, which must include `id` and `position` properties.
+ * @param {T[]} items - The array of items to be sorted.
+ * @returns {T[]} A new array of items sorted by position and id.
+ */
+export function sortByPositionAndId<T extends { id: string; position: number }>(items: T[]): T[] {
+  return items.slice().sort((a, b) => {
+    if (a.position === b.position) {
+      return a.id.localeCompare(b.id);
+    }
+    return a.position - b.position;
+  });
+}
+
+export function apiUserToCurrentUser(apiUser: APIUser): BaseUser {
   return {
     id: apiUser.id,
     username: apiUser.username,
@@ -16,7 +34,7 @@ export function apiUserToCurrentUser(apiUser: APIUser): CurrentUser {
 export function apiPartialGuildToPartialGuild(
   apiGuild: RESTAPIPartialCurrentUserGuild,
   isConfigured: boolean = false,
-): PartialGuild {
+): BaseGuild {
   return {
     id: apiGuild.id,
     name: apiGuild.name,
@@ -28,30 +46,43 @@ export function apiPartialGuildToPartialGuild(
 /**
  * Used for the `currentGuild` locale.
  */
-export function apiPartialGuildToCurrentGuild(
-  apiGuild: RESTAPIPartialCurrentUserGuild | PartialGuild,
-  channels: APIGuildChannel<GuildChannelType>[],
+export function apiGuildToActiveGuild(
+  apiGuild: RESTAPIPartialCurrentUserGuild | BaseGuild,
+  channels: APIGuildCoreChannel[],
   roles: APIRole[],
-): CurrentGuild {
-  const iconHash = "icon" in apiGuild ? apiGuild.icon : apiGuild.iconHash || null;
+): ActiveGuild {
+  const iconHash = "icon" in apiGuild ? apiGuild.icon : apiGuild.iconHash;
+  return new ActiveGuild(apiGuild.id, apiGuild.name, iconHash, true).setChannels(channels).setRoles(roles);
+}
+
+/**
+ * Converts an APIGuildCoreChannel object to a PartialChannel object.
+ *
+ * @param channel - The APIGuildCoreChannel object to convert.
+ * @returns A PartialChannel object with selected properties from the input channel.
+ */
+export function apiChannelToPartial(channel: APIGuildCoreChannel): BasicChannel {
   return {
-    id: apiGuild.id,
-    name: apiGuild.name,
-    iconHash: iconHash,
-    isConfigured: true,
-    // TODO: Implement sorting after position, if same position, sort by ID, return new array with adjusted positions
-    channels: channels.map((channel) => ({
-      id: channel.id,
-      name: channel.name || "unknown",
-      type: channel.type,
-      position: channel.position,
-    })),
-    roles: roles.map((role) => ({
-      id: role.id,
-      name: role.name,
-      color: role.color,
-      position: role.position,
-    })),
+    id: channel.id,
+    name: channel.name || "undefined",
+    position: channel.position,
+    type: channel.type,
+  };
+}
+
+/**
+ * Converts an APIRole object to a PartialRole object.
+ *
+ * @param role - The APIRole object to convert.
+ * @returns A PartialRole object containing selected properties from the APIRole.
+ */
+export function apiRoleToPartial(role: APIRole): BasicRole {
+  return {
+    id: role.id,
+    name: role.name,
+    color: role.color,
+    position: role.position,
+    permissions: role.permissions,
   };
 }
 
