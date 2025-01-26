@@ -1,8 +1,8 @@
 import { getUserData } from "$lib/discord/oauth2";
 import { decodeToken } from "$lib/server/auth";
-import { apiUserToCurrentUser } from "$lib/utils/formatting";
-import { redirect, type Handle, type HandleServerError, type RequestEvent, type ServerInit } from "@sveltejs/kit";
 import Sentry from "$lib/server/sentry";
+import { apiUserToCurrentUser } from "$lib/utils/formatting";
+import { redirect, type Handle, type HandleServerError, type ServerInit } from "@sveltejs/kit";
 
 export const init: ServerInit = async () => {
   // DB Connection
@@ -44,7 +44,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   if (!userData) {
     throw { message: "Invalid user data" };
   }
-  event.locals.currentUser = apiUserToCurrentUser(userData);
+  event.locals.user = apiUserToCurrentUser(userData);
 
   const response = await resolve(event);
   return response;
