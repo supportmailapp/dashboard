@@ -278,11 +278,11 @@ export async function getUserGuilds(
     });
 
     if (!guildRes.ok) {
-      throw { status: 500, message: "Failed to fetch user guilds" };
+      throw { status: guildRes.status, message: guildRes.statusText };
     }
   } catch (err: any) {
     console.debug("Error fetching user guilds:", err);
-    throw { status: 500, message: err.message || "Failed to fetch user guilds" };
+    throw { status: err.status || 500, message: err.message || "Failed to fetch user guilds" };
   }
 
   const guildResJson = (await guildRes.json()) as RESTAPIPartialCurrentUserGuild[];
