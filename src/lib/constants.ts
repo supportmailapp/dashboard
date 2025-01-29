@@ -47,3 +47,5 @@ export const urls = {
 } as const;
 
 export const DISCORD_CDN_BASE = "https://cdn.discordapp.com" as const;
+
+export const API_BASE = "/api/v1" as const;
