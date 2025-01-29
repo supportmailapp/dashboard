@@ -1,11 +1,10 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
 
-  let { data }: { data: App.FullPageData } = $props();
+  let { data } = $props();
 
   // This can still be null!
   if (!data.guild) {
-    goto("/");
+    console.error("No guild data found!");
   }
 </script>
 
