@@ -1,5 +1,4 @@
 <script lang="ts">
-
   let { data } = $props();
 
   // This can still be null!

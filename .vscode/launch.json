@@ -9,10 +9,7 @@
       "request": "launch",
       "name": "Run App (Dev)",
       "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "dev"
-      ],
+      "runtimeArgs": ["run", "dev"]
     }
   ]
 }
