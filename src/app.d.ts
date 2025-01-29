@@ -60,6 +60,7 @@ declare global {
     name: string;
     iconHash: string | null;
     isConfigured: boolean;
+    permissions: number | bigint;
   };
 
   type IActiveGuild = BaseGuild & {
@@ -88,6 +89,18 @@ declare global {
   type APIGuildCoreChannel = APIGuildChannel<
     Exclude<GuildChannelType, ChannelType.PublicThread | ChannelType.PrivateThread | ChannelType.AnnouncementThread>
   >;
+
+  type CookieToken = {
+    sessionId: string;
+    access_token?: string;
+    refresh_token?: string;
+    expires_at?: string; // ISO 8601
+    userId?: string;
+  };
+
+  type FullCookieToken = Required<CookieToken>;
+
+  type JWTCookiePayload = JwtPayload & CookieToken;
 }
 
 export {};
