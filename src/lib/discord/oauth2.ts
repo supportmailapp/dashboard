@@ -26,6 +26,7 @@ import {
   type RESTPostOAuth2AccessTokenResult,
 } from "discord-api-types/v10";
 import NodeCache from "node-cache";
+import { generateSessionId } from "./utils";
 
 export const createOAuth2Login = function (url: URL) {
   const redirectUrl = url.searchParams.get("redirect") || null;
@@ -95,7 +96,10 @@ export const callbackHandler: RequestHandler = async ({ url, fetch, cookies }) =
     });
   }
 
+  const sessionId = generateSessionId();
+
   const eToken = encodeToken({
+    sessionId: sessionId,
     access_token: oauthResJson.access_token,
     refresh_token: oauthResJson.refresh_token,
     expires_at: new Date(Date.now() + oauthResJson.expires_in * 1000).toISOString(),
@@ -157,14 +161,20 @@ export async function refreshToken(encodedTokenCookie: string, fetch: Function) 
     throw { status: 500, message: "Failed to fetch user data", hint: "login" };
   }
 
+  const sessionId = generateSessionId();
+
   const eToken = encodeToken({
+    sessionId: sessionId,
     access_token: oauthResJson.access_token,
     refresh_token: oauthResJson.refresh_token,
     expires_at: new Date(Date.now() + oauthResJson.expires_in * 1000).toISOString(),
     userId: userData.id,
   });
 
-  return eToken;
+  return {
+    eToken,
+    sessionId,
+  };
 }
 
 export const logoutHandler: RequestHandler = async ({ url, request, cookies, fetch }) => {
