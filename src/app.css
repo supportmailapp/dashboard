@@ -61,10 +61,8 @@
 
   main {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     justify-content: center;
-    align-items: center;
-    place-items: center;
     min-height: 100vh;
     width: 100%;
   }
@@ -117,23 +115,12 @@
     place-items: center;
   }
 
-  .branding-container {
-    display: flex;
-    @apply gap-x-3 gap-y-2 px-2 py-1;
-    @apply flex-col sm:flex-row;
-    object-fit: contain;
-    max-width: screen;
-    justify-content: center;
-    align-items: center;
-    user-select: none;
-  }
-
   .color-discord {
     color: var(--dc-blurple);
   }
 
   .server-card {
-    @apply bg-base-200 flex w-full min-w-[50px] flex-col items-center justify-center rounded-md p-3 shadow-sm sm:w-[40%] lg:w-[30%];
+    @apply bg-base-200 flex w-full flex-col items-center justify-center rounded-md p-3 shadow-sm md:w-[40%] lg:w-[30%] xl:w-[23%];
     @apply hover:bg-base-300 transition-colors duration-150 ease-in-out;
   }
 
@@ -142,7 +129,7 @@
   }
 
   .server-select-actions {
-    @apply dy-card-actions flex w-[75%] grow items-end justify-center md:w-[65%];
+    @apply dy-card-actions flex w-full grow items-end justify-center sm:w-[65%];
   }
 
   .server-select-manage-btn {
