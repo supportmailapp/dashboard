@@ -1,4 +1,3 @@
-import { ActiveGuild } from "$lib/classes/guilds";
 import { DISCORD_CDN_BASE } from "$lib/constants";
 import type { APIRole, APIUser, RESTAPIPartialCurrentUserGuild } from "discord-api-types/v10";
 
@@ -31,28 +30,14 @@ export function apiUserToCurrentUser(apiUser: APIUser): BaseUser {
 /**
  * Used for the `guilds` locale.
  */
-export function apiPartialGuildToPartialGuild(
-  apiGuild: RESTAPIPartialCurrentUserGuild,
-  isConfigured: boolean = false,
-): BaseGuild {
+export function apiPartialGuildToBaseGuild(apiGuild: RESTAPIPartialCurrentUserGuild, isConfigured: boolean = false): BaseGuild {
   return {
     id: apiGuild.id,
     name: apiGuild.name,
     iconHash: apiGuild.icon || null,
     isConfigured: isConfigured,
+    permissions: Number(apiGuild.permissions),
   };
-}
-
-/**
- * Used for the `currentGuild` locale.
- */
-export function apiGuildToActiveGuild(
-  apiGuild: RESTAPIPartialCurrentUserGuild | BaseGuild,
-  channels: APIGuildCoreChannel[],
-  roles: APIRole[],
-): ActiveGuild {
-  const iconHash = "icon" in apiGuild ? apiGuild.icon : apiGuild.iconHash;
-  return new ActiveGuild(apiGuild.id, apiGuild.name, iconHash, true).setChannels(channels).setRoles(roles);
 }
 
 /**
