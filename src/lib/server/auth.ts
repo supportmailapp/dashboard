@@ -3,20 +3,7 @@ import jwt, { type JwtPayload } from "jsonwebtoken";
 import { JWT_SECRET } from "$env/static/private";
 import { authData } from "./constants";
 
-const neededProps = ["access_token", "refresh_token", "expires_at", "userId"] as const;
-
-type CookieTokenProps = (typeof neededProps)[number];
-
-export type CookieToken = {
-  access_token?: string;
-  refresh_token?: string;
-  expires_at?: string; // ISO 8601
-  userId?: string;
-};
-
-export type FullCookieToken = Required<CookieToken>;
-
-export type JWTCookiePayload = JwtPayload & CookieToken;
+const neededProps = ["sessionId", "access_token", "refresh_token", "expires_at", "userId"] as const;
 
 export function encodeToken(token: CookieToken): string {
   return jwt.sign(token, JWT_SECRET, {
