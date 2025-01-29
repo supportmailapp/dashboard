@@ -1,8 +1,11 @@
 import { getUserData } from "$lib/discord/oauth2";
 import { decodeToken } from "$lib/server/auth";
+// @ts-ignore
 import Sentry from "$lib/server/sentry";
 import { apiUserToCurrentUser } from "$lib/utils/formatting";
 import { redirect, type Handle, type HandleServerError, type ServerInit } from "@sveltejs/kit";
+
+import { inspect } from "util";
 
 export const init: ServerInit = async () => {
   // DB Connection
@@ -24,6 +27,8 @@ export const handle: Handle = async ({ event, resolve }) => {
       } else {
         return redirect(302, "/");
       }
+    } else {
+      return await resolve(event);
     }
   } else {
     console.log("Token found");
@@ -51,11 +56,13 @@ export const handle: Handle = async ({ event, resolve }) => {
 };
 
 export const handleError: HandleServerError = async ({ error, event, status, message }) => {
-  const errorId = crypto.randomUUID();
+  // const errorId = Sentry.captureException(error, {
+  //   extra: { event, status },
+  // });
 
-  Sentry.captureException(error, {
-    extra: { event, errorId, status },
-  });
+  console.error(inspect(error));
+
+  const errorId = crypto.randomUUID();
 
   return {
     message: message || "Internal server error",
