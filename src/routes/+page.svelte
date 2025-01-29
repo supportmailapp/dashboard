@@ -36,7 +36,7 @@
 {#if page.data.user}
   <div class="bg-base-200 w-full shadow-sm">
     <div class="dy-navbar mx-auto max-w-[1200px]">
-      <div id="branding" class="dy-navbar-start gap-x-3 gap-y-2 px-2 py-1 select-none">
+      <div id="branding" class="dy-navbar-start gap-x-3 gap-y-2 py-1 select-none">
         <img src="/logo.png" alt="Logo" class="h-16 w-16" />
         <span class="hidden text-3xl font-bold text-white sm:block">SupportMail</span>
       </div>
