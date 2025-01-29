@@ -19,6 +19,8 @@
   - Sidebar with all features
   - Contents: Groups (grouping features), features (buttons)
 
+- Store channels and roles from a guild in valkey with session id as key
+
 ## Later
 
 - Ask: How to determine when refreshToken should be used? Maybe when accessToken is expired? How to determine accessToken expired?
