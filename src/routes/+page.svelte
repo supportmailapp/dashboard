@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { enhance } from "$app/forms";
   import { goto, invalidate } from "$app/navigation";
   import { page } from "$app/state";
   import { env } from "$env/dynamic/public";
@@ -8,10 +7,12 @@
   import { urls } from "$lib/constants.js";
   import { cdnUrls } from "$lib/utils/formatting";
   import { onMount } from "svelte";
+  import { slide } from "svelte/transition";
 
   let { data } = $props();
 
   let viewProfile = $state(false);
+  let errorCopied = $state(false);
 
   $effect(() => {
     if (viewProfile) {
@@ -97,8 +98,8 @@
 <main class="min-h-screen w-full p-5">
   {#if page.data.user}
     {#await data.guilds}
-      <div class="flex h-full w-full justify-center">
-        <span class="dy-loading dy-loading-spinner dy-loading-xl"></span>
+      <div class="flex h-full w-full items-center justify-center">
+        <span class="dy-loading dy-loading-spinner w-15"></span>
       </div>
     {:then guilds}
       <div class="flex h-full w-full max-w-[1200px] flex-wrap justify-center gap-5">
@@ -107,9 +108,32 @@
         {/each}
       </div>
     {:catch error}
-      <div class="dy-alert dy-alert-error w-full">
-        <div class="dy-alert-title">Error</div>
-        <div class="dy-alert-body">{error.message}</div>
+      <div class="mt-5 flex h-full w-full items-center justify-center">
+        <div role="alert" class="dy-alert dy-alert-error w-[70%] shadow-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <div>
+            <h2 class="text-lg font-bold select-none">Error</h2>
+            <div id="error-tooltip" class="md:dy-tooltip" data-tip="Copy Error Message">
+              <button
+                class="dy-btn sm:dy-btn-sm dy-btn-xs text-wrap"
+                onclick={() => {
+                  if (errorCopied) return;
+                  navigator.clipboard.writeText(error.message);
+                  errorCopied = true;
+                  console.log("Error copied");
+                  setTimeout(() => (errorCopied = false), 2000);
+                }}>{error.message}</button
+              >
+            </div>
+          </div>
+        </div>
       </div>
     {/await}
 
@@ -137,7 +161,10 @@
                 </form>
               </div>
             </div>
-            <div class="dy-skeleton h-32 w-full"></div>
+            <!-- User Settings - language (select), auto redirect (toggle))# -->
+            <div class="dy-skeleton h-32 w-full">
+              <p class="italic">Something is coming...</p>
+            </div>
           </div>
         </div>
 
@@ -169,5 +196,13 @@
     </div>
   {/if}
 </main>
+
+{#if errorCopied}
+  <div class="dy-toast dy-toast-center select-none" transition:slide>
+    <div class="dy-alert dy-alert-info">
+      <span>Error message copied to clipboard</span>
+    </div>
+  </div>
+{/if}
 
 <Footer year={data.date.getFullYear()} />

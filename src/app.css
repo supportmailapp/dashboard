@@ -121,7 +121,7 @@
 
   .server-card {
     @apply bg-base-200 flex w-full flex-col items-center justify-center rounded-md p-3 shadow-sm md:w-[40%] lg:w-[30%] xl:w-[23%];
-    @apply hover:bg-base-300 transition-colors duration-150 ease-in-out;
+    @apply hover:bg-base-300 transition-colors duration-100 ease-in-out;
   }
 
   .server-select-icon {
@@ -138,7 +138,7 @@
   }
 
   .server-select-setup-btn {
-    @apply dy-btn dy-btn-md dy-btn-info dy-btn-outline w-full border-[0.1em] transition-colors duration-150 ease-linear;
+    @apply dy-btn dy-btn-md dy-btn-info dy-btn-outline w-full border-[0.1em] transition-colors duration-100 ease-linear;
     @apply hover:dy-btn-secondary focus:dy-btn-secondary;
   }
 
