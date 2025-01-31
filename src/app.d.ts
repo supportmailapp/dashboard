@@ -14,7 +14,8 @@ declare global {
     }
 
     interface Locals {
-      guilds?: Guild[] | null;
+      guilds?: Guild[];
+      configuredGuilds?: string[] | null;
       guild?: Guild | null;
       user?: BaseUser | null;
       /**
@@ -24,8 +25,8 @@ declare global {
     }
 
     interface PageData {
-      guilds?: Guild[];
-      guild?: Guild;
+      guilds?: Guild[] | null;
+      guild?: Guild | null;
       guildId?: string;
       user?: BaseUser;
       status?: number;
