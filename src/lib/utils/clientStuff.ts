@@ -2,7 +2,7 @@ import { Guild } from "$lib/classes/guilds";
 import { API_BASE } from "$lib/constants";
 import type { RESTAPIPartialCurrentUserGuild } from "discord-api-types/v10";
 
-export const loadUserGuilds = async (fetch: Function): Promise<Guild[]> => {
+export const loadGuilds = async (fetch: Function): Promise<Guild[]> => {
   return fetch(API_BASE + "/guilds", {
     method: "GET",
     credentials: "include",
@@ -19,7 +19,7 @@ export const loadUserGuilds = async (fetch: Function): Promise<Guild[]> => {
   });
 };
 
-export const loadGuild = async (fetch: Function, guildId: Guild): Promise<Guild> => {
+export const loadGuild = async (fetch: Function, guildId: string): Promise<Guild> => {
   return fetch(API_BASE + `/guilds?guild_id=${guildId}`, {
     method: "GET",
     credentials: "include",
