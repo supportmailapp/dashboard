@@ -12,6 +12,8 @@
  */
 
 import { env } from "$env/dynamic/private";
+import * as UserGuildsCache from "$lib/cache/guilds";
+import * as UserCache from "$lib/cache/users";
 import { urls } from "$lib/constants";
 import { decodeToken, encodeToken } from "$lib/server/auth";
 import { discord } from "$lib/server/constants";
@@ -19,13 +21,10 @@ import { error, redirect, type RequestHandler } from "@sveltejs/kit";
 import {
   OAuth2Routes,
   Routes,
-  type APIGuildMember,
   type APIUser,
   type RESTAPIPartialCurrentUserGuild,
   type RESTPostOAuth2AccessTokenResult,
 } from "discord-api-types/v10";
-import * as UserGuildsCache from "$lib/cache/guilds";
-import * as UserCache from "$lib/cache/users";
 import { generateSessionId } from "./utils";
 
 export const createOAuth2Login = function (url: URL) {
@@ -88,7 +87,7 @@ export const callbackHandler: RequestHandler = async ({ url, fetch, cookies }) =
 
   let userData: APIUser;
   try {
-    userData = await getUserData(oauthResJson.access_token, fetch);
+    userData = await fetchUserData(oauthResJson.access_token, fetch);
   } catch (err: any) {
     console.error(err);
     return error(500, {
@@ -155,7 +154,7 @@ export async function refreshToken(encodedTokenCookie: string, fetch: Function) 
 
   let userData: APIUser;
   try {
-    userData = await getUserData(oauthResJson.access_token, fetch); // Bypass cache
+    userData = await fetchUserData(oauthResJson.access_token, fetch); // Bypass cache
   } catch (err: any) {
     console.error(err);
     throw { status: 500, message: "Failed to fetch user data", hint: "login" };
@@ -217,7 +216,7 @@ export const logoutHandler: RequestHandler = async ({ url, request, cookies, fet
  * @returns A promise that resolves to the user data.
  * @throws Will throw an error if the API request fails. Format: `{ status: number, message: string }`
  */
-export async function getUserData(accessToken: string, fetch: Function, userId: string | null = null): Promise<APIUser> {
+export async function fetchUserData(accessToken: string, fetch: Function, userId: string | null = null): Promise<APIUser> {
   if (userId) {
     const cachedData = UserCache.get(userId);
     if (cachedData) {
@@ -242,26 +241,40 @@ export async function getUserData(accessToken: string, fetch: Function, userId: 
   return userResJson;
 }
 
+interface FetchUserGuildsOptions {
+  /**
+   * Whether to bypass the cache and fetch fresh data from the API. Defaults to `false`.
+   */
+  bypassCache?: boolean;
+  /**
+   * Whether to overwrite the cache with the fetched data. Defaults to `true`.
+   *
+   * **If set to `false`, then the fetched data MUST be overwritten manually to ensure the cache is up-to-date.**
+   */
+  overwriteCache?: boolean;
+}
+
 /**
- * Fetches the guilds that the user is a member of from the Discord API.
+ * Fetches the guilds that the current user guilds from the Cache or Discord API.
  *
- * @param userId - The ID of the user whose guilds are being fetched.
- * @param accessToken - The OAuth2 access token for the user.
- * @param fetch - The fetch function to use for making the API request.
- * @param bypassCache - Whether to bypass the cache and fetch fresh data from the API. Defaults to false.
+ * @param userId - The ID of the user whose guilds are to be fetched.
+ * @param accessToken - The access token for authenticating the request.
+ * @param fetch - The fetch function to make the HTTP request.
+ * @param options - Options for fetching user guilds.
  * @returns A promise that resolves to an array of partial guild objects.
- * @throws An error if the fetch operation fails.
+ * @throws An error object containing the status and message if the request fails.
  */
-export async function getUserGuilds(
+export async function fetchUserGuilds(
   userId: string,
   accessToken: string,
   fetch: Function,
-  bypassCache = false,
+  options: FetchUserGuildsOptions = {},
 ): Promise<RESTAPIPartialCurrentUserGuild[]> {
-  if (!bypassCache) {
-    const cachedGuilds = UserGuildsCache.getUserGuilds(userId, accessToken) as RESTAPIPartialCurrentUserGuild[];
+  options = Object.assign({ bypassCache: false, overwriteCache: true }, options);
+  if (!options.bypassCache) {
+    const cachedGuilds = UserGuildsCache.getUserGuilds(userId, accessToken);
     if (cachedGuilds) {
-      return cachedGuilds;
+      return cachedGuilds.guilds;
     }
   }
 
@@ -278,6 +291,8 @@ export async function getUserGuilds(
   }
 
   const guildResJson = (await guildRes.json()) as RESTAPIPartialCurrentUserGuild[];
-  UserGuildsCache.setUserWithGuilds(userId, accessToken, guildResJson);
+  if (options.overwriteCache) {
+    UserGuildsCache.setUserWithGuilds(userId, accessToken, guildResJson);
+  }
   return guildResJson;
 }
