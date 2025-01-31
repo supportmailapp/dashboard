@@ -30,13 +30,13 @@ export function apiUserToCurrentUser(apiUser: APIUser): BaseUser {
 /**
  * Used for the `guilds` locale.
  */
-export function apiPartialGuildToBaseGuild(apiGuild: RESTAPIPartialCurrentUserGuild, isConfigured: boolean = false): BaseGuild {
+export function apiPartialGuildToBaseGuild(apiGuild: RESTAPIPartialCurrentUserGuild, isConfigured: boolean = false): IGuild {
   return {
     id: apiGuild.id,
     name: apiGuild.name,
     iconHash: apiGuild.icon || null,
     isConfigured: isConfigured,
-    permissions: Number(apiGuild.permissions),
+    permissions: BigInt(apiGuild.permissions),
   };
 }
 
