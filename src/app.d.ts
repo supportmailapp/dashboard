@@ -17,14 +17,23 @@ declare global {
       guilds?: Guild[] | null;
       guild?: Guild | null;
       user?: BaseUser | null;
+      /**
+       * The encoded JWT.
+       */
+      eToken?: string | null;
     }
 
     interface PageData {
       guilds?: Guild[];
       guild?: Guild;
+      guildId?: string;
       user?: BaseUser;
       status?: number;
       redirect?: string;
+    }
+
+    interface PageServerData extends PageData {
+      user: BaseUser;
     }
 
     interface FullPageData extends PageData {
