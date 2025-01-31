@@ -18,7 +18,10 @@ export function sortByPositionAndId<T extends { id: string; position: number }>(
   });
 }
 
-export function apiUserToCurrentUser(apiUser: APIUser): BaseUser {
+export function apiUserToCurrentUser(apiUser: APIUser | null): BaseUser | null {
+  if (!apiUser) {
+    return null;
+  }
   return {
     id: apiUser.id,
     username: apiUser.username,
