@@ -11,7 +11,6 @@
  * - handler for GET guild member data
  */
 
-import { invalidateAll } from "$app/navigation";
 import { env } from "$env/dynamic/private";
 import { urls } from "$lib/constants";
 import { decodeToken, encodeToken } from "$lib/server/auth";
@@ -25,7 +24,8 @@ import {
   type RESTAPIPartialCurrentUserGuild,
   type RESTPostOAuth2AccessTokenResult,
 } from "discord-api-types/v10";
-import NodeCache from "node-cache";
+import * as UserGuildsCache from "$lib/cache/guilds";
+import * as UserCache from "$lib/cache/users";
 import { generateSessionId } from "./utils";
 
 export const createOAuth2Login = function (url: URL) {
@@ -209,9 +209,6 @@ export const logoutHandler: RequestHandler = async ({ url, request, cookies, fet
   return redirect(302, "/");
 };
 
-// User data cache
-let userDataCache = new NodeCache({ stdTTL: 15, checkperiod: 10, errorOnMissing: false });
-
 /**
  * Fetches user data from the Discord API using the provided access token.
  * If a user ID is provided, it first attempts to retrieve the user data from the cache.
@@ -222,37 +219,28 @@ let userDataCache = new NodeCache({ stdTTL: 15, checkperiod: 10, errorOnMissing:
  */
 export async function getUserData(accessToken: string, fetch: Function, userId: string | null = null): Promise<APIUser> {
   if (userId) {
-    const cachedData = userDataCache.get(userId) as APIUser;
+    const cachedData = UserCache.get(userId);
     if (cachedData) {
       return cachedData;
     }
   }
 
-  let userRes: Response;
-  try {
-    userRes = await fetch(urls.discordBase + Routes.user(), {
-      method: "GET",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Bearer ${accessToken}`,
-      },
-    });
+  const userRes = await fetch(urls.discordBase + Routes.user(), {
+    method: "GET",
+    headers: {
+      "content-type": "application/json",
+      authorization: `Bearer ${accessToken}`,
+    },
+  });
 
-    if (!userRes.ok) {
-      throw { status: 500, message: "Failed to fetch user data" };
-    }
-  } catch (err) {
-    console.error("Error fetching user data:", err);
-    throw { status: 500, message: "Failed to fetch user data" };
+  if (!userRes.ok) {
+    throw userRes;
   }
 
   const userResJson = (await userRes.json()) as APIUser;
-  userDataCache.set(userResJson.id, userResJson);
+  UserCache.set(userResJson);
   return userResJson;
 }
-
-// User guilds cache
-let userGuildsCache = new NodeCache({ stdTTL: 60, checkperiod: 10, errorOnMissing: false });
 
 /**
  * Fetches the guilds that the user is a member of from the Discord API.
@@ -271,82 +259,25 @@ export async function getUserGuilds(
   bypassCache = false,
 ): Promise<RESTAPIPartialCurrentUserGuild[]> {
   if (!bypassCache) {
-    const cachedGuilds = userGuildsCache.get(accessToken) as RESTAPIPartialCurrentUserGuild[];
+    const cachedGuilds = UserGuildsCache.getUserGuilds(userId, accessToken) as RESTAPIPartialCurrentUserGuild[];
     if (cachedGuilds) {
       return cachedGuilds;
     }
   }
 
-  let guildRes: Response;
-  try {
-    guildRes = await fetch(urls.discordBase + Routes.userGuilds(), {
-      method: "GET",
-      headers: {
-        "content-type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+  const guildRes = await fetch(urls.discordBase + Routes.userGuilds(), {
+    method: "GET",
+    headers: {
+      "content-type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
 
-    if (!guildRes.ok) {
-      throw { status: guildRes.status, message: guildRes.statusText };
-    }
-  } catch (err: any) {
-    console.debug("Error fetching user guilds:", err);
-    throw { status: err.status || 500, message: err.message || "Failed to fetch user guilds" };
+  if (!guildRes.ok) {
+    throw { status: guildRes.status, message: guildRes.statusText };
   }
 
   const guildResJson = (await guildRes.json()) as RESTAPIPartialCurrentUserGuild[];
-  userGuildsCache.set(userId, guildResJson);
+  UserGuildsCache.setUserWithGuilds(userId, accessToken, guildResJson);
   return guildResJson;
-}
-
-// Guild member data cache
-let guildMemberDataCache = new NodeCache({ stdTTL: 15, checkperiod: 10, errorOnMissing: false });
-
-/**
- * Fetches guild member data from the Discord API and caches it.
- *
- * @param guildId - The ID of the guild.
- * @param userId - The ID of the user.
- * @param accessToken - The access token for authentication.
- * @param fetch - The fetch function to make the API request.
- * @param bypassCache - Whether to bypass the cache and fetch fresh data. Defaults to false.
- * @returns A promise that resolves to the guild member data or null if not found.
- * @throws An error if the fetch operation fails. Format: `{ status: number, message: string }`
- */
-export async function getGuildMemberData(
-  guildId: string,
-  userId: string,
-  accessToken: string,
-  fetch: Function,
-  bypassCache = false,
-): Promise<APIGuildMember | null> {
-  if (!bypassCache) {
-    const cachedData = guildMemberDataCache.get(`${guildId}-${userId}`) as APIGuildMember;
-    if (cachedData) {
-      return cachedData;
-    }
-  }
-
-  let memberRes: Response;
-  try {
-    memberRes = await fetch(urls.discordBase + Routes.userGuildMember(guildId), {
-      method: "GET",
-      headers: {
-        "content-type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-
-    if (!memberRes.ok) {
-      throw { status: 500, message: "Failed to fetch user member data" };
-    }
-  } catch (err: any) {
-    console.debug("Error fetching user member data:", err);
-    throw { status: 500, message: err.message || "Failed to fetch user member data" };
-  }
-
-  const memberResJson = (await memberRes.json()) as APIGuildMember;
-  guildMemberDataCache.set(`${guildId}-${userId}`, memberResJson);
-  return memberResJson;
 }
