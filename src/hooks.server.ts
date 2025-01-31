@@ -1,7 +1,8 @@
-import { getUserData } from "$lib/discord/oauth2";
+import { getUserGuilds } from "$lib/cache/guilds";
+import { Guild } from "$lib/classes/guilds";
+import { fetchUserData } from "$lib/discord/oauth2";
 import { decodeToken } from "$lib/server/auth";
 // @ts-ignore
-import Sentry from "$lib/server/sentry";
 import { apiUserToCurrentUser } from "$lib/utils/formatting";
 import { redirect, type Handle, type HandleServerError, type ServerInit } from "@sveltejs/kit";
 
@@ -44,12 +45,18 @@ export const handle: Handle = async ({ event, resolve }) => {
     return await resolve(event);
   }
 
-  const userData = await getUserData(dToken.access_token, event.fetch);
-
-  if (!userData) {
-    throw { message: "Invalid user data" };
+  if (!event.locals.user) {
+    const user = await fetchUserData(dToken.access_token, fetch, dToken.userId).catch(() => null);
+    event.locals.user = apiUserToCurrentUser(user);
   }
-  event.locals.user = apiUserToCurrentUser(userData);
+
+  if (!event.locals.guilds) {
+    const guildsResult = getUserGuilds(dToken.userId, dToken.access_token);
+    if (guildsResult && guildsResult.guilds && guildsResult.configured) {
+      event.locals.configuredGuilds = guildsResult.configured;
+      event.locals.guilds = guildsResult.guilds.map((g) => Guild.from(g, guildsResult.configured.includes(g.id)));
+    }
+  }
 
   const response = await resolve(event);
   return response;
