@@ -26,5 +26,14 @@ export const GET: RequestHandler = async ({ cookies, fetch, url }) => {
     ...guild,
     isConfigured: validBotGuildIds.includes(guild.id),
   }));
+
+  if (searchParams.has("guild_id")) {
+    const guildId = searchParams.get("guild_id");
+    const guild = modifedGuilds.find((g) => g.id === guildId);
+    if (!guild) {
+      return error(404, "Guild not found");
+    }
+    return json(guild);
+  }
   return json(modifedGuilds);
 };
