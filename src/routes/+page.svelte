@@ -3,7 +3,7 @@
   import { page } from "$app/state";
   import { env } from "$env/dynamic/public";
   import Branding from "$lib/assets/Branding.svelte";
-  import Footer from "$lib/baseComponents/Footer.svelte";
+  import Footer from "$lib/components/Footer.svelte";
   import { urls } from "$lib/constants.js";
   import { cdnUrls } from "$lib/utils/formatting";
   import { onMount } from "svelte";
