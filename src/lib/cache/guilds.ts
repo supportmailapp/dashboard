@@ -10,18 +10,21 @@ const guildsCache = new NodeCache({
 
 type GuildsCacheValue = RESTAPIPartialCurrentUserGuild | undefined;
 
-// Maps a user ID to an array of guilds the user is in
-// Format: `{accessToken}-{userId}` -> `guildIds`
+// Maps a user ID to an array of guilds the user is in and an array of guilds the user has configured
+// Format: `{accessToken}-{userId}` -> { guildIds: string[], configured: string[] }
 const userGuildsStore = new NodeCache({
   stdTTL: 600,
   checkperiod: 30,
   errorOnMissing: false,
 });
 
-type UserGuildsMappingValue = string[] | undefined;
+type UserGuildsMappingValue = {
+  guildIds: string[];
+  configured: string[];
+};
 
 function buildUserKey(userId: string, accessToken: string): string {
-  return `${accessToken}:${userId}`;
+  return `${userId}:${accessToken}`;
 }
 
 /**
@@ -31,16 +34,32 @@ function buildUserKey(userId: string, accessToken: string): string {
  * @param accessToken - The access token of the user.
  * @param guilds - An array of partial guild objects associated with the user.
  */
-export function setUserWithGuilds(userId: string, accessToken: string, guilds: RESTAPIPartialCurrentUserGuild[]): void {
-  const guildIds = guilds.map((guild) => guild.id);
-  userGuildsStore.set(buildUserKey(userId, accessToken), guildIds);
-  guildsCache.mset<RESTAPIPartialCurrentUserGuild>(
+export function setUserWithGuilds(
+  userId: string,
+  accessToken: string,
+  guilds: RESTAPIPartialCurrentUserGuild[],
+  configured: string[] | null = null,
+): void {
+  const userKey = buildUserKey(userId, accessToken);
+  const userGuildsData = userGuildsStore.get<UserGuildsMappingValue>(userKey);
+
+  userGuildsStore.set(userKey, {
+    guildIds: guilds.map((g) => g.id),
+    configured: configured ?? userGuildsData?.configured ?? [],
+  });
+
+  guildsCache.mset(
     guilds.map((guild) => ({
       key: guild.id,
       val: guild,
     })),
   );
 }
+
+type GetUserGuildsResult = {
+  guilds: RESTAPIPartialCurrentUserGuild[];
+  configured: string[];
+};
 
 /**
  * Retrieves the guilds associated with the user from the cache.
@@ -49,16 +68,30 @@ export function setUserWithGuilds(userId: string, accessToken: string, guilds: R
  * @param accessToken - The access token of the user.
  * @param guildIds - An array of partial guild objects representing the guilds the user is a member of.
  */
-export function getUserGuilds(userId: string, accessToken: string): RESTAPIPartialCurrentUserGuild[] {
-  const guildIds = userGuildsStore.get<UserGuildsMappingValue>(buildUserKey(userId, accessToken));
-  if (!guildIds) {
-    return [];
+export function getUserGuilds(userId: string, accessToken: string): GetUserGuildsResult | null {
+  const userGuildsData = userGuildsStore.get<UserGuildsMappingValue>(buildUserKey(userId, accessToken));
+  if (!userGuildsData) {
+    return null;
   }
-  const guildsList = guildsCache.mget<GuildsCacheValue | undefined>(guildIds);
-  if (!guildsList || Object.values(guildsList).length != guildIds.length) {
-    return []; // If any of the guilds are missing, return an empty array to fetch the user's guilds again
+
+  const guildsList = guildsCache.mget<GuildsCacheValue | undefined>(userGuildsData.guildIds);
+  if (!guildsList || Object.values(guildsList).length != userGuildsData.guildIds.length) {
+    return null; // If any of the guilds are missing, return null to fetch the user's guilds again
   }
-  return Object.values(guildsList) as RESTAPIPartialCurrentUserGuild[];
+
+  return {
+    guilds: Object.values(guildsList) as RESTAPIPartialCurrentUserGuild[],
+    configured: userGuildsData.configured,
+  };
+}
+
+export function updateGuilds(guilds: RESTAPIPartialCurrentUserGuild[]): void {
+  guildsCache.mset(
+    guilds.map((guild) => ({
+      key: guild.id,
+      val: guild,
+    })),
+  );
 }
 
 /**
