@@ -1,10 +1,10 @@
-import { loadUserGuilds } from "$lib/utils/clientStuff";
+import { loadGuilds } from "$lib/utils/clientStuff";
 import type { PageLoad } from "./$types";
 
-export const load = (async ({ fetch, data }) => {
-  console.log("Loading page data");
+export const load = (async ({ fetch, data, url }) => {
+  console.log("Loading page data:", url.toString());
   return {
     ...data,
-    guilds: loadUserGuilds(fetch),
+    guilds: loadGuilds(fetch),
   };
 }) satisfies PageLoad;

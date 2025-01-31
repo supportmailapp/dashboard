@@ -1,7 +1,4 @@
-import { decodeToken } from "$lib/server/auth.js";
-
-import { createOAuth2Login, getUserData } from "$lib/discord/oauth2";
-import { apiUserToCurrentUser } from "$lib/utils/formatting";
+import { createOAuth2Login } from "$lib/discord/oauth2";
 import { redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
@@ -13,17 +10,6 @@ export const load = async function ({ cookies, locals, url, fetch }) {
   if (url.pathname == "/?logout=true") {
     cookies.delete("discord-token", { path: "/" });
     return {};
-  }
-
-  const cookieToken = cookies.get("discord-token");
-  const tokenData = decodeToken(cookieToken, true);
-  if (!tokenData) {
-    return {};
-  }
-
-  if (!locals.user) {
-    const user = await getUserData(tokenData.access_token, fetch, tokenData.userId);
-    locals.user = apiUserToCurrentUser(user);
   }
 
   return {
