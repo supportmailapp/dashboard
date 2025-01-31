@@ -42,19 +42,19 @@
     "@sentry/profiling-node": "^8.51.0",
     "@sentry/sveltekit": "^8.51.0",
     "@svelte-plugins/datepicker": "^1.0.11",
-    "@tailwindcss/vite": "^4.0.0",
-    "daisyui": "^5.0.0-beta.2",
+    "@tailwindcss/vite": "^4.0.1",
+    "daisyui": "^5.0.0-beta.6",
     "dayjs": "^1.11.13",
     "iovalkey": "^0.3.1",
     "jsonwebtoken": "^9.0.2",
     "node-cache": "^5.1.2",
     "rate-limiter-flexible": "^5.0.5",
     "tailwind-scrollbar-hide": "^2.0.0",
-    "tailwindcss": "^4.0.0",
+    "tailwindcss": "^4.0.1",
     "thumbhash": "^0.1.1"
   },
   "overrides": {
-    "daisyui": "^5.0.0-beta.2",
+    "daisyui": "^5.0.0-beta.6",
     "@svelte-plugins/datepicker": {
       "svelte": "^5.19.2"
     }
