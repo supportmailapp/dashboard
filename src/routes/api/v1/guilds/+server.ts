@@ -1,11 +1,12 @@
 import { env } from "$env/dynamic/private";
 import { urls } from "$lib/constants";
-import { getUserGuilds } from "$lib/discord/oauth2";
+import { fetchUserGuilds } from "$lib/discord/oauth2";
 import { decodeToken } from "$lib/server/auth";
 import clientAPI from "$lib/server/clientApi";
 import { canManageBot } from "$lib/utils/permissions";
 import { error, json, type RequestHandler } from "@sveltejs/kit";
 import { Routes } from "discord-api-types/v10";
+import { setUserWithGuilds } from "$lib/cache/guilds";
 
 export const GET: RequestHandler = async ({ cookies, fetch, url }) => {
   const searchParams = url.searchParams;
@@ -28,7 +29,10 @@ export const GET: RequestHandler = async ({ cookies, fetch, url }) => {
     return json(guild);
   }
 
-  let guilds = await getUserGuilds(token.userId, token.access_token, fetch, url.searchParams.get("bypass_cache") === "true");
+  let guilds = await fetchUserGuilds(token.userId, token.access_token, fetch, {
+    bypassCache: url.searchParams.get("bypass_cache") === "true",
+    overwriteCache: false,
+  });
 
   if (searchParams.get("manage_bot_only") === "true") {
     guilds = guilds.filter((guild) => guild.owner || canManageBot(Number(guild.permissions)));
@@ -38,6 +42,8 @@ export const GET: RequestHandler = async ({ cookies, fetch, url }) => {
     guilds.map((guild) => guild.id),
     token.userId,
   );
+
+  setUserWithGuilds(token.userId, token.access_token, guilds, validBotGuildIds);
 
   const modifedGuilds = guilds.map((guild) => ({
     ...guild,
