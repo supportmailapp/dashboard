@@ -1,28 +1,36 @@
 <script lang="ts">
-  let { data } = $props();
+  import { onMount } from "svelte";
 
-  // This can still be null!
-  if (!data.guilds) {
-    console.error("No guild data found!");
-  }
+  let { data } = $props();
+  // onMount(() => {
+  //   data.guild = fetch(`/api/v1/guilds?guild_id=${data.guildId}`).then((res) => res.json());
+  // });
 </script>
 
-<!-- <h1>{data.guild?.name}</h1>
+{#if data.guild}
+  {#await data.guild}
+    <div class="dy-loading-spinner w-10"></div>
+  {:then guild}
+    <h1>{guild?.name}</h1>
 
-<div class="dy-divider-neutral my-2"></div>
+    <div class="dy-divider-neutral my-2"></div>
 
-<h2>Channels</h2>
+    <h2>Channels</h2>
 
-{#each data.guild.channels as channel}
-  <p>{channel.name}</p>
-{/each}
+    {#if guild?.channels}
+      {#each guild.channels as channel}
+        <p>{channel.name}</p>
+      {/each}
+    {/if}
 
-<div class="dy-divider-neutral my-2"></div>
+    <div class="dy-divider-neutral my-2"></div>
 
-<h2>Roles</h2>
+    <h2>Roles</h2>
 
-{#if data.guild.roles}
-  {#each data.guild.roles as role}
-    <p class="text-[{role.color}]">{role.name} ({role.id})</p>
-  {/each}
-{/if} -->
+    {#if guild?.roles}
+      {#each guild.roles as role}
+        <p class="text-[{role.color}]">{role.name} ({role.id})</p>
+      {/each}
+    {/if}
+  {/await}
+{/if}

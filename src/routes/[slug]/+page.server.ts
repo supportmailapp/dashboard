@@ -2,14 +2,15 @@ import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { getUserGuilds } from "$lib/cache/guilds";
 import { decodeToken } from "$lib/server/auth";
+import { Guild } from "$lib/classes/guilds";
 
 export const prerender = false;
 
 export const load: PageServerLoad = async ({ params, locals }) => {
   console.log("guild page load", params.slug);
   console.log("locals", locals);
-  if (!locals.user || !locals.guilds || !params.slug.match(/^\d+$/)) {
-    return {};
+  if (!locals.user || !params.slug.match(/^\d+$/)) {
+    redirect(303, "/");
   }
 
   let aToken: string | undefined;
@@ -20,9 +21,17 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     }
   }
 
+  let guilds = locals.guilds;
+  if (!guilds && aToken) {
+    const guildsResult = getUserGuilds(locals.user.id, aToken);
+    if (guildsResult) {
+      guilds = guildsResult.guilds.map((g) => Guild.from(g, guildsResult.configured.includes(g.id)));
+    }
+  }
+
   return {
     user: locals.user,
-    guilds: locals.guilds || (locals.user && aToken ? getUserGuilds(locals.user.id, aToken) : null),
+    guilds: guilds,
     guild: locals.guild || null,
     guildId: params.slug,
   };

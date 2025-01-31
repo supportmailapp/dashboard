@@ -6,7 +6,7 @@ export const prerender = false;
 
 // const valkey = new Valkey(); // TODO: use this to cache guilds in a seperate file
 
-export const load = async function ({ cookies, locals, url, fetch }) {
+export const load = async function ({ cookies, locals, url }) {
   if (url.pathname == "/?logout=true") {
     cookies.delete("discord-token", { path: "/" });
     return {};
@@ -28,9 +28,5 @@ export const actions = {
   logout: async ({ cookies }) => {
     cookies.delete("discord-token", { path: "/" });
     return redirect(302, "/");
-  },
-  reload: ({ url, locals }) => {
-    locals.guilds = null;
-    return redirect(303, url);
   },
 } satisfies Actions;

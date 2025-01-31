@@ -3,17 +3,19 @@ import { Guild } from "$lib/classes/guilds";
 import { fetchUserData } from "$lib/discord/oauth2";
 import { decodeToken } from "$lib/server/auth";
 // @ts-ignore
+import * as Sentry from "@sentry/node";
 import { apiUserToCurrentUser } from "$lib/utils/formatting";
 import { redirect, type Handle, type HandleServerError, type ServerInit } from "@sveltejs/kit";
 
 import { inspect } from "util";
 
 export const init: ServerInit = async () => {
-  // DB Connection
+  console.log("We are online!");
 };
 
 export const handle: Handle = async ({ event, resolve }) => {
   if (event.url.pathname.startsWith("/api")) {
+    console.log("API request", event);
     const response = await resolve(event);
     return response;
   }
@@ -52,7 +54,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   if (!event.locals.guilds) {
     const guildsResult = getUserGuilds(dToken.userId, dToken.access_token);
-    if (guildsResult && guildsResult.guilds && guildsResult.configured) {
+    if (guildsResult) {
       event.locals.configuredGuilds = guildsResult.configured;
       event.locals.guilds = guildsResult.guilds.map((g) => Guild.from(g, guildsResult.configured.includes(g.id)));
     }
@@ -63,13 +65,13 @@ export const handle: Handle = async ({ event, resolve }) => {
 };
 
 export const handleError: HandleServerError = async ({ error, event, status, message }) => {
-  // const errorId = Sentry.captureException(error, {
-  //   extra: { event, status },
-  // });
+  const errorId = Sentry.captureException(error, {
+    extra: { event, status },
+  });
 
   console.error(inspect(error));
 
-  const errorId = crypto.randomUUID();
+  // const errorId = crypto.randomUUID();
 
   return {
     message: message || "Internal server error",
