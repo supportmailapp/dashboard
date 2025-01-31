@@ -1,28 +1,29 @@
-import { env } from "$env/dynamic/private";
-import { urls } from "$lib/constants";
-import { error, redirect } from "@sveltejs/kit";
-import type { APIRole } from "discord-api-types/v10";
-import { Routes } from "discord-api-types/v10";
+import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
-import { Guild } from "$lib/classes/guilds";
+import { getUserGuilds } from "$lib/cache/guilds";
+import { decodeToken } from "$lib/server/auth";
 
-export const load: PageServerLoad = async ({ params, locals, fetch }) => {
+export const prerender = false;
+
+export const load: PageServerLoad = async ({ params, locals }) => {
   console.log("guild page load", params.slug);
   console.log("locals", locals);
   if (!locals.user || !locals.guilds || !params.slug.match(/^\d+$/)) {
-    return redirect(303, "/");
+    return {};
   }
 
-  const currentGuild = locals.guilds.find((g) => g.id === params.slug);
-  if (!currentGuild) {
-    return redirect(303, "/");
+  let aToken: string | undefined;
+  if (locals.eToken) {
+    const tokenData = decodeToken(locals.eToken, true);
+    if (tokenData) {
+      aToken = tokenData.access_token;
+    }
   }
-
-  locals.guild = currentGuild;
 
   return {
     user: locals.user,
-    guilds: locals.guilds,
-    guild: locals.guild,
+    guilds: locals.guilds || (locals.user && aToken ? getUserGuilds(locals.user.id, aToken) : null),
+    guild: locals.guild || null,
+    guildId: params.slug,
   };
 };
