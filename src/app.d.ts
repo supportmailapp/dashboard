@@ -1,7 +1,7 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
 
-import type { ActiveGuild, BasicGuild } from "$lib/classes/guilds";
+import type { Guild } from "$lib/classes/guilds";
 import type { APIGuildChannel, ChannelType, GuildChannelType } from "discord-api-types/v10";
 
 declare global {
@@ -14,22 +14,22 @@ declare global {
     }
 
     interface Locals {
-      guilds?: BasicGuild[] | null;
-      guild?: ActiveGuild | null;
+      guilds?: Guild[] | null;
+      guild?: Guild | null;
       user?: BaseUser | null;
     }
 
     interface PageData {
-      guilds?: BasicGuild[];
-      guild?: ActiveGuild;
+      guilds?: Guild[];
+      guild?: Guild;
       user?: BaseUser;
       status?: number;
       redirect?: string;
     }
 
     interface FullPageData extends PageData {
-      guilds: BasicGuild[];
-      guild: ActiveGuild;
+      guilds: Guild[];
+      guild: Guild & { isConfigured: true };
       user: BaseUser;
       status?: number;
       redirect?: string;
@@ -55,17 +55,40 @@ declare global {
     position: number;
   };
 
-  type BaseGuild = {
+  /**
+   * Represents a guild (server) in the application.
+   */
+  type IGuild = {
+    /**
+     * The snowflake of the guild.
+     */
     id: string;
+    /**
+     * The name of the guild.
+     */
     name: string;
+    /**
+     * The hash of the guild's icon, or null if no icon is set.
+     *
+     * If not given, `/embeds/`
+     */
     iconHash: string | null;
+    /**
+     * Indicates whether the guild is configured.
+     */
     isConfigured: boolean;
+    /**
+     * The permissions associated with the guild.
+     */
     permissions: number | bigint;
-  };
-
-  type IActiveGuild = BaseGuild & {
-    roles: BasicRole[];
-    channels: BasicChannel[];
+    /**
+     * An optional array of basic roles in the guild.
+     */
+    roles?: BasicRole[];
+    /**
+     * An optional array of basic channels in the guild.
+     */
+    channels?: BasicChannel[];
   };
 
   type BaseUser = {
