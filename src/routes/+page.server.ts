@@ -14,7 +14,6 @@ export const load = async function ({ cookies, locals, url }) {
 
   return {
     user: locals.user,
-    redirect: cookies.get("redirect-after-login") || url.searchParams.get("redirect") || null,
   };
 } satisfies PageServerLoad;
 

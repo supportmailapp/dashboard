@@ -56,7 +56,7 @@
           }}
         >
           <img
-            src={cdnUrls.userAvatar(page.data.user?.id, page.data.user?.avatarHash, "64")}
+            src={cdnUrls.userAvatar(page.data.user?.id, page.data.user?.avatar, "64")}
             alt="User Avatar"
             class="h-[4rem] w-[4rem] rounded-2xl object-cover"
           />
@@ -144,7 +144,7 @@
             <div class="flex items-center gap-4">
               <div class="dy-skeleton h-24 w-24 shrink-0 overflow-hidden rounded-lg">
                 <img
-                  src={cdnUrls.userAvatar(String(page.data.user?.id), String(page.data.user?.avatarHash))}
+                  src={cdnUrls.userAvatar(String(page.data.user?.id), String(page.data.user?.avatar))}
                   alt="User Avatar"
                   class="object-cover"
                 />
