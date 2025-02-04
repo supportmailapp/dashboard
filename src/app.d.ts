@@ -1,7 +1,6 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
 
-import type { Guild } from "$lib/classes/guilds";
 import type {
   APDCGuildChannel,
   APIChannel,
