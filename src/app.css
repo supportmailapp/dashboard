@@ -5,7 +5,7 @@
   prefix: "dy-";
 }
 
-/* @plugin "daisyui/theme" {
+@plugin "daisyui/theme" {
   name: "smbot";
   default: true;
   prefersdark: true;
@@ -38,7 +38,7 @@
   --border: 0.25px;
   --depth: 0;
   --noise: 0;
-} */
+}
 
 @layer base {
   html {
