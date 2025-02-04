@@ -1,10 +1,10 @@
 {
-  "css.customData": [ ".vscode/tailwind.json" ],
+  "css.customData": [".vscode/tailwind.json"],
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[css]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[svelte]": {
     "editor.defaultFormatter": "svelte.svelte-vscode"
-  },
+  }
 }
