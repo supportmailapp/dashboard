@@ -1,5 +1,14 @@
 # TODO
 
+- MAKE PLAN ON
+
+  - how to store user id + token in JWT (+ remove token cache)
+  - when to store guilds in cache and how (APIGuild or BasicGuild)
+  - how to sturcture guilds API route (with JWT auth, maybe with a hook?)
+  - ??????????
+
+## Later
+
 - Build navigation for dashboard (bottom nav bar)
 
   - features-button for mobile (sidebar dor desktop), server-changer, user-settings
@@ -20,7 +29,5 @@
   - Contents: Groups (grouping features), features (buttons)
 
 - Store channels and roles from a guild in valkey with session id as key
-
-## Later
 
 - Implement Valkey
