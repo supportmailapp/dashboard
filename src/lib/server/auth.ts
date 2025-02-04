@@ -1,38 +1,25 @@
-import jwt, { type JwtPayload } from "jsonwebtoken";
+import { env } from "$env/dynamic/private";
+import { getUser } from "$lib/cache/users";
+import { randomBytes } from "crypto";
+import jwt from "jsonwebtoken";
 
-import { JWT_SECRET } from "$env/static/private";
-import { authData } from "./constants";
-
-const neededProps = ["sessionId", "access_token", "refresh_token", "expires_at", "userId"] as const;
-
-export function encodeToken(token: CookieToken): string {
-  return jwt.sign(token, JWT_SECRET, {
-    algorithm: authData.algorithm,
-    expiresIn: authData.expiresIn,
+export function createSessionToken(userId: string): string {
+  return jwt.sign({ id: userId, shh: randomBytes(16).toString("base64") }, env.JWT_SECRET, {
+    expiresIn: "1d",
+    algorithm: "HS256",
     encoding: "utf-8",
+    issuer: "supportmail",
   });
 }
 
-export function decodeToken(token: any, verify?: false): JWTCookiePayload | null;
-export function decodeToken(token: any, verify: true): Required<CookieToken> | null;
-
-export function decodeToken(token: any, verify = false): JWTCookiePayload | Required<CookieToken> | null {
-  if (typeof token !== "string") return null;
+/**
+ * Validate a session and return the user if it exists.
+ */
+export async function verifySessionToken(token: string): Promise<BasicUser | null> {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET, {
-      algorithms: [authData.algorithm],
-    }) as JWTCookiePayload;
-
-    const tokenisValid = () => {
-      return neededProps.every((prop) => prop in decoded);
-    };
-
-    if (verify && tokenisValid()) {
-      return decoded as Required<CookieToken>;
-    } else {
-      return decoded;
-    }
-  } catch {
+    const { id: userId } = jwt.verify(token, env.JWT_SECRET, { issuer: "supportmail" }) as any;
+    return getUser(userId);
+  } catch (e) {
     return null;
   }
 }
