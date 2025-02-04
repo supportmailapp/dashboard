@@ -32,7 +32,7 @@
 
 - Implement Valkey
 
-## Zwischenablage
+## Plans
 
 _Plan für "welcher layer und was darin für was, wann zuständig ist._
 
@@ -120,3 +120,53 @@ _Is this even needed?_
 > Client
 
 _Is this even needed?_
+
+<!--
+
+### 1. Caching
+
+#### User Cache
+- Implement the user cache to store user data.
+- This is already partially implemented in `users.ts`.
+
+#### Guilds Cache
+- Implement the guilds cache to store guild data, user guilds, guild roles, and guild channels.
+- This is already partially implemented in `guilds.ts`.
+
+### 2. API
+
+#### Fetch User Data
+- Implement a function to fetch user data, checking the cache first.
+- This is already partially implemented in `oauth2.ts`.
+
+#### Fetch User Guilds
+- Implement a function to fetch user guilds, checking the cache first.
+- This is already partially implemented in `oauth2.ts`.
+
+#### Fetch Guild Data
+- Implement a function to fetch guild data (guild, channels, roles), checking the cache first.
+- This can be implemented in `utils.ts`.
+
+### 3. Flow of the App
+
+#### Hook
+- Implement the hook to check the token, fetch user data, and set it as a locale.
+- This is already partially implemented in `hooks.server.ts`.
+
+#### Root Layout
+- Implement the root layout to handle user and guild data.
+- This is already partially implemented in `+layout.server.ts` and `+layout.ts`.
+
+#### Guild Layout
+- Implement the guild layout to handle guild data, channels, and roles.
+- This is already partially implemented in (src/routes/[slug]/+layout.server.ts) and (src/routes/[slug]/+layout.ts).
+
+### Next Steps
+1. **Complete the caching logic** in guilds.ts and users.ts.
+
+2. **Ensure the API functions** in oauth2.ts and utils.ts are fully implemented and tested.
+3. **Finalize the hook logic** in hooks.server.ts to handle user and guild data.
+4. **Complete the layout logics**.
+
+
+ -->
