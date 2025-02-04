@@ -1,5 +1,5 @@
 import { DISCORD_CDN_BASE } from "$lib/constants";
-import type { APIRole, APIUser, RESTAPIPartialCurrentUserGuild } from "discord-api-types/v10";
+import type { APIRole } from "discord-api-types/v10";
 
 /**
  * Sorts an array of items by their position property in ascending order.
@@ -18,41 +18,16 @@ export function sortByPositionAndId<T extends { id: string; position: number }>(
   });
 }
 
-export function apiUserToCurrentUser(apiUser: APIUser | null): BaseUser | null {
-  if (!apiUser) {
-    return null;
-  }
-  return {
-    id: apiUser.id,
-    username: apiUser.username,
-    displayName: apiUser.global_name || apiUser.username,
-    avatarHash: apiUser.avatar || null,
-  };
-}
-
 /**
- * Used for the `guilds` locale.
- */
-export function apiPartialGuildToBaseGuild(apiGuild: RESTAPIPartialCurrentUserGuild, isConfigured: boolean = false): IGuild {
-  return {
-    id: apiGuild.id,
-    name: apiGuild.name,
-    iconHash: apiGuild.icon || null,
-    isConfigured: isConfigured,
-    permissions: BigInt(apiGuild.permissions),
-  };
-}
-
-/**
- * Converts an APIGuildCoreChannel object to a PartialChannel object.
+ * Converts an APDCGuildCoreChannel object to a PartialChannel object.
  *
- * @param channel - The APIGuildCoreChannel object to convert.
+ * @param channel - The APDCGuildCoreChannel object to convert.
  * @returns A PartialChannel object with selected properties from the input channel.
  */
-export function apiChannelToPartial(channel: APIGuildCoreChannel): BasicChannel {
+export function apiChannelToBasic(channel: GuildCoreChannel): BasicChannel {
   return {
     id: channel.id,
-    name: channel.name || "undefined",
+    name: channel.name,
     position: channel.position,
     type: channel.type,
   };
@@ -64,7 +39,7 @@ export function apiChannelToPartial(channel: APIGuildCoreChannel): BasicChannel 
  * @param role - The APIRole object to convert.
  * @returns A PartialRole object containing selected properties from the APIRole.
  */
-export function apiRoleToPartial(role: APIRole): BasicRole {
+export function apiRoleToBasic(role: APIRole): BasicRole {
   return {
     id: role.id,
     name: role.name,
