@@ -2,7 +2,15 @@
 // for information about these interfaces
 
 import type { Guild } from "$lib/classes/guilds";
-import type { APIGuildChannel, ChannelType, GuildChannelType } from "discord-api-types/v10";
+import type {
+  APDCGuildChannel,
+  APIChannel,
+  APIDMChannel,
+  APIGroupDMChannel,
+  APIThreadChannel,
+  ChannelType,
+  GuildChannelType,
+} from "discord-api-types/v10";
 
 declare global {
   namespace App {
@@ -14,33 +22,18 @@ declare global {
     }
 
     interface Locals {
-      guilds?: Guild[];
-      configuredGuilds?: string[] | null;
-      guild?: Guild | null;
-      user?: BaseUser | null;
-      /**
-       * The encoded JWT.
-       */
-      eToken?: string | null;
+      guilds?: DCGuild[];
+      guild?: DCGuild | null;
+      user: BasicUser;
     }
 
     interface PageData {
-      guilds?: Guild[] | null;
-      guild?: Guild | null;
+      user: BasicUser;
+      guilds?: DCGuild[] | null;
       guildId?: string;
-      user?: BaseUser;
-      status?: number;
-      redirect?: string;
-    }
-
-    interface PageServerData extends PageData {
-      user: BaseUser;
-    }
-
-    interface FullPageData extends PageData {
-      guilds: Guild[];
-      guild: Guild & { isConfigured: true };
-      user: BaseUser;
+      guild?: DCGuild | null;
+      roles?: BasicRole[];
+      channels?: BasicChannel[];
       status?: number;
       redirect?: string;
     }
@@ -53,6 +46,7 @@ declare global {
   type BasicRole = {
     id: string;
     name: string;
+    /** Integer representation of hexadecimal color code */
     color: number;
     position: number;
     permissions: string; // ? Is this needed?
@@ -68,7 +62,7 @@ declare global {
   /**
    * Represents a guild (server) in the application.
    */
-  type IGuild = {
+  type DCGuild = {
     /**
      * The snowflake of the guild.
      */
@@ -91,49 +85,23 @@ declare global {
      * The permissions associated with the guild.
      */
     permissions: number | bigint;
-    /**
-     * An optional array of basic roles in the guild.
-     */
-    roles?: BasicRole[];
-    /**
-     * An optional array of basic channels in the guild.
-     */
-    channels?: BasicChannel[];
   };
 
-  type BaseUser = {
+  type BasicUser = {
     id: string;
     username: string;
     displayName: string;
-    avatarHash: string | null;
-  };
-
-  type FormValidationRateimitError = {
-    error: "Rate limited";
-    /**
-     * The number of milliseconds before the rate limit resets.
-     */
-    retryAfter: number;
+    avatar: string | null;
   };
 
   /**
    * An API guild channel which is not a thread.
    */
-  type APIGuildCoreChannel = APIGuildChannel<
-    Exclude<GuildChannelType, ChannelType.PublicThread | ChannelType.PrivateThread | ChannelType.AnnouncementThread>
-  >;
+  type GuildCoreChannel = Exclude<APIChannel, APIDMChannel | APIGroupDMChannel | APIThreadChannel>;
 
-  type CookieToken = {
-    sessionId: string;
-    access_token?: string;
-    refresh_token?: string;
-    expires_at?: string; // ISO 8601
-    userId?: string;
+  type JWTData = {
+    userId: string;
   };
-
-  type FullCookieToken = Required<CookieToken>;
-
-  type JWTCookiePayload = JwtPayload & CookieToken;
 }
 
 export {};
