@@ -30,14 +30,12 @@ export function parseToDCGuild(guild: RESTAPIPartialCurrentUserGuild, configured
 // * Store object data stringified, because Objects have a higher memory footprint and the obejcts are relatively small.
 
 // Setters //
-export function overwriteUserGuilds(userId: string, guilds: DCGuild[]): void {
-  userGuildsStore.set(userId, JSON.stringify(guilds.map((guild) => guild.id)));
-  guildsStore.mset(
-    guilds.map((guild) => ({
-      key: guild.id,
-      val: JSON.stringify(guild),
-    })),
-  );
+export function setGuilds(...guilds: DCGuild[]): void {
+  guildsStore.mset(guilds.map((guild) => ({ key: guild.id, val: JSON.stringify(guild) })));
+}
+
+export function overwriteUserGuilds(userId: string, guildIds: string[]): void {
+  userGuildsStore.set(userId, guildIds);
 }
 
 export function setGuildRoles(guildId: string, roles: BasicRole[]): void {
@@ -68,7 +66,7 @@ export function getGuildChannels(guildId: string): BasicChannel[] | null {
 }
 
 export function getUserGuilds(userId: string): DCGuild[] | null {
-  const guildIds = userGuildsStore.get(userId) as any;
+  const guildIds = userGuildsStore.get<string[]>(userId);
   if (!guildIds) return null;
   const guilds = guildsStore.mget<string>(guildIds);
   if (!guilds) return null;

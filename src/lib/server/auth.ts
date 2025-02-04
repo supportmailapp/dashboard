@@ -1,10 +1,9 @@
 import { env } from "$env/dynamic/private";
-import { getUser } from "$lib/cache/users";
-import { randomBytes } from "crypto";
+import { cacheToken } from "$lib/cache/users";
 import jwt from "jsonwebtoken";
 
-export function createSessionToken(userId: string): string {
-  return jwt.sign({ id: userId, shh: randomBytes(8).toString("base64") }, env.JWT_SECRET, {
+export function createSessionToken(userId: string, accessToken: string): string {
+  return jwt.sign({ id: userId, at: accessToken }, env.JWT_SECRET, {
     expiresIn: "1d",
     algorithm: "HS256",
     encoding: "utf-8",
@@ -13,12 +12,13 @@ export function createSessionToken(userId: string): string {
 }
 
 /**
- * Validate a session and return the user if it exists.
+ * Validate a session and return the JWT payload or null.
  */
-export async function verifySessionToken(token: string): Promise<BasicUser | null> {
+export async function verifySessionToken(token: string): Promise<{ id: string; accessToken: string } | null> {
   try {
-    const { id: userId } = jwt.verify(token, env.JWT_SECRET, { issuer: "supportmail" }) as any;
-    return getUser(userId);
+    const _token = jwt.verify(token, env.JWT_SECRET, { issuer: "supportmail" }) as jwt.JwtPayload;
+    cacheToken(_token.id, _token.at);
+    return { id: _token.id, accessToken: _token.at };
   } catch (e) {
     return null;
   }

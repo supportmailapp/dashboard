@@ -49,8 +49,12 @@ export const DISCORD_CDN_BASE = "https://cdn.discordapp.com" as const;
 
 export const API_BASE = "/api/v1" as const;
 
+/**
+ * App API routes
+ */
 export const APIRoutes = {
   roles: (guildId: string) => `${API_BASE}/guilds/${guildId}/roles`,
   channels: (guildId: string) => `${API_BASE}/guilds/${guildId}/channels`,
-  userGuilds: (userId: string) => `${API_BASE}/users/${userId}/guilds`,
+  userGuilds: (userId: string, manage_bot_only = false) =>
+    `${API_BASE}/users/${userId}/guilds` + (manage_bot_only ? "?manage_bot_only=true" : ""),
 } as const;

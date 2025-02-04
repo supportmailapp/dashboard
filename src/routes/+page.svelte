@@ -19,6 +19,8 @@
     }
   });
 
+  console.log($state.snapshot(page.data.guilds));
+
   const handleEsc = (event: KeyboardEvent) => {
     if (event.key === "Escape") viewProfile = false;
   };

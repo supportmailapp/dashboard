@@ -23,7 +23,7 @@ declare global {
     interface Locals {
       guilds?: DCGuild[];
       guild?: DCGuild | null;
-      user: BasicUser;
+      user: BasicUser | null;
     }
 
     interface PageData {
@@ -83,7 +83,7 @@ declare global {
     /**
      * The permissions associated with the guild.
      */
-    permissions: number | bigint;
+    permissions: number | bigint | string;
   };
 
   type BasicUser = {

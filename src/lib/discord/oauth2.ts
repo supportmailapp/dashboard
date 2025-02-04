@@ -109,7 +109,7 @@ export const callbackHandler: RequestHandler = async ({ url, fetch, cookies }) =
     avatar: userData.avatar,
   });
 
-  const session = createSessionToken(userData.id);
+  const session = createSessionToken(userData.id, oauthResJson.access_token);
 
   cookies.set("session_token", session, {
     path: "/",
@@ -196,16 +196,12 @@ interface FetchUserGuildsOptions {
    * Whether to bypass the cache and fetch fresh data from the API. Defaults to `false`.
    */
   bypassCache?: boolean;
-  /**
-   * Whether to overwrite the cache with the fetched data. Defaults to `true`.
-   *
-   * **If set to `false`, then the fetched data MUST be overwritten manually to ensure the cache is up-to-date.**
-   */
-  overwriteCache?: boolean;
 }
 
 /**
- * Fetches the guilds that the current user guilds from the Cache or Discord API.
+ * Fetches the guilds that the current user guilds from the Cache or Discord API.#
+ *
+ * **Note: Don't forget up update the cache afterwards!**
  *
  * @param userId - The ID of the user whose guilds are to be fetched.
  * @param accessToken - The access token for authenticating the request.
@@ -242,8 +238,5 @@ export async function fetchUserGuilds(
 
   const guildResJson = (await guildRes.json()) as RESTAPIPartialCurrentUserGuild[];
   const guilds = guildResJson.map((guild) => parseToDCGuild(guild));
-  if (options.overwriteCache) {
-    overwriteUserGuilds(userId, guilds);
-  }
   return guilds;
 }

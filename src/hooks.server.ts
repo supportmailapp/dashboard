@@ -1,4 +1,5 @@
 import { getUserGuilds } from "$lib/cache/guilds";
+import { fetchUserData } from "$lib/discord/oauth2";
 import { verifySessionToken } from "$lib/server/auth";
 import * as Sentry from "@sentry/node";
 import { error, type Handle, type HandleServerError, type ServerInit } from "@sveltejs/kit";
@@ -12,12 +13,6 @@ export const init: ServerInit = async () => {
 const apiRateLimiter = new RateLimiterMemory({ duration: 5, points: 5, blockDuration: 10, keyPrefix: "API" });
 
 export const handle: Handle = async ({ event, resolve }) => {
-  const sessionCookie = event.cookies.get("session_token");
-
-  if (sessionCookie) {
-    event.locals.user = await verifySessionToken(sessionCookie);
-  }
-
   // Early exit for API routes
   if (event.url.pathname.startsWith("/api")) {
     let response = await apiRateLimiter
@@ -43,6 +38,16 @@ export const handle: Handle = async ({ event, resolve }) => {
       });
     }
     return resolve(event);
+  }
+
+  const sessionCookie = event.cookies.get("session_token");
+
+  if (sessionCookie) {
+    const tokenData = await verifySessionToken(sessionCookie);
+    if (tokenData) {
+      event.locals.user = await fetchUserData(tokenData.id, event.fetch);
+      console.log("User", event.locals.user);
+    }
   }
 
   if (event.locals.user) {

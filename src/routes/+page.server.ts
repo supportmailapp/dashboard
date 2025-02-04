@@ -5,15 +5,11 @@ export const prerender = false;
 
 // const valkey = new Valkey(); // TODO: use this to cache guilds in a seperate file
 
-export const load = async ({ cookies, locals, url }) => {
+export const load = async ({ cookies, url }) => {
   if (url.pathname == "/?logout=true") {
     cookies.delete("discord-token", { path: "/" });
     return {};
   }
-
-  return {
-    user: locals.user,
-  };
 };
 
 export const actions = {
