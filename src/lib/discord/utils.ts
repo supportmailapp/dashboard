@@ -1,19 +1,24 @@
-// Private utility functions for Discord-related operations
+// Private utility stuff for Discord-related operations
 
-/**
- *
- * @param state UTF-8 encoded session state
- * @returns Base64 encoded session state
- */
-export function generateSessionId(): string {
-  return Buffer.from(crypto.randomUUID(), "utf-8").toString("base64");
+import { env } from "$env/dynamic/private";
+import { REST } from "@discordjs/rest";
+import { Routes, type APIRole } from "discord-api-types/v10";
+
+export class DiscordREST {
+  private readonly rest: REST;
+  constructor(token: string) {
+    this.rest = new REST({ version: "10" }).setToken(token);
+  }
+
+  public async getGuildChannels(guildId: string): Promise<GuildCoreChannel[]> {
+    return this.rest.get(Routes.guildChannels(guildId)) as any;
+  }
+
+  public async getGuildRoles(guildId: string): Promise<APIRole[]> {
+    return this.rest.get(Routes.guildRoles(guildId)) as any;
+  }
 }
 
-/**
- *
- * @param encoded Base64v encoded session state
- * @returns UTF-8 decoded session state
- */
-export function decodeSessionId(encoded: string): string {
-  return Buffer.from(encoded, "base64").toString("utf-8");
-}
+const discordREST = new DiscordREST(env.discordBotToken);
+
+export { discordREST };
