@@ -2,9 +2,10 @@
   import { onMount } from "svelte";
 
   let { data } = $props();
-  // onMount(() => {
-  //   data.guild = fetch(`/api/v1/guilds?guild_id=${data.guildId}`).then((res) => res.json());
-  // });
+
+  $effect(() => {
+    console.log("guild", $state.snapshot(data.guild));
+  });
 </script>
 
 {#if data.guild}
