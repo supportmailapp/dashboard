@@ -12,20 +12,20 @@
  */
 
 import { env } from "$env/dynamic/private";
-import * as UserGuildsCache from "$lib/cache/guilds";
-import * as UserCache from "$lib/cache/users";
+import { getUserGuilds, overwriteUserGuilds, parseToDCGuild } from "$lib/cache/guilds";
+import { getToken, getUser } from "$lib/cache/users";
 import { urls } from "$lib/constants";
-import { decodeToken, encodeToken } from "$lib/server/auth";
+import { createSessionToken, verifySessionToken } from "$lib/server/auth";
 import { discord } from "$lib/server/constants";
 import { error, redirect, type RequestHandler } from "@sveltejs/kit";
 import {
   OAuth2Routes,
+  RouteBases,
   Routes,
   type APIUser,
   type RESTAPIPartialCurrentUserGuild,
   type RESTPostOAuth2AccessTokenResult,
 } from "discord-api-types/v10";
-import { generateSessionId } from "./utils";
 
 export const createOAuth2Login = function (url: URL) {
   const redirectUrl = url.searchParams.get("redirect") || null;
@@ -85,7 +85,7 @@ export const callbackHandler: RequestHandler = async ({ url, fetch, cookies }) =
 
   const oauthResJson = (await oauthRes.json()) as RESTPostOAuth2AccessTokenResult;
 
-  let userData: APIUser;
+  let userData: BasicUser;
   try {
     userData = await fetchUserData(oauthResJson.access_token, fetch);
   } catch (err: any) {
@@ -95,106 +95,40 @@ export const callbackHandler: RequestHandler = async ({ url, fetch, cookies }) =
     });
   }
 
-  const sessionId = generateSessionId();
+  const session = createSessionToken(userData.id);
 
-  const eToken = encodeToken({
-    sessionId: sessionId,
-    access_token: oauthResJson.access_token,
-    refresh_token: oauthResJson.refresh_token,
-    expires_at: new Date(Date.now() + oauthResJson.expires_in * 1000).toISOString(),
-    userId: userData.id,
-  });
-
-  cookies.set("discord-token", eToken, {
+  cookies.set("session_token", session, {
     path: "/",
-    maxAge: 1_209_600,
-    // sameSite: "strict",
+    maxAge: oauthResJson.expires_in,
   });
 
   redirect(302, redirectUrl || "/");
 };
 
-/**
- * Refreshes the OAuth2 token using the provided encoded token cookie.
- *
- * @returns A promise that resolves to the new encoded token.
- * @throws {Object} Throws an error object with status, message and hint properties.
- *
- * `hint` can be: `"login"`
- */
-export async function refreshToken(encodedTokenCookie: string, fetch: Function) {
-  const token = decodeToken(encodedTokenCookie);
-  if (!token || typeof token?.refresh_token !== "string") {
-    throw { status: 400, message: "Invalid token", hint: "login" };
-  }
-
-  let oauthRes: Response;
-  try {
-    oauthRes = await fetch(urls.token(), {
-      method: "POST",
-      body: new URLSearchParams({
-        client_id: discord.clientId,
-        client_secret: discord.clientSecret,
-        grant_type: "refresh_token",
-        refresh_token: token.refresh_token,
-        scope: discord.scopes.join(" "),
-      }).toString(),
-      headers: {
-        "content-type": "application/x-www-form-urlencoded",
-      },
-    });
-
-    if (!oauthRes.ok) throw { status: 500, message: "Failed to refresh token" };
-  } catch (err: any) {
-    console.error("Error refreshing token:", err);
-    throw { status: 500, message: err.message, hint: "login" };
-  }
-
-  const oauthResJson = (await oauthRes.json()) as RESTPostOAuth2AccessTokenResult;
-
-  let userData: APIUser;
-  try {
-    userData = await fetchUserData(oauthResJson.access_token, fetch); // Bypass cache
-  } catch (err: any) {
-    console.error(err);
-    throw { status: 500, message: "Failed to fetch user data", hint: "login" };
-  }
-
-  const sessionId = generateSessionId();
-
-  const eToken = encodeToken({
-    sessionId: sessionId,
-    access_token: oauthResJson.access_token,
-    refresh_token: oauthResJson.refresh_token,
-    expires_at: new Date(Date.now() + oauthResJson.expires_in * 1000).toISOString(),
-    userId: userData.id,
-  });
-
-  return {
-    eToken,
-    sessionId,
-  };
-}
-
-export const logoutHandler: RequestHandler = async ({ url, request, cookies, fetch }) => {
+export const logoutHandler: RequestHandler = async ({ cookies, fetch }) => {
   // Revoke token, remove it from cache
   // Clear cookie
   // Redirect to home page
 
-  const token = decodeToken(cookies.get("discord-token"));
-  if (!token || typeof token?.access_token !== "string") {
-    return redirect(302, "/");
-  }
+  const seToken = cookies.get("session_token");
+  if (!seToken) return redirect(302, "/");
 
-  let res: Response;
+  cookies.delete("session_token", { path: "/" });
+
+  const sessionData = verifySessionToken(seToken);
+  if (!sessionData) return redirect(302, "/");
+
+  const aToken = getToken(seToken);
+  if (!aToken) return redirect(302, "/");
+
   try {
-    res = await fetch(OAuth2Routes.tokenRevocationURL, {
+    await fetch(OAuth2Routes.tokenRevocationURL, {
       method: "POST",
       body: new URLSearchParams({
         client_id: discord.clientId,
         client_secret: discord.clientSecret,
         token_type_hint: "access_token",
-        token: token.access_token,
+        token: aToken,
       }).toString(),
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -204,7 +138,6 @@ export const logoutHandler: RequestHandler = async ({ url, request, cookies, fet
     console.error("Token Revocation Error:", error);
   }
 
-  cookies.delete("discord-token", { path: "/" });
   return redirect(302, "/");
 };
 
@@ -216,19 +149,17 @@ export const logoutHandler: RequestHandler = async ({ url, request, cookies, fet
  * @returns A promise that resolves to the user data.
  * @throws Will throw an error if the API request fails. Format: `{ status: number, message: string }`
  */
-export async function fetchUserData(accessToken: string, fetch: Function, userId: string | null = null): Promise<APIUser> {
-  if (userId) {
-    const cachedData = UserCache.get(userId);
-    if (cachedData) {
-      return cachedData;
-    }
-  }
+export async function fetchUserData(userId: string, fetch: Function, useCache = true): Promise<BasicUser> {
+  const userData = getUser(userId);
+  if (useCache && userData) return userData;
 
-  const userRes = await fetch(urls.discordBase + Routes.user(), {
+  const token = getToken(userId);
+
+  const userRes = await fetch(RouteBases.api + Routes.user(), {
     method: "GET",
     headers: {
       "content-type": "application/json",
-      authorization: `Bearer ${accessToken}`,
+      authorization: `Bearer ${token}`,
     },
   });
 
@@ -237,8 +168,12 @@ export async function fetchUserData(accessToken: string, fetch: Function, userId
   }
 
   const userResJson = (await userRes.json()) as APIUser;
-  UserCache.set(userResJson);
-  return userResJson;
+  return {
+    id: userResJson.id,
+    username: userResJson.username,
+    displayName: userResJson.global_name || userResJson.username,
+    avatar: userResJson.avatar,
+  };
 }
 
 interface FetchUserGuildsOptions {
@@ -269,16 +204,16 @@ export async function fetchUserGuilds(
   accessToken: string,
   fetch: Function,
   options: FetchUserGuildsOptions = {},
-): Promise<RESTAPIPartialCurrentUserGuild[]> {
+): Promise<DCGuild[]> {
   options = Object.assign({ bypassCache: false, overwriteCache: true }, options);
   if (!options.bypassCache) {
-    const cachedGuilds = UserGuildsCache.getUserGuilds(userId, accessToken);
+    const cachedGuilds = getUserGuilds(userId);
     if (cachedGuilds) {
-      return cachedGuilds.guilds;
+      return cachedGuilds;
     }
   }
 
-  const guildRes = await fetch(urls.discordBase + Routes.userGuilds(), {
+  const guildRes = await fetch(RouteBases.api + Routes.userGuilds(), {
     method: "GET",
     headers: {
       "content-type": "application/json",
@@ -291,8 +226,9 @@ export async function fetchUserGuilds(
   }
 
   const guildResJson = (await guildRes.json()) as RESTAPIPartialCurrentUserGuild[];
+  const guilds = guildResJson.map((guild) => parseToDCGuild(guild));
   if (options.overwriteCache) {
-    UserGuildsCache.setUserWithGuilds(userId, accessToken, guildResJson);
+    overwriteUserGuilds(userId, guilds);
   }
-  return guildResJson;
+  return guilds;
 }
