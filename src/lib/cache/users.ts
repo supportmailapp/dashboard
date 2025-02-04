@@ -1,20 +1,52 @@
-import type { APIUser } from "discord-api-types/v10";
 import NodeCache from "node-cache";
 
 const userCache = new NodeCache({
-  stdTTL: 600,
-  checkperiod: 30,
+  stdTTL: 10_800,
+  checkperiod: 60,
   errorOnMissing: false,
 });
 
-export function set(user: APIUser) {
-  userCache.set(user.id, user);
+const tokenCache = new NodeCache({
+  stdTTL: 10_800,
+  checkperiod: 60,
+  errorOnMissing: false,
+});
+
+// Setters //
+export function cacheUser(userId: string, data: BasicUser): void {
+  userCache.set<string>(userId, JSON.stringify(data));
 }
 
-export function get(userId: string) {
-  return userCache.get(userId) as APIUser;
+export function cacheToken(userId: string, token: string): void {
+  tokenCache.set<string>(userId, token);
 }
 
-export function del(userId: string) {
+// Getters //
+export function getUser(userId: string): BasicUser | null {
+  const cached = userCache.get<string>(userId);
+  if (!cached) return null;
+
+  return JSON.parse(cached);
+}
+
+export function getToken(userId: string): string | null {
+  return tokenCache.get<string>(userId) || null;
+}
+
+// Deleters //
+export function delSession(userId: string) {
   userCache.del(userId);
+}
+
+export function delToken(userId: string) {
+  tokenCache.del(userId);
+}
+
+// Clearers //
+export function clearUsers() {
+  userCache.flushAll();
+}
+
+export function clearTokens() {
+  tokenCache.flushAll();
 }
