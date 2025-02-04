@@ -19,7 +19,6 @@ interface AuthorizeUrlParams {
 }
 
 export const urls = {
-  discordBase: env.PUBLIC_DISCORD_API_BASE,
   botAuth: function (clientId: string, guildId: string | null = null): string {
     const params = new URLSearchParams({
       client_id: clientId,
@@ -49,3 +48,9 @@ export const urls = {
 export const DISCORD_CDN_BASE = "https://cdn.discordapp.com" as const;
 
 export const API_BASE = "/api/v1" as const;
+
+export const APIRoutes = {
+  roles: (guildId: string) => `${API_BASE}/guilds/${guildId}/roles`,
+  channels: (guildId: string) => `${API_BASE}/guilds/${guildId}/channels`,
+  userGuilds: (userId: string) => `${API_BASE}/users/${userId}/guilds`,
+} as const;
