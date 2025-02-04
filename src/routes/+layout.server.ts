@@ -1,10 +1,8 @@
-import dayjs from "dayjs";
-import type { LayoutServerLoad } from "./$types";
+import { getUserGuilds } from "$lib/cache/guilds";
 
-export const load = (async ({ locals }) => {
+export const load = async ({ locals }) => {
   const data = {
-    date: dayjs().toDate(),
-    iso: dayjs().toISOString(),
+    ccDate: "2025",
   };
 
   if (!locals.user) return data;
@@ -12,5 +10,6 @@ export const load = (async ({ locals }) => {
   return {
     ...data,
     user: locals.user,
+    guilds: getUserGuilds(locals.user.id),
   };
-}) satisfies LayoutServerLoad;
+};

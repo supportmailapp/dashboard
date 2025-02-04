@@ -9,8 +9,6 @@
   import { onMount } from "svelte";
   import { slide } from "svelte/transition";
 
-  let { data } = $props();
-
   let viewProfile = $state(false);
   let errorCopied = $state(false);
 
@@ -97,45 +95,17 @@
 
 <main class="min-h-screen w-full p-5">
   {#if page.data.user}
-    {#await data.guilds}
+    {#if !page.data.guilds}
       <div class="flex h-full w-full items-center justify-center">
         <span class="dy-loading dy-loading-spinner w-15"></span>
       </div>
-    {:then guilds}
+    {:else}
       <div class="flex h-full w-full max-w-[1200px] flex-wrap justify-center gap-5">
-        {#each guilds as guild}
+        {#each page.data.guilds as guild}
           {@render guilditem(guild.id, guild.name, guild.iconHash, guild.isConfigured)}
         {/each}
       </div>
-    {:catch error}
-      <div class="mt-5 flex h-full w-full items-center justify-center">
-        <div role="alert" class="dy-alert dy-alert-error w-[70%] shadow-lg">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <div>
-            <h2 class="text-lg font-bold select-none">Error</h2>
-            <div id="error-tooltip" class="md:dy-tooltip" data-tip="Copy Error Message">
-              <button
-                class="dy-btn sm:dy-btn-sm dy-btn-xs text-wrap"
-                onclick={() => {
-                  if (errorCopied) return;
-                  navigator.clipboard.writeText(error.message);
-                  errorCopied = true;
-                  console.log("Error copied");
-                  setTimeout(() => (errorCopied = false), 2000);
-                }}>{error.message}</button
-              >
-            </div>
-          </div>
-        </div>
-      </div>
-    {/await}
+    {/if}
 
     <dialog id="profile" class="dy-modal dy-modal-bottom sm:dy-modal-middle text-base-content w-full">
       <div class="dy-modal-box h-[50%] w-full max-w-full">
@@ -185,7 +155,7 @@
     </dialog>
   {:else}
     <!-- Login with Discord -->
-    <div class="rounded-box bg-base-200 grid grid-cols-1 gap-4 p-5">
+    <div class="bg-base-200 mx-auto my-auto flex flex-col items-center justify-center gap-y-10 rounded-2xl p-5">
       <Branding />
       <form method="POST" action="?/login" class="xy-center-items">
         <button class="dy-btn dy-btn-xl border-success hover:border-info dy-btn-outline gap-x-3 border-2">
@@ -205,4 +175,4 @@
   </div>
 {/if}
 
-<Footer year={data.date.getFullYear()} />
+<Footer year={page.data.ccDate} />

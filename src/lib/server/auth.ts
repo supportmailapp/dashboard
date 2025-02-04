@@ -4,7 +4,7 @@ import { randomBytes } from "crypto";
 import jwt from "jsonwebtoken";
 
 export function createSessionToken(userId: string): string {
-  return jwt.sign({ id: userId, shh: randomBytes(16).toString("base64") }, env.JWT_SECRET, {
+  return jwt.sign({ id: userId, shh: randomBytes(8).toString("base64") }, env.JWT_SECRET, {
     expiresIn: "1d",
     algorithm: "HS256",
     encoding: "utf-8",

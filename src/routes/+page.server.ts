@@ -1,12 +1,11 @@
 import { createOAuth2Login } from "$lib/discord/oauth2";
 import { redirect, type Actions } from "@sveltejs/kit";
-import type { PageServerLoad } from "./$types";
 
 export const prerender = false;
 
 // const valkey = new Valkey(); // TODO: use this to cache guilds in a seperate file
 
-export const load = async function ({ cookies, locals, url }) {
+export const load = async ({ cookies, locals, url }) => {
   if (url.pathname == "/?logout=true") {
     cookies.delete("discord-token", { path: "/" });
     return {};
@@ -15,7 +14,7 @@ export const load = async function ({ cookies, locals, url }) {
   return {
     user: locals.user,
   };
-} satisfies PageServerLoad;
+};
 
 export const actions = {
   login: async ({ url, cookies }) => {

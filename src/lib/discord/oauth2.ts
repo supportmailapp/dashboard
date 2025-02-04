@@ -13,7 +13,7 @@
 
 import { env } from "$env/dynamic/private";
 import { getUserGuilds, overwriteUserGuilds, parseToDCGuild } from "$lib/cache/guilds";
-import { getToken, getUser } from "$lib/cache/users";
+import { cacheToken, cacheUser, getToken, getUser } from "$lib/cache/users";
 import { urls } from "$lib/constants";
 import { createSessionToken, verifySessionToken } from "$lib/server/auth";
 import { discord } from "$lib/server/constants";
@@ -32,7 +32,6 @@ export const createOAuth2Login = function (url: URL) {
   const state = crypto.randomUUID();
 
   return {
-    status: 302,
     url: urls.authorize({
       clientId: env.clientId,
       scope: discord.scopes.join(" "),
@@ -48,12 +47,8 @@ export const createOAuth2Login = function (url: URL) {
 export const callbackHandler: RequestHandler = async ({ url, fetch, cookies }) => {
   const code = url.searchParams.get("code");
 
-  if (!code) {
-    return error(405, 'A "code" query parameter must be present in the URL.');
-  }
-
-  if (url.searchParams.get("state") !== cookies.get("discord-oauth2-state")) {
-    return error(403, "Invalid state parameter");
+  if (!code || url.searchParams.get("state") !== cookies.get("discord-oauth2-state")) {
+    return redirect(303, "/");
   }
 
   cookies.delete("discord-oauth2-state", { path: "/" });
@@ -80,20 +75,39 @@ export const callbackHandler: RequestHandler = async ({ url, fetch, cookies }) =
     if (!oauthRes.ok) throw { message: "Failed to exchange code for token" };
   } catch (err: any) {
     console.error(err);
-    return error(500, err.message);
+    return error(500, {
+      message: err?.message || "Failed to exchange code for token",
+    });
   }
 
   const oauthResJson = (await oauthRes.json()) as RESTPostOAuth2AccessTokenResult;
 
-  let userData: BasicUser;
+  let userData: APIUser;
   try {
-    userData = await fetchUserData(oauthResJson.access_token, fetch);
+    const userRes = await fetch(RouteBases.api + Routes.user(), {
+      method: "GET",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${oauthResJson.access_token}`,
+      },
+    });
+
+    if (!userRes.ok) throw { message: "Failed to fetch user data" };
+
+    userData = (await userRes.json()) as APIUser;
   } catch (err: any) {
     console.error(err);
     return error(500, {
-      message: err?.message,
+      message: err?.message || "Failed to fetch user data",
     });
   }
+
+  cacheUser(userData.id, {
+    id: userData.id,
+    username: userData.username,
+    displayName: userData.global_name || userData.username,
+    avatar: userData.avatar,
+  });
 
   const session = createSessionToken(userData.id);
 
@@ -154,6 +168,7 @@ export async function fetchUserData(userId: string, fetch: Function, useCache = 
   if (useCache && userData) return userData;
 
   const token = getToken(userId);
+  if (!token) throw { status: 401, message: "Unauthorized" };
 
   const userRes = await fetch(RouteBases.api + Routes.user(), {
     method: "GET",

@@ -1,4 +1,3 @@
-import { getUserGuilds } from "$lib/cache/guilds.js";
 import { redirect } from "@sveltejs/kit";
 
 export const load = async ({ locals }) => {
@@ -6,6 +5,5 @@ export const load = async ({ locals }) => {
 
   return {
     user: locals.user,
-    guilds: getUserGuilds(locals.user.id),
   };
 };
