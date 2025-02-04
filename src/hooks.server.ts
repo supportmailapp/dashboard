@@ -1,67 +1,58 @@
 import { getUserGuilds } from "$lib/cache/guilds";
-import { Guild } from "$lib/classes/guilds";
-import { fetchUserData } from "$lib/discord/oauth2";
-import { decodeToken } from "$lib/server/auth";
-// @ts-ignore
+import { verifySessionToken } from "$lib/server/auth";
 import * as Sentry from "@sentry/node";
-import { apiUserToCurrentUser } from "$lib/utils/formatting";
-import { redirect, type Handle, type HandleServerError, type ServerInit } from "@sveltejs/kit";
-
+import { error, type Handle, type HandleServerError, type ServerInit } from "@sveltejs/kit";
+import { RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
 import { inspect } from "util";
 
 export const init: ServerInit = async () => {
   console.log("We are online!");
 };
 
+const apiRateLimiter = new RateLimiterMemory({ duration: 5, points: 5, blockDuration: 10, keyPrefix: "API" });
+
 export const handle: Handle = async ({ event, resolve }) => {
+  const sessionCookie = event.cookies.get("session_token");
+
+  if (sessionCookie) {
+    event.locals.user = await verifySessionToken(sessionCookie);
+  }
+
+  // Early exit for API routes
   if (event.url.pathname.startsWith("/api")) {
-    console.log("API request", event);
-    const response = await resolve(event);
-    return response;
-  }
+    let response = await apiRateLimiter
+      .consume(event.getClientAddress(), 1)
+      .then((res: RateLimiterRes) => {
+        event.setHeaders({
+          "X-RateLimit-Remaining": `${res.remainingPoints}`,
+          "X-RateLimit-Reset": `${~~(res.msBeforeNext / 1000)}`,
+        });
+        return res;
+      })
+      .catch((rej: RateLimiterRes) => {
+        event.setHeaders({
+          "X-RateLimit-Remaining": "0",
+          "X-RateLimit-Reset": `${~~(rej.msBeforeNext / 1000)}`,
+        });
+        return rej;
+      });
 
-  const token = event.cookies.get("discord-token");
-  console.log("Token:", token);
-  if (!token) {
-    console.log("No token found");
-    if (event.url.pathname !== "/") {
-      if (event.url.searchParams.size > 0) {
-        return redirect(302, "/?redirect=" + event.url.toString());
-      } else {
-        return redirect(302, "/");
-      }
-    } else {
-      return await resolve(event);
+    if (response.remainingPoints < 1) {
+      return error(429, {
+        message: "Rate limit exceeded",
+      });
     }
-  } else {
-    console.log("Token found");
+    return resolve(event);
   }
 
-  const dToken = decodeToken(token, true);
-  if (!dToken) {
-    event.cookies.delete("discord-token", { path: "/" });
-    if (event.url.pathname !== "/") {
-      return redirect(307, "/");
-    }
-    // If token is invalid and the user accesses the home page, we don't want to redirect them to the home page again
-    return await resolve(event);
-  }
-
-  if (!event.locals.user) {
-    const user = await fetchUserData(dToken.access_token, fetch, dToken.userId).catch(() => null);
-    event.locals.user = apiUserToCurrentUser(user);
-  }
-
-  if (!event.locals.guilds) {
-    const guildsResult = getUserGuilds(dToken.userId, dToken.access_token);
-    if (guildsResult) {
-      event.locals.configuredGuilds = guildsResult.configured;
-      event.locals.guilds = guildsResult.guilds.map((g) => Guild.from(g, guildsResult.configured.includes(g.id)));
+  if (event.locals.user) {
+    const guilds = getUserGuilds(event.locals.user.id);
+    if (guilds) {
+      event.locals.guilds = guilds;
     }
   }
 
-  const response = await resolve(event);
-  return response;
+  return resolve(event);
 };
 
 export const handleError: HandleServerError = async ({ error, event, status, message }) => {
