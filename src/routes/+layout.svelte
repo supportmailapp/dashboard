@@ -11,7 +11,7 @@
 
   onMount(async function () {
     if (page.data.user && !$guilds) {
-      guilds.set((await loadGuilds()) || []);
+      guilds.set((await loadGuilds()) || []); // This is actually unnecessary, but just to be sure it's set
     }
   });
 </script>
