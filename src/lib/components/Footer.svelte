@@ -1,5 +1,5 @@
 <script lang="ts">
-  type FooterProps = { year: number };
+  type FooterProps = { year: number | string };
   let { year }: FooterProps = $props();
 </script>
 
