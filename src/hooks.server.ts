@@ -1,6 +1,7 @@
 import { getUserGuilds } from "$lib/cache/guilds";
 import { fetchUserData } from "$lib/discord/oauth2";
 import { verifySessionToken } from "$lib/server/auth";
+import { user } from "$lib/stores/user.svelte";
 import * as Sentry from "@sentry/node";
 import { error, type Handle, type HandleServerError, type ServerInit } from "@sveltejs/kit";
 import { RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
@@ -46,7 +47,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     const tokenData = await verifySessionToken(sessionCookie);
     if (tokenData) {
       event.locals.user = await fetchUserData(tokenData.id, event.fetch);
-      console.log("User", event.locals.user);
+      user.set(event.locals.user);
     }
   }
 

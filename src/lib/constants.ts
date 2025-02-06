@@ -49,12 +49,21 @@ export const DISCORD_CDN_BASE = "https://cdn.discordapp.com" as const;
 
 export const API_BASE = "/api/v1" as const;
 
+interface UserGuildsParams {
+  bypassCache?: boolean;
+  manageBotOnly?: boolean;
+}
+
 /**
  * App API routes
  */
 export const APIRoutes = {
   roles: (guildId: string) => `${API_BASE}/guilds/${guildId}/roles`,
   channels: (guildId: string) => `${API_BASE}/guilds/${guildId}/channels`,
-  userGuilds: (userId: string, manage_bot_only = false) =>
-    `${API_BASE}/users/${userId}/guilds` + (manage_bot_only ? "?manage_bot_only=true" : ""),
+  userGuilds: (userId: string, params: UserGuildsParams = {}) =>
+    `${API_BASE}/users/${userId}/guilds?` +
+    new URLSearchParams({
+      bypass_cache: params.bypassCache ? "true" : "false",
+      manage_bot_only: params.manageBotOnly ? "true" : "false",
+    }).toString(),
 } as const;

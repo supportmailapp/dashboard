@@ -1,4 +1,3 @@
-import type { RESTAPIPartialCurrentUserGuild } from "discord-api-types/v10";
 import NodeCache from "node-cache";
 
 const BASE_CACHE_OPTS: NodeCache.Options = {
@@ -17,20 +16,20 @@ function buildKey(typ: string, guildId: string): `${string}:${string}` {
   return `${typ}:${guildId}`;
 }
 
-export function parseToDCGuild(guild: RESTAPIPartialCurrentUserGuild, configured = false): DCGuild {
+export function parseToCacheGuild(guild: any, configured = false): CachableGuild {
   return {
     id: guild.id,
     name: guild.name,
-    iconHash: guild.icon,
-    isConfigured: configured,
-    permissions: BigInt(guild.permissions),
+    iconHash: guild.icon || guild.iconHash,
+    isConfigured: guild.isConfigured || configured,
+    permissions: String(guild.permissions),
   };
 }
 
 // * Store object data stringified, because Objects have a higher memory footprint and the obejcts are relatively small.
 
 // Setters //
-export function setGuilds(...guilds: DCGuild[]): void {
+export function setGuilds(...guilds: CachableGuild[]): void {
   guildsStore.mset(guilds.map((guild) => ({ key: guild.id, val: JSON.stringify(guild) })));
 }
 
@@ -47,7 +46,7 @@ export function setGuildChannels(guildId: string, channels: BasicChannel[]): voi
 }
 
 // Getters //
-export function getGuild(id: string): DCGuild | null {
+export function getGuild(id: string): CachableGuild | null {
   const guild = guildsStore.get(id) as any;
   if (!guild) return null;
   return JSON.parse(guild);
@@ -65,7 +64,7 @@ export function getGuildChannels(guildId: string): BasicChannel[] | null {
   return JSON.parse(channels);
 }
 
-export function getUserGuilds(userId: string): DCGuild[] | null {
+export function getUserGuilds(userId: string): CachableGuild[] | null {
   const guildIds = userGuildsStore.get<string[]>(userId);
   if (!guildIds) return null;
   const guilds = guildsStore.mget<string>(guildIds);

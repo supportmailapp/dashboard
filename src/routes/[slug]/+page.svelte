@@ -1,37 +1,33 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-
-  let { data } = $props();
+  import { channels, guild, roles } from "$lib/stores/guild.svelte.js";
 
   $effect(() => {
-    console.log("guild", $state.snapshot(data.guild));
+    console.log("guild", $state.snapshot($guild));
   });
 </script>
 
-{#if data.guild}
-  {#await data.guild}
-    <div class="dy-loading-spinner w-10"></div>
-  {:then guild}
-    <h1>{guild?.name}</h1>
+{#if $guild}
+  <h1>{$guild.name}</h1>
 
-    <div class="dy-divider-neutral my-2"></div>
+  <div class="dy-divider-neutral my-2"></div>
 
-    <h2>Channels</h2>
+  <h2>Channels</h2>
 
-    {#if guild?.channels}
-      {#each guild.channels as channel}
-        <p>{channel.name}</p>
-      {/each}
-    {/if}
+  {#if $channels}
+    {#each $channels as channel}
+      <p>{channel.name}</p>
+    {/each}
+  {/if}
 
-    <div class="dy-divider-neutral my-2"></div>
+  <div class="dy-divider-neutral my-2"></div>
 
-    <h2>Roles</h2>
+  <h2>Roles</h2>
 
-    {#if guild?.roles}
-      {#each guild.roles as role}
-        <p class="text-[{role.color}]">{role.name} ({role.id})</p>
-      {/each}
-    {/if}
-  {/await}
+  {#if $roles}
+    {#each $roles as role}
+      <p class="text-[{role.color}]">{role.name} ({role.id})</p>
+    {/each}
+  {/if}
+{:else}
+  <div class="dy-loading-spinner w-10"></div>
 {/if}

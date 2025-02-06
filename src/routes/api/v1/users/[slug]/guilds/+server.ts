@@ -1,10 +1,9 @@
-import { env } from "$env/dynamic/private";
-import { overwriteUserGuilds, setGuilds } from "$lib/cache/guilds";
+import { overwriteUserGuilds, parseToCacheGuild, setGuilds } from "$lib/cache/guilds";
 import { getToken } from "$lib/cache/users";
 import { fetchUserGuilds } from "$lib/discord/oauth2";
 import clientAPI from "$lib/server/clientApi";
 import { canManageBot } from "$lib/utils/permissions";
-import { error, json, type RequestHandler } from "@sveltejs/kit";
+import { error, type RequestHandler } from "@sveltejs/kit";
 
 export const GET: RequestHandler = async ({ fetch, params, url }) => {
   const userId = params.slug as string;
@@ -20,10 +19,7 @@ export const GET: RequestHandler = async ({ fetch, params, url }) => {
     aToken,
   );
 
-  let modifedGuilds: DCGuild[] = guilds.map((guild) => ({
-    ...guild,
-    isConfigured: validBotGuildIds.includes(guild.id),
-  }));
+  let modifedGuilds = guilds.map((g) => parseToCacheGuild(g, validBotGuildIds.includes(g.id)));
 
   setGuilds(...modifedGuilds);
   overwriteUserGuilds(
@@ -32,10 +28,8 @@ export const GET: RequestHandler = async ({ fetch, params, url }) => {
   );
 
   if (url.searchParams.get("manage_bot_only") === "true") {
-    Response.json(
-      modifedGuilds.filter((guild) => canManageBot(Number(guild.permissions))),
-      { status: 200, statusText: "OK" },
-    );
+    const filteredGuilds = modifedGuilds.filter((guild) => canManageBot(BigInt(guild.permissions)));
+    return Response.json(filteredGuilds, { status: 200, statusText: "OK" });
   }
 
   return Response.json(modifedGuilds, { status: 200, statusText: "OK" });

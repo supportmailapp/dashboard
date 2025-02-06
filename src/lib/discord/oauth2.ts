@@ -12,8 +12,8 @@
  */
 
 import { env } from "$env/dynamic/private";
-import { getUserGuilds, overwriteUserGuilds, parseToDCGuild } from "$lib/cache/guilds";
-import { cacheToken, cacheUser, getToken, getUser } from "$lib/cache/users";
+import { getUserGuilds, parseToCacheGuild } from "$lib/cache/guilds";
+import { cacheUser, getToken, getUser } from "$lib/cache/users";
 import { urls } from "$lib/constants";
 import { createSessionToken, verifySessionToken } from "$lib/server/auth";
 import { discord } from "$lib/server/constants";
@@ -237,6 +237,6 @@ export async function fetchUserGuilds(
   }
 
   const guildResJson = (await guildRes.json()) as RESTAPIPartialCurrentUserGuild[];
-  const guilds = guildResJson.map((guild) => parseToDCGuild(guild));
+  const guilds = guildResJson.map((guild) => parseToCacheGuild(guild));
   return guilds;
 }
