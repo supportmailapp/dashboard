@@ -35,6 +35,7 @@ declare global {
       channels?: BasicChannel[];
       status?: number;
       redirect?: string;
+      ccDate: string;
     }
 
     // interface PageState {}
@@ -85,6 +86,8 @@ declare global {
      */
     permissions: number | bigint | string;
   };
+
+  type CachableGuild = Omit<DCGuild, "permissions"> & { permissions: string };
 
   type BasicUser = {
     id: string;
