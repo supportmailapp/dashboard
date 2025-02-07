@@ -61,3 +61,11 @@ export const cdnUrls = {
 export function numberToHex(number: number): string {
   return number.toString(16).padStart(6, "0");
 }
+
+export function hexToNumber(hex: string): number {
+  return parseInt(hex, 16);
+}
+
+export function clipTextToLength(text: string, maxLength: number = 30): string {
+  return text.slice(0, maxLength) + (text.length > maxLength ? "..." : "");
+}
