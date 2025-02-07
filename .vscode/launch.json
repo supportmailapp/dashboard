@@ -9,7 +9,11 @@
       "request": "launch",
       "name": "Run App (Dev)",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"]
+      "envFile": "${workspaceFolder}/.env.dev",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "runtimeArgs": [ "run", "dev" ]
     }
   ]
 }
