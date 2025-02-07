@@ -1,11 +1,6 @@
 # TODO
 
-- MAKE PLAN ON
-
-  - how to store user id + token in JWT (+ remove token cache)
-  - when to store guilds in cache and how (APIGuild or BasicGuild)
-  - how to sturcture guilds API route (with JWT auth, maybe with a hook?)
-  - ??????????
+- Build algorigthm to FKCIN SORT CHANNELS CORRECTLY
 
 ## Later
 
