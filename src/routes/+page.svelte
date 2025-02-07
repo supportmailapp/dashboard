@@ -63,40 +63,42 @@
   </div>
 {/snippet}
 
-<main class="min-h-screen w-full p-5">
-  {#if $user && $guilds}
-    <div class="bg-base-200 w-full shadow-sm">
-      <div class="dy-navbar mx-auto max-w-[1200px]">
-        <div id="branding" class="dy-navbar-start gap-x-3 gap-y-2 py-1 select-none">
-          <img src="/logo.png" alt="Logo" class="h-16 w-16" />
-          <span class="hidden text-3xl font-bold text-white sm:block">SupportMail</span>
-        </div>
-
-        <div class="dy-navbar-center justify-center">
-          <button type="submit" class="dy-btn dy-btn-md md:dy-btn-sm dy-btn-soft border-2" onclick={() => invalidate(() => true)}
-            >Reload Servers</button
-          >
-        </div>
-        <div class="dy-navbar-end">
-          <button
-            tabindex="0"
-            class="hover:border-info cursor-pointer rounded-2xl border-2 border-transparent transition-all duration-100 ease-in-out"
-            onclick={() => {
-              viewProfile = true;
-            }}
-          >
-            <img
-              src={cdnUrls.userAvatar($user.id, $user.avatar, "64")}
-              alt="User Avatar"
-              class="h-[4rem] w-[4rem] rounded-2xl object-cover"
-            />
-          </button>
-        </div>
+{#if user.value && guilds.value.length}
+  <div class="bg-base-200 sticky top-0 z-50 w-full shadow-sm">
+    <nav class="dy-navbar mx-auto max-w-[1200px]">
+      <div id="branding" class="dy-navbar-start gap-x-3 gap-y-2 py-1 select-none">
+        <img src="/logo.png" alt="Logo" class="h-16 w-16" />
+        <span class="hidden text-3xl font-bold text-white sm:block">SupportMail</span>
       </div>
-    </div>
 
+      <div class="dy-navbar-center justify-center">
+        <button type="submit" class="dy-btn dy-btn-md md:dy-btn-sm dy-btn-soft border-2" onclick={() => invalidate(() => true)}
+          >Reload Servers</button
+        >
+      </div>
+      <div class="dy-navbar-end">
+        <button
+          tabindex="0"
+          class="hover:border-info cursor-pointer rounded-2xl border-2 border-transparent transition-all duration-100 ease-in-out"
+          onclick={() => {
+            viewProfile = true;
+          }}
+        >
+          <img
+            src={cdnUrls.userAvatar(user.value.id, user.value.avatar, "64")}
+            alt="User Avatar"
+            class="h-[4rem] w-[4rem] rounded-2xl object-cover"
+          />
+        </button>
+      </div>
+    </nav>
+  </div>
+{/if}
+
+<main class="min-h-screen w-full p-5">
+  {#if user.value && guilds.value.length}
     <div class="flex h-full w-full max-w-[1200px] flex-wrap justify-center gap-5">
-      {#each $guilds as guild}
+      {#each guilds.value as guild}
         {@render guilditem(guild.id, guild.name, guild.iconHash, guild.isConfigured)}
       {/each}
     </div>
@@ -107,11 +109,15 @@
           <div class="flex w-full flex-col gap-4 self-center">
             <div class="flex items-center gap-4">
               <div class="dy-skeleton h-24 w-24 shrink-0 overflow-hidden rounded-lg">
-                <img src={cdnUrls.userAvatar(String($user.id), String($user.avatar))} alt="User Avatar" class="object-cover" />
+                <img
+                  src={cdnUrls.userAvatar(String(user.value.id), String(user.value.avatar))}
+                  alt="User Avatar"
+                  class="object-cover"
+                />
               </div>
               <div class="flex flex-col gap-y-1 select-none">
-                <h1 class="text-xl">@{$user.username || ""}</h1>
-                <div class="text-md italic">{$user.displayName}</div>
+                <h1 class="text-xl">@{user.value.username || ""}</h1>
+                <div class="text-md italic">{user.value.displayName}</div>
               </div>
               <div class="text-error flex grow justify-end">
                 <form method="POST" action="?/logout">

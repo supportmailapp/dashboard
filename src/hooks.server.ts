@@ -1,6 +1,7 @@
 import { getUserGuilds } from "$lib/cache/guilds";
 import { fetchUserData } from "$lib/discord/oauth2";
 import { verifySessionToken } from "$lib/server/auth";
+import { guilds } from "$lib/stores/guilds.svelte";
 import { user } from "$lib/stores/user.svelte";
 import * as Sentry from "@sentry/node";
 import { error, type Handle, type HandleServerError, type ServerInit } from "@sveltejs/kit";
@@ -52,9 +53,9 @@ export const handle: Handle = async ({ event, resolve }) => {
   }
 
   if (event.locals.user) {
-    const guilds = getUserGuilds(event.locals.user.id);
-    if (guilds) {
-      event.locals.guilds = guilds;
+    const _guilds = getUserGuilds(event.locals.user.id);
+    if (_guilds) {
+      guilds.set(_guilds);
     }
   }
 

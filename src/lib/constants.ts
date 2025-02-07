@@ -49,6 +49,14 @@ export const DISCORD_CDN_BASE = "https://cdn.discordapp.com" as const;
 
 export const API_BASE = "/api/v1" as const;
 
+export const BASIC_FETCH_INIT = {
+  method: "GET",
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+  },
+} as const;
+
 interface UserGuildsParams {
   bypassCache?: boolean;
   manageBotOnly?: boolean;

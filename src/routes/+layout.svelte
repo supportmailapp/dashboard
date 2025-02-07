@@ -1,17 +1,17 @@
 <script lang="ts">
-  import "../app.css";
+  import { guilds, loadGuilds } from "$lib/stores/guilds.svelte";
+  import { user } from "$lib/stores/user.svelte";
   import { onMount } from "svelte";
-  import { guilds } from "$lib/stores/guilds.svelte";
-  import { page } from "$app/state";
-  import { loadGuilds } from "$lib/utils/clientStuff";
+  import "../app.css";
 
-  let { children } = $props();
+  let { children, data } = $props();
 
-  $effect(() => console.log("Guilds update", $state.snapshot($guilds)));
+  user.set(data.user as BasicUser | null);
 
   onMount(async function () {
-    if (page.data.user && !$guilds) {
-      guilds.set((await loadGuilds()) || []); // This is actually unnecessary, but just to be sure it's set
+    console.log($state.snapshot(user.value));
+    if (user.value && !guilds.value.length) {
+      loadGuilds(user.value.id);
     }
   });
 </script>
