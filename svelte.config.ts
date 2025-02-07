@@ -7,6 +7,9 @@ const config = {
 
   kit: {
     adapter: adapter(),
+    env: {
+      dir: ".env.dev",
+    },
   },
 } satisfies Config;
 
