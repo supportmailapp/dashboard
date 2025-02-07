@@ -26,6 +26,7 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^22.12.0",
     "autoprefixer": "^10.4.20",
+    "daisyui": "^5.0.0-beta.7",
     "discord-api-types": "^0.37.117",
     "prettier": "^3.4.2",
     "prettier-plugin-svelte": "^3.3.3",
@@ -33,7 +34,7 @@
     "svelte": "^5.19.2",
     "svelte-check": "^4.0.0",
     "typescript": "^5.0.0",
-    "vite": "^6.0.11"
+    "vite": "^6.1.0"
   },
   "dependencies": {
     "@crowdin/crowdin-api-client": "^1.41.0",
@@ -42,20 +43,19 @@
     "@sentry/profiling-node": "^8.51.0",
     "@sentry/sveltekit": "^8.51.0",
     "@svelte-plugins/datepicker": "^1.0.11",
-    "@tailwindcss/vite": "^4.0.1",
-    "daisyui": "^5.0.0-beta.6",
+    "@tailwindcss/vite": "^4.0.4",
     "dayjs": "^1.11.13",
     "iovalkey": "^0.3.1",
     "jsonwebtoken": "^9.0.2",
     "node-cache": "^5.1.2",
     "rate-limiter-flexible": "^5.0.5",
     "tailwind-scrollbar-hide": "^2.0.0",
-    "tailwindcss": "^4.0.1",
+    "tailwindcss": "^4.0.4",
     "thumbhash": "^0.1.1",
     "uuid": "^11.0.5"
   },
   "overrides": {
-    "daisyui": "^5.0.0-beta.6",
+    "daisyui": "^5.0.0-beta.7",
     "@svelte-plugins/datepicker": {
       "svelte": "^5.19.2"
     }
