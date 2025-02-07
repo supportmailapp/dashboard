@@ -5,7 +5,7 @@
   let { color = "white" }: Props = $props();
 </script>
 
-<svg class="size-[1.2em]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+<svg class="size-[1em]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
   <g fill={color} stroke-linejoin="miter" stroke-linecap="butt">
     <polyline points="1 11 12 2 23 11" fill="none" stroke={color} stroke-miterlimit="10" stroke-width="2"></polyline>
     <path

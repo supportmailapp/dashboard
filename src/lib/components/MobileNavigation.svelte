@@ -1,11 +1,15 @@
 <script lang="ts">
   import Home from "$lib/assets/home.svelte";
+  import { user } from "$lib/stores/user.svelte";
+  import { cdnUrls } from "$lib/utils/formatting";
   import { slide } from "svelte/transition";
+
+  const _user = $derived(user.get());
 </script>
 
-<div id="mobileNav" class="dy-dock bg-neutral text-neutral-content" transition:slide={{ duration: 350, axis: "y" }}>
-  <button>
-    <svg class="size-[1.2em]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+<div id="mobileNav" class="mobile-navbar" transition:slide={{ duration: 350, axis: "y" }}>
+  <button class="dy-btn dy-btn-xl bg-base-100 h-full w-full flex-col gap-x-3 py-1.5">
+    <svg class="size-[1em]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
       ><g fill="currentColor" stroke-linejoin="miter" stroke-linecap="butt"
         ><circle
           cx="12"
@@ -26,38 +30,22 @@
         ></path></g
       ></svg
     >
-    <span class="dy-dock-label">Settings</span>
+    <span class="text-sm">Settings</span>
   </button>
 
-  <button class="">
+  <button class="dy-btn dy-btn-xl bg-base-100 h-full w-full flex-col gap-x-3 py-1.5">
     <Home color="white" />
-    <span class="dy-dock-label">Servers</span>
+    <span class="text-sm">Servers</span>
   </button>
 
-  <button>
-    <svg class="size-[1.2em]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-      ><g fill="currentColor" stroke-linejoin="miter" stroke-linecap="butt"
-        ><polyline
-          points="3 14 9 14 9 17 15 17 15 14 21 14"
-          fill="none"
-          stroke="currentColor"
-          stroke-miterlimit="10"
-          stroke-width="2"
-        ></polyline><rect
-          x="3"
-          y="3"
-          width="18"
-          height="18"
-          rx="2"
-          ry="2"
-          fill="none"
-          stroke="currentColor"
-          stroke-linecap="square"
-          stroke-miterlimit="10"
-          stroke-width="2"
-        ></rect></g
-      ></svg
-    >
-    <span class="dy-dock-label">You</span>
+  <button class="dy-btn dy-btn-xl bg-base-100 flex h-full w-full flex-col gap-x-3 py-1.5">
+    {#if _user}
+      <div class="size-[1em]">
+        <img src={cdnUrls.userAvatar(_user.id, _user.avatar, "128")} alt="User Avatar" class="rounded-sm" />
+      </div>
+    {:else}
+      <div class="dy-skeleton size-[1em]"></div>
+    {/if}
+    <span class="text-sm">You</span>
   </button>
 </div>

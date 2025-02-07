@@ -1,6 +1,6 @@
 <script lang="ts">
   import { gg } from "$lib/stores/guild.svelte";
-  import { numberToHex } from "$lib/utils/formatting";
+  import { clipTextToLength } from "$lib/utils/formatting";
 
   $effect(() => {
     console.log("guild", $state.snapshot(gg.guild));
@@ -36,7 +36,7 @@
     <ol class="list-decimal">
       {#each gg.roles as role}
         <li class="list-inside">
-          <span>{role.name} ({role.id})</span>
+          <span>{clipTextToLength(role.name)} ({role.id})</span>
         </li>
       {/each}
     </ol>
