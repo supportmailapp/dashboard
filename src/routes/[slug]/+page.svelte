@@ -1,33 +1,46 @@
 <script lang="ts">
-  import { channels, guild, roles } from "$lib/stores/guild.svelte.js";
+  import { gg } from "$lib/stores/guild.svelte";
+  import { numberToHex } from "$lib/utils/formatting";
 
   $effect(() => {
-    console.log("guild", $state.snapshot($guild));
+    console.log("guild", $state.snapshot(gg.guild));
+    console.log("channels", $state.snapshot(gg.channels));
+    console.log("roles", $state.snapshot(gg.roles));
   });
 </script>
 
-{#if $guild}
-  <h1>{$guild.name}</h1>
+{#if gg.guild}
+  <h1>{gg.guild.name}</h1>
 
-  <div class="dy-divider-neutral my-2"></div>
+  <div class="dy-divider my-2"></div>
 
   <h2>Channels</h2>
 
-  {#if $channels}
-    {#each $channels as channel}
-      <p>{channel.name}</p>
-    {/each}
+  {#if gg.channels}
+    <ol class="list-decimal">
+      {#each gg.channels as channel}
+        <li class="list-inside">
+          <span>{channel.name} ({channel.id})</span>
+          <span>Type: {channel.type}</span>
+          <span>Parent: {channel.parentId || ""}</span>
+        </li>
+      {/each}
+    </ol>
   {/if}
 
-  <div class="dy-divider-neutral my-2"></div>
+  <div class="dy-divider my-2"></div>
 
   <h2>Roles</h2>
 
-  {#if $roles}
-    {#each $roles as role}
-      <p class="text-[{role.color}]">{role.name} ({role.id})</p>
-    {/each}
+  {#if gg.roles}
+    <ol class="list-decimal">
+      {#each gg.roles as role}
+        <li class="list-inside">
+          <span>{role.name} ({role.id})</span>
+        </li>
+      {/each}
+    </ol>
   {/if}
 {:else}
-  <div class="dy-loading-spinner w-10"></div>
+  <h1>Loading...</h1>
 {/if}

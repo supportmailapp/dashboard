@@ -1,14 +1,14 @@
 import { getGuildChannels, setGuildChannels } from "$lib/cache/guilds";
 import { discordREST } from "$lib/discord/utils";
 import { apiChannelToBasic } from "$lib/utils/formatting";
-import type { RequestHandler } from "@sveltejs/kit";
+import { json, type RequestHandler } from "@sveltejs/kit";
 
 export const GET: RequestHandler = async ({ params }) => {
   const guildId = params.slug;
 
   if (guildId) {
     const cachedChannels = getGuildChannels(guildId);
-    if (cachedChannels) return Response.json(cachedChannels, { status: 200, statusText: "OK" });
+    if (cachedChannels) return json(cachedChannels, { status: 200, statusText: "OK" });
 
     try {
       const channels = await discordREST.getGuildChannels(guildId);
@@ -16,9 +16,9 @@ export const GET: RequestHandler = async ({ params }) => {
         guildId,
         channels.map((c) => apiChannelToBasic(c)),
       );
-      return Response.json(channels, { status: 200, statusText: "OK" });
+      return json(channels.reverse(), { status: 200, statusText: "OK" });
     } catch (err: any) {
-      return Response.json(
+      return json(
         {
           message: err.message || "Internal Server Error",
           details: err,

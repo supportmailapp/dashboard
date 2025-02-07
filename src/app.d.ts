@@ -57,6 +57,7 @@ declare global {
     name: string;
     type: ChannelType;
     position: number;
+    parentId: string?;
   };
 
   /**

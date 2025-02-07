@@ -16,7 +16,7 @@ export const GET: RequestHandler = async ({ params }) => {
         guildId,
         roles.map((r) => apiRoleToBasic(r)),
       );
-      return Response.json(roles, { status: 200, statusText: "OK" });
+      return Response.json(roles.reverse(), { status: 200, statusText: "OK" });
     } catch (err: any) {
       return Response.json(
         {

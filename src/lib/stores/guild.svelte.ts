@@ -2,17 +2,18 @@
 
 import { APIRoutes, BASIC_FETCH_INIT } from "$lib/constants";
 import { sortByPositionAndId } from "$lib/utils/formatting";
+import { guilds } from "./guilds.svelte";
 
-export const currentGuild = $state<{ g: DCGuild | null; roles: BasicRole[] | null; channels: BasicChannel[] | null }>({
-  g: null,
+export const gg = $state<{ guild: DCGuild | null; roles: BasicRole[] | null; channels: BasicChannel[] | null }>({
+  guild: null,
   roles: null,
   channels: null,
 });
 
 export function resetGuild() {
-  currentGuild.g = null;
-  currentGuild.roles = null;
-  currentGuild.channels = null;
+  gg.guild = null;
+  gg.roles = null;
+  gg.channels = null;
 }
 
 export async function loadGuildData(guildId: string) {
@@ -26,8 +27,9 @@ export async function loadGuildData(guildId: string) {
 
     const sortedChannels = sortByPositionAndId(_channels);
     const sortedRoles = sortByPositionAndId(_roles);
-    currentGuild.roles = sortedRoles;
-    currentGuild.channels = sortedChannels;
+    gg.guild = guilds.get().find((g) => g.id === guildId) || null;
+    gg.roles = sortedRoles.reverse(); // Reverse because we want the highest role to be at the top
+    gg.channels = sortedChannels;
   } else {
     throw new Error("Failed to fetch guild data");
   }

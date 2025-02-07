@@ -30,6 +30,7 @@ export function apiChannelToBasic(channel: GuildCoreChannel): BasicChannel {
     name: channel.name,
     position: channel.position,
     type: channel.type,
+    parentId: channel.parent_id || null,
   };
 }
 
@@ -56,3 +57,7 @@ export const cdnUrls = {
     DISCORD_CDN_BASE +
     (avatar ? `/avatars/${userId}/${avatar}.webp?size=${size}` : `/embed/avatars/${(Number(userId) >> 22) % 6}.png`),
 };
+
+export function numberToHex(number: number): string {
+  return number.toString(16).padStart(6, "0");
+}
