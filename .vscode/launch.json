@@ -13,7 +13,7 @@
       "env": {
         "NODE_ENV": "development"
       },
-      "runtimeArgs": [ "run", "dev" ]
+      "runtimeArgs": ["run", "dev"]
     }
   ]
 }
