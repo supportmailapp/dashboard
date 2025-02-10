@@ -41,7 +41,7 @@
     <li class="dy-menu-title select-none">Plugins</li>
     <li>
       <!-- svelte-ignore a11y_invalid_attribute -->
-      <a href="" class={isCurrentPage(buildNavHref("/")) ? "bg-base-300 no-animation" : ""}>
+      <a href={buildNavHref("/")} class={isCurrentPage(buildNavHref("/")) ? "bg-base-300 no-animation" : ""}>
         <Home size={6} />
         <span class={isCurrentPage(buildNavHref("/")) ? "text-warning text- font-semibold" : ""}>Home</span>
       </a>
