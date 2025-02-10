@@ -86,5 +86,7 @@
     </div>
   </div>
 {:else}
-  <div class="h-full w-full items-center justify-center"><span class="dy-loading dy-loading-spinner"></span></div>
+  <div class="flex h-full w-full items-center justify-center">
+    <span class="dy-loading dy-loading-spinner mx-auto my-auto"></span>
+  </div>
 {/if}
