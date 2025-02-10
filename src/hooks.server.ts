@@ -12,7 +12,7 @@ export const init: ServerInit = async () => {
   console.log("We are online!");
 };
 
-const apiRateLimiter = new RateLimiterMemory({ duration: 5, points: 5, blockDuration: 10, keyPrefix: "API" });
+const apiRateLimiter = new RateLimiterMemory({ duration: 4, points: 7, blockDuration: 10, keyPrefix: "API" });
 
 export const handle: Handle = async ({ event, resolve }) => {
   // Early exit for API routes
