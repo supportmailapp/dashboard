@@ -1,5 +1,6 @@
 // Public constants
 
+import { page } from "$app/state";
 import { env } from "$env/dynamic/public";
 
 export const mediaQuery = {
@@ -74,4 +75,20 @@ export const APIRoutes = {
       bypass_cache: params.bypassCache ? "true" : "false",
       manage_bot_only: params.manageBotOnly ? "true" : "false",
     }).toString(),
+  news: () => `${API_BASE}/news`,
 } as const;
+
+export const PLUGINS: AppPlugin[] = [
+  {
+    slug: "/tickets",
+    name: "Tickets",
+    description: "Modmail-like ticket system",
+    iconUrl: "/icons/ticket.svg",
+  },
+  {
+    slug: "/reports",
+    name: "Reports",
+    description: "Report users to the staff",
+    iconUrl: "/icons/report.svg",
+  },
+];
