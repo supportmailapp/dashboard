@@ -14,5 +14,6 @@ export const load = async ({ locals, params }) => {
   return {
     ...data,
     user: locals.user || null,
+    basePath: `/${params.slug || ""}`,
   };
 };

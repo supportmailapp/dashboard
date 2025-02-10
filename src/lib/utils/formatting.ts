@@ -51,9 +51,9 @@ export function apiRoleToBasic(role: APIRole): BasicRole {
 }
 
 export const cdnUrls = {
-  guildIcon: (guildId: string, icon: string | null, size = "512") =>
+  guildIcon: (guildId: string, icon: string | null, size: number | string = "512") =>
     DISCORD_CDN_BASE + (icon ? `/icons/${guildId}/${icon}.webp?size=${size}` : `/embed/avatars/1.png`),
-  userAvatar: (userId: string, avatar: string | null, size = "512") =>
+  userAvatar: (userId: string, avatar: string | null, size: number | string = "512") =>
     DISCORD_CDN_BASE +
     (avatar ? `/avatars/${userId}/${avatar}.webp?size=${size}` : `/embed/avatars/${(Number(userId) >> 22) % 6}.png`),
 };

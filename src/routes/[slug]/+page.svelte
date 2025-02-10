@@ -1,6 +1,15 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
+  import { page } from "$app/state";
+  import { buildNavHref } from "$lib/components/navigation.svelte";
+  import { PLUGINS } from "$lib/constants";
   import { gg } from "$lib/stores/guild.svelte";
-  import { clipTextToLength } from "$lib/utils/formatting";
+  import { site } from "$lib/stores/site.svelte";
+  import { user } from "$lib/stores/user.svelte";
+  import { cdnUrls } from "$lib/utils/formatting";
+
+  let serverIdCopied = $state(false);
+  let serverIdText = $derived(serverIdCopied ? "Copied!" : "Copy Server ID");
 
   $effect(() => {
     console.log("guild", $state.snapshot(gg.guild));
@@ -9,38 +18,73 @@
   });
 </script>
 
-{#if gg.guild}
-  <h1>{gg.guild.name}</h1>
-
-  <div class="dy-divider my-2"></div>
-
-  <h2>Channels</h2>
-
-  {#if gg.channels}
-    <ol class="list-decimal">
-      {#each gg.channels as channel}
-        <li class="list-inside">
-          <span>{channel.name} ({channel.id})</span>
-          <span>Type: {channel.type}</span>
-          <span>Parent: {channel.parentId || ""}</span>
-        </li>
+{#if gg.guild && user.get()}
+  <div style="padding: 1rem;">
+    <div class="flex h-30 flex-row items-center justify-start gap-5">
+      <img src={cdnUrls.guildIcon(gg.guild.id, gg.guild.iconHash, "512")} alt="Server icon" class="size-30" />
+      <div>
+        <div class="flex flex-row items-center justify-start gap-3">
+          <div
+            class="dy-tooltip dy-tooltip-right {serverIdCopied ? 'dy-tooltip-success' : 'dy-tooltip-accent'}"
+            data-tip={serverIdText}
+          >
+            <button
+              class="text-primary cursor-pointer p-1 text-4xl font-bold underline underline-offset-4 transition-all duration-150 ease-linear"
+              onclick={() => {
+                if (serverIdCopied || !gg.guild) return;
+                navigator.clipboard.writeText(gg.guild.id);
+                serverIdCopied = true;
+                setTimeout(() => {
+                  serverIdCopied = false;
+                }, 2000);
+              }}
+            >
+              {gg.guild.name}
+            </button>
+          </div>
+        </div>
+        <div class="h-3"></div>
+        <h2 class="pl-1 text-3xl font-semibold text-white">
+          Welcome <span class="text-amber-300">{user.get()?.displayName}</span>!
+        </h2>
+      </div>
+    </div>
+    <div class="h-3"></div>
+    {#if site.news && site.news.length > 0}
+      <h2 class="text-2xl font-semibold text-white underline-offset-2">News</h2>
+      <div class="h-3"></div>
+      {#each site.news as news}
+        <div class="flex flex-col items-center justify-start gap-3">
+          <h3 class="text-xl font-semibold text-white">{news.title}</h3>
+          <p class="text-white">{news.content}</p>
+        </div>
       {/each}
-    </ol>
-  {/if}
-
-  <div class="dy-divider my-2"></div>
-
-  <h2>Roles</h2>
-
-  {#if gg.roles}
-    <ol class="list-decimal">
-      {#each gg.roles as role}
-        <li class="list-inside">
-          <span>{clipTextToLength(role.name)} ({role.id})</span>
-        </li>
+      <div class="h-5"></div>
+      <span class="dy-divider dy-divider-primary"></span>
+    {/if}
+    <div class="h-5"></div>
+    <h2 class="text-3xl font-semibold text-white underline-offset-2 select-none">Plugins</h2>
+    <div class="h-3"></div>
+    <div class="flex w-full flex-row gap-2">
+      {#each PLUGINS as plugin}
+        <button
+          onclick={() => goto(buildNavHref(plugin.slug))}
+          class="dy-card bg-base-200 shadow-base-300 w-84 cursor-pointer items-start justify-start p-4 transition-all duration-150 ease-linear hover:shadow-md"
+        >
+          <div class="dy-card-body p-3">
+            <h2 class="dy-card-title">
+              <img src={plugin.iconUrl} alt="{plugin.name} icon" class="size-8" />
+              {plugin.name}
+              {#if plugin.isNew}
+                <div class="dy-badge dy-badge-secondary rounded-full">NEW</div>
+              {/if}
+            </h2>
+            <p>{plugin.description}</p>
+          </div>
+        </button>
       {/each}
-    </ol>
-  {/if}
+    </div>
+  </div>
 {:else}
-  <h1>Loading...</h1>
+  <div class="h-full w-full items-center justify-center"><span class="dy-loading dy-loading-spinner"></span></div>
 {/if}

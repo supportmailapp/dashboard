@@ -3,7 +3,7 @@
   let { year }: FooterProps = $props();
 </script>
 
-<footer class="footer-container mt-5">
+<footer class="footer-container border-neutral mt-5">
   <nav>
     <p>SupportMail © {year}</p>
   </nav>

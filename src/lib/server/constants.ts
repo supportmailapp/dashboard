@@ -14,3 +14,15 @@ export const discord = {
   redirectUri: publicEnv.PUBLIC_discordRedirectUri,
   scopes: ["identify", "guilds", "guilds.members.read"],
 } as const;
+
+export function ErrorJsonResponse(status: number, statusText: string, message: string) {
+  return Response.json(
+    {
+      message: message,
+    },
+    {
+      status: status,
+      statusText: statusText,
+    },
+  );
+}

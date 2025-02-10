@@ -1,5 +1,6 @@
 import { env } from "$env/dynamic/private";
-import { cacheToken } from "$lib/cache/users";
+import { getUserGuilds } from "$lib/cache/guilds";
+import { cacheToken, getUser } from "$lib/cache/users";
 import jwt from "jsonwebtoken";
 
 export function createSessionToken(userId: string, accessToken: string): string {
@@ -22,4 +23,12 @@ export async function verifySessionToken(token: string): Promise<{ id: string; a
   } catch (e) {
     return null;
   }
+}
+
+export async function checkUserGuildAccess(token: string, guildId: string): Promise<boolean> {
+  const verified = await verifySessionToken(token);
+  if (!verified) return false;
+
+  const guilds = getUserGuilds(verified.id)?.map((g) => g.id);
+  return guilds ? guilds.includes(guildId) : false;
 }

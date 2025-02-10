@@ -3,6 +3,8 @@
   import { user } from "$lib/stores/user.svelte";
   import { cdnUrls } from "$lib/utils/formatting";
   import { slide } from "svelte/transition";
+  import { showServerSelect } from "./navigation.svelte";
+  import NavigationDialog from "./NavigationDialog.svelte";
 
   const _user = $derived(user.get());
 </script>
@@ -33,18 +35,18 @@
     <span class="text-sm">Settings</span>
   </button>
 
-  <button class="dy-btn dy-btn-xl bg-base-100 h-full w-full flex-col gap-x-3 py-1.5">
-    <Home color="white" />
+  <button class="dy-btn dy-btn-xl bg-base-100 h-full w-full flex-col gap-x-3 py-1.5" onclick={showServerSelect}>
+    <img src="/icons/controls.svg" alt="Controls" class="size-6" />
     <span class="text-sm">Servers</span>
   </button>
 
   <button class="dy-btn dy-btn-xl bg-base-100 flex h-full w-full flex-col gap-x-3 py-1.5">
     {#if _user}
-      <div class="size-[1em]">
+      <div class="size-6">
         <img src={cdnUrls.userAvatar(_user.id, _user.avatar, "128")} alt="User Avatar" class="rounded-sm" />
       </div>
     {:else}
-      <div class="dy-skeleton size-[1em]"></div>
+      <div class="dy-skeleton size-6"></div>
     {/if}
     <span class="text-sm">You</span>
   </button>

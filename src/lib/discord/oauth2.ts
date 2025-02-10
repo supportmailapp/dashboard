@@ -72,7 +72,7 @@ export const callbackHandler: RequestHandler = async ({ url, fetch, cookies }) =
         "content-type": "application/x-www-form-urlencoded",
       },
     });
-    if (!oauthRes.ok) throw { message: "Failed to exchange code for token" };
+    if (!oauthRes.ok) throw oauthRes;
   } catch (err: any) {
     console.error(err);
     return error(500, {

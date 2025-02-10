@@ -1,12 +1,23 @@
 import { getGuildRoles, setGuildRoles } from "$lib/cache/guilds";
 import { discordREST } from "$lib/discord/utils";
+import { checkUserGuildAccess } from "$lib/server/auth";
 import { apiRoleToBasic } from "$lib/utils/formatting";
 import type { RequestHandler } from "@sveltejs/kit";
 
-export const GET: RequestHandler = async ({ params }) => {
+export const GET: RequestHandler = async ({ params, cookies }) => {
   const guildId = params.slug;
+  const token = cookies.get("session_token");
 
-  if (guildId) {
+  if (guildId && token) {
+    if (!(await checkUserGuildAccess(token, guildId))) {
+      return Response.json(
+        {
+          message: "You do not have access to this guild",
+        },
+        { status: 403, statusText: "Forbidden" },
+      );
+    }
+
     const cachedRoles = getGuildRoles(guildId);
     if (cachedRoles) return Response.json(cachedRoles, { status: 200, statusText: "OK" });
 
