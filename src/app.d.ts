@@ -100,6 +100,9 @@ declare global {
   };
 
   type AppPlugin = {
+    /**
+     * The slug of the plugin. Starts with a slash.
+     */
     slug: string;
     name: string;
     description?: string;
