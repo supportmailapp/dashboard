@@ -17,7 +17,7 @@ export const GET: RequestHandler = async ({ params, cookies }) => {
         { status: 403, statusText: "Forbidden" },
       );
     }
-    
+
     const cachedChannels = getGuildChannels(guildId);
     if (cachedChannels) return json(cachedChannels, { status: 200, statusText: "OK" });
 
