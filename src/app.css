@@ -15,9 +15,9 @@
   --color-base-300: oklch(37% 0.044 257.287);
   --color-base-content: oklch(96% 0.007 247.896);
   --color-primary: oklch(75.351% 0.138 232.661);
-  --color-primary-content: oklch(15.07% 0.027 232.661);
-  --color-secondary: oklch(68.011% 0.158 276.934);
-  --color-secondary-content: oklch(13.602% 0.031 276.934);
+  --color-primary-content: oklch(88% 0.059 254.128);
+  --color-secondary: oklch(58% 0.233 277.117);
+  --color-secondary-content: oklch(93% 0.034 272.788);
   --color-accent: oklch(59% 0.249 0.584);
   --color-accent-content: oklch(95% 0.038 75.164);
   --color-neutral: oklch(27.949% 0.036 260.03);
@@ -49,7 +49,7 @@
 
   body {
     font-family: "Poppins", sans-serif;
-    font-size: 1rem;
+    font-size: 0.9rem;
     line-height: 1.5;
     color: var(--color-base-content);
     background-color: var(--color-base-100);
