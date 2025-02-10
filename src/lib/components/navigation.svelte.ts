@@ -5,6 +5,10 @@ export function showServerSelect() {
   dialog.showModal();
 }
 
-export function buildNavHref(slug: string = "/") {
-  return `/${page.params.slug + slug}`.replace(/\/+$/, "");
+/**
+ *
+ * @param slug The slug of the page to navigate to - has to start with a slash!
+ */
+export function buildNavHref(slug: string = "/"): string {
+  return `/${page.params.slug + slug}`.replace(/\/$/, "");
 }

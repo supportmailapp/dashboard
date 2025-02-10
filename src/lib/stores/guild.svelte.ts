@@ -1,6 +1,8 @@
 // State for the current guild (guild, roles, channels)
 
-import { APIRoutes, BASIC_FETCH_INIT } from "$lib/constants";
+import { goto } from "$app/navigation";
+import { env } from "$env/dynamic/public";
+import { APIRoutes, BASIC_FETCH_INIT, urls } from "$lib/constants";
 import { sortByPositionAndId } from "$lib/utils/formatting";
 import { guilds } from "./guilds.svelte";
 
@@ -31,6 +33,12 @@ export async function loadGuildData(guildId: string) {
     gg.roles = sortedRoles.reverse(); // Reverse because we want the highest role to be at the top
     gg.channels = sortedChannels;
   } else {
-    throw new Error("Failed to fetch guild data");
+    if (rolesRes.status == 404 || channelsRes.status == 404) {
+      window.location.assign(urls.botAuth(env.PUBLIC_ClientId, guildId));
+    } else {
+      throw new Error("Failed to fetch guild data", {
+        cause: [rolesRes, channelsRes],
+      });
+    }
   }
 }

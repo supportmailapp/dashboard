@@ -27,7 +27,7 @@
       <ul class="dy-dropdown-content dy-menu bg-base-200 rounded-box dy z-1 w-full overflow-y-auto p-2 shadow-sm">
         {#each guilds.value as guild}
           <li>
-            <a href="/{!guild.isConfigured ? 'add/' : ''}{guild.id}" target={guild.isConfigured ? "_self" : "_blank"}>
+            <a href="/{guild.id}" target="_self">
               <div class="dy-avatar">
                 <div class="w-8 rounded-xl">
                   <img src={cdnUrls.guildIcon(guild.id, guild.iconHash, "512")} alt="Guild Icon" />

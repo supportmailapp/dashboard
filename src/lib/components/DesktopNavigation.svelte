@@ -2,16 +2,18 @@
   import { page } from "$app/state";
   import Home from "$lib/assets/home.svelte";
   import { PLUGINS } from "$lib/constants";
-  import { guilds } from "$lib/stores/guilds.svelte";
   import { site } from "$lib/stores/site.svelte";
   import { user } from "$lib/stores/user.svelte";
   import { cdnUrls } from "$lib/utils/formatting";
   import { slide } from "svelte/transition";
   import { buildNavHref, showServerSelect } from "./navigation.svelte";
-  import NavigationDialog from "./NavigationDialog.svelte";
   import { goto } from "$app/navigation";
 
   let _user = $derived(user.get());
+
+  function isCurrentPage(href: string = "/") {
+    return page.url.pathname === href;
+  }
 </script>
 
 <nav class="bg-base-200 dy-drawer flex w-50 flex-row" transition:slide={{ duration: 350, axis: "x" }}>
@@ -38,17 +40,18 @@
     <li></li>
     <li class="dy-menu-title select-none">Plugins</li>
     <li>
-      <button onclick={() => (page.url.pathname === `/${page.params.slug}` ? {} : goto(buildNavHref()))}>
+      <!-- svelte-ignore a11y_invalid_attribute -->
+      <a href="" class={isCurrentPage(buildNavHref("/")) ? "bg-base-300 no-animation" : ""}>
         <Home size={6} />
-        <span>Home</span>
-      </button>
+        <span class={isCurrentPage(buildNavHref("/")) ? "text-warning text- font-semibold" : ""}>Home</span>
+      </a>
     </li>
     {#each PLUGINS as plugin}
       <li class="mt-1">
-        <button onclick={() => goto(buildNavHref(plugin.slug))}>
+        <a href={buildNavHref(plugin.slug)} class={isCurrentPage(buildNavHref(plugin.slug)) ? "dy-menu-active" : ""}>
           <img src={plugin.iconUrl} alt={plugin.name} class="size-6" />
-          <span>{plugin.name}</span>
-        </button>
+          <span class={isCurrentPage(buildNavHref(plugin.slug)) ? "text-warning font-semibold" : ""}>{plugin.name}</span>
+        </a>
       </li>
     {/each}
   </ul>
