@@ -1,15 +1,7 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
 
-import type {
-  APDCGuildChannel,
-  APIChannel,
-  APIDMChannel,
-  APIGroupDMChannel,
-  APIThreadChannel,
-  ChannelType,
-  GuildChannelType,
-} from "discord-api-types/v10";
+import type { APIChannel, APIDMChannel, APIGroupDMChannel, APIThreadChannel, ChannelType } from "discord-api-types/v10";
 
 declare global {
   namespace App {
@@ -36,6 +28,7 @@ declare global {
       status?: number;
       redirect?: string;
       ccDate: string;
+      basePath: string;
     }
 
     // interface PageState {}
@@ -105,6 +98,16 @@ declare global {
   type JWTData = {
     userId: string;
   };
+
+  type AppPlugin = {
+    slug: string;
+    name: string;
+    description?: string;
+    iconUrl: string;
+    isNew?: true;
+  };
+
+  type NavItem = AppPlugin;
 }
 
 export {};
