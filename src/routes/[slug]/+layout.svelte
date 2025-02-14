@@ -1,12 +1,10 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
   import { page } from "$app/state";
-  import { env } from "$env/dynamic/public";
   import DesktopNavigation from "$lib/components/DesktopNavigation.svelte";
   import Footer from "$lib/components/Footer.svelte";
   import MobileNavigation from "$lib/components/MobileNavigation.svelte";
   import NavigationDialog from "$lib/components/NavigationDialog.svelte";
-  import { APIRoutes, mediaQuery, urls } from "$lib/constants.js";
+  import { APIRoutes, mediaQuery } from "$lib/constants.js";
   import { gg, loadGuildData } from "$lib/stores/guild.svelte";
   import { site } from "$lib/stores/site.svelte.js";
   import { onMount } from "svelte";

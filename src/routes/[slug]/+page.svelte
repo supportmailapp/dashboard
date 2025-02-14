@@ -2,6 +2,7 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
   import { buildNavHref } from "$lib/components/navigation.svelte";
+  import RefreshButton from "$lib/components/RefreshButton.svelte";
   import { PLUGINS } from "$lib/constants";
   import { gg } from "$lib/stores/guild.svelte";
   import { site } from "$lib/stores/site.svelte";
@@ -69,17 +70,17 @@
       {#each PLUGINS as plugin}
         <button
           onclick={() => goto(buildNavHref(plugin.slug))}
-          class="dy-card bg-base-200 shadow-base-300 w-84 cursor-pointer items-start justify-start p-4 transition-all duration-150 ease-linear hover:shadow-md"
+          class="dy-card bg-base-200 shadow-base-300 w-84 cursor-pointer items-start justify-start p-2 transition-all duration-150 ease-linear hover:shadow-md sm:p-4"
         >
           <div class="dy-card-body p-3">
-            <h2 class="dy-card-title">
+            <h2 class="flex items-center gap-0.5 font-semibold text-white">
               <img src={plugin.iconUrl} alt="{plugin.name} icon" class="size-8" />
               {plugin.name}
               {#if plugin.isNew}
                 <div class="dy-badge dy-badge-secondary rounded-full">NEW</div>
               {/if}
             </h2>
-            <p>{plugin.description}</p>
+            <p class="text-start">{plugin.description}</p>
           </div>
         </button>
       {/each}
@@ -88,5 +89,6 @@
 {:else}
   <div class="flex h-full w-full items-center justify-center">
     <span class="dy-loading dy-loading-spinner mx-auto my-auto"></span>
+    <RefreshButton text="Already added the bot? Refresh!" whatInvalidate={page.url} />
   </div>
 {/if}
