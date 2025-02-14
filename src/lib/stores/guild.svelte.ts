@@ -34,7 +34,7 @@ export async function loadGuildData(guildId: string) {
     gg.channels = sortedChannels;
   } else {
     if (rolesRes.status == 404 || channelsRes.status == 404) {
-      window.location.assign(urls.botAuth(env.PUBLIC_ClientId, guildId));
+      window.open(urls.botAuth(env.PUBLIC_ClientId, guildId));
     } else {
       throw new Error("Failed to fetch guild data", {
         cause: [rolesRes, channelsRes],
