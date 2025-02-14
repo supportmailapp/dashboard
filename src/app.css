@@ -133,26 +133,25 @@
     color: var(--dc-blurple);
   }
 
-  .server-card {
-    @apply bg-base-200 flex w-full flex-col items-center justify-center rounded-md p-3 shadow-sm md:w-[40%] lg:w-[30%] xl:w-[23%];
-    @apply hover:bg-base-300 transition-colors duration-100 ease-in-out;
-  }
-
   .server-select-icon {
-    @apply aspect-square h-16 w-16 rounded-lg shadow-md md:h-22 md:w-22;
+    @apply aspect-square h-12 w-12 rounded-lg shadow-md md:h-22 md:w-22;
   }
 
-  .server-select-actions {
-    @apply dy-card-actions flex w-full grow items-end justify-center sm:w-[65%];
+  .server-select-btn {
+    @apply dy-btn dy-btn-lg transition-colors duration-150 ease-linear;
   }
 
   .server-select-manage-btn {
-    @apply dy-btn dy-btn-md dy-btn-success w-full border-2 transition-colors duration-150 ease-linear;
+    @apply dy-btn-success;
     @apply hover:dy-btn-warning focus:dy-btn-warning;
   }
 
   .server-select-setup-btn {
-    @apply dy-btn dy-btn-md dy-btn-info dy-btn-outline w-full border-[0.1em] transition-colors duration-100 ease-linear;
+    @apply dy-btn-info dy-btn-outline border-2;
     @apply hover:dy-btn-secondary focus:dy-btn-secondary;
+  }
+
+  .server-card-name {
+    @apply w-full truncate text-center text-lg select-none sm:text-xl;
   }
 }
