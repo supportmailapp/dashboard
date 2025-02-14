@@ -11,7 +11,7 @@ export const guilds = $state<GuildsState>({
   get: function () {
     return this.value;
   },
-  set: function (newValue: DCGuild[]) {
+  set: function (newValue: DCGuild[]): DCGuild[] {
     this.value = newValue;
     return this.value;
   },
