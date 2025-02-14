@@ -7,7 +7,6 @@
   import { cdnUrls } from "$lib/utils/formatting";
   import { slide } from "svelte/transition";
   import { buildNavHref, showServerSelect } from "./navigation.svelte";
-  import { goto } from "$app/navigation";
 
   let _user = $derived(user.get());
 
@@ -16,8 +15,17 @@
   }
 </script>
 
-<nav class="bg-base-200 dy-drawer flex w-50 flex-row" transition:slide={{ duration: 350, axis: "x" }}>
-  <ul class="dy-menu bg-base-200 dy-rounded-box w-56">
+<nav class="bg-base-200 flex flex-row" transition:slide={{ duration: 350, axis: "x" }}>
+  <ul class="dy-menu dy-rounded-box w-56">
+    <a
+      href="/"
+      id="branding"
+      class="my-2 flex cursor-pointer flex-row items-center justify-around text-slate-200 transition-opacity duration-100 ease-linear select-none hover:opacity-60"
+    >
+      <img src="/logo.png" alt="Logo" class="dy-avatar size-8 drop-shadow-md" />
+      <span class="text-2xl font-bold">SupportMail</span>
+    </a>
+    <div class="dy-divider mx-0 my-1"></div>
     <li>
       <button class="justify-around" onclick={() => (site.userMenu = true)}>
         {#if _user}
