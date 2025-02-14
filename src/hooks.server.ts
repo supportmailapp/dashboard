@@ -7,8 +7,13 @@ import * as Sentry from "@sentry/node";
 import { error, type Handle, type HandleServerError, type ServerInit } from "@sveltejs/kit";
 import { RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
 import { inspect } from "util";
+import mongoose from "mongoose";
+import { env } from "$env/dynamic/private";
 
 export const init: ServerInit = async () => {
+  mongoose.connect(env.mongoUri).then(() => {
+    console.log("Connected to MongoDB!");
+  });
   console.log("We are online!");
 };
 
