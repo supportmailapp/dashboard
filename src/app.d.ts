@@ -29,6 +29,7 @@ declare global {
       redirect?: string;
       ccDate: string;
       basePath: string;
+      configData: any;
     }
 
     // interface PageState {}
