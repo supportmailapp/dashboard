@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { goto, invalidate } from "$app/navigation";
+  import { goto, invalidate, invalidateAll } from "$app/navigation";
   import { page } from "$app/state";
   import { env } from "$env/dynamic/public";
   import Branding from "$lib/assets/Branding.svelte";
   import Footer from "$lib/components/Footer.svelte";
+  import RefreshButton from "$lib/components/RefreshButton.svelte";
   import { urls } from "$lib/constants.js";
   import { guilds } from "$lib/stores/guilds.svelte";
   import { user } from "$lib/stores/user.svelte";
@@ -35,32 +36,27 @@
 <svelte:window onkeydown={handleEsc} />
 
 <!-- Servers -->
-{#snippet guilditem(guildId: string, guildName: string, guildIcon: string | null, isConfigured: boolean = false)}
-  <div class="server-card">
-    <div class="block h-fit w-fit justify-center">
-      <img
-        src={cdnUrls.guildIcon(guildId, guildIcon)}
-        alt={guildName}
-        class="server-select-icon {!isConfigured ? 'opacity-40' : ''}"
-      />
-    </div>
-    <div class="dy-card-body items-center p-4 text-center {!isConfigured ? 'opacity-40' : ''}">
-      <div data-tip={guildName} class="md:dy-tooltip md:dy-tooltip-accent flex items-center">
-        <h2 class="line-clamp-1 max-h-10 max-w-full overflow-hidden text-center text-lg text-ellipsis select-none sm:text-xl">
-          {guildName}
-        </h2>
+{#snippet guildrow(guildId: string, guildName: string, guildIcon: string | null, isConfigured: boolean = false)}
+  <a
+    class="hover:bg-base-300 flex w-full flex-row items-center justify-between gap-x-2 rounded-lg transition-all duration-100 {!isConfigured
+      ? 'opacity-40 hover:opacity-90'
+      : ''}"
+    href="/{guildId}"
+  >
+    <div class="flex items-center justify-center p-2">
+      <div class="dy-avatar">
+        <div class="dy-mask dy-mask-squircle h-12 w-12">
+          <img src={cdnUrls.guildIcon(guildId, guildIcon)} alt={guildName} />
+        </div>
       </div>
     </div>
-    <div class="server-select-actions">
-      {#if isConfigured}
-        <a role="button" href="/{guildId}/" class="server-select-manage-btn">Manage</a>
-      {:else}
-        <a role="button" href={urls.botAuth(env.PUBLIC_ClientId, guildId)} target="_blank" class="server-select-setup-btn">
-          Setup
-        </a>
-      {/if}
+    <div class="flex max-w-3/5 min-w-1/5 justify-center truncate text-lg">
+      <span class="block w-fit truncate">{guildName}</span>
     </div>
-  </div>
+    <div class="block min-w-fit items-center justify-center px-2">
+      <img src={!isConfigured ? "/plus-circle.svg" : "/arrow-right-circle.svg"} alt="Continue" class="block size-8" />
+    </div>
+  </a>
 {/snippet}
 
 {#if user.value && guilds.value.length}
@@ -72,9 +68,7 @@
       </div>
 
       <div class="dy-navbar-center justify-center">
-        <button type="submit" class="dy-btn dy-btn-md md:dy-btn-sm dy-btn-soft border-2" onclick={() => invalidate(() => true)}
-          >Reload Servers</button
-        >
+        <RefreshButton text="Reload Servers" />
       </div>
       <div class="dy-navbar-end">
         <button
@@ -97,10 +91,12 @@
 
 <main class="min-h-screen w-full p-5">
   {#if user.value && guilds.value.length}
-    <div class="flex h-full w-full max-w-[1200px] flex-wrap justify-center gap-5">
-      {#each guilds.value as guild}
-        {@render guilditem(guild.id, guild.name, guild.iconHash, guild.isConfigured)}
-      {/each}
+    <div class="rounded-box bg-base-200 h-full w-full max-w-[700px] overflow-hidden">
+      <div class="dy-table flex w-full flex-col items-start justify-center gap-2 p-3 text-center">
+        {#each guilds.value as guild}
+          {@render guildrow(guild.id, guild.name, guild.iconHash, guild.isConfigured)}
+        {/each}
+      </div>
     </div>
 
     <dialog id="profile" class="dy-modal dy-modal-bottom sm:dy-modal-middle text-base-content w-full">
@@ -164,7 +160,7 @@
 </main>
 
 {#if errorCopied}
-  <div class="dy-toast dy-toast-center select-none" transition:slide>
+  <div class="dy-toast dy-toast-right select-none" transition:slide>
     <div class="dy-alert dy-alert-info">
       <span>Error message copied to clipboard</span>
     </div>
