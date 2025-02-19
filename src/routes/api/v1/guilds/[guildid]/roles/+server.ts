@@ -5,8 +5,8 @@ import { apiRoleToBasic } from "$lib/utils/formatting";
 import type { RequestHandler } from "@sveltejs/kit";
 
 export const GET: RequestHandler = async ({ params, cookies }) => {
-  const guildId = params.slug;
-  const token = cookies.get("session_token");
+  const guildId = params.guildid;
+  const token = cookies.get("session");
 
   if (guildId && token) {
     if (!(await checkUserGuildAccess(token, guildId))) {

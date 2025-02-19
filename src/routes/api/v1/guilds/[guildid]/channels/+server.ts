@@ -4,9 +4,9 @@ import { checkUserGuildAccess } from "$lib/server/auth";
 import { apiChannelToBasic } from "$lib/utils/formatting";
 import { json } from "@sveltejs/kit";
 
-export const GET = async ({ params, cookies }) => {
-  const guildId = params.slug;
-  const token = cookies.get("session_token");
+export const GET = async ({ params, cookies, locals }) => {
+  const guildId = params.guildid;
+  const token = cookies.get("session");
 
   if (guildId && token) {
     if (!(await checkUserGuildAccess(token, guildId))) {
