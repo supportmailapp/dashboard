@@ -85,6 +85,10 @@ export const APIRoutes = {
      * - DELETE: Delete the config for a guild
      */
     base: (guildId: string) => `${API_BASE}/config/${guildId}`,
+    /**
+     * Used for:
+     * - PATCH: Update the ticket config for a guild.
+     */
     tickets: (guildId: string) => `${API_BASE}/config/${guildId}/ticket-config`,
     reports: (guildId: string) => `${API_BASE}/config/${guildId}/report-config`,
     tags: (guildId: string) => `${API_BASE}/config/${guildId}/tags`,

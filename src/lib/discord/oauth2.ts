@@ -19,12 +19,12 @@ import { createSessionToken, verifySessionToken } from "$lib/server/auth";
 import { discord } from "$lib/server/constants";
 import { error, redirect, type RequestHandler } from "@sveltejs/kit";
 import {
-    OAuth2Routes,
-    RouteBases,
-    Routes,
-    type APIUser,
-    type RESTAPIPartialCurrentUserGuild,
-    type RESTPostOAuth2AccessTokenResult,
+  OAuth2Routes,
+  RouteBases,
+  Routes,
+  type APIUser,
+  type RESTAPIPartialCurrentUserGuild,
+  type RESTPostOAuth2AccessTokenResult,
 } from "discord-api-types/v10";
 
 export const createOAuth2Login = function (url: URL) {

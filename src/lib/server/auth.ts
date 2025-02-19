@@ -1,6 +1,7 @@
 import { env } from "$env/dynamic/private";
 import { getUserGuilds } from "$lib/cache/guilds";
-import { cacheToken, getUser } from "$lib/cache/users";
+import { cacheToken } from "$lib/cache/users";
+import { API_BASE, APIRoutes } from "$lib/constants";
 import jwt from "jsonwebtoken";
 
 export function createSessionToken(userId: string, accessToken: string): string {
@@ -25,10 +26,36 @@ export async function verifySessionToken(token: string): Promise<{ id: string; a
   }
 }
 
-export async function checkUserGuildAccess(token: string, guildId: string): Promise<boolean> {
+export async function checkUserGuildAccess(token: string, guildId: string): Promise<boolean | undefined> {
   const verified = await verifySessionToken(token);
   if (!verified) return false;
 
-  const guilds = getUserGuilds(verified.id)?.map((g) => g.id);
-  return guilds ? guilds.includes(guildId) : false;
+  let guilds = getUserGuilds(verified.id)?.map((g) => g.id);
+  if (!guilds) {
+    guilds = await fetch(env.ORIGIN + APIRoutes.userGuilds(verified.id, { bypassCache: true, manageBotOnly: true }), {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    }).then(
+      async (res) => {
+        if (res.ok) {
+          console.log("Fetched guilds");
+          const cachableGuilds = (await res.json()) as CachableGuild[];
+          console.log(cachableGuilds.length);
+          return cachableGuilds.map((g) => g.id);
+        } else {
+          console.log("Failed to fetch guilds (1)", res);
+          return undefined;
+        }
+      },
+      () => {
+        console.log("Failed to fetch guilds (2)");
+        return undefined;
+      },
+    );
+  }
+
+  return guilds?.includes(guildId);
 }

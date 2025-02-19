@@ -19,17 +19,16 @@ Page Contents:
 
 <script lang="ts">
   import { gg } from "$lib/stores/guild.svelte.js";
-  import type { ITicketConfig } from "supportmail-types";
 
   let enabled = $state(true);
-  let config = $state(gg.config?.ticketConfig as ITicketConfig);
+  let config = $state(gg.config?.ticketConfig);
 </script>
 
 <h1 class="text-amber-400">Ticket Configuration</h1>
 
 <div class="mb-4 flex items-center">
   <label for="enabled-switch" class="mr-2">Enabled</label>
-  <input id="enabled-switch" type="checkbox" class="dy-toggle checked:dy-toggle-success" bind:checked={config.enabled} />
+  <input id="enabled-switch" type="checkbox" class="dy-toggle checked:dy-toggle-success" bind:checked={enabled} />
 </div>
 
 {#if config}

@@ -1,23 +1,13 @@
 import { getGuildChannels, setGuildChannels } from "$lib/cache/guilds";
 import { discordREST } from "$lib/discord/utils";
-import { checkUserGuildAccess } from "$lib/server/auth";
 import { apiChannelToBasic } from "$lib/utils/formatting";
 import { json } from "@sveltejs/kit";
 
-export const GET = async ({ params, cookies, locals }) => {
-  const guildId = params.guildid;
-  const token = cookies.get("session");
+export const GET = async ({ locals }) => {
+  const guildId = locals.guildId;
+  const token = locals.token;
 
   if (guildId && token) {
-    if (!(await checkUserGuildAccess(token, guildId))) {
-      return Response.json(
-        {
-          message: "You do not have access to this guild",
-        },
-        { status: 403, statusText: "Forbidden" },
-      );
-    }
-
     const cachedChannels = getGuildChannels(guildId);
     if (cachedChannels) return json(cachedChannels, { status: 200, statusText: "OK" });
 

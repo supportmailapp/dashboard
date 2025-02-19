@@ -53,7 +53,7 @@ export async function loadGuildData(guildId: string) {
 }
 
 export async function loadGuildConfig(guildId: string) {
-  const configRes = await fetch(APIRoutes.guildConfig(guildId), BASIC_FETCH_INIT);
+  const configRes = await fetch(APIRoutes.config.base(guildId), BASIC_FETCH_INIT);
   if (configRes.ok) {
     gg.config = (await configRes.json()) as IDBGuild;
   } else {

@@ -3,8 +3,8 @@ import { getDB } from "$lib/db/mongo.js";
 import { checkUserGuildAccess } from "$lib/server/auth";
 import type { IDBGuild } from "supportmail-types";
 
-export const GET = async ({ params, cookies, request }) => {
-  const guildId = params.guildid;
+export const GET = async ({ locals, cookies, request }) => {
+  const guildId = locals.guildId;
   let token = cookies.get("session");
   if (!token) {
     const authHeader = request.headers.get("Authorization");

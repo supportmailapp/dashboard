@@ -3,7 +3,7 @@ import { getUserGuilds } from "$lib/cache/guilds";
 import { API_BASE } from "$lib/constants";
 import * as Mongo from "$lib/db/mongo";
 import { fetchUserData } from "$lib/discord/oauth2";
-import { verifySessionToken } from "$lib/server/auth";
+import { checkUserGuildAccess, verifySessionToken } from "$lib/server/auth";
 import { guilds } from "$lib/stores/guilds.svelte";
 import { user } from "$lib/stores/user.svelte";
 import * as Sentry from "@sentry/node";
@@ -26,34 +26,12 @@ export const init: ServerInit = async () => {
   console.log("Server started at", new Date().toISOString());
 };
 
-const apiRateLimiter = new RateLimiterMemory({ duration: 4, points: 7, blockDuration: 10, keyPrefix: "API" });
+const apiRateLimiter = new RateLimiterMemory({ duration: 4, points: 8, blockDuration: 10, keyPrefix: "API" });
 
 const baseHandle: Handle = async ({ event, resolve }) => {
   // Early exit for API routes
   if (event.url.pathname.startsWith("/api")) {
-    let response = await apiRateLimiter
-      .consume(event.getClientAddress(), 1)
-      .then((res: RateLimiterRes) => {
-        event.setHeaders({
-          "X-RateLimit-Remaining": `${res.remainingPoints}`,
-          "X-RateLimit-Reset": `${~~(res.msBeforeNext / 1000)}`,
-        });
-        return res;
-      })
-      .catch((rej: RateLimiterRes) => {
-        event.setHeaders({
-          "X-RateLimit-Remaining": "0",
-          "X-RateLimit-Reset": `${~~(rej.msBeforeNext / 1000)}`,
-        });
-        return rej;
-      });
-
-    if (response.remainingPoints < 1) {
-      return error(429, {
-        message: "Rate limit exceeded",
-      });
-    }
-    return resolve(event);
+    return await resolve(event);
   }
 
   const sessionCookie = event.cookies.get("session");
@@ -78,14 +56,35 @@ const baseHandle: Handle = async ({ event, resolve }) => {
 
 const isProtectedRoute = (url: URL) => {
   const pathname = url.pathname.toLowerCase();
-  return pathname.startsWith("/api") && pathname != `${API_BASE}/discord-auth`;
+  return pathname.startsWith("/api") && !pathname.match(/\/api\/v\d+\/discord-auth/i);
 };
 
 const handleApiRequest: Handle = async ({ event, resolve }) => {
+  let token = event.cookies.get("session");
   if (isProtectedRoute(event.url)) {
-    // These are the route params that are used in the API
-    const guildId = event.params.guildid || event.params.slug;
-    let token = event.cookies.get("session");
+    let response = await apiRateLimiter
+      .consume(event.getClientAddress(), 1)
+      .then((res: RateLimiterRes) => {
+        event.setHeaders({
+          "X-RateLimit-Remaining": `${res.remainingPoints}`,
+          "X-RateLimit-Reset": `${~~(res.msBeforeNext / 1000)}`,
+        });
+        return res;
+      })
+      .catch((rej: RateLimiterRes) => {
+        event.setHeaders({
+          "X-RateLimit-Remaining": "0",
+          "X-RateLimit-Reset": `${~~(rej.msBeforeNext / 1000)}`,
+        });
+        return rej;
+      });
+
+    if (response.remainingPoints < 1) {
+      return error(429, {
+        message: "Rate limit exceeded",
+      });
+    }
+
     if (!token) {
       const authHeader = event.request.headers.get("Authorization");
       if (authHeader?.startsWith("Session")) {
@@ -93,14 +92,29 @@ const handleApiRequest: Handle = async ({ event, resolve }) => {
       }
     }
 
-    if (!guildId || !token) {
-      return Response.json(null, { status: 400, statusText: "Bad Request" });
-    } else {
-    }
+    if (!event.url.pathname.endsWith("news")) {
+      // These are the route params that are used in the API
+      const guildId = event.params.guildid || event.params.slug;
 
-    event.locals.guildId = guildId;
-    event.locals.token = token;
+      if (!guildId || !token) {
+        return Response.json(null, { status: 400, statusText: "Bad Request" });
+      } else {
+        const hasAccess = await checkUserGuildAccess(token, guildId);
+        if (hasAccess === false) {
+          return Response.json(
+            {
+              message: "You do not have access to this guild",
+            },
+            { status: 403, statusText: "Forbidden" },
+          );
+        }
+      }
+
+      event.locals.guildId = guildId;
+      event.locals.token = token;
+    }
   }
+
   return resolve(event);
 };
 
