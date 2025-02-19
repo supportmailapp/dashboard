@@ -18,8 +18,24 @@ Page Contents:
 -->
 
 <script lang="ts">
-  let { data } = $props();
-  console.log(data);
+  import { gg } from "$lib/stores/guild.svelte.js";
+  import type { ITicketConfig } from "supportmail-types";
+
+  let enabled = $state(true);
+  let config = $state(gg.config?.ticketConfig as ITicketConfig);
 </script>
 
 <h1 class="text-amber-400">Ticket Configuration</h1>
+
+<div class="mb-4 flex items-center">
+  <label for="enabled-switch" class="mr-2">Enabled</label>
+  <input id="enabled-switch" type="checkbox" class="dy-toggle checked:dy-toggle-success" bind:checked={config.enabled} />
+</div>
+
+{#if config}
+  <div class="transition-opacity duration-150 select-none {enabled ? '' : 'cursor-not-allowed opacity-60'}">
+    Some content here
+  </div>
+{:else}
+  <span class="dy-loading dy-loading-spinner dy-loading-xl select-none"></span>
+{/if}
