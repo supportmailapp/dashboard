@@ -4,12 +4,16 @@ import { MongoClient } from "mongodb";
 const client = new MongoClient(mongoUri);
 
 // connect to the database
-export const connect = client.connect;
+export async function connect() {
+  await client.connect();
+}
 
 // disconnect from the database
-export const disconnect = client.close;
+export async function disconnect() {
+  await client.close();
+}
 
 // get the database
-export function getDB(): any {
+export function getDB() {
   return client.db();
 }
