@@ -51,3 +51,14 @@ export async function loadGuildData(guildId: string) {
     }
   }
 }
+
+export async function loadGuildConfig(guildId: string) {
+  const configRes = await fetch(APIRoutes.guildConfig(guildId), BASIC_FETCH_INIT);
+  if (configRes.ok) {
+    gg.config = (await configRes.json()) as IDBGuild;
+  } else {
+    throw new Error("Failed to fetch guild config", {
+      cause: configRes,
+    });
+  }
+}
