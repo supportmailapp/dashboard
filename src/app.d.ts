@@ -16,6 +16,8 @@ declare global {
       guilds?: DCGuild[];
       guild?: DCGuild | null;
       user: BasicUser | null;
+      guildId?: string;
+      token?: string;
     }
 
     interface PageData {
