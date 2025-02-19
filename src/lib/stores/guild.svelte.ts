@@ -1,19 +1,28 @@
 // State for the current guild (guild, roles, channels)
 
-import { goto } from "$app/navigation";
 import { env } from "$env/dynamic/public";
 import { APIRoutes, BASIC_FETCH_INIT, urls } from "$lib/constants";
 import { sortByPositionAndId } from "$lib/utils/formatting";
 import { guilds } from "./guilds.svelte";
+import type { IDBGuild } from "supportmail-types";
 
-export const gg = $state<{ guild: DCGuild | null; roles: BasicRole[] | null; channels: BasicChannel[] | null }>({
+type GGType = {
+  guild: DCGuild | null;
+  config: IDBGuild | null;
+  roles: BasicRole[] | null;
+  channels: BasicChannel[] | null;
+};
+
+export const gg = $state<GGType>({
   guild: null,
+  config: null,
   roles: null,
   channels: null,
 });
 
 export function resetGuild() {
   gg.guild = null;
+  gg.config = null;
   gg.roles = null;
   gg.channels = null;
 }
