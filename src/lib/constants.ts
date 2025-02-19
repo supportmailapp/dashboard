@@ -76,6 +76,20 @@ export const APIRoutes = {
       manage_bot_only: params.manageBotOnly ? "true" : "false",
     }).toString(),
   news: () => `${API_BASE}/news`,
+  config: {
+    /**
+     * Used for:
+     * - GET: Get the config for a guild
+     * - POST: Create a new config for a guild
+     * - PATCH: Update the config for a guild
+     * - DELETE: Delete the config for a guild
+     */
+    base: (guildId: string) => `${API_BASE}/config/${guildId}`,
+    tickets: (guildId: string) => `${API_BASE}/config/${guildId}/ticket-config`,
+    reports: (guildId: string) => `${API_BASE}/config/${guildId}/report-config`,
+    tags: (guildId: string) => `${API_BASE}/config/${guildId}/tags`,
+    blacklist: (guildId: string) => `${API_BASE}/config/${guildId}/blacklist`,
+  },
 } as const;
 
 export const PLUGINS: AppPlugin[] = [
