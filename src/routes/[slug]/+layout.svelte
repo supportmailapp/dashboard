@@ -5,7 +5,7 @@
   import MobileNavigation from "$lib/components/MobileNavigation.svelte";
   import NavigationDialog from "$lib/components/NavigationDialog.svelte";
   import { APIRoutes, mediaQuery } from "$lib/constants.js";
-  import { gg, loadGuildData } from "$lib/stores/guild.svelte";
+  import { gg, loadGuildConfig, loadGuildData } from "$lib/stores/guild.svelte";
   import { site } from "$lib/stores/site.svelte.js";
   import { onMount } from "svelte";
   import { slide } from "svelte/transition";
@@ -34,7 +34,7 @@
     }
 
     if (!gg.config) {
-      
+      await loadGuildConfig(page.params.slug);
     }
   });
 </script>
