@@ -19,12 +19,12 @@ import { createSessionToken, verifySessionToken } from "$lib/server/auth";
 import { discord } from "$lib/server/constants";
 import { error, redirect, type RequestHandler } from "@sveltejs/kit";
 import {
-  OAuth2Routes,
-  RouteBases,
-  Routes,
-  type APIUser,
-  type RESTAPIPartialCurrentUserGuild,
-  type RESTPostOAuth2AccessTokenResult,
+    OAuth2Routes,
+    RouteBases,
+    Routes,
+    type APIUser,
+    type RESTAPIPartialCurrentUserGuild,
+    type RESTPostOAuth2AccessTokenResult,
 } from "discord-api-types/v10";
 
 export const createOAuth2Login = function (url: URL) {
@@ -111,7 +111,7 @@ export const callbackHandler: RequestHandler = async ({ url, fetch, cookies }) =
 
   const session = createSessionToken(userData.id, oauthResJson.access_token);
 
-  cookies.set("session_token", session, {
+  cookies.set("session", session, {
     path: "/",
     maxAge: oauthResJson.expires_in,
   });
@@ -124,10 +124,10 @@ export const logoutHandler: RequestHandler = async ({ cookies, fetch }) => {
   // Clear cookie
   // Redirect to home page
 
-  const seToken = cookies.get("session_token");
+  const seToken = cookies.get("session");
   if (!seToken) return redirect(302, "/");
 
-  cookies.delete("session_token", { path: "/" });
+  cookies.delete("session", { path: "/" });
 
   const sessionData = verifySessionToken(seToken);
   if (!sessionData) return redirect(302, "/");
