@@ -2,9 +2,9 @@ import { getGuildChannels, setGuildChannels } from "$lib/cache/guilds";
 import { discordREST } from "$lib/discord/utils";
 import { checkUserGuildAccess } from "$lib/server/auth";
 import { apiChannelToBasic } from "$lib/utils/formatting";
-import { json, type RequestHandler } from "@sveltejs/kit";
+import { json } from "@sveltejs/kit";
 
-export const GET: RequestHandler = async ({ params, cookies }) => {
+export const GET = async ({ params, cookies }) => {
   const guildId = params.slug;
   const token = cookies.get("session_token");
 
