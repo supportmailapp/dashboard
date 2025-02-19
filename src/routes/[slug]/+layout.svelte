@@ -32,6 +32,10 @@
         site.news = (await res.json()) as any[];
       }
     }
+
+    if (!gg.config) {
+      
+    }
   });
 </script>
 
