@@ -1,23 +1,26 @@
+import { env } from "$env/dynamic/private";
 import { getUserGuilds } from "$lib/cache/guilds";
+import { API_BASE } from "$lib/constants";
+import * as Mongo from "$lib/db/mongo";
 import { fetchUserData } from "$lib/discord/oauth2";
 import { verifySessionToken } from "$lib/server/auth";
 import { guilds } from "$lib/stores/guilds.svelte";
 import { user } from "$lib/stores/user.svelte";
 import * as Sentry from "@sentry/node";
 import { error, type Handle, type HandleServerError, type ServerInit } from "@sveltejs/kit";
+import { sequence } from "@sveltejs/kit/hooks";
 import { RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
 import { inspect } from "util";
-import { env } from "$env/dynamic/private";
-import * as Mongo from "$lib/db/mongo";
 
 export const init: ServerInit = async () => {
-  try {
-    await Mongo.connect();
-    console.log("Connected to MongoDB");
-  } catch (err) {
-    console.error("MongoDB failed to connect", err);
-    process.exit(1);
-  }
+  Mongo.connect()
+    .then(() => {
+      console.log("Connected to MongoDB");
+    })
+    .catch((err) => {
+      console.error("MongoDB failed to connect", err);
+      process.exit(1);
+    });
 
   console.log("Environment:", env.NODE_ENV);
   console.log("Server started at", new Date().toISOString());
@@ -25,7 +28,7 @@ export const init: ServerInit = async () => {
 
 const apiRateLimiter = new RateLimiterMemory({ duration: 4, points: 7, blockDuration: 10, keyPrefix: "API" });
 
-export const handle: Handle = async ({ event, resolve }) => {
+const baseHandle: Handle = async ({ event, resolve }) => {
   // Early exit for API routes
   if (event.url.pathname.startsWith("/api")) {
     let response = await apiRateLimiter
@@ -53,7 +56,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     return resolve(event);
   }
 
-  const sessionCookie = event.cookies.get("session_token");
+  const sessionCookie = event.cookies.get("session");
 
   if (sessionCookie) {
     const tokenData = await verifySessionToken(sessionCookie);
@@ -72,6 +75,36 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   return resolve(event);
 };
+
+const isProtectedRoute = (url: URL) => {
+  const pathname = url.pathname.toLowerCase();
+  return pathname.startsWith("/api") && pathname != `${API_BASE}/discord-auth`;
+};
+
+const handleApiRequest: Handle = async ({ event, resolve }) => {
+  if (isProtectedRoute(event.url)) {
+    // These are the route params that are used in the API
+    const guildId = event.params.guildid || event.params.slug;
+    let token = event.cookies.get("session");
+    if (!token) {
+      const authHeader = event.request.headers.get("Authorization");
+      if (authHeader?.startsWith("Session")) {
+        token = authHeader.split(" ")[1];
+      }
+    }
+
+    if (!guildId || !token) {
+      return Response.json(null, { status: 400, statusText: "Bad Request" });
+    } else {
+    }
+
+    event.locals.guildId = guildId;
+    event.locals.token = token;
+  }
+  return resolve(event);
+};
+
+export const handle = sequence(baseHandle, handleApiRequest);
 
 export const handleError: HandleServerError = async ({ error, event, status, message }) => {
   const errorId = Sentry.captureException(error, {
