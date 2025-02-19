@@ -16,7 +16,13 @@ declare global {
       guilds?: DCGuild[];
       guild?: DCGuild | null;
       user: BasicUser | null;
+      /**
+       * Just for the API routes.
+       */
       guildId?: string;
+      /**
+       * Just for the API routes.
+       */
       token?: string;
     }
 
