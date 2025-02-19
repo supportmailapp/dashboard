@@ -7,14 +7,20 @@ import * as Sentry from "@sentry/node";
 import { error, type Handle, type HandleServerError, type ServerInit } from "@sveltejs/kit";
 import { RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
 import { inspect } from "util";
-import mongoose from "mongoose";
 import { env } from "$env/dynamic/private";
+import * as Mongo from "$lib/db/mongo";
 
 export const init: ServerInit = async () => {
-  mongoose.connect(env.mongoUri).then(() => {
-    console.log("Connected to MongoDB!");
-  });
-  console.log("We are online!");
+  try {
+    await Mongo.connect();
+    console.log("Connected to MongoDB");
+  } catch (err) {
+    console.error("MongoDB failed to connect", err);
+    process.exit(1);
+  }
+
+  console.log("Environment:", env.NODE_ENV);
+  console.log("Server started at", new Date().toISOString());
 };
 
 const apiRateLimiter = new RateLimiterMemory({ duration: 4, points: 7, blockDuration: 10, keyPrefix: "API" });
