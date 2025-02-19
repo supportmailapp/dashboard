@@ -89,9 +89,9 @@
   </div>
 {/if}
 
-<main class="min-h-screen w-full p-5">
+<main class="h-fit w-full p-5">
   {#if user.value && guilds.value.length}
-    <div class="rounded-box bg-base-200 h-full w-full max-w-[700px] overflow-hidden">
+    <div class="rounded-box bg-base-200 h-fit w-full max-w-[700px] overflow-hidden">
       <div class="dy-table flex w-full flex-col items-start justify-center gap-2 p-3 text-center">
         {#each guilds.value as guild}
           {@render guildrow(guild.id, guild.name, guild.iconHash, guild.isConfigured)}
@@ -167,4 +167,4 @@
   </div>
 {/if}
 
-<Footer year={page.data.ccDate} />
+<Footer year={page.data.ccDate} additionalClasses="sticky bottom-0" />
