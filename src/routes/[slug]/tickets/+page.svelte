@@ -20,20 +20,41 @@ Page Contents:
 <script lang="ts">
   import { gg } from "$lib/stores/guild.svelte.js";
 
-  let enabled = $state(true);
-  let config = $state(gg.config?.ticketConfig);
+  let enabled = $derived(gg.oldConfig?.ticketConfig.enabled);
+
+  $effect(() => {
+    console.log($state.snapshot(gg.newConfig));
+  });
 </script>
 
 <h1 class="text-amber-400">Ticket Configuration</h1>
 
 <div class="mb-4 flex items-center">
   <label for="enabled-switch" class="mr-2">Enabled</label>
-  <input id="enabled-switch" type="checkbox" class="dy-toggle checked:dy-toggle-success" bind:checked={enabled} />
+  <input
+    id="enabled-switch"
+    type="checkbox"
+    class="dy-toggle checked:dy-toggle-success"
+    checked={gg.newConfig?.ticketConfig.enabled}
+    onclick={() => {
+      if (gg.newConfig) gg.newConfig.ticketConfig.enabled = !gg.newConfig.ticketConfig.enabled;
+    }}
+  />
 </div>
 
-{#if config}
+{#if gg.oldConfig}
   <div class="transition-opacity duration-150 select-none {enabled ? '' : 'cursor-not-allowed opacity-60'}">
-    Some content here
+    <!--  -->
+    <div class="text-wrap">
+      <p>Old Config</p>
+      <pre class="text-xs">
+      {@html JSON.stringify(gg.oldConfig)}
+    </pre>
+      <p>New Config</p>
+      <pre class="text-xs">
+      {@html JSON.stringify(gg.newConfig)}
+    </pre>
+    </div>
   </div>
 {:else}
   <span class="dy-loading dy-loading-spinner dy-loading-xl select-none"></span>
