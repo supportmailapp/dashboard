@@ -1,6 +1,5 @@
-// Public constants
+// PUBLIC constants
 
-import { page } from "$app/state";
 import { env } from "$env/dynamic/public";
 
 export const mediaQuery = {
@@ -50,7 +49,7 @@ export const DISCORD_CDN_BASE = "https://cdn.discordapp.com" as const;
 
 export const API_BASE = "/api/v1" as const;
 
-export const BASIC_FETCH_INIT = {
+export const BASIC_GET_FETCH_INIT = {
   method: "GET",
   credentials: "include",
   headers: {
@@ -75,6 +74,13 @@ export const APIRoutes = {
       bypass_cache: params.bypassCache ? "true" : "false",
       manage_bot_only: params.manageBotOnly ? "true" : "false",
     }).toString(),
+  /**
+   * Used for:
+   * - GET: Get the DB user for a user
+   * - PATCH: Update the DB user for a user
+   * - DELETE: Delete the DB user for a user
+   */
+  user: (userId: string) => `${API_BASE}/users/${userId}`,
   news: () => `${API_BASE}/news`,
   config: {
     /**
@@ -110,3 +116,12 @@ export const PLUGINS: AppPlugin[] = [
     iconUrl: "/icons/report.svg",
   },
 ];
+
+export const LANGUAGES = [
+  { name: "English", value: "en" },
+  { name: "Deutsch", value: "de" },
+  { name: "Français", value: "fr" },
+];
+
+export const DEFAULT_LANGUAGE = "en" as const;
+
