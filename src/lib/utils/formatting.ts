@@ -50,6 +50,15 @@ export function apiRoleToBasic(role: APIRole): BasicRole {
   };
 }
 
+export function anyUserToBasic(user: { [key: string]: any }): BasicUser {
+  return {
+    id: user.id,
+    username: user.username,
+    displayName: user.displayName || user.global_name || null,
+    avatar: user.avatar,
+  };
+}
+
 export const cdnUrls = {
   guildIcon: (guildId: string, icon: string | null, size: number | string = "512") =>
     DISCORD_CDN_BASE + (icon ? `/icons/${guildId}/${icon}.webp?size=${size}` : `/embed/avatars/1.png`),
