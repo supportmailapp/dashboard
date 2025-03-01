@@ -5,41 +5,6 @@
   prefix: "dy-";
 }
 
-@plugin "daisyui/theme" {
-  name: "smbot";
-  default: true;
-  prefersdark: true;
-  color-scheme: "dark";
-  --color-base-100: oklch(20.768% 0.039 265.754);
-  --color-base-200: oklch(27% 0.041 260.031);
-  --color-base-300: oklch(37% 0.044 257.287);
-  --color-base-content: oklch(96% 0.007 247.896);
-  --color-primary: oklch(75.351% 0.138 232.661);
-  --color-primary-content: oklch(88% 0.059 254.128);
-  --color-secondary: oklch(58% 0.233 277.117);
-  --color-secondary-content: oklch(93% 0.034 272.788);
-  --color-accent: oklch(59% 0.249 0.584);
-  --color-accent-content: oklch(95% 0.038 75.164);
-  --color-neutral: oklch(27.949% 0.036 260.03);
-  --color-neutral-content: oklch(85.589% 0.007 260.03);
-  --color-info: oklch(68.455% 0.148 237.251);
-  --color-info-content: oklch(0% 0 0);
-  --color-success: oklch(78.452% 0.132 181.911);
-  --color-success-content: oklch(15.69% 0.026 181.911);
-  --color-warning: oklch(83.242% 0.139 82.95);
-  --color-warning-content: oklch(16.648% 0.027 82.95);
-  --color-error: oklch(71.785% 0.17 13.118);
-  --color-error-content: oklch(14.357% 0.034 13.118);
-  --radius-selector: 0.25rem;
-  --radius-field: 0.25rem;
-  --radius-box: 0.5rem;
-  --size-selector: 0.25rem;
-  --size-field: 0.21875rem;
-  --border: 0.25px;
-  --depth: 0;
-  --noise: 0;
-}
-
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -108,7 +73,7 @@
   }
 
   .footer-container {
-    @apply gap-x-2.5 border-t-2 p-4 text-xs md:gap-x-7.5;
+    @apply gap-x-2.5 p-4 text-xs md:gap-x-7.5;
     display: grid;
     grid-auto-flow: column;
     width: 100%;
@@ -119,9 +84,35 @@
     align-items: center;
     user-select: none;
   }
+
+  form.userdata {
+    @apply flex flex-col gap-y-2;
+
+    label {
+      @apply text-sm font-semibold;
+    }
+
+    select {
+      @apply dy-select dy-select-primary;
+    }
+
+    button {
+      @apply dy-btn dy-btn-success w-full;
+    }
+  }
 }
 
 @layer utilities {
+  .tooltip {
+    @apply invisible absolute;
+    @apply transition-all duration-100 ease-linear;
+  }
+
+  .has-tooltip:hover .tooltip {
+    @apply visible z-50;
+    @apply transition-all duration-100 ease-linear;
+  }
+
   .xy-center-items {
     display: flex;
     justify-content: center;
