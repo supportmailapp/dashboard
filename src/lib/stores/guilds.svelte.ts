@@ -1,4 +1,4 @@
-import { APIRoutes, BASIC_FETCH_INIT } from "$lib/constants";
+import { APIRoutes, BASIC_GET_FETCH_INIT } from "$lib/constants";
 
 type GuildsState = {
   value: DCGuild[];
@@ -18,7 +18,7 @@ export const guilds = $state<GuildsState>({
 });
 
 export async function loadGuilds(userId: string) {
-  const guildsRes = await fetch(APIRoutes.userGuilds(userId, { manageBotOnly: true }), BASIC_FETCH_INIT);
+  const guildsRes = await fetch(APIRoutes.userGuilds(userId, { manageBotOnly: true }), BASIC_GET_FETCH_INIT);
 
   if (guildsRes.ok) {
     let guildsJson = (await guildsRes.json()) as CachableGuild[];
