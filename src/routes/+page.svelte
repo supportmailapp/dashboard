@@ -1,39 +1,38 @@
 <script lang="ts">
-  import { goto, invalidate, invalidateAll } from "$app/navigation";
+  import { goto } from "$app/navigation";
   import { page } from "$app/state";
-  import { env } from "$env/dynamic/public";
-  import Branding from "$lib/assets/Branding.svelte";
-  import Footer from "$lib/components/Footer.svelte";
-  import RefreshButton from "$lib/components/RefreshButton.svelte";
-  import { urls } from "$lib/constants.js";
-  import { guilds } from "$lib/stores/guilds.svelte";
-  import { user } from "$lib/stores/user.svelte";
-  import { cdnUrls } from "$lib/utils/formatting";
   import { onMount } from "svelte";
   import { slide } from "svelte/transition";
 
-  let viewProfile = $state(false);
+  import Footer from "$lib/components/Footer.svelte";
+  import RefreshButton from "$lib/components/RefreshButton.svelte";
+  import { guilds as guildsState } from "$lib/stores/guilds.svelte";
+  import { user as userState } from "$lib/stores/user.svelte";
+  import { cdnUrls } from "$lib/utils/formatting";
+  import UserSettingsDialog from "$lib/components/UserSettingsDialog.svelte";
+
+  let showUserSettings = $state(false);
   let errorCopied = $state(false);
+  let user = $derived(userState.discord as BasicUser);
+  let dbUser = $derived(userState.db);
+  let guilds = $derived(guildsState.value as DCGuild[]);
 
   $effect(() => {
-    if (viewProfile) {
-      const dialog = document.getElementById("profile") as HTMLDialogElement;
-      dialog.showModal();
+    if (dbUser != null) {
+      console.log("DBUser set:", $state.snapshot(dbUser));
     }
   });
 
-  const handleEsc = (event: KeyboardEvent) => {
-    if (event.key === "Escape") viewProfile = false;
-  };
-
-  onMount(async () => {
-    if (page.data.redirect) {
-      goto(page.data.redirect);
+  onMount(() => {
+    if (user && guilds.length) {
+      const redirect = window.localStorage.getItem("redirect");
+      if (redirect) {
+        window.localStorage.removeItem("redirect");
+        goto(redirect);
+      }
     }
   });
 </script>
-
-<svelte:window onkeydown={handleEsc} />
 
 <!-- Servers -->
 {#snippet guildrow(guildId: string, guildName: string, guildIcon: string | null, isConfigured: boolean = false)}
@@ -59,11 +58,11 @@
   </a>
 {/snippet}
 
-{#if user.value && guilds.value.length}
-  <div class="bg-base-200 sticky top-0 z-50 w-full shadow-sm">
+<div class="flex h-screen w-screen flex-col items-center justify-center">
+  <div class="bg-base-200 top-0 right-0 left-0 flex w-full shadow-sm">
     <nav class="dy-navbar mx-auto max-w-[1200px]">
       <div id="branding" class="dy-navbar-start gap-x-3 gap-y-2 py-1 select-none">
-        <img src="/logo.png" alt="Logo" class="h-16 w-16" />
+        <img src="/logo.png" alt="Logo" class="size-12" />
         <span class="hidden text-3xl font-bold text-white sm:block">SupportMail</span>
       </div>
 
@@ -75,96 +74,34 @@
           tabindex="0"
           class="hover:border-info cursor-pointer rounded-2xl border-2 border-transparent transition-all duration-100 ease-in-out"
           onclick={() => {
-            viewProfile = true;
+            showUserSettings = true;
           }}
         >
-          <img
-            src={cdnUrls.userAvatar(user.value.id, user.value.avatar, "64")}
-            alt="User Avatar"
-            class="h-[4rem] w-[4rem] rounded-2xl object-cover"
-          />
+          <img src={cdnUrls.userAvatar(user.id, user.avatar, "64")} alt="User Avatar" class="size-12 rounded-2xl object-cover" />
         </button>
       </div>
     </nav>
   </div>
-{/if}
 
-<main class="h-fit w-full p-5">
-  {#if user.value && guilds.value.length}
-    <div class="rounded-box bg-base-200 h-fit w-full max-w-[700px] overflow-hidden">
-      <div class="dy-table flex w-full flex-col items-start justify-center gap-2 p-3 text-center">
-        {#each guilds.value as guild}
+  <div class="flex h-full max-h-screen w-full items-center justify-center p-3">
+    <div class="relative h-full w-full max-w-[700px] overflow-hidden overflow-y-auto rounded-lg bg-slate-800">
+      <div class="absolute top-0 left-0 flex w-full flex-col items-start justify-center gap-2 p-3 text-center">
+        {#each guilds as guild}
           {@render guildrow(guild.id, guild.name, guild.iconHash, guild.isConfigured)}
         {/each}
       </div>
     </div>
+  </div>
 
-    <dialog id="profile" class="dy-modal dy-modal-bottom sm:dy-modal-middle text-base-content w-full">
-      <div class="dy-modal-box h-[50%] w-full max-w-full">
-        <div class="flex w-full items-center justify-center">
-          <div class="flex w-full flex-col gap-4 self-center">
-            <div class="flex items-center gap-4">
-              <div class="dy-skeleton h-24 w-24 shrink-0 overflow-hidden rounded-lg">
-                <img
-                  src={cdnUrls.userAvatar(String(user.value.id), String(user.value.avatar))}
-                  alt="User Avatar"
-                  class="object-cover"
-                />
-              </div>
-              <div class="flex flex-col gap-y-1 select-none">
-                <h1 class="text-xl">@{user.value.username || ""}</h1>
-                <div class="text-md italic">{user.value.displayName}</div>
-              </div>
-              <div class="text-error flex grow justify-end">
-                <form method="POST" action="?/logout">
-                  <button type="submit" class="dy-btn dy-btn-lg dy-btn-error dy-btn-outline">
-                    <img src="/logout.svg" alt="Logout" class="h-7 w-7" />
-                  </button>
-                </form>
-              </div>
-            </div>
-            <!-- User Settings - language (select), auto redirect (toggle))# -->
-            <div class="dy-skeleton h-32 w-full">
-              <p class="italic">Something is coming...</p>
-            </div>
-          </div>
-        </div>
+  <UserSettingsDialog bind:showModal={showUserSettings} />
 
-        <div class="dy-modal-action w-full">
-          <form method="dialog" class="w-full">
-            <button
-              class="dy-btn dy-btn-soft w-full max-w-full"
-              onclick={() => {
-                viewProfile = false;
-              }}
-            >
-              <kbd class="dy-kbd">ESC</kbd>
-              Close
-            </button>
-          </form>
-        </div>
-      </div>
-    </dialog>
-  {:else}
-    <!-- Login with Discord -->
-    <div class="bg-base-200 mx-auto my-auto flex flex-col items-center justify-center gap-y-10 rounded-2xl p-5">
-      <Branding />
-      <form method="POST" action="?/login" class="xy-center-items">
-        <button class="dy-btn dy-btn-xl border-success hover:border-info dy-btn-outline gap-x-3 border-2">
-          <img src="/discord-mark-white.svg" alt="Discord Logo" class="h-8 w-8" />
-          <span>Login with Discord</span>
-        </button>
-      </form>
-    </div>
-  {/if}
-</main>
+  <Footer year={page.data.ccDate} />
+</div>
 
 {#if errorCopied}
-  <div class="dy-toast dy-toast-right select-none" transition:slide>
+  <div class="dy-toast dy-toast-right z-50 select-none" transition:slide>
     <div class="dy-alert dy-alert-info">
       <span>Error message copied to clipboard</span>
     </div>
   </div>
 {/if}
-
-<Footer year={page.data.ccDate} additionalClasses="sticky bottom-0" />
