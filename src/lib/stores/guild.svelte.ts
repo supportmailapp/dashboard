@@ -22,7 +22,7 @@ export const gg = $state<GGType>({
   channels: null,
 });
 
-export const unsavedChanges = $state(gg.oldConfig != gg.newConfig);
+export const unsavedChanges = $derived(gg.oldConfig != gg.newConfig);
 
 export function resetGuild() {
   gg.guild = null;
