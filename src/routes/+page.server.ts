@@ -1,4 +1,3 @@
-import { createOAuth2Login } from "$lib/discord/oauth2";
 import { redirect, type Actions } from "@sveltejs/kit";
 
 export const prerender = false;
@@ -7,20 +6,14 @@ export const prerender = false;
 
 export const load = async ({ cookies, url }) => {
   if (url.pathname == "/?logout=true") {
-    cookies.delete("discord-token", { path: "/" });
+    cookies.delete("session", { path: "/" });
     return {};
   }
 };
 
 export const actions = {
-  login: async ({ url, cookies }) => {
-    const res = createOAuth2Login(url);
-    cookies.set("discord-oauth2-state", res.state, { path: "/" });
-    if (res.redirectUrl) cookies.set("redirect-after-login", res.redirectUrl, { path: "/" });
-    return redirect(303, res.url);
-  },
   logout: async ({ cookies }) => {
-    cookies.delete("discord-token", { path: "/" });
+    cookies.delete("session", { path: "/" });
     return redirect(302, "/");
   },
 } satisfies Actions;
