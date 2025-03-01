@@ -2,13 +2,14 @@
   import { page } from "$app/state";
   import Home from "$lib/assets/home.svelte";
   import { PLUGINS } from "$lib/constants";
+  import { gg } from "$lib/stores/guild.svelte";
   import { site } from "$lib/stores/site.svelte";
   import { user } from "$lib/stores/user.svelte";
   import { cdnUrls } from "$lib/utils/formatting";
   import { slide } from "svelte/transition";
   import { buildNavHref, showServerSelect } from "./navigation.svelte";
 
-  let _user = $derived(user.get());
+  let _user = $derived(user.discord);
 
   function isCurrentPage(href: string = "/") {
     return page.url.pathname === href;
@@ -43,7 +44,17 @@
     <li></li>
     <li class="dy-dropdown dy-dropdown-right w-full">
       <!-- Server select -->
-      <button class="dy-btn dy-btn-wide dy-btn-secondary" onclick={showServerSelect}>Change Server</button>
+      {#if gg.guild}
+        <button class="dy-btn dy-btn-wide dy-btn-secondary flex px-2.5" onclick={showServerSelect}>
+          <div class="mr-auto flex flex-row items-center justify-start gap-x-2">
+            <div class="dy-avatar dy-mask dy-mask-squircle size-7">
+              <img src={cdnUrls.guildIcon(gg.guild.id, gg.guild?.iconHash, 64)} alt="Server icon" class="" />
+            </div>
+            <p class="truncate">{gg.guild.name}</p>
+          </div>
+          <img src="/chevron-up-down.svg" alt="???" class="ml-auto flex size-7 justify-end" />
+        </button>
+      {/if}
     </li>
     <li></li>
     <li class="dy-menu-title select-none">Plugins</li>

@@ -6,7 +6,7 @@
   import { showServerSelect } from "./navigation.svelte";
   import NavigationDialog from "./NavigationDialog.svelte";
 
-  const _user = $derived(user.get());
+  const _user = $derived(user.discord);
 </script>
 
 <div id="mobileNav" class="mobile-navbar" transition:slide={{ duration: 350, axis: "y" }}>
