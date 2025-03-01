@@ -17,6 +17,7 @@ import { cacheUser, getToken, getUser } from "$lib/cache/users";
 import { urls } from "$lib/constants";
 import { createSessionToken, verifySessionToken } from "$lib/server/auth";
 import { discord } from "$lib/server/constants";
+import { anyUserToBasic } from "$lib/utils/formatting";
 import { error, redirect, type RequestHandler } from "@sveltejs/kit";
 import {
   OAuth2Routes,
@@ -183,12 +184,7 @@ export async function fetchUserData(userId: string, fetch: Function, useCache = 
   }
 
   const userResJson = (await userRes.json()) as APIUser;
-  return {
-    id: userResJson.id,
-    username: userResJson.username,
-    displayName: userResJson.global_name || userResJson.username,
-    avatar: userResJson.avatar,
-  };
+  return anyUserToBasic(userResJson);
 }
 
 interface FetchUserGuildsOptions {
@@ -199,7 +195,7 @@ interface FetchUserGuildsOptions {
 }
 
 /**
- * Fetches the guilds that the current user guilds from the Cache or Discord API.#
+ * Fetches the guilds that the current user guilds from the Cache or Discord API.
  *
  * **Note: Don't forget up update the cache afterwards!**
  *
