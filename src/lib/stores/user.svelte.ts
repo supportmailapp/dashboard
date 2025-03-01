@@ -1,16 +1,17 @@
+import { APIRoutes, BASIC_GET_FETCH_INIT } from "$lib/constants";
+import type { IDBUser } from "supportmail-types";
+
 type UserState = {
-  value: BasicUser | null;
-  get: () => BasicUser | null;
-  set: (_new: BasicUser | null) => BasicUser | null;
+  discord: BasicUser | null;
+  db: IDBUser | null;
 };
 
-export const user = $state<UserState>({
-  value: null,
-  get: function () {
-    return this.value;
-  },
-  set: function (_new: BasicUser | null) {
-    this.value = _new;
-    return this.value;
-  },
-});
+export const user = $state<UserState>({ discord: null, db: null });
+
+export async function loadDbUser(userId: string) {
+  const res = await fetch(APIRoutes.user(userId), BASIC_GET_FETCH_INIT);
+
+  if (res.ok) {
+    user.db = (await res.json()) as IDBUser;
+  }
+}
