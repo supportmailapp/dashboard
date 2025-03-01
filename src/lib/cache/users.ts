@@ -34,11 +34,11 @@ export function getToken(userId: string): string | null {
 }
 
 // Deleters //
-export function delSession(userId: string) {
+export function removeUser(userId: string) {
   userCache.del(userId);
 }
 
-export function delToken(userId: string) {
+export function removeToken(userId: string) {
   tokenCache.del(userId);
 }
 
