@@ -1,19 +1,20 @@
 import { env } from "$env/dynamic/private";
 import { getUserGuilds } from "$lib/cache/guilds";
-import { API_BASE } from "$lib/constants";
-import * as Mongo from "$lib/db/mongo";
+import { mongoDB } from "$lib/server/db";
 import { fetchUserData } from "$lib/discord/oauth2";
 import { checkUserGuildAccess, verifySessionToken } from "$lib/server/auth";
 import { guilds } from "$lib/stores/guilds.svelte";
 import { user } from "$lib/stores/user.svelte";
 import * as Sentry from "@sentry/node";
-import { error, type Handle, type HandleServerError, type ServerInit } from "@sveltejs/kit";
+import { error, redirect, type Handle, type HandleServerError, type ServerInit } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
+import dayjs from "dayjs";
 import { RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
 import { inspect } from "util";
 
 export const init: ServerInit = async () => {
-  Mongo.connect()
+  mongoDB
+    .connect()
     .then(() => {
       console.log("Connected to MongoDB");
     })
@@ -23,7 +24,7 @@ export const init: ServerInit = async () => {
     });
 
   console.log("Environment:", env.NODE_ENV);
-  console.log("Server started at", new Date().toISOString());
+  console.log("Server started at", dayjs().toString());
 };
 
 const apiRateLimiter = new RateLimiterMemory({ duration: 4, points: 8, blockDuration: 10, keyPrefix: "API" });
@@ -37,11 +38,17 @@ const baseHandle: Handle = async ({ event, resolve }) => {
   const sessionCookie = event.cookies.get("session");
 
   if (sessionCookie) {
-    const tokenData = await verifySessionToken(sessionCookie);
+    const tokenData = verifySessionToken(sessionCookie);
     if (tokenData) {
       event.locals.user = await fetchUserData(tokenData.id, event.fetch);
-      user.set(event.locals.user);
+      user.discord = event.locals.user;
     }
+  } else if (!sessionCookie && !event.url.pathname.startsWith("/login")) {
+    const redirectUrl = new URL("/login", event.url.origin);
+    if (event.url.pathname !== "/") redirectUrl.searchParams.set("redirect", event.url.pathname);
+    return redirect(303, redirectUrl.toString());
+  } else if (!sessionCookie && event.url.pathname.startsWith("/login")) {
+    return resolve(event);
   }
 
   if (event.locals.user) {
@@ -54,15 +61,20 @@ const baseHandle: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
+const notProtectedRoutes = ["testing", "discord-auth"];
+
 const isProtectedRoute = (url: URL) => {
   const pathname = url.pathname.toLowerCase();
-  return pathname.startsWith("/api") && !pathname.match(/\/api\/v\d+\/discord-auth/i);
+  return pathname.startsWith("/api") && !pathname.match(new RegExp(`/api/v\\d+/${notProtectedRoutes.join("|")}`, "i"));
+};
+
+const isUserRoute = (url: URL) => {
+  return url.pathname.toLowerCase().match(/\/api\/v\d+\/users\/(\d+)(\/\S*)?/i);
 };
 
 const handleApiRequest: Handle = async ({ event, resolve }) => {
-  let token = event.cookies.get("session");
   if (isProtectedRoute(event.url)) {
-    let response = await apiRateLimiter
+    let decision = await apiRateLimiter
       .consume(event.getClientAddress(), 1)
       .then((res: RateLimiterRes) => {
         event.setHeaders({
@@ -79,40 +91,39 @@ const handleApiRequest: Handle = async ({ event, resolve }) => {
         return rej;
       });
 
-    if (response.remainingPoints < 1) {
+    if (decision.remainingPoints < 1) {
       return error(429, {
         message: "Rate limit exceeded",
       });
     }
 
+    let token = event.cookies.get("session");
     if (!token) {
       const authHeader = event.request.headers.get("Authorization");
-      if (authHeader?.startsWith("Session")) {
+      if (authHeader?.startsWith("Session ")) {
         token = authHeader.split(" ")[1];
       }
     }
 
-    if (!event.url.pathname.endsWith("news")) {
+    if (!event.url.pathname.endsWith("news") && !isUserRoute(event.url)) {
       // These are the route params that are used in the API
       const guildId = event.params.guildid || event.params.slug;
 
       if (!guildId || !token) {
         return Response.json(null, { status: 400, statusText: "Bad Request" });
-      } else {
-        const hasAccess = await checkUserGuildAccess(token, guildId);
-        if (hasAccess === false) {
-          return Response.json(
-            {
-              message: "You do not have access to this guild",
-            },
-            { status: 403, statusText: "Forbidden" },
-          );
-        }
+      }
+      const hasAccess = await checkUserGuildAccess(token, guildId, event.fetch);
+      if (hasAccess === false) {
+        return Response.json(null, { status: 403, statusText: "Forbidden" });
       }
 
       event.locals.guildId = guildId;
       event.locals.token = token;
     }
+  }
+
+  if (event.url.searchParams.get("bypass_cache") == "true") {
+    event.locals.bypassCache = true;
   }
 
   return resolve(event);
