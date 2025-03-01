@@ -1,5 +1,4 @@
 import * as Sentry from "@sentry/sveltekit";
-import type { HandleClientError } from "@sveltejs/kit";
 import { building } from "$app/environment";
 
 if (!building) {
