@@ -6,7 +6,7 @@ import { canManageBot } from "$lib/utils/permissions";
 import { error, type RequestHandler } from "@sveltejs/kit";
 
 export const GET: RequestHandler = async ({ fetch, params, url }) => {
-  const userId = params.slug as string;
+  const userId = params.userid as string;
   const aToken = getToken(userId);
   if (!aToken) return error(400, { message: "Invalid user" });
 

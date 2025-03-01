@@ -1,39 +1,38 @@
-import { getConfig } from "$lib/cache/configs.js";
-import { getDB } from "$lib/db/mongo.js";
-import { checkUserGuildAccess } from "$lib/server/auth";
+import { getConfig, setConfig } from "$lib/cache/configs";
+import { getGuild, updateGuild } from "$lib/server/db";
 import type { IDBGuild } from "supportmail-types";
 
-export const GET = async ({ locals, cookies, request }) => {
-  const guildId = locals.guildId;
-  let token = cookies.get("session");
-  if (!token) {
-    const authHeader = request.headers.get("Authorization");
-    if (authHeader?.startsWith("Session")) {
-      token = authHeader.split(" ")[1];
+export const GET = async ({ locals }) => {
+  if (locals.guildId && locals.token) {
+    let config: IDBGuild | undefined;
+    if (!locals.bypassCache) {
+      config = getConfig(locals.guildId);
     }
-  }
-
-  if (guildId && token) {
-    if (!(await checkUserGuildAccess(token, guildId))) {
-      return Response.json(
-        {
-          message: "You do not have access to this guild",
-        },
-        { status: 403, statusText: "Forbidden" },
-      );
-    }
-
-    let config = getConfig(guildId);
     if (!config) {
-      const db = getDB();
-      const guild = await db.collection("guilds").findOne<IDBGuild>({ id: guildId });
+      const guild = await getGuild(locals.guildId);
       if (!guild) {
         return Response.json("Not Found", { status: 404, statusText: "Not Found" });
       }
       config = guild;
+      setConfig(locals.guildId, config);
     }
 
     return Response.json(config, { status: 200, statusText: "OK" });
+  }
+
+  return Response.json("Bad Request", { status: 400, statusText: "Bad Request" });
+};
+
+export const PATCH = async ({ locals, request }) => {
+  if (locals.guildId && locals.token) {
+    const update = (await request.json()) as IDBGuild;
+    if (!update) {
+      return Response.json("Bad Request", { status: 400, statusText: "Bad Request" });
+    }
+
+    await updateGuild(locals.guildId, update);
+    const newDoc = await getGuild(locals.guildId);
+    return Response.json(newDoc, { status: 200, statusText: "OK" });
   }
 
   return Response.json("Bad Request", { status: 400, statusText: "Bad Request" });
