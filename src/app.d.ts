@@ -24,6 +24,7 @@ declare global {
        * Just for the API routes.
        */
       token?: string;
+      bypassCache?: boolean;
     }
 
     interface PageData {
@@ -90,7 +91,7 @@ declare global {
     permissions: number | bigint | string;
   };
 
-  type CachableGuild = Omit<DCGuild, "permissions"> & { permissions: string };
+  type CachableGuild = DCGuild & { permissions: string };
 
   type BasicUser = {
     id: string;
