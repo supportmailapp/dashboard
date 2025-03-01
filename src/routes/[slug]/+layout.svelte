@@ -1,14 +1,15 @@
 <script lang="ts">
   import { page } from "$app/state";
+  import { onMount } from "svelte";
+  import { slide } from "svelte/transition";
+
   import DesktopNavigation from "$lib/components/DesktopNavigation.svelte";
   import Footer from "$lib/components/Footer.svelte";
   import MobileNavigation from "$lib/components/MobileNavigation.svelte";
   import NavigationDialog from "$lib/components/NavigationDialog.svelte";
   import { APIRoutes, mediaQuery } from "$lib/constants.js";
-  import { gg, loadGuildConfig, loadGuildData } from "$lib/stores/guild.svelte";
+  import { gg, loadGuildConfig, loadGuildData, unsavedChanges } from "$lib/stores/guild.svelte";
   import { site } from "$lib/stores/site.svelte.js";
-  import { onMount } from "svelte";
-  import { slide } from "svelte/transition";
 
   let { children, data } = $props();
 
@@ -33,7 +34,7 @@
       }
     }
 
-    if (!gg.config) {
+    if (!gg.oldConfig) {
       await loadGuildConfig(page.params.slug);
     }
   });
@@ -41,7 +42,7 @@
 
 <svelte:window bind:innerWidth />
 
-<div class="flex min-h-screen w-full flex-row">
+<div class="flex min-h-screen w-full max-w-screen flex-row overflow-x-hidden">
   {#if innerWidth >= mediaQuery.md}
     <DesktopNavigation />
   {/if}
@@ -56,6 +57,10 @@
 
 {#if innerWidth < mediaQuery.md}
   <MobileNavigation />
+{/if}
+
+{#if unsavedChanges}
+  <!-- <SaveModal  /> -->
 {/if}
 
 <NavigationDialog />
