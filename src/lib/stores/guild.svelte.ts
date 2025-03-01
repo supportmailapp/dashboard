@@ -1,36 +1,41 @@
 // State for the current guild (guild, roles, channels)
 
 import { env } from "$env/dynamic/public";
-import { APIRoutes, BASIC_FETCH_INIT, urls } from "$lib/constants";
+import { APIRoutes, BASIC_GET_FETCH_INIT, urls } from "$lib/constants";
 import { sortByPositionAndId } from "$lib/utils/formatting";
-import { guilds } from "./guilds.svelte";
 import type { IDBGuild } from "supportmail-types";
+import { guilds } from "./guilds.svelte";
 
 type GGType = {
   guild: DCGuild | null;
-  config: IDBGuild | null;
+  oldConfig: IDBGuild | null;
+  newConfig: IDBGuild | null;
   roles: BasicRole[] | null;
   channels: BasicChannel[] | null;
 };
 
 export const gg = $state<GGType>({
   guild: null,
-  config: null,
+  oldConfig: null,
+  newConfig: null,
   roles: null,
   channels: null,
 });
 
+export const unsavedChanges = $state(gg.oldConfig != gg.newConfig);
+
 export function resetGuild() {
   gg.guild = null;
-  gg.config = null;
+  gg.oldConfig = null;
+  gg.newConfig = null;
   gg.roles = null;
   gg.channels = null;
 }
 
 export async function loadGuildData(guildId: string) {
-  const rolesRes = await fetch(APIRoutes.roles(guildId), BASIC_FETCH_INIT);
+  const rolesRes = await fetch(APIRoutes.roles(guildId), BASIC_GET_FETCH_INIT);
   await new Promise((resolve) => setTimeout(resolve, 500));
-  const channelsRes = await fetch(APIRoutes.channels(guildId), BASIC_FETCH_INIT);
+  const channelsRes = await fetch(APIRoutes.channels(guildId), BASIC_GET_FETCH_INIT);
 
   if (rolesRes.ok && channelsRes.ok) {
     const _roles = (await rolesRes.json()) as BasicRole[];
@@ -53,9 +58,10 @@ export async function loadGuildData(guildId: string) {
 }
 
 export async function loadGuildConfig(guildId: string) {
-  const configRes = await fetch(APIRoutes.config.base(guildId), BASIC_FETCH_INIT);
+  const configRes = await fetch(APIRoutes.config.base(guildId), BASIC_GET_FETCH_INIT);
   if (configRes.ok) {
-    gg.config = (await configRes.json()) as IDBGuild;
+    gg.oldConfig = (await configRes.json()) as IDBGuild;
+    gg.newConfig = $state.snapshot(gg.oldConfig) as IDBGuild;
   } else {
     throw new Error("Failed to fetch guild config", {
       cause: configRes,
