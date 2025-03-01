@@ -1,12 +1,15 @@
 import { env } from "$env/dynamic/private";
-import { getUserGuilds } from "$lib/cache/guilds";
+import { getUserGuilds, overwriteUserGuilds, parseToCacheGuild, setGuilds } from "$lib/cache/guilds";
 import { cacheToken } from "$lib/cache/users";
-import { API_BASE, APIRoutes } from "$lib/constants";
+import { APIRoutes } from "$lib/constants";
+import { fetchUserGuilds } from "$lib/discord/oauth2";
 import jwt from "jsonwebtoken";
+import clientAPI from "./clientApi";
+import { canManageBot } from "$lib/utils/permissions";
 
 export function createSessionToken(userId: string, accessToken: string): string {
   return jwt.sign({ id: userId, at: accessToken }, env.JWT_SECRET, {
-    expiresIn: "1d",
+    expiresIn: "3d",
     algorithm: "HS256",
     encoding: "utf-8",
     issuer: "supportmail",
@@ -16,9 +19,9 @@ export function createSessionToken(userId: string, accessToken: string): string 
 /**
  * Validate a session and return the JWT payload or null.
  */
-export async function verifySessionToken(token: string): Promise<{ id: string; accessToken: string } | null> {
+export function verifySessionToken(token: string): { id: string; accessToken: string } | null {
   try {
-    const _token = jwt.verify(token, env.JWT_SECRET, { issuer: "supportmail" }) as jwt.JwtPayload;
+    const _token = jwt.verify(token, env.JWT_SECRET) as jwt.JwtPayload;
     cacheToken(_token.id, _token.at);
     return { id: _token.id, accessToken: _token.at };
   } catch (e) {
@@ -26,36 +29,33 @@ export async function verifySessionToken(token: string): Promise<{ id: string; a
   }
 }
 
-export async function checkUserGuildAccess(token: string, guildId: string): Promise<boolean | undefined> {
-  const verified = await verifySessionToken(token);
+export async function checkUserGuildAccess(token: string, guildId: string, fetch: Function): Promise<boolean | undefined> {
+  const verified = verifySessionToken(token);
   if (!verified) return false;
 
-  let guilds = getUserGuilds(verified.id)?.map((g) => g.id);
+  let guilds: CachableGuild[] | null = getUserGuilds(verified.id);
+  let guildIds: string[] = [];
   if (!guilds) {
-    guilds = await fetch(env.ORIGIN + APIRoutes.userGuilds(verified.id, { bypassCache: true, manageBotOnly: true }), {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    }).then(
-      async (res) => {
-        if (res.ok) {
-          console.log("Fetched guilds");
-          const cachableGuilds = (await res.json()) as CachableGuild[];
-          console.log(cachableGuilds.length);
-          return cachableGuilds.map((g) => g.id);
-        } else {
-          console.log("Failed to fetch guilds (1)", res);
-          return undefined;
-        }
-      },
-      () => {
-        console.log("Failed to fetch guilds (2)");
-        return undefined;
-      },
+    const guildsRes = await fetchUserGuilds(verified.id, verified.accessToken, fetch, {
+      bypassCache: true,
+    });
+    guildIds = guildsRes.map((g) => g.id);
+
+    const validBotGuildIds = await clientAPI.filterMutualGuilds(guildIds, verified.accessToken);
+
+    let modifedGuilds = guildsRes.map((g) => parseToCacheGuild(g, validBotGuildIds.includes(guildId)));
+
+    setGuilds(...modifedGuilds);
+    overwriteUserGuilds(
+      verified.id,
+      modifedGuilds.map((g) => g.id),
     );
+
+    guilds = modifedGuilds.filter((guild) => canManageBot(BigInt(guild.permissions)));
+    guildIds = guilds.map((g) => g.id);
+  } else {
+    guildIds = guilds.map((g) => g.id);
   }
 
-  return guilds?.includes(guildId);
+  return guildIds?.includes(guildId);
 }
