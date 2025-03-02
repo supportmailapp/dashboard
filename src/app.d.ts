@@ -14,12 +14,16 @@ declare global {
 
     interface Locals {
       guilds?: DCGuild[];
-      guild?: DCGuild | null;
-      user: BasicUser | null;
       /**
        * Just for the API routes.
        */
       guildId?: string;
+      guild?: DCGuild | null;
+      /**
+       * Just for the API routes. This is checked before based on the Auth header or "session" cookie. If given, the user is **authenticated**.
+       */
+      userId?: string;
+      user: BasicUser | null;
       /**
        * Just for the API routes.
        */
