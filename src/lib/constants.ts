@@ -1,6 +1,7 @@
 // PUBLIC constants
 
 import { env } from "$env/dynamic/public";
+import type { IDBUser } from "supportmail-types";
 
 export const mediaQuery = {
   sm: 640,
@@ -100,6 +101,7 @@ export const APIRoutes = {
     tags: (guildId: string) => `${API_BASE}/config/${guildId}/tags`,
     blacklist: (guildId: string) => `${API_BASE}/config/${guildId}/blacklist`,
   },
+  logout: () => `${API_BASE}/logout`,
 } as const;
 
 export const PLUGINS: AppPlugin[] = [
@@ -125,3 +127,25 @@ export const LANGUAGES = [
 
 export const DEFAULT_LANGUAGE = "en" as const;
 
+/**
+ * Default DB user object for type-safety
+ */
+export const DEFAULT_DBUSER: IDBUser = {
+  id: "",
+  autoRedirect: false,
+  language: DEFAULT_LANGUAGE,
+  t_left: 0,
+  tips: true,
+  createdAt: new Date(0),
+  updatedAt: new Date(0),
+} as const;
+
+/**
+ * Generic error responses for API routes
+ */
+export const ErrorResponses = {
+  badRequest: (text: string | null = null) => new Response(text, { status: 400, statusText: "Bad Request" }),
+  unauthorized: () => new Response(null, { status: 401, statusText: "Unauthorized" }),
+  forbidden: () => new Response(null, { status: 403, statusText: "Forbidden" }),
+  notFound: (text: string | null = null) => new Response(text, { status: 404, statusText: "Not Found" }),
+};
