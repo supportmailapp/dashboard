@@ -10,8 +10,6 @@ export async function load() {
     },
   );
 
-  console.debug("response", response);
-
   return {
     unsplash: response.json(),
   };

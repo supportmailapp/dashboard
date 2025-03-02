@@ -11,13 +11,13 @@
   let error = $state("");
 
   onMount(async () => {
-    if (user.discord) {discorddiscord
+    if (user.discord) {
       goto("/");
     }
 
     if (page.url.searchParams.has("redirect")) {
       window.localStorage.setItem("redirect", decodeURIComponent(page.url.searchParams.get("redirect")!));
-      goto("/login");
+      goto("/login", { replaceState: true });
     }
   });
 </script>
@@ -38,9 +38,7 @@
 
 <div class="absolute flex min-h-screen w-full items-center justify-center p-3">
   <!-- Login Card -->
-  <div
-    class="bg-base-300/95 flex h-fit w-full max-w-md flex-col gap-3 overflow-hidden rounded-2xl p-8 shadow-xl backdrop-blur-sm"
-  >
+  <div class="bg-base-200 flex h-fit w-full max-w-md flex-col gap-3 overflow-hidden rounded-2xl p-8 shadow-xl backdrop-blur-sm">
     <Branding />
 
     {#if error}
@@ -49,13 +47,12 @@
       </div>
     {/if}
 
-    <form method="POST" class="flex items-center justify-center space-y-4" onsubmit={() => (loading = true)}>
-      <button
-        class="dy-btn dy-btn-md border-success hover:border-info dy-btn-outline gap-x-3 border-2 {loading
-          ? 'cursor-not-allowed opacity-80'
-          : ''}"
-        disabled={loading}
-      >
+    <form
+      method="POST"
+      class="flex items-center justify-center space-y-4 {loading ? 'cursor-not-allowed opacity-80' : ''}"
+      onsubmit={() => (loading = true)}
+    >
+      <button class="dy-btn dy-btn-lg border-success hover:border-info dy-btn-outline gap-x-3 border-2" disabled={loading}>
         {#if loading}
           <div class="h-5 w-5 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
         {:else}
