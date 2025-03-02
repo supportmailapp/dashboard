@@ -14,12 +14,10 @@
   let showUserSettings = $state(false);
   let errorCopied = $state(false);
   let user = $derived(userState.discord as BasicUser);
-  let dbUser = $derived(userState.db);
   let guilds = $derived(guildsState.value as DCGuild[]);
-
-  $effect(() => {
-    if (dbUser != null) {
-      console.log("DBUser set:", $state.snapshot(dbUser));
+  let firstNotConfiguredGuild = $derived.by(() => {
+    if (guilds.length) {
+      return guilds.find((guild) => !guild.isConfigured)?.id;
     }
   });
 
@@ -84,9 +82,12 @@
   </div>
 
   <div class="flex h-full max-h-screen w-full items-center justify-center p-3">
-    <div class="relative h-full w-full max-w-[700px] overflow-hidden overflow-y-auto rounded-lg bg-slate-800">
-      <div class="absolute top-0 left-0 flex w-full flex-col items-start justify-center gap-2 p-3 text-center">
+    <div class="relative h-[97%] w-full max-w-[700px] overflow-hidden overflow-y-auto rounded-lg bg-slate-800">
+      <div class="absolute top-0 left-0 flex h-fit max-h-fit w-full flex-col items-start justify-start gap-2 p-3 text-center">
         {#each guilds as guild}
+          {#if firstNotConfiguredGuild == guild.id}
+            <div class="bg-base-300 h-0.5 w-full"></div>
+          {/if}
           {@render guildrow(guild.id, guild.name, guild.iconHash, guild.isConfigured)}
         {/each}
       </div>
