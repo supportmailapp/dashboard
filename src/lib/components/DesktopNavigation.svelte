@@ -8,8 +8,10 @@
   import { cdnUrls } from "$lib/utils/formatting";
   import { slide } from "svelte/transition";
   import { buildNavHref, showServerSelect } from "./navigation.svelte";
+  import UserSettingsDialog from "./UserSettingsDialog.svelte";
 
   let _user = $derived(user.discord);
+  let showUserSettings = $state(false);
 
   function isCurrentPage(href: string = "/") {
     return page.url.pathname === href;
@@ -28,7 +30,7 @@
     </a>
     <div class="dy-divider mx-0 my-1"></div>
     <li>
-      <button class="justify-around" onclick={() => (site.userMenu = true)}>
+      <button class="justify-around" onclick={() => (showUserSettings = true)}>
         {#if _user}
           <div class="dy-avatar">
             <div class="w-16 rounded-xl">
@@ -75,3 +77,5 @@
     {/each}
   </ul>
 </nav>
+
+<UserSettingsDialog bind:showModal={showUserSettings} />
