@@ -11,6 +11,7 @@ import { sequence } from "@sveltejs/kit/hooks";
 import dayjs from "dayjs";
 import { RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
 import { inspect } from "util";
+import { ErrorResponses } from "$lib/constants";
 
 export const init: ServerInit = async () => {
   mongoDB
@@ -61,7 +62,7 @@ const baseHandle: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
-const notProtectedRoutes = ["testing", "discord-auth"];
+const notProtectedRoutes = ["testing", "discord-auth", "logout"];
 
 const isProtectedRoute = (url: URL) => {
   const pathname = url.pathname.toLowerCase();
@@ -74,7 +75,7 @@ const isUserRoute = (url: URL) => {
 
 const handleApiRequest: Handle = async ({ event, resolve }) => {
   if (isProtectedRoute(event.url)) {
-    let decision = await apiRateLimiter
+    const decision = await apiRateLimiter
       .consume(event.getClientAddress(), 1)
       .then((res: RateLimiterRes) => {
         event.setHeaders({
@@ -110,15 +111,25 @@ const handleApiRequest: Handle = async ({ event, resolve }) => {
       const guildId = event.params.guildid || event.params.slug;
 
       if (!guildId || !token) {
-        return Response.json(null, { status: 400, statusText: "Bad Request" });
+        return ErrorResponses.badRequest("Missing required parameters");
       }
       const hasAccess = await checkUserGuildAccess(token, guildId, event.fetch);
       if (hasAccess === false) {
-        return Response.json(null, { status: 403, statusText: "Forbidden" });
+        return ErrorResponses.forbidden();
       }
 
       event.locals.guildId = guildId;
       event.locals.token = token;
+    } else if (isUserRoute(event.url)) {
+      const sessionToken = event.cookies.get("session") || event.request.headers.get("Authorization")?.split(" ")[1];
+      if (!sessionToken) {
+        return ErrorResponses.unauthorized();
+      }
+      const userId = verifySessionToken(sessionToken)?.id;
+      if (!userId || userId !== (event.params.userid || event.params.slug)) {
+        return ErrorResponses.forbidden();
+      }
+      event.locals.userId = userId;
     }
   }
 
