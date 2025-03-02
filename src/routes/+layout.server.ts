@@ -1,18 +1,6 @@
-import { redirect } from "@sveltejs/kit";
-
-export const load = async ({ locals, params }) => {
-  const data = {
-    ccDate: "2025",
-  };
-
-  if (!locals.user) {
-    if (!params.slug) return data;
-    else redirect(303, "/");
-  }
-
+export const load = async ({ locals, url }) => {
   return {
-    ...data,
-    user: locals.user || null,
-    basePath: `/${params.slug || ""}`,
+    ccDate: "2025",
+    user: locals.user,
   };
 };
