@@ -19,7 +19,7 @@
   });
 </script>
 
-{#if gg.guild && user.get()}
+{#if gg.guild && user.discord}
   <div style="padding: 1rem;">
     <div class="flex h-30 flex-row items-center justify-start gap-5">
       <img src={cdnUrls.guildIcon(gg.guild.id, gg.guild.iconHash, "512")} alt="Server icon" class="size-30" />
@@ -46,7 +46,7 @@
         </div>
         <div class="h-3"></div>
         <h2 class="pl-1 text-3xl font-semibold text-white">
-          Welcome <span class="text-amber-300">{user.get()?.displayName}</span>!
+          Welcome <span class="text-amber-300">{user.discord?.displayName}</span>!
         </h2>
       </div>
     </div>

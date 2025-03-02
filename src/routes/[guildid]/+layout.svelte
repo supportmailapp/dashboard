@@ -10,14 +10,16 @@
   import { APIRoutes, mediaQuery } from "$lib/constants.js";
   import { gg, loadGuildConfig, loadGuildData, unsavedChanges } from "$lib/stores/guild.svelte";
   import { site } from "$lib/stores/site.svelte.js";
+  import { goto } from "$app/navigation";
 
   let { children, data } = $props();
 
   let innerWidth = $state(800);
 
   onMount(async function () {
-    if (!gg.guild || page.params.slug !== gg.guild.id) {
-      await loadGuildData(page.params.slug);
+    if (!gg.guild || page.params.guildid !== gg.guild.id) {
+      await loadGuildConfig(page.params.guildid);
+      await loadGuildData(page.params.guildid);
     }
 
     if (!site.news) {
@@ -34,8 +36,11 @@
       }
     }
 
-    if (!gg.oldConfig) {
-      await loadGuildConfig(page.params.slug);
+    const redirect = window.localStorage.getItem("redirect_guild");
+    if (redirect && gg.guild && window.location.pathname == `/${gg.guild.id}`) {
+      window.localStorage.removeItem("redirect_guild");
+      window.localStorage.removeItem("redirect_base");
+      goto(`/${gg.guild.id}` + redirect);
     }
   });
 </script>
