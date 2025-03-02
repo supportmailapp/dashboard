@@ -1,9 +1,10 @@
 // State for the current guild (guild, roles, channels)
 
+import equal from "fast-deep-equal/es6";
+import type { IDBGuild } from "supportmail-types";
 import { env } from "$env/dynamic/public";
 import { APIRoutes, BASIC_GET_FETCH_INIT, urls } from "$lib/constants";
 import { sortByPositionAndId } from "$lib/utils/formatting";
-import type { IDBGuild } from "supportmail-types";
 import { guilds } from "./guilds.svelte";
 
 type GGType = {
@@ -22,7 +23,7 @@ export const gg = $state<GGType>({
   channels: null,
 });
 
-export const unsavedChanges = $derived(gg.oldConfig != gg.newConfig);
+export const unsavedChanges = $state(equal(gg.oldConfig, gg.newConfig));
 
 export function resetGuild() {
   gg.guild = null;
@@ -47,13 +48,9 @@ export async function loadGuildData(guildId: string) {
     gg.roles = sortedRoles.reverse(); // Reverse because we want the highest role to be at the top
     gg.channels = sortedChannels;
   } else {
-    if (rolesRes.status == 404 || channelsRes.status == 404) {
-      window.open(urls.botAuth(env.PUBLIC_ClientId, guildId));
-    } else {
-      throw new Error("Failed to fetch guild data", {
-        cause: [rolesRes, channelsRes],
-      });
-    }
+    throw new Error("Failed to fetch guild data", {
+      cause: [rolesRes, channelsRes],
+    });
   }
 }
 
@@ -63,8 +60,12 @@ export async function loadGuildConfig(guildId: string) {
     gg.oldConfig = (await configRes.json()) as IDBGuild;
     gg.newConfig = $state.snapshot(gg.oldConfig) as IDBGuild;
   } else {
-    throw new Error("Failed to fetch guild config", {
-      cause: configRes,
-    });
+    if (configRes.status == 404) {
+      window.open(urls.botAuth(env.PUBLIC_ClientId, guildId), "_blank");
+    } else {
+      throw new Error("Failed to fetch guild config", {
+        cause: configRes,
+      });
+    }
   }
 }
