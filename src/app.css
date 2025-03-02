@@ -1,8 +1,40 @@
 @import "tailwindcss";
 
 @plugin "daisyui" {
-  themes: night --default;
+  themes: nightV2 --default;
   prefix: "dy-";
+}
+
+@plugin "daisyui/theme" {
+  name: "nightV2";
+  --color-base-100: oklch(20.768% 0.039 265.754);
+  --color-base-200: oklch(27% 0.041 260.031);
+  --color-base-300: oklch(37% 0.044 257.287);
+  --color-base-content: oklch(100% 0 0);
+  --color-primary: oklch(75.351% 0.138 232.661);
+  --color-primary-content: oklch(15.07% 0.027 232.661);
+  --color-secondary: oklch(68.011% 0.158 276.934);
+  --color-secondary-content: oklch(13.602% 0.031 276.934);
+  --color-accent: oklch(52% 0.223 3.958);
+  --color-accent-content: oklch(94% 0.028 342.258);
+  --color-neutral: oklch(27.949% 0.036 260.03);
+  --color-neutral-content: oklch(96% 0.007 247.896);
+  --color-info: oklch(68.455% 0.148 237.251);
+  --color-info-content: oklch(0% 0 0);
+  --color-success: oklch(78.452% 0.132 181.911);
+  --color-success-content: oklch(15.69% 0.026 181.911);
+  --color-warning: oklch(83.242% 0.139 82.95);
+  --color-warning-content: oklch(16.648% 0.027 82.95);
+  --color-error: oklch(71.785% 0.17 13.118);
+  --color-error-content: oklch(14.357% 0.034 13.118);
+  --radius-selector: 0.25rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.21875rem;
+  --border: 0.5px;
+  --depth: 0;
+  --noise: 0;
 }
 
 @layer base {
@@ -86,18 +118,26 @@
   }
 
   form.userdata {
-    @apply flex flex-col gap-y-2;
+    @apply flex w-full flex-col items-start justify-start gap-y-2 sm:w-3/5;
 
-    label {
-      @apply text-sm font-semibold;
-    }
+    fieldset {
+      @apply dy-fieldset;
 
-    select {
-      @apply dy-select dy-select-primary;
+      legend {
+        @apply dy-fieldset-legend;
+      }
+
+      label {
+        @apply dy-fieldset-label;
+      }
+
+      select {
+        @apply dy-select dy-select-primary;
+      }
     }
 
     button {
-      @apply dy-btn dy-btn-success w-full;
+      @apply dy-btn;
     }
   }
 }
