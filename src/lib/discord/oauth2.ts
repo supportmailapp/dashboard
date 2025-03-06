@@ -54,9 +54,6 @@ export const callbackHandler: RequestHandler = async ({ url, fetch, cookies }) =
 
   cookies.delete("discord-oauth2-state", { path: "/" });
 
-  const redirectUrl = cookies.get("redirect-after-login");
-  cookies.delete("redirect-after-login", { path: "/" });
-
   let oauthRes: Response;
   try {
     oauthRes = await fetch(urls.token(), {
@@ -117,7 +114,7 @@ export const callbackHandler: RequestHandler = async ({ url, fetch, cookies }) =
     maxAge: oauthResJson.expires_in,
   });
 
-  redirect(302, redirectUrl || "/");
+  redirect(303, "/");
 };
 
 export const logoutHandler: RequestHandler = async ({ cookies, fetch }) => {
