@@ -88,7 +88,7 @@
   </div>
 {:else}
   <div class="flex h-full w-full items-center justify-center">
-    <span class="dy-loading dy-loading-spinner mx-auto my-auto"></span>
+    <span class="dy-loading dy-loading-infinity mx-auto my-auto"></span>
     {#await new Promise((r) => setTimeout(r, 5000)) then}
       <RefreshButton text="Already added the bot? Refresh!" whatInvalidate={page.url} />
     {/await}

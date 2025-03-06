@@ -6,11 +6,10 @@
   import DesktopNavigation from "$lib/components/DesktopNavigation.svelte";
   import Footer from "$lib/components/Footer.svelte";
   import MobileNavigation from "$lib/components/MobileNavigation.svelte";
-  import NavigationDialog from "$lib/components/NavigationDialog.svelte";
+  import ServerSelectDialog from "$lib/components/ServerSelectDialog.svelte";
   import { APIRoutes, mediaQuery } from "$lib/constants.js";
-  import { gg, loadGuildConfig, loadGuildData, unsavedChanges } from "$lib/stores/guild.svelte";
+  import { gg, loadGuildConfig, loadGuildData } from "$lib/stores/guild.svelte";
   import { site } from "$lib/stores/site.svelte.js";
-  import { goto } from "$app/navigation";
 
   let { children, data } = $props();
 
@@ -18,8 +17,8 @@
 
   onMount(async function () {
     if (!gg.guild || page.params.guildid !== gg.guild.id) {
-      await loadGuildConfig(page.params.guildid);
       await loadGuildData(page.params.guildid);
+      await loadGuildConfig(page.params.guildid);
     }
 
     if (!site.news) {
@@ -35,13 +34,6 @@
         site.news = (await res.json()) as any[];
       }
     }
-
-    const redirect = window.localStorage.getItem("redirect_guild");
-    if (redirect && gg.guild && window.location.pathname == `/${gg.guild.id}`) {
-      window.localStorage.removeItem("redirect_guild");
-      window.localStorage.removeItem("redirect_base");
-      goto(`/${gg.guild.id}` + redirect);
-    }
   });
 </script>
 
@@ -53,8 +45,14 @@
   {/if}
 
   <div class="w-full">
-    <div class="flex min-h-screen flex-col p-3 text-wrap" transition:slide={{ duration: 250, axis: "x" }}>
-      {@render children()}
+    <div class="flex min-h-screen w-full flex-col p-3" transition:slide={{ duration: 250, axis: "x" }}>
+      {#if !gg.config}
+        <div class="flex h-max w-full items-center justify-center">
+          <span class="dy-loading dy-loading-infinity dy-loading-xl select-none"></span>
+        </div>
+      {:else}
+        {@render children()}
+      {/if}
     </div>
     <Footer year={data.ccDate} />
   </div>
@@ -64,8 +62,8 @@
   <MobileNavigation />
 {/if}
 
-{#if unsavedChanges}
+{#if gg.unsavedChanges}
   <!-- <SaveModal  /> -->
 {/if}
 
-<NavigationDialog />
+<ServerSelectDialog />
