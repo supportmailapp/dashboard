@@ -4,7 +4,7 @@
   import { cdnUrls } from "$lib/utils/formatting";
   import { slide } from "svelte/transition";
   import { showServerSelect } from "./navigation.svelte";
-  import NavigationDialog from "./NavigationDialog.svelte";
+  import NavigationDialog from "./ServerSelectDialog.svelte";
 
   const _user = $derived(user.discord);
 </script>

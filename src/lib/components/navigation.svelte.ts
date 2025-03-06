@@ -10,5 +10,5 @@ export function showServerSelect() {
  * @param slug The slug of the page to navigate to - has to start with a slash!
  */
 export function buildNavHref(slug: string = "/"): string {
-  return `/${page.params.guildid + slug}`.replace(/\/$/, "");
+  return `/g/${page.params.guildid + slug}`.replace(/\/$/, "");
 }

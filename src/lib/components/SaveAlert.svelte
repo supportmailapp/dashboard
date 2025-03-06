@@ -17,7 +17,7 @@
      *
      * Can be a string or a URL object.
      */
-    destination: string | URL;
+    destination: `/${string}` | URL;
   };
 
   let { payload, method, destination }: SaveModalProps = $props();
@@ -67,14 +67,7 @@
 >
   <span class="text-xl font-semibold">You have unsaved changes!</span>
   <div class="ml-auto flex justify-end gap-x-3">
-    <button
-      type="reset"
-      class="dy-btn dy-btn-accent dy-btn-outline w-30"
-      onclick={() => {
-        gg.newConfig = $state.snapshot(gg.oldConfig) as IDBGuild;
-        console.log("New Config reset:", $state.snapshot(gg.newConfig));
-      }}>Reset</button
-    >
+    <button type="reset" class="dy-btn dy-btn-accent dy-btn-outline w-30">Reset</button>
     {#if !saving}
       <button class="dy-btn dy-btn-success dy-btn-outline w-30" onclick={saveFunction}>Save</button>
     {:else}

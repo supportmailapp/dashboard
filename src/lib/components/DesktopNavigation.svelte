@@ -3,7 +3,6 @@
   import Home from "$lib/assets/home.svelte";
   import { PLUGINS } from "$lib/constants";
   import { gg } from "$lib/stores/guild.svelte";
-  import { site } from "$lib/stores/site.svelte";
   import { user } from "$lib/stores/user.svelte";
   import { cdnUrls } from "$lib/utils/formatting";
   import { slide } from "svelte/transition";
@@ -33,14 +32,14 @@
       <button class="justify-around" onclick={() => (showUserSettings = true)}>
         {#if _user}
           <div class="dy-avatar">
-            <div class="w-16 rounded-xl">
+            <div class="dy-mask size-16 rounded-xl">
               <img src={cdnUrls.userAvatar(_user.id, _user.avatar, "512")} alt="User Avatar" />
             </div>
           </div>
         {:else}
           <div class="dy-skeleton h-32 w-32"></div>
         {/if}
-        <img src="/chevron-double-right.svg" alt="Open User Menu" class="size-10" />
+        <img src="/icons/chevron-double-right.svg" alt="Open User Menu" class="size-10" />
       </button>
     </li>
     <li></li>
@@ -48,13 +47,16 @@
       <!-- Server select -->
       {#if gg.guild}
         <button class="dy-btn dy-btn-wide dy-btn-secondary flex px-2.5" onclick={showServerSelect}>
-          <div class="mr-auto flex flex-row items-center justify-start gap-x-2">
-            <div class="dy-avatar dy-mask dy-mask-squircle size-7">
-              <img src={cdnUrls.guildIcon(gg.guild.id, gg.guild?.iconHash, 64)} alt="Server icon" class="" />
+          <div class="mr-auto flex flex-row items-center justify-start gap-x-2 truncate text-white">
+            <div class="dy-avatar">
+              <div class="dy-mask dy-mask-squircle size-7">
+                <img src={cdnUrls.guildIcon(gg.guild.id, gg.guild?.iconHash, 64)} alt="Server icon" />
+              </div>
             </div>
-            <p class="truncate">{gg.guild.name}</p>
+
+            <p class="w-fit truncate">{gg.guild.name}</p>
           </div>
-          <img src="/chevron-up-down.svg" alt="???" class="ml-auto flex size-7 justify-end" />
+          <img src="/icons/chevron-up-down.svg" alt="???" class="ml-auto flex size-7 justify-end" />
         </button>
       {/if}
     </li>

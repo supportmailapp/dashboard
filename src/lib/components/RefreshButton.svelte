@@ -23,6 +23,6 @@
 </script>
 
 <button class="dy-btn dy-btn-sm dy-btn-soft flex justify-between gap-x-2 border-2 px-2" onclick={clickFunction}>
-  <img src="/arrow-update.svg" alt="Refresh" class="block size-4" />
+  <img src="/icons/arrow-update.svg" alt="Refresh" class="block size-4" />
   {text}
 </button>
