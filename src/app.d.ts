@@ -125,6 +125,19 @@ declare global {
   };
 
   type NavItem = AppPlugin;
+
+  type RedirectData = {
+    /**
+     * The path to redirect to.
+     *
+     * If the `guildId` is given, then the redirect should happen on the base page. If not, after server selection.
+     */
+    path?: `/${string}`;
+    /**
+     * The guild ID to redirect to.
+     */
+    guildId?: string;
+  };
 }
 
 export {};
