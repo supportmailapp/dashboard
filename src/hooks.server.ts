@@ -42,14 +42,17 @@ const baseHandle: Handle = async ({ event, resolve }) => {
     const tokenData = verifySessionToken(sessionCookie);
     if (tokenData) {
       event.locals.user = await fetchUserData(tokenData.id, event.fetch);
-      user.discord = event.locals.user;
     }
-  } else if (!sessionCookie && !event.url.pathname.startsWith("/login")) {
-    const redirectUrl = new URL("/login", event.url.origin);
-    if (event.url.pathname !== "/") redirectUrl.searchParams.set("redirect", event.url.pathname);
-    return redirect(303, redirectUrl.toString());
-  } else if (!sessionCookie && event.url.pathname.startsWith("/login")) {
-    return resolve(event);
+  } else {
+    if (!event.url.pathname.startsWith("/login")) {
+      const redirectUrl = new URL("/login", event.url.origin);
+      if (event.url.pathname !== "/") {
+        redirectUrl.searchParams.set("redirect", event.url.pathname);
+      }
+      return redirect(303, redirectUrl.toString());
+    } else {
+      return resolve(event);
+    }
   }
 
   if (event.locals.user) {
