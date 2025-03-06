@@ -9,26 +9,23 @@ import { guilds } from "./guilds.svelte";
 
 type GGType = {
   guild: DCGuild | null;
-  oldConfig: IDBGuild | null;
-  newConfig: IDBGuild | null;
+  config: IDBGuild | null;
+  unsavedChanges: boolean;
   roles: BasicRole[] | null;
   channels: BasicChannel[] | null;
 };
 
 export const gg = $state<GGType>({
   guild: null,
-  oldConfig: null,
-  newConfig: null,
+  config: null,
+  unsavedChanges: false,
   roles: null,
   channels: null,
 });
 
-export const unsavedChanges = $state(equal(gg.oldConfig, gg.newConfig));
-
 export function resetGuild() {
   gg.guild = null;
-  gg.oldConfig = null;
-  gg.newConfig = null;
+  gg.config = null;
   gg.roles = null;
   gg.channels = null;
 }
@@ -57,8 +54,7 @@ export async function loadGuildData(guildId: string) {
 export async function loadGuildConfig(guildId: string) {
   const configRes = await fetch(APIRoutes.config.base(guildId), BASIC_GET_FETCH_INIT);
   if (configRes.ok) {
-    gg.oldConfig = (await configRes.json()) as IDBGuild;
-    gg.newConfig = $state.snapshot(gg.oldConfig) as IDBGuild;
+    gg.config = (await configRes.json()) as IDBGuild;
   } else {
     if (configRes.status == 404) {
       window.open(urls.botAuth(env.PUBLIC_ClientId, guildId), "_blank");
