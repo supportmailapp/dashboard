@@ -140,6 +140,15 @@
       @apply dy-btn;
     }
   }
+
+  .settings-container {
+    @apply mb-4 rounded-lg p-2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    user-select: none;
+    background-color: var(--color-base-200);
+  }
 }
 
 @layer utilities {
