@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
   import { page } from "$app/state";
-  import { onMount } from "svelte";
   import { slide } from "svelte/transition";
 
   import Footer from "$lib/components/Footer.svelte";
@@ -20,16 +18,6 @@
       return guilds.find((guild) => !guild.isConfigured)?.id;
     }
   });
-
-  onMount(() => {
-    if (user && guilds.length) {
-      const redirect = window.localStorage.getItem("redirect");
-      if (redirect) {
-        window.localStorage.removeItem("redirect");
-        goto(redirect);
-      }
-    }
-  });
 </script>
 
 <!-- Servers -->
@@ -38,7 +26,7 @@
     class="hover:bg-base-300 flex w-full flex-row items-center justify-between gap-x-2 rounded-lg transition-all duration-100 {!isConfigured
       ? 'opacity-40 hover:opacity-90'
       : ''}"
-    href="/{guildId}"
+    href="/{isConfigured ? 'g/' : 'add/'}{guildId}"
   >
     <div class="flex items-center justify-center p-2">
       <div class="dy-avatar">
@@ -51,7 +39,11 @@
       <span class="block w-fit truncate">{guildName}</span>
     </div>
     <div class="block min-w-fit items-center justify-center px-2">
-      <img src={!isConfigured ? "/plus-circle.svg" : "/arrow-right-circle.svg"} alt="Continue" class="block size-8" />
+      <img
+        src={!isConfigured ? "/icons/plus-circle.svg" : "/icons/arrow-right-circle.svg"}
+        alt="Continue"
+        class="block size-8"
+      />
     </div>
   </a>
 {/snippet}
