@@ -1,7 +1,7 @@
 // PUBLIC constants
 
 import { env } from "$env/dynamic/public";
-import type { IDBUser } from "supportmail-types";
+import type { IDBGuild, IDBUser, IReportConfig, ITicketConfig } from "supportmail-types";
 
 export const mediaQuery = {
   sm: 640,
@@ -25,6 +25,8 @@ export const urls = {
       client_id: clientId,
       permissions: env.PUBLIC_botPermissions,
       scope: "bot applications.commands",
+      response_type: "code",
+      redirect_uri: "http://localhost:5050/",
     });
     if (guildId) params.append("guild_id", guildId);
     return "https://discord.com/oauth2/authorize?" + params.toString();
@@ -102,6 +104,7 @@ export const APIRoutes = {
     blacklist: (guildId: string) => `${API_BASE}/config/${guildId}/blacklist`,
   },
   logout: () => `${API_BASE}/logout`,
+  debug: (guildId: string) => `${API_BASE}/debug`,
 } as const;
 
 export const PLUGINS: AppPlugin[] = [
@@ -139,6 +142,26 @@ export const DEFAULT_DBUSER: IDBUser = {
   createdAt: new Date(0),
   updatedAt: new Date(0),
 } as const;
+
+export const DEFAULT_CONFIG = {
+  id: "",
+  icon: "",
+  lang: "en",
+  name: "",
+  createdAt: new Date(0),
+  ticketConfig: {
+    enabled: false,
+    anonym: {
+      enabled: false,
+      user: false,
+    },
+    autoForwarding: true,
+  },
+  reportConfig: {
+    enabled: false,
+    actionsEnabled: true,
+  },
+} as IDBGuild;
 
 /**
  * Generic error responses for API routes
