@@ -26,7 +26,7 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^22.12.0",
     "autoprefixer": "^10.4.20",
-    "daisyui": "^5.0.0-beta.9",
+    "daisyui": "^5.0.0",
     "discord-api-types": "^0.37.117",
     "mongoose": "^8.11.0",
     "prettier": "^3.4.2",
