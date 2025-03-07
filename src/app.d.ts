@@ -40,6 +40,7 @@ declare global {
       channels?: BasicChannel[];
       status?: number;
       redirect?: string;
+      news?: News[];
       ccDate: string;
       basePath: string;
       configData: any;
@@ -137,6 +138,13 @@ declare global {
      * The guild ID to redirect to.
      */
     guildId?: string;
+  };
+
+  type News = {
+    id: string;
+    type: "info" | "success" | "warning" | "error";
+    title: string;
+    content: string;
   };
 }
 
