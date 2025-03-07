@@ -1,7 +1,8 @@
 <script lang="ts">
-  import type { IDBGuild } from "supportmail-types";
   import { slide } from "svelte/transition";
   import { gg } from "$lib/stores/guild.svelte";
+  import { beforeNavigate } from "$app/navigation";
+  import { site } from "$lib/stores/site.svelte";
 
   type SaveModalProps = {
     /**
@@ -58,11 +59,29 @@
       return;
     }
   }
+
+  beforeNavigate(async (nav) => {
+    if (gg.unsavedChanges) {
+      if (nav.type == "leave" || nav.type == "popstate" || nav.type == "goto" || nav.type == "link") {
+        document.getElementById("save-alert")?.classList.add("dy-alert-error");
+        setTimeout(() => {
+          document.getElementById("save-alert")?.classList.remove("dy-alert-error");
+        }, 1100);
+        nav.cancel();
+        return;
+      }
+    }
+    site.loading = true;
+    nav.complete.then(() => {
+      site.loading = false;
+    });
+  });
 </script>
 
 <div
+  id="save-alert"
   role="alert"
-  class="dy-alert dy-alert-warning dy-toast dy-toast-center w-full max-w-[800px] select-none"
+  class="dy-alert dy-alert-warning dy-toast dy-toast-center w-full max-w-[800px] transition-colors duration-150 ease-in-out select-none"
   transition:slide={{ duration: 150, axis: "y" }}
 >
   <span class="text-xl font-semibold">You have unsaved changes!</span>
