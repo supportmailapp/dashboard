@@ -18,7 +18,7 @@ Page Contents:
 -->
 
 <script lang="ts">
-  import { DEFAULT_CONFIG } from "$lib/constants";
+  import { DEFAULT_CONFIG, LongTooltips } from "$lib/constants";
   import { gg } from "$lib/stores/guild.svelte.js";
   import { parseTimestring } from "$lib/utils/timestring";
   import dayjs from "dayjs";
@@ -28,12 +28,10 @@ Page Contents:
 
   let oldConfig = $derived(gg.config?.ticketConfig || null); // The '!' has to be there because the type would show as {} otherwise
   let newConfig = $state<ITicketConfig>(DEFAULT_CONFIG.ticketConfig);
-  let pauseInput = $state<
-    { fail: string | null } & ({ type: "date"; value: Date | null } | { type: "duration"; value: string | null })
-  >({
-    fail: null,
+  let pauseInput = $state<{ type: "duration" | "date"; value: string | null; fail: string | null }>({
     type: "date",
     value: null,
+    fail: null,
   });
 
   $effect(() => {
@@ -41,23 +39,49 @@ Page Contents:
     if (oldConfig && equal(newConfig, DEFAULT_CONFIG.ticketConfig)) newConfig = $state.snapshot(oldConfig as any);
   });
 
-  $effect(() => {
-    if (pauseInput.value != null) {
-      if (pauseInput.type === "date") {
-        newConfig.pausedUntil = pauseInput.value.toISOString();
-      } else {
-        let parsedInput: number | null = null;
+  function pauseInputHandler(
+    event: Event & {
+      currentTarget: EventTarget & HTMLInputElement;
+    },
+  ) {
+    const value = event.currentTarget.value;
+    if (pauseInput.type === "date") {
+      if (!dayjs(value).isValid()) {
+        event.currentTarget.value = "";
+        pauseInput.fail = "Invalid date format.";
+        return;
+      }
+      pauseInput.value = dayjs(value).toISOString();
+      newConfig.pausedUntil = pauseInput.value;
+      pauseInput.fail = null;
+    } else {
+      if (!/^\d+[0-9wdhms ]*/gi.test(value)) {
+        pauseInput.fail =
+          "Invalid duration format. Only numbers and 'd', 'h', 'm', 's' are allowed. <a href='https://docs.supportmail.dev/e/timestring' target='_blank' rel='noopener' class='dy-link dy-link-primary'>Learn more (only English is currently supported)</a>";
+        console.error(
+          "Invalid duration format. Only numbers and 'd', 'h', 'm', 's' are allowed. Visit https://docs.supportmail.dev/e/timestring for more information. Note, that only English is currently supported.",
+        );
+        return;
+      }
+
+      if (value.length) {
         try {
-          parsedInput = parseTimestring(pauseInput.value);
-        } catch (err) {
-          pauseInput.fail = err as string;
-          parsedInput = null;
+          const parsed = parseTimestring(value);
+          pauseInput.value = dayjs().add(parsed, "seconds").toISOString();
+          pauseInput.fail = null;
+
+          newConfig.pausedUntil = pauseInput.value;
+        } catch (err: any) {
+          console.error(err);
+          pauseInput.fail = err.message;
         }
-        if (!parsedInput) return;
-        const ts = dayjs().add(parsedInput, "seconds");
+      } else {
+        console.log("Resetting");
+        pauseInput.value = null;
+        pauseInput.fail = null;
       }
     }
-  });
+  }
 
   async function saveChanges() {}
 </script>
@@ -65,20 +89,20 @@ Page Contents:
 <h1 class="my-2 font-bold text-amber-400">Ticket Configuration</h1>
 <span class="h-2"></span>
 
-{#if oldConfig}
+{#if oldConfig && newConfig}
   <!-- 1. Enabled -->
   <fieldset id="status" class="settings-container">
-    <h2 class="dy-fieldset-legend text-xl">Status</h2>
-    <label class="dy-fieldset-label py-1 text-base text-white">
+    <h2 class="dy-fieldset-legend w-fit text-xl">Status</h2>
+    <label class="dy-fieldset-label w-fit py-1 text-base text-white">
       <input
         id="enabled-switch"
         type="checkbox"
         class="dy-toggle dy-toggle-success"
         bind:checked={newConfig.enabled}
-        disabled={!!newConfig.pausedUntil}
+        disabled={!!oldConfig.pausedUntil}
       />{newConfig.enabled ? "Enabled" : "Disabled"}
     </label>
-    {#if newConfig.enabled == false || typeof newConfig.pausedUntil == "string"}
+    {#if newConfig.enabled == false || typeof oldConfig.pausedUntil == "string"}
       <div role="alert" class="dy-alert dy-alert-error dy-alert-soft mb-2" transition:slide={{ duration: 100, axis: "y" }}>
         <div>
           <h1>Ticketing is currently disabled.</h1>
@@ -87,9 +111,12 @@ Page Contents:
               No tickets can be opened at the moment, but currently open tickets are still active and can be used to exchange
               messages.
             </p>
-          {:else}
+          {:else if oldConfig.pausedUntil}
             <p class="text-base-content">
-              Ticketing is paused until {newConfig.pausedUntil?.toLocaleString()}.<br />
+              Ticketing is paused until {new Date(oldConfig.pausedUntil).toLocaleString(navigator.language, {
+                dateStyle: "medium",
+                timeStyle: "long",
+              })}.<br />
               See <a href="#paused-until">Paused Until</a> for more information.
             </p>
           {/if}
@@ -101,65 +128,96 @@ Page Contents:
   <div
     class="flex w-full flex-col transition-opacity duration-150 select-none {newConfig.enabled
       ? ''
-      : 'cursor-not-allowed opacity-60'}"
+      : 'cursor-not-allowed opacity-60 *:pointer-events-none'}"
   >
     <!-- 2. Paused Until -->
     <fieldset id="paused-until" class="settings-container">
-      <h2 class="dy-fieldset-legend text-xl">Paused Until</h2>
-      <div class="flex flex-col items-start gap-2 md:flex-row md:items-center">
-        <button
-          onclick={() => {
-            pauseInput.value = null;
-            pauseInput.type = pauseInput.type === "date" ? "duration" : "date";
-          }}
-          class="dy-btn dy-btn-dash dy-btn-square dy-btn-sm w-25"
-          disabled={!!newConfig.pausedUntil}
-        >
-          <img src="/icons/arrow-update.svg" alt="Swap Inputs" class="size-5" />
-          {pauseInput.type === "date" ? "Duration" : "Date"}
-        </button>
-        {#if pauseInput.type == "date"}
-          <input
-            type="datetime-local"
-            class="dy-input w-full"
-            bind:value={pauseInput.value}
-            disabled={!!newConfig.pausedUntil}
-          />
-        {:else}
-          <input
-            type="text"
-            class="dy-input w-full"
-            placeholder="Duration"
-            bind:value={pauseInput.value}
-            disabled={!!newConfig.pausedUntil}
-          />
-        {/if}
+      <div class="flex flex-row overflow-visible">
+        <h2 class="dy-fieldset-legend w-fit text-xl">Paused Until</h2>
+        <div class="dy-tooltip dy-tooltip-top dy-tooltip-info flex items-center" data-tip={LongTooltips.pausedUntil_tickets}>
+          <button class="dy-btn dy-btn-circle dy-btn-sm items-center p-0">
+            <img src="/icons/question-mark-circle.svg" alt="Help" class="size-6" />
+          </button>
+        </div>
       </div>
+      <div class="flex w-full max-w-lg flex-col gap-4 py-4">
+        <div class="dy-join dy-join-vertical md:dy-join-horizontal h-full">
+          <button
+            onclick={() => {
+              pauseInput.value = null;
+              pauseInput.fail = null;
+              pauseInput.type = pauseInput.type === "date" ? "duration" : "date";
+            }}
+            class="dy-btn dy-join-item btn-base-300 w-full md:max-w-25"
+            disabled={!!oldConfig.pausedUntil}
+          >
+            <img src="/icons/arrow-update.svg" alt="Swap Inputs" class="size-5" />
+            {pauseInput.type === "date" ? "Duration" : "Date"}
+          </button>
+          {#if pauseInput.type == "date"}
+            <input
+              type="datetime-local"
+              class="dy-input dy-join-item w-full text-base"
+              onchangecapture={pauseInputHandler}
+              min={dayjs().format("YYYY-MM-DDTHH:mm")}
+              disabled={!!oldConfig.pausedUntil}
+            />
+          {:else}
+            <input
+              type="text"
+              class="dy-input dy-join-item w-full"
+              placeholder="Duration | Ex: 1d 2h 30m"
+              onchangecapture={pauseInputHandler}
+              disabled={!!oldConfig.pausedUntil}
+            />
+          {/if}
+        </div>
+
+        <!-- Display the date + time the pause will last. -->
+        <div role="alert" class="dy-alert dy-alert-info dy-alert-soft w-full p-2">
+          <span class="font-mono font-semibold">
+            {#if pauseInput.value}
+              When saved, Tickets will be paused until {new Date(pauseInput.value).toLocaleString(navigator.language, {
+                dateStyle: "medium",
+                timeStyle: "long",
+              })}.
+            {:else}
+              {pauseInput.type === "date" ? "Select a date and time." : "Enter a duration."}
+            {/if}
+          </span>
+        </div>
+
+        <div class="flex w-full grow flex-row gap-2">
+          <button
+            class="dy-btn dy-btn-accent grow"
+            disabled={!pauseInput}
+            onclick={() => {
+              pauseInput.value = null;
+              pauseInput.fail = null;
+            }}
+          >
+            Reset
+          </button>
+          <button
+            class="dy-btn dy-btn-primary grow"
+            disabled={!!oldConfig.pausedUntil || pauseInput.fail !== null}
+            onclick={() => {
+              gg.unsavedChanges = true;
+            }}
+          >
+            Save
+          </button>
+        </div>
+      </div>
+
       {#if pauseInput.fail}
         <div role="alert" class="dy-alert dy-alert-error dy-alert-soft my-2">
           <div>
             <h1>Invalid Input</h1>
-            <p class="text-base-content">{pauseInput.fail}</p>
+            <p class="text-base-content">{@html pauseInput.fail}</p>
           </div>
         </div>
       {/if}
-
-      <div class="flex w-full flex-row items-start gap-2 py-2">
-        <button
-          class="dy-btn dy-btn-accent w-[50%] md:w-auto"
-          disabled={!pauseInput}
-          onclick={() => (newConfig.pausedUntil = oldConfig.pausedUntil)}
-        >
-          Reset
-        </button>
-        <button class="dy-btn dy-btn-primary w-[50%] md:w-auto" disabled={!!newConfig.pausedUntil} onclick={() => {}}>
-          Pause
-        </button>
-      </div>
-      <!-- <p class="text-base-content py-2 text-sm">
-        If a date is set, ticketing will be paused until that date. No tickets can be opened until then, but currently open
-        tickets are still active and can be used to exchange messages.
-      </p> -->
     </fieldset>
   </div>
 {:else}
