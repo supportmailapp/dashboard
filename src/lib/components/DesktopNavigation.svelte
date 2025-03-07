@@ -9,7 +9,7 @@
   import { buildNavHref, showServerSelect } from "./navigation.svelte";
   import UserSettingsDialog from "./UserSettingsDialog.svelte";
 
-  let _user = $derived(user.discord);
+  let _user = $derived(user.discord)!;
   let showUserSettings = $state(false);
 
   function isCurrentPage(href: string = "/") {
@@ -17,67 +17,70 @@
   }
 </script>
 
-<nav class="bg-base-200 flex flex-row" transition:slide={{ duration: 350, axis: "x" }}>
-  <ul class="dy-menu dy-rounded-box w-56">
-    <a
-      href="/"
-      id="branding"
-      class="my-2 flex cursor-pointer flex-row items-center justify-around text-slate-200 transition-opacity duration-100 ease-linear select-none hover:opacity-60"
-    >
-      <img src="/logo.png" alt="Logo" class="dy-avatar size-8 drop-shadow-md" />
-      <span class="text-2xl font-bold">SupportMail</span>
+<nav class="dektop-nav" transition:slide={{ duration: 350, axis: "x" }}>
+  <a
+    href="/"
+    id="branding"
+    class="flex w-full items-center justify-around gap-1 px-1 py-2 text-white transition-opacity duration-100 ease-linear select-none hover:opacity-60"
+  >
+    <img src="/logo.png" alt="Logo" class="dy-avatar aspect-square size-8 drop-shadow-md" />
+    <span class="text-xl font-bold">SupportMail</span>
+  </a>
+  <span class="dy-divider my-0 h-1"></span>
+  <button class="dy-btn btn-base-300 dy-btn-lg w-full gap-2.5 px-2.5 text-white" onclick={() => (showUserSettings = true)}>
+    <div class="dy-avatar">
+      <div class="dy-mask size-8 rounded-xl">
+        <img src={cdnUrls.userAvatar(_user.id, _user.avatar, 256)} alt="User Avatar" />
+      </div>
+    </div>
+    <span class="max-w-[70%] truncate">{_user.displayName}</span>
+  </button>
+  <!-- Server select -->
+  <button class="dy-btn btn-base-300 dy-btn-lg w-full gap-2.5 px-2.5 text-sm text-white" onclick={showServerSelect}>
+    {#if gg.guild}
+      <div class="dy-avatar">
+        <div class="dy-mask dy-mask-squircle size-7">
+          <img src={cdnUrls.guildIcon(gg.guild.id, gg.guild.iconHash, 256)} alt="Guild Icon" />
+        </div>
+      </div>
+      <span class="max-w-[60%] truncate">{gg.guild.name}</span>
+      <img src="/icons/chevron-up-down.svg" alt="???" class="ml-auto flex size-7" />
+    {:else}
+      <div class="dy-avatar">
+        <div class="dy-skeleton aspect-square size-7"></div>
+      </div>
+      <span class="dy-skeleton h-4 w-20"></span>
+    {/if}
+  </button>
+  <span class="dy-divider dy-divider-primary my-1"></span>
+  <h2 class="nav-title">Plugins</h2>
+  <!-- svelte-ignore a11y_invalid_attribute -->
+  {#if !gg.unsavedChanges}
+    <a href={buildNavHref("/")} class="nav-item {isCurrentPage(buildNavHref('/')) ? 'bg-base-300 no-animation' : ''}">
+      <Home size={6} />
+      <span class={isCurrentPage(buildNavHref("/")) ? "text-warning text- font-semibold" : ""}>Home</span>
     </a>
-    <div class="dy-divider mx-0 my-1"></div>
-    <li>
-      <button class="justify-around" onclick={() => (showUserSettings = true)}>
-        {#if _user}
-          <div class="dy-avatar">
-            <div class="dy-mask size-16 rounded-xl">
-              <img src={cdnUrls.userAvatar(_user.id, _user.avatar, "512")} alt="User Avatar" />
-            </div>
-          </div>
-        {:else}
-          <div class="dy-skeleton h-32 w-32"></div>
-        {/if}
-        <img src="/icons/chevron-double-right.svg" alt="Open User Menu" class="size-10" />
-      </button>
-    </li>
-    <li></li>
-    <li class="dy-dropdown dy-dropdown-right w-full">
-      <!-- Server select -->
-      {#if gg.guild}
-        <button class="dy-btn dy-btn-wide dy-btn-secondary flex px-2.5" onclick={showServerSelect}>
-          <div class="mr-auto flex flex-row items-center justify-start gap-x-2 truncate text-white">
-            <div class="dy-avatar">
-              <div class="dy-mask dy-mask-squircle size-7">
-                <img src={cdnUrls.guildIcon(gg.guild.id, gg.guild?.iconHash, 64)} alt="Server icon" />
-              </div>
-            </div>
-
-            <p class="w-fit truncate">{gg.guild.name}</p>
-          </div>
-          <img src="/icons/chevron-up-down.svg" alt="???" class="ml-auto flex size-7 justify-end" />
-        </button>
-      {/if}
-    </li>
-    <li></li>
-    <li class="dy-menu-title select-none">Plugins</li>
-    <li>
-      <!-- svelte-ignore a11y_invalid_attribute -->
-      <a href={buildNavHref("/")} class={isCurrentPage(buildNavHref("/")) ? "bg-base-300 no-animation" : ""}>
-        <Home size={6} />
-        <span class={isCurrentPage(buildNavHref("/")) ? "text-warning text- font-semibold" : ""}>Home</span>
+  {:else}
+    <!-- svelte-ignore a11y_missing_attribute -->
+    <a class="nav-item cursor-default {isCurrentPage(buildNavHref('/')) ? 'bg-base-300 no-animation' : ''}">
+      <Home size={6} />
+      <span class={isCurrentPage(buildNavHref("/")) ? "text-warning text- font-semibold" : ""}>Home</span>
+    </a>
+  {/if}
+  {#each PLUGINS as plugin}
+    {#if !gg.unsavedChanges}
+      <a href={buildNavHref(plugin.slug)} class="nav-item {isCurrentPage(buildNavHref(plugin.slug)) ? 'active' : ''}">
+        <img src={plugin.iconUrl} alt={plugin.name} class="size-6" />
+        <span>{plugin.name}</span>
       </a>
-    </li>
-    {#each PLUGINS as plugin}
-      <li class="mt-1">
-        <a href={buildNavHref(plugin.slug)} class={isCurrentPage(buildNavHref(plugin.slug)) ? "dy-menu-active" : ""}>
-          <img src={plugin.iconUrl} alt={plugin.name} class="size-6" />
-          <span class={isCurrentPage(buildNavHref(plugin.slug)) ? "text-warning font-semibold" : ""}>{plugin.name}</span>
-        </a>
-      </li>
-    {/each}
-  </ul>
+    {:else}
+      <!-- svelte-ignore a11y_missing_attribute -->
+      <a class="nav-item cursor-default {isCurrentPage(buildNavHref(plugin.slug)) ? 'active' : ''}">
+        <img src={plugin.iconUrl} alt={plugin.name} class="size-6" />
+        <span>{plugin.name}</span>
+      </a>
+    {/if}
+  {/each}
 </nav>
 
 <UserSettingsDialog bind:showModal={showUserSettings} />
