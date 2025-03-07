@@ -86,10 +86,40 @@
     --dc-blurple: #5a65db;
   }
 
-  .mobile-navbar {
-    @apply fixed right-0 bottom-0 left-0 z-50;
+  .mobile-nav {
+    @apply sticky right-0 bottom-0 left-0 z-50;
     @apply bg-neutral text-neutral-content border-base-300;
     @apply grid h-20 grid-cols-3 place-items-center gap-2 border-t-[1px] px-2 py-2.5;
+  }
+
+  .dektop-nav {
+    @apply bg-base-200 max-w-56 gap-1 p-2 text-base;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+
+    .nav-item {
+      @apply gap-2.5 rounded-md p-2 text-base font-normal;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      transition: all 150ms ease-in-out;
+    }
+
+    .nav-item.active {
+      @apply bg-base-300 text-warning font-semibold;
+    }
+
+    .nav-item:hover,
+    .nav-item:focus {
+      @apply bg-base-300;
+    }
+
+    .nav-title {
+      @apply py-1 text-base font-semibold;
+      text-align: center;
+      opacity: 0.75;
+    }
   }
 
   .discord-channel {
@@ -105,20 +135,22 @@
   }
 
   .footer-container {
-    @apply gap-x-2.5 p-4 text-xs md:gap-x-7.5;
-    display: grid;
-    grid-auto-flow: column;
+    @apply min-h-7 gap-5 text-xs text-white/60;
+    user-select: none;
+    -webkit-user-select: none;
     width: 100%;
     background-color: transparent;
-    color: var(--color-neutral-content);
     display: flex;
+    flex-direction: row;
     justify-content: center;
     align-items: center;
-    user-select: none;
+    text-align: center;
+    gap: 1rem;
+    margin-top: auto;
   }
 
   form.userdata {
-    @apply flex w-full flex-col items-start justify-start gap-y-2 sm:w-3/5;
+    @apply flex w-full flex-col items-start justify-start gap-y-2 sm:max-w-3/5;
 
     fieldset {
       @apply dy-fieldset;
@@ -149,6 +181,49 @@
     user-select: none;
     background-color: var(--color-base-200);
   }
+
+  .btn-base-100 {
+    --dy-btn-color: var(--color-base-100);
+    --dy-btn-fg: var(--color-base-content);
+  }
+
+  .btn-base-200 {
+    --dy-btn-color: var(--color-base-200);
+    --dy-btn-fg: var(--color-base-content);
+  }
+
+  .btn-base-300 {
+    --dy-btn-color: var(--color-base-300);
+    --dy-btn-fg: var(--color-base-content);
+  }
+
+  .server-id-button {
+    @apply text-primary p-1 text-2xl font-bold transition-all duration-150 ease-linear;
+    cursor: pointer;
+    text-align: start;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .plugin-card {
+    @apply bg-base-200 hover:bg-base-300/70 transition-all duration-150 ease-linear;
+    @apply w-full min-w-56 gap-2 rounded-lg p-3 shadow-md;
+    align-items: start;
+    justify-content: start;
+    text-align: start;
+    display: flex;
+    flex-direction: column;
+    flex: auto;
+    cursor: pointer;
+
+    h1 {
+      @apply text-base font-semibold;
+    }
+
+    p {
+      @apply text-sm font-normal;
+    }
+  }
 }
 
 @layer utilities {
@@ -169,12 +244,16 @@
     place-items: center;
   }
 
-  .color-discord {
+  .text-discord {
     color: var(--dc-blurple);
   }
 
+  .bg-discord {
+    background-color: var(--dc-blurple);
+  }
+
   .server-select-icon {
-    @apply aspect-square h-12 w-12 rounded-lg shadow-md md:h-22 md:w-22;
+    @apply aspect-square size-12 rounded-lg shadow-md md:size-24;
   }
 
   .server-select-btn {
