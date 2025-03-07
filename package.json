@@ -3,9 +3,6 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "repository": {
-    "url": "https://github.com/The-LukeZ/supportmail-dash"
-  },
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
@@ -63,5 +60,10 @@
     "@svelte-plugins/datepicker": {
       "svelte": "^5.19.2"
     }
-  }
+  },
+  "repository": {
+    "url": "https://github.com/The-LukeZ/supportmail-dash"
+  },
+  "description": "Website for SupportMail Discord Bot - In Development!",
+  "homepage": "https://supportmail.dev"
 }
