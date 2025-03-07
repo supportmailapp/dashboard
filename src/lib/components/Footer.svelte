@@ -1,9 +1,9 @@
 <script lang="ts">
-  type FooterProps = { year: number | string; additionalClasses?: string };
-  let { year, additionalClasses }: FooterProps = $props();
+  type FooterProps = { year: number | string };
+  let { year }: FooterProps = $props();
 </script>
 
-<footer class="footer-container mt-auto {additionalClasses ? additionalClasses : ''}">
+<footer class="footer-container">
   <nav>
     <p>SupportMail © {year}</p>
   </nav>
