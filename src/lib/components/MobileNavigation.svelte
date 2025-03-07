@@ -1,15 +1,15 @@
 <script lang="ts">
-  import Home from "$lib/assets/home.svelte";
   import { user } from "$lib/stores/user.svelte";
   import { cdnUrls } from "$lib/utils/formatting";
   import { slide } from "svelte/transition";
   import { showServerSelect } from "./navigation.svelte";
-  import NavigationDialog from "./ServerSelectDialog.svelte";
+  import UserSettingsDialog from "./UserSettingsDialog.svelte";
 
   const _user = $derived(user.discord);
+  let showUserSettings = $state(false);
 </script>
 
-<div id="mobileNav" class="mobile-navbar" transition:slide={{ duration: 350, axis: "y" }}>
+<div id="mobileNav" class="mobile-nav" transition:slide={{ duration: 350, axis: "y" }}>
   <button class="dy-btn dy-btn-xl bg-base-100 h-full w-full flex-col gap-x-3 py-1.5">
     <svg class="size-[1em]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
       ><g fill="currentColor" stroke-linejoin="miter" stroke-linecap="butt"
@@ -40,7 +40,7 @@
     <span class="text-sm">Servers</span>
   </button>
 
-  <button class="dy-btn dy-btn-xl bg-base-100 flex h-full w-full flex-col gap-x-3 py-1.5">
+  <button class="dy-btn dy-btn-xl bg-base-100 flex h-full w-full flex-col gap-x-3 py-1.5" onclick={() => (showUserSettings = true)}>
     {#if _user}
       <div class="size-6">
         <img src={cdnUrls.userAvatar(_user.id, _user.avatar, "128")} alt="User Avatar" class="rounded-sm" />
@@ -51,3 +51,5 @@
     <span class="text-sm">You</span>
   </button>
 </div>
+
+<UserSettingsDialog bind:showModal={showUserSettings} />
