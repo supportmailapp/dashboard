@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { page } from "$app/state";
   import { guilds } from "$lib/stores/guilds.svelte";
   import { cdnUrls } from "$lib/utils/formatting";
   import { slide } from "svelte/transition";
@@ -23,17 +24,29 @@
       </form>
     </div>
     <div class="max-h-full overflow-y-auto md:max-h-full">
-      <ul class="dy-dropdown-content dy-menu bg-base-100 rounded-box dy z-1 w-full overflow-y-auto p-2 shadow-sm">
+      <ul class="dy-dropdown-content dy-menu bg-base-100 rounded-box dy z-1 w-full gap-y-1 overflow-y-auto p-2 shadow-sm">
         {#each guilds.value as guild}
           <li>
-            <a href="/{!guild.isConfigured ? 'add/' : ''}{guild.id}" target="_self">
-              <div class="dy-avatar">
-                <div class="dy-mask dy-mask-squircle size-8">
-                  <img src={cdnUrls.guildIcon(guild.id, guild.iconHash, "512")} alt="Guild Icon" />
+            {#if page.url.pathname.startsWith("/g/" + guild.id)}
+              <!-- svelte-ignore a11y_missing_attribute -->
+              <a class="bg-base-300 cursor-default">
+                <div class="dy-avatar">
+                  <div class="dy-mask dy-mask-squircle size-8">
+                    <img src={cdnUrls.guildIcon(guild.id, guild.iconHash, "512")} alt="Guild Icon" />
+                  </div>
                 </div>
-              </div>
-              <span class="truncate">{guild.name}</span>
-            </a>
+                <span class="truncate">{guild.name}</span>
+              </a>
+            {:else}
+              <a href="/{!guild.isConfigured ? 'add/' : ''}{guild.id}" target="_self">
+                <div class="dy-avatar">
+                  <div class="dy-mask dy-mask-squircle size-8">
+                    <img src={cdnUrls.guildIcon(guild.id, guild.iconHash, "512")} alt="Guild Icon" />
+                  </div>
+                </div>
+                <span class="truncate">{guild.name}</span>
+              </a>
+            {/if}
           </li>
         {/each}
       </ul>
