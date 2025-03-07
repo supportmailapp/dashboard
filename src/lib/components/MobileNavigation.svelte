@@ -40,7 +40,10 @@
     <span class="text-sm">Servers</span>
   </button>
 
-  <button class="dy-btn dy-btn-xl bg-base-100 flex h-full w-full flex-col gap-x-3 py-1.5" onclick={() => (showUserSettings = true)}>
+  <button
+    class="dy-btn dy-btn-xl bg-base-100 flex h-full w-full flex-col gap-x-3 py-1.5"
+    onclick={() => (showUserSettings = true)}
+  >
     {#if _user}
       <div class="size-6">
         <img src={cdnUrls.userAvatar(_user.id, _user.avatar, "128")} alt="User Avatar" class="rounded-sm" />
