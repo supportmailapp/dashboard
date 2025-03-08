@@ -5,11 +5,11 @@
   import { showServerSelect } from "./navigation.svelte";
   import UserSettingsDialog from "./UserSettingsDialog.svelte";
 
-  const _user = $derived(user.discord);
+  const _user = $derived(user.discord!);
   let showUserSettings = $state(false);
 </script>
 
-<div id="mobileNav" class="mobile-nav" transition:slide={{ duration: 350, axis: "y" }}>
+<div class="mobile-nav" transition:slide={{ duration: 350, axis: "y" }}>
   <button class="dy-btn dy-btn-xl bg-base-100 h-full w-full flex-col gap-x-3 py-1.5">
     <svg class="size-[1em]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
       ><g fill="currentColor" stroke-linejoin="miter" stroke-linecap="butt"
@@ -41,7 +41,7 @@
   </button>
 
   <button
-    class="dy-btn dy-btn-xl bg-base-100 flex h-full w-full flex-col gap-x-3 py-1.5"
+    class="dy-btn dy-btn-xl bg-base-100 flex h-full w-full flex-col truncate p-1.5"
     onclick={() => (showUserSettings = true)}
   >
     {#if _user}
@@ -51,7 +51,9 @@
     {:else}
       <div class="dy-skeleton size-6"></div>
     {/if}
-    <span class="text-sm">You</span>
+    <span class="h-fit w-full truncate">
+      <span class="text-sm">{_user.displayName}</span>
+    </span>
   </button>
 </div>
 
