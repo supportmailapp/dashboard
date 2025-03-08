@@ -21,7 +21,7 @@
   <a
     href="/"
     id="branding"
-    class="flex w-full items-center justify-around gap-1 px-1 py-2 text-white transition-opacity duration-100 ease-linear select-none hover:opacity-60"
+    class="flex w-full items-center justify-center gap-1.5 px-1 py-2 text-white transition-opacity duration-100 ease-linear select-none hover:opacity-60"
   >
     <img src="/logo.png" alt="Logo" class="dy-avatar aspect-square size-8 drop-shadow-md" />
     <span class="text-xl font-bold">SupportMail</span>
