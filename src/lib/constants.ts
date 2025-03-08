@@ -1,7 +1,7 @@
 // PUBLIC constants
 
 import { env } from "$env/dynamic/public";
-import type { IDBGuild, IDBUser, IReportConfig, ITicketConfig } from "supportmail-types";
+import type { IDBGuild, IDBUser } from "supportmail-types";
 
 export const mediaQuery = {
   sm: 640,
@@ -9,6 +9,16 @@ export const mediaQuery = {
   lg: 1024,
   xl: 1280,
   xl2: 1536,
+} as const;
+
+export const ImportantLinks = {
+  legal: {
+    notice: "https://legal.supportmail.dev",
+    privacy: "https://legal.supportmail.dev/privacy",
+    terms: "https://legal.supportmail.dev/terms",
+    refundPolicy: "https://legal.supportmail.dev/refund-policy",
+    imprint: "https://legal.supportmail.dev/imprint",
+  },
 } as const;
 
 interface AuthorizeUrlParams {
