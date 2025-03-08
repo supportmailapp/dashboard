@@ -197,6 +197,10 @@
     text-align: center;
     gap: 1rem;
     margin-top: auto;
+
+    > nav > a {
+      @apply dy-link dy-link-hover;
+    }
   }
 
   form.userdata {
