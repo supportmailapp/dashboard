@@ -1,18 +1,20 @@
 <script lang="ts">
+  import { ImportantLinks } from "$lib/constants";
+
   type FooterProps = { year: number | string };
   let { year }: FooterProps = $props();
 </script>
 
 <footer class="footer-container">
   <nav>
-    <p>SupportMail © {year}</p>
-  </nav>
-  <nav class="">|</nav>
-  <nav>
-    <a href="/privacy" class="dy-link dy-link-hover">Privacy Policy</a>
+    <a href={ImportantLinks.legal.notice} target="_blank">SupportMail © {year}</a>
   </nav>
   <nav>|</nav>
   <nav>
-    <a href="/terms" class="dy-link dy-link-hover">Terms of Service</a>
+    <a href={ImportantLinks.legal.terms} target="_blank">Terms of Service</a>
+  </nav>
+  <nav>|</nav>
+  <nav>
+    <a href={ImportantLinks.legal.privacy} target="_blank">Privacy Policy</a>
   </nav>
 </footer>
