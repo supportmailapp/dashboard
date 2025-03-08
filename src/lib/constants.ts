@@ -90,7 +90,7 @@ export const APIRoutes = {
      * Used for:
      * - GET: Get the config for a guild
      * - POST: Create a new config for a guild
-     * - PATCH: Update the config for a guild
+     * - PATCH: Update the base config for a guild
      * - DELETE: Delete the config for a guild
      */
     base: (guildId: string) => `${API_BASE}/config/${guildId}`,
