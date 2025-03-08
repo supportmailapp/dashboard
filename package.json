@@ -50,6 +50,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.13.0",
     "node-cache": "^5.1.2",
+    "paneforge": "^0.0.6",
     "rate-limiter-flexible": "^5.0.5",
     "tailwind-scrollbar-hide": "^2.0.0",
     "tailwindcss": "^4.0.4",
