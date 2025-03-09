@@ -185,7 +185,7 @@ export const ErrorResponses = {
 
 export const LongTooltips = {
   pausedUntil_tickets:
-    "Pausing tickets will prevent users from opening new tickets. Open ticket however will remain open allowing message exchange until reopened.",
+    "Pausing tickets will prevent users from opening new tickets. Open tickets however will remain open allowing message exchange until reopened.",
   pausedUntil_reports:
     "Pausing reports will prevent users from creating new reports. Existing reports will still be processed and can be edited.",
 } as const;
