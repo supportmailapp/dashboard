@@ -32,6 +32,8 @@ export const PATCH = async ({ locals, request }) => {
 
     await updateGuild(locals.guildId, update);
     const newDoc = await getGuild(locals.guildId);
+    console.debug("Updated guild", newDoc);
+    await new Promise((resolve) => setTimeout(resolve, Math.floor(Math.random() * (1200 - 500 + 1)) + 500));
     return Response.json(newDoc, { status: 200, statusText: "OK" });
   }
 
