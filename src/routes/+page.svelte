@@ -23,9 +23,7 @@
 <!-- Servers -->
 {#snippet guildrow(guildId: string, guildName: string, guildIcon: string | null, isConfigured: boolean = false)}
   <a
-    class="hover:bg-base-300 flex w-full flex-row items-center justify-between gap-x-2 rounded-lg transition-all duration-100 {!isConfigured
-      ? 'opacity-40 hover:opacity-90'
-      : ''}"
+    class="root-server-select-row {!isConfigured ? 'opacity-40 hover:opacity-90' : ''}"
     href="/{isConfigured ? 'g/' : 'add/'}{guildId}"
   >
     <div class="flex items-center justify-center p-2">
@@ -49,7 +47,8 @@
 {/snippet}
 
 <div class="flex h-screen w-screen flex-col items-center justify-center">
-  <div class="bg-base-200 top-0 right-0 left-0 flex w-full shadow-sm">
+  <!-- It's needed to be in the wrapper because otherwise the layout breaks. Dunno why. -->
+  <header class="bg-base-200 sticky top-0 right-0 left-0 w-full">
     <nav class="dy-navbar mx-auto max-w-[1200px]">
       <div id="branding" class="dy-navbar-start gap-x-3 gap-y-2 py-1 select-none">
         <img src="/logo.png" alt="Logo" class="size-12" />
@@ -71,7 +70,7 @@
         </button>
       </div>
     </nav>
-  </div>
+  </header>
 
   <div class="flex h-full max-h-screen w-full items-center justify-center p-3">
     <div class="relative h-[97%] w-full max-w-[700px] overflow-hidden overflow-y-auto rounded-lg bg-slate-800">
