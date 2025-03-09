@@ -6,14 +6,17 @@
   import DesktopNavigation from "$lib/components/DesktopNavigation.svelte";
   import Footer from "$lib/components/Footer.svelte";
   import MobileNavigation from "$lib/components/MobileNavigation.svelte";
+  import RefreshButton from "$lib/components/RefreshButton.svelte";
+  import SaveAlert from "$lib/components/SaveAlert.svelte";
   import ServerSelectDialog from "$lib/components/ServerSelectDialog.svelte";
-  import { APIRoutes, mediaQuery } from "$lib/constants.js";
+  import { mediaQuery } from "$lib/constants.js";
   import { gg, loadGuildConfig, loadGuildData } from "$lib/stores/guild.svelte";
   import { site } from "$lib/stores/site.svelte.js";
+  import { user } from "$lib/stores/user.svelte.js";
 
   let { children, data } = $props();
 
-  let innerWidth = $state(800);
+  let width = $state(800);
 
   onMount(async function () {
     let retries = 0;
@@ -39,36 +42,65 @@
   });
 </script>
 
-<svelte:window bind:innerWidth />
+<svelte:window bind:innerWidth={width} />
 
-<div class="flex min-h-screen w-full max-w-screen flex-row">
-  {#if innerWidth >= mediaQuery.md}
+<div class="page-container">
+  {#if width >= mediaQuery.md}
     <DesktopNavigation />
+    <div class="gradient-divider from-base-100 bg-gradient-to-l to-black/5"></div>
   {/if}
-
-  <div class="h-full w-full">
-    <div
-      class="flex min-h-screen w-full max-w-[1000px] flex-col gap-5 p-4 md:p-9"
-      transition:slide={{ duration: 250, axis: "x" }}
-    >
-      {#if !gg.config && site.loading}
-        <div class="flex h-max w-full items-center justify-center">
-          <span class="dy-loading dy-loading-infinity dy-loading-xl select-none"></span>
-        </div>
-      {:else}
+  <div class="main-container" transition:slide={{ duration: 250, axis: "x" }}>
+    {#if !gg.config || !gg.guild || !user.discord || site.loading}
+      <div class="flex h-max w-full items-center justify-center">
+        <span class="dy-loading dy-loading-infinity dy-loading-xl select-none"></span>
+        {#await new Promise((r) => setTimeout(r, 5000)) then}
+          <RefreshButton text="Already added the bot? Refresh!" whatInvalidate={page.url} />
+        {/await}
+      </div>
+    {:else}
+      <main>
         {@render children()}
-      {/if}
-    </div>
+      </main>
+    {/if}
     <Footer year={data.ccDate} />
+
+    {#if width < mediaQuery.md}
+      <MobileNavigation />
+    {/if}
   </div>
 </div>
 
-{#if innerWidth < mediaQuery.md}
-  <MobileNavigation />
-{/if}
-
-{#if gg.unsavedChanges}
-  <!-- <SaveModal  /> -->
+{#if true}
+  <SaveAlert payload={{}} method="PATCH" destination="/" />
 {/if}
 
 <ServerSelectDialog />
+
+<style>
+  .page-container {
+    height: 100vh;
+    display: grid;
+    grid-template-rows: 1fr;
+    grid-template-columns: 1fr;
+    grid-template-areas: "main";
+
+    @media screen and (min-width: 768px) {
+      grid-template-columns: 18rem 1rem 1fr;
+      grid-template-areas: "nav div main";
+    }
+  }
+
+  .main-container {
+    position: relative;
+    display: block;
+    grid-area: main;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  .gradient-divider {
+    grid-area: div;
+    width: 1rem;
+  }
+</style>
