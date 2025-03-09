@@ -23,7 +23,7 @@
 
   let { payload, method, destination }: SaveModalProps = $props();
 
-  let saving = $state<null | number>(null);
+  let saving = $state<number>(100);
 
   async function saveFunction(event: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement }) {
     const button = event.currentTarget;
@@ -45,7 +45,7 @@
       cache: "no-cache",
     }).catch((error) => {
       console.error("Failed to save:", error);
-      saving = null;
+      saving = 100;
       button.disabled = false;
       button.textContent = "Save";
       return null;
@@ -53,7 +53,7 @@
 
     if (!response || !response.ok) {
       console.error("Failed to save:", response);
-      saving = null;
+      saving = 100;
       button.disabled = false;
       button.textContent = "Save";
       return;
@@ -76,21 +76,37 @@
       site.loading = false;
     });
   });
+
+  async function simulateSave() {
+    saving = 0;
+    while (saving < 100) {
+      saving += 10;
+      await new Promise((resolve) => setTimeout(resolve, 800));
+    }
+    saving = 100;
+  }
 </script>
 
-<div
-  id="save-alert"
-  role="alert"
-  class="dy-alert dy-alert-warning dy-toast dy-toast-center w-full max-w-[800px] transition-colors duration-150 ease-in-out select-none"
-  transition:slide={{ duration: 150, axis: "y" }}
->
-  <span class="text-xl font-semibold">You have unsaved changes!</span>
-  <div class="ml-auto flex justify-end gap-x-3">
-    <button type="reset" class="dy-btn dy-btn-accent dy-btn-outline w-30">Reset</button>
-    {#if !saving}
-      <button class="dy-btn dy-btn-success dy-btn-outline w-30" onclick={saveFunction}>Save</button>
-    {:else}
-      <progress class="dy-progress dy-progress-success w-56" value={saving} max="100"></progress>
-    {/if}
+<div class="save-alert-container">
+  <div
+    role="alert"
+    class="dy-alert dy-alert-warning dy-alert-soft sm:dy-alert-horizontal dy-alert-vertical w-full max-w-[800px] overflow-hidden {saving !=
+    100
+      ? 'pointer-events-none cursor-default'
+      : ''}"
+    style="user-select: none;"
+    transition:slide={{ duration: 150, axis: "y" }}
+  >
+    <span class="text-base font-semibold md:text-lg">You have unsaved changes!</span>
+    <div class="ml-auto flex w-full justify-end gap-x-3 md:w-fit">
+      <button type="reset" class="dy-btn-accent h-8 w-30" disabled={saving != 100}>Reset</button>
+      <button class="dy-btn-success h-8 w-30" onclick={() => simulateSave()} disabled={saving != 100}>
+        {#if saving < 100}
+          <progress class="dy-progress dy-progress-success"></progress>
+        {:else}
+          Save
+        {/if}
+      </button>
+    </div>
   </div>
 </div>
