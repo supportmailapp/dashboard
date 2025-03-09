@@ -3,6 +3,6 @@
   import { onMount } from "svelte";
 
   onMount(async function () {
-    goto("/"); // Redirect to the home page
+    goto("/", { replaceState: true }); // Redirect to the home page
   });
 </script>
