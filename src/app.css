@@ -38,6 +38,27 @@
 }
 
 @layer base {
+  /* width */
+::-webkit-scrollbar {
+  width: 7px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: var(--dc-blurple);
+  border-radius: 5rem;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--light-blurple);
+}
+
   html {
     scroll-behavior: smooth;
     display: flex;
@@ -108,6 +129,7 @@
 @layer components {
   :root {
     --dc-blurple: #5a65db;
+    --light-blurple: rgba(90, 101, 219, 0.4);
     --footer-height: 2.5rem;
   }
 
@@ -116,6 +138,21 @@
     max-width: 1920px;
     justify-content: center;
     margin-inline: auto;
+  }
+
+  .btn-base-100 {
+    --dy-btn-color: var(--color-base-100);
+    --dy-btn-fg: var(--color-base-content);
+  }
+
+  .btn-base-200 {
+    --dy-btn-color: var(--color-base-200);
+    --dy-btn-fg: var(--color-base-content);
+  }
+
+  .btn-base-300 {
+    --dy-btn-color: var(--color-base-300);
+    --dy-btn-fg: var(--color-base-content);
   }
 
   .mobile-nav {
@@ -248,21 +285,6 @@
     }
   }
 
-  .btn-base-100 {
-    --dy-btn-color: var(--color-base-100);
-    --dy-btn-fg: var(--color-base-content);
-  }
-
-  .btn-base-200 {
-    --dy-btn-color: var(--color-base-200);
-    --dy-btn-fg: var(--color-base-content);
-  }
-
-  .btn-base-300 {
-    --dy-btn-color: var(--color-base-300);
-    --dy-btn-fg: var(--color-base-content);
-  }
-
   .server-id-button {
     @apply text-primary p-1 text-2xl font-bold transition-all duration-150 ease-linear;
     cursor: pointer;
@@ -298,6 +320,25 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+  }
+
+  /* TODO: This shit reaches all the way into the scrollbar. WHY? */
+  .save-alert-container {
+    @apply bottom-16 px-4 py-2 md:bottom-0 md:ml-[18rem];
+    margin-bottom: var(--footer-height);
+    display: flex;
+    justify-content: center;
+    background-color: transparent;
+    position: fixed;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    height: fit-content;
+    max-width: calc(100% - var(--footer-height));
+
+    button {
+      @apply dy-btn;
+    }
   }
 }
 
