@@ -4,7 +4,7 @@ import { MongoClient } from "mongodb";
 class MongoDB {
   private client: MongoClient;
 
-  constructor(uri: string) {
+  constructor() {
     this.client = new MongoClient(mongoUri);
   }
 
@@ -24,6 +24,6 @@ class MongoDB {
   }
 }
 
-const mongoDB = new MongoDB(mongoUri);
+const mongoDB = new MongoDB();
 
 export { mongoDB };

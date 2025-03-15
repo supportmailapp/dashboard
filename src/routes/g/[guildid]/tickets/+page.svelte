@@ -18,7 +18,9 @@ Page Contents:
 -->
 
 <script lang="ts">
-  import { DEFAULT_CONFIG, LongTooltips } from "$lib/constants";
+  import DiscordChannel from "$lib/components/DiscordChannel.svelte";
+  import { APIRoutes, LongTooltips } from "$lib/constants";
+  import { configState, unsavedChanges } from "$lib/stores/config.svelte";
   import { gg } from "$lib/stores/guild.svelte.js";
   import { parseTimestring } from "$lib/utils/timestring";
   import dayjs from "dayjs";
@@ -26,17 +28,25 @@ Page Contents:
   import type { ITicketConfig } from "supportmail-types";
   import { slide } from "svelte/transition";
 
-  let oldConfig = $derived(gg.config?.ticketConfig || null); // The '!' has to be there because the type would show as {} otherwise
-  let newConfig = $state<ITicketConfig>(DEFAULT_CONFIG.ticketConfig);
+  let oldConfig = $state<ITicketConfig | null>(null);
   let pauseInput = $state<{ type: "duration" | "date"; value: string | null; fail: string | null }>({
     type: "date",
     value: null,
     fail: null,
   });
+  let creatingNewForum = $state(false);
 
   $effect(() => {
-    // I don't know why 'any' needs to be used here but TS throws an error otherwise. It works in the UserSettingsDialog without it.
-    if (oldConfig && equal(newConfig, DEFAULT_CONFIG.ticketConfig)) newConfig = $state.snapshot(oldConfig as any);
+    if (!oldConfig && configState.config !== null) {
+      oldConfig = $state.snapshot(configState.config);
+      return;
+    }
+
+    if (!equal(oldConfig, configState.config)) {
+      unsavedChanges.set(true);
+    } else {
+      unsavedChanges.set(false);
+    }
   });
 
   function pauseInputHandler(
@@ -52,7 +62,7 @@ Page Contents:
         return;
       }
       pauseInput.value = dayjs(value).toISOString();
-      newConfig.pausedUntil = pauseInput.value;
+      configState.config.pausedUntil = pauseInput.value;
       pauseInput.fail = null;
     } else {
       if (!/^\d+[0-9wdhms ]*/gi.test(value)) {
@@ -70,7 +80,7 @@ Page Contents:
           pauseInput.value = dayjs().add(parsed, "seconds").toISOString();
           pauseInput.fail = null;
 
-          newConfig.pausedUntil = pauseInput.value;
+          configState.config.pausedUntil = pauseInput.value;
         } catch (err: any) {
           console.error(err);
           pauseInput.fail = err.message;
@@ -83,33 +93,61 @@ Page Contents:
     }
   }
 
-  async function saveChanges() {}
+  async function setupNewForum(event: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement }) {
+    creatingNewForum = true;
+    event.currentTarget.disabled = true;
+
+    const res = await fetch(APIRoutes.configTicketsSetup(gg.guild!.id), {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        forumId: configState.config.forumId,
+      }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      oldConfig = data as ITicketConfig;
+      configState.config = data; // The response is usually a whole new ticket config object
+    } else {
+      console.error("Failed to set up new forum", res);
+    }
+  }
+
+  // Save function?
+  unsavedChanges.subscribe((value) => {
+    console.log("Unsaved Changes", value);
+    if (value) unsavedChanges.set(false);
+  });
 </script>
 
 <h1 class="my-2 font-bold text-amber-400">Ticket Configuration</h1>
 
-{#if oldConfig && newConfig}
+{#if oldConfig && configState.config}
   <!-- 1. Enabled -->
   <div class="settings-container w-full">
-    <fieldset id="status" class="dy-fieldset">
+    <fieldset id="status">
       <legend>Status</legend>
-      <div>
+      <div class="settings-row">
         <label class="dy-fieldset-label w-fit text-base text-white">
           <input
             id="enabled-switch"
             type="checkbox"
             class="dy-toggle dy-toggle-success"
-            bind:checked={newConfig.enabled}
+            bind:checked={configState.config.enabled}
             disabled={!!oldConfig.pausedUntil}
-          />{newConfig.enabled ? "Enabled" : "Disabled"}
+          />{configState.config.enabled ? "Enabled" : "Disabled"}
         </label>
       </div>
 
-      {#if newConfig.enabled == false || typeof oldConfig.pausedUntil == "string"}
+      {#if configState.config.enabled == false || typeof oldConfig.pausedUntil == "string"}
         <div role="alert" class="dy-alert dy-alert-error dy-alert-soft mb-2" transition:slide={{ duration: 100, axis: "y" }}>
           <div>
             <h1>Ticketing is currently disabled.</h1>
-            {#if newConfig.enabled == false}
+            {#if configState.config.enabled == false}
               <p class="text-base-content">
                 No tickets can be opened at the moment, but currently open tickets are still active and can be used to exchange
                 messages.
@@ -130,22 +168,22 @@ Page Contents:
   </div>
 
   <!-- The Rest -->
-  <div class="w-full {newConfig.enabled ? '' : 'cursor-not-allowed opacity-60 *:pointer-events-none'}">
+  <div class="w-full {configState.config.enabled ? '' : 'cursor-not-allowed opacity-60 *:pointer-events-none'}">
     <!-- 2. Paused Until -->
 
     <div class="settings-container">
       <fieldset id="paused-until">
         <legend>Paused Until</legend>
-        <div class="flex w-full max-w-lg flex-col gap-4">
+        <div class="settings-row flex w-full max-w-lg flex-col">
           <div class="flex flex-row justify-start gap-2">
-            <div class="dy-join dy-join-vertical md:dy-join-horizontal h-full w-full">
+            <div class="dy-join dy-join-vertical sm:dy-join-horizontal h-full w-full">
               <button
                 onclick={() => {
                   pauseInput.value = null;
                   pauseInput.fail = null;
                   pauseInput.type = pauseInput.type === "date" ? "duration" : "date";
                 }}
-                class="dy-btn dy-join-item btn-base-300 w-full md:max-w-25"
+                class="dy-btn dy-join-item btn-base-300 w-full sm:max-w-25"
                 disabled={!!oldConfig.pausedUntil}
               >
                 <img src="/icons/arrow-update.svg" alt="Swap Inputs" class="size-5" />
@@ -208,9 +246,7 @@ Page Contents:
             <button
               class="dy-btn dy-btn-primary grow"
               disabled={!!oldConfig.pausedUntil || pauseInput.fail !== null}
-              onclick={() => {
-                gg.unsavedChanges = true;
-              }}
+              onclick={() => unsavedChanges.set(true)}
             >
               Save
             </button>
@@ -225,6 +261,35 @@ Page Contents:
             </div>
           </div>
         {/if}
+      </fieldset>
+    </div>
+
+    <!-- 3. Forum | Just display it, chaning it is only possible when setting up a new forum -->
+    <div class="settings-container">
+      <fieldset id="forum-id">
+        <legend>Ticket Forum</legend>
+        <div class="settings-row flex flex-col gap-3">
+          <div class="flex max-w-lg flex-col gap-2 sm:flex-row sm:items-center">
+            <div class="display-input w-full sm:max-w-xs">
+              {#if oldConfig.forumId}
+                <DiscordChannel id={oldConfig.forumId} />
+              {:else}
+                /
+              {/if}
+            </div>
+            <button class="dy-btn dy-btn-primary w-full shrink md:w-20 md:grow" onclick={setupNewForum}>
+              {#if creatingNewForum}
+                <progress class="dy-progress dy-progress-success"></progress>
+              {:else}
+                Set Up
+              {/if}
+            </button>
+          </div>
+          <p class="dy-fieldset-label text-xs">
+            This is the forum where all tickets are located in. You can't change this setting once it's set.<br />
+            You are required to set up a new forum.
+          </p>
+        </div>
       </fieldset>
     </div>
   </div>

@@ -1,7 +1,9 @@
 import { getGuildChannels, setGuildChannels } from "$lib/cache/guilds";
-import { discordREST } from "$lib/discord/utils";
+import { DiscordREST } from "$lib/discord/utils";
 import { apiChannelToBasic } from "$lib/utils/formatting";
 import { json } from "@sveltejs/kit";
+
+const discordREST = new DiscordREST();
 
 export const GET = async ({ locals }) => {
   const guildId = locals.guildId;

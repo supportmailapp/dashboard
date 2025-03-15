@@ -41,7 +41,7 @@ const baseHandle: Handle = async ({ event, resolve }) => {
   if (sessionCookie) {
     const tokenData = verifySessionToken(sessionCookie);
     if (tokenData) {
-      event.locals.user = await fetchUserData(tokenData.id, event.fetch);
+      event.locals.user = await fetchUserData(tokenData.id);
     }
   } else {
     if (!event.url.pathname.startsWith("/login")) {
@@ -109,6 +109,8 @@ const handleApiRequest: Handle = async ({ event, resolve }) => {
       }
     }
 
+    event.locals.token = token;
+
     if (!event.url.pathname.endsWith("news") && !isUserRoute(event.url)) {
       // These are the route params that are used in the API
       const guildId = event.params.guildid || event.params.slug;
@@ -116,13 +118,12 @@ const handleApiRequest: Handle = async ({ event, resolve }) => {
       if (!guildId || !token) {
         return ErrorResponses.badRequest("Missing required parameters");
       }
-      const hasAccess = await checkUserGuildAccess(token, guildId, event.fetch);
+      const hasAccess = await checkUserGuildAccess(token, guildId);
       if (hasAccess === false) {
         return ErrorResponses.forbidden();
       }
 
       event.locals.guildId = guildId;
-      event.locals.token = token;
     } else if (isUserRoute(event.url)) {
       const sessionToken = event.cookies.get("session") || event.request.headers.get("Authorization")?.split(" ")[1];
       if (!sessionToken) {

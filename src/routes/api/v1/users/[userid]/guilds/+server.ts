@@ -10,13 +10,12 @@ export const GET: RequestHandler = async ({ fetch, params, url }) => {
   const aToken = getToken(userId);
   if (!aToken) return error(400, { message: "Invalid user" });
 
-  let guilds = await fetchUserGuilds(userId, aToken, fetch, {
+  let guilds = await fetchUserGuilds(userId, aToken, {
     bypassCache: url.searchParams.get("bypass_cache") === "true",
   });
 
   const validBotGuildIds = await clientAPI.filterMutualGuilds(
-    guilds.map((guild) => guild.id),
-    aToken,
+    guilds.map((guild) => guild.id)
   );
 
   let modifedGuilds = guilds.map((g) => parseToCacheGuild(g, validBotGuildIds.includes(g.id)));

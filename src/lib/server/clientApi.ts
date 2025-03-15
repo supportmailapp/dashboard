@@ -1,23 +1,21 @@
 import { env } from "$env/dynamic/private";
+import type { IDBGuild } from "supportmail-types";
+import { getDocuments } from "./db";
 
 class ClientAPIImitator {
   private readonly privateToken = env.clientAPIToken;
 
-  // Mutual Guilds with luke
-  private readonly relevantGuilds: string[] = [
-    "1008818461553725572",
-    "1064594649668395128",
-    "461533332979843083",
-    "269903523381116931",
-    "1114825999155200101",
-    "123123123",
-  ];
-
   constructor() {}
 
   public async filterMutualGuilds(userGuilds: string[]): Promise<string[]> {
-    const filtered = userGuilds.filter((gid) => this.relevantGuilds.includes(gid));
-    return filtered;
+    const relevantGuildIds = await getDocuments<IDBGuild>("guilds", {
+      id: { $in: userGuilds },
+    }).then((guilds) => guilds.map((guild) => guild.id));
+    return userGuilds.filter((guild) => relevantGuildIds.includes(guild));
+  }
+
+  public async setupTickets(): Promise<any> {
+    return;
   }
 }
 
@@ -52,7 +50,7 @@ class ClientAPI {
    * @param userGuilds - An array of guild IDs that the user is a member of.
    * @returns A promise that resolves to an array of mutual guild IDs or null if an error occurs.
    */
-  public async filterMutualGuilds(userGuilds: string[], userId: string): Promise<string[]> {
+  public async filterMutualGuilds(userGuilds: string[]): Promise<string[]> {
     try {
       const res = await clientAPIImitate.filterMutualGuilds(userGuilds);
 

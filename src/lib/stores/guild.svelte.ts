@@ -9,23 +9,18 @@ import { guilds } from "./guilds.svelte";
 
 type GGType = {
   guild: DCGuild | null;
-  config: IDBGuild | null;
-  unsavedChanges: boolean;
   roles: BasicRole[] | null;
   channels: BasicChannel[] | null;
 };
 
 export const gg = $state<GGType>({
   guild: null,
-  config: null,
-  unsavedChanges: false,
   roles: null,
   channels: null,
 });
 
 export function resetGuild() {
   gg.guild = null;
-  gg.config = null;
   gg.roles = null;
   gg.channels = null;
 }
@@ -48,20 +43,5 @@ export async function loadGuildData(guildId: string) {
     throw new Error("Failed to fetch guild data", {
       cause: [rolesRes, channelsRes],
     });
-  }
-}
-
-export async function loadGuildConfig(guildId: string) {
-  const configRes = await fetch(APIRoutes.config.base(guildId), BASIC_GET_FETCH_INIT);
-  if (configRes.ok) {
-    gg.config = (await configRes.json()) as IDBGuild;
-  } else {
-    if (configRes.status == 404) {
-      window.open(urls.botAuth(env.PUBLIC_ClientId, guildId), "_blank");
-    } else {
-      throw new Error("Failed to fetch guild config", {
-        cause: configRes,
-      });
-    }
   }
 }

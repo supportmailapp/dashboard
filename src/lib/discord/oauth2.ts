@@ -13,6 +13,7 @@
 
 import { env } from "$env/dynamic/private";
 import { getUserGuilds, parseToCacheGuild } from "$lib/cache/guilds";
+import { getMember } from "$lib/cache/members";
 import { cacheUser, getToken, getUser } from "$lib/cache/users";
 import { urls } from "$lib/constants";
 import { createSessionToken, verifySessionToken } from "$lib/server/auth";
@@ -26,6 +27,7 @@ import {
   type APIUser,
   type RESTAPIPartialCurrentUserGuild,
   type RESTPostOAuth2AccessTokenResult,
+  type RESTGetCurrentUserGuildMemberResult as OAuth2GuildMember,
 } from "discord-api-types/v10";
 
 export const createOAuth2Login = function (url: URL) {
@@ -159,14 +161,14 @@ export const logoutHandler: RequestHandler = async ({ cookies, fetch }) => {
  * If the data is not found in the cache, it fetches the data from the API and caches it for future use.
  *
  * @returns A promise that resolves to the user data.
- * @throws Will throw an error if the API request fails. Format: `{ status: number, message: string }`
+ * @throws {Response} Will throw an error if the API request fails. Format: `{ status: number, message: string }`
  */
-export async function fetchUserData(userId: string, fetch: Function, useCache = true): Promise<BasicUser> {
+export async function fetchUserData(userId: string, useCache = true): Promise<BasicUser> {
   const userData = getUser(userId);
   if (useCache && userData) return userData;
 
   const token = getToken(userId);
-  if (!token) throw { status: 401, message: "Unauthorized" };
+  if (!token) throw new Response("Unauthorized", { status: 401, statusText: "Unauthorized" });
 
   const userRes = await fetch(RouteBases.api + Routes.user(), {
     method: "GET",
@@ -189,7 +191,29 @@ interface FetchUserGuildsOptions {
    * Whether to bypass the cache and fetch fresh data from the API. Defaults to `false`.
    */
   bypassCache?: boolean;
+  /**
+   * Whether to return full guild objects instead of cacheable guild objects. Defaults to `false`.
+   */
+  fullGuilds?: boolean;
 }
+
+/**
+ * Fetches the guilds that the current user guilds from the Discord API.
+ *
+ * **Note: Don't forget up update the cache afterwards!**
+ *
+ * @param userId - The ID of the user whose guilds are to be fetched.
+ * @param accessToken - The access token for authenticating the request.
+ * @param fetch - The fetch function to make the HTTP request.
+ * @param options - Options for fetching user guilds.
+ * @returns A promise that resolves to an array of partial guild objects.
+ * @throws {Response} An error object containing the status and message if the request fails.
+ */
+export async function fetchUserGuilds(
+  userId: string,
+  accessToken: string,
+  options: FetchUserGuildsOptions & { fullGuilds: true },
+): Promise<RESTAPIPartialCurrentUserGuild[]>;
 
 /**
  * Fetches the guilds that the current user guilds from the Cache or Discord API.
@@ -201,16 +225,17 @@ interface FetchUserGuildsOptions {
  * @param fetch - The fetch function to make the HTTP request.
  * @param options - Options for fetching user guilds.
  * @returns A promise that resolves to an array of partial guild objects.
- * @throws An error object containing the status and message if the request fails.
+ * @throws {Response} An error object containing the status and message if the request fails.
  */
 export async function fetchUserGuilds(
   userId: string,
   accessToken: string,
-  fetch: Function,
-  options: FetchUserGuildsOptions = {},
-): Promise<DCGuild[]> {
-  options = Object.assign({ bypassCache: false, overwriteCache: true }, options);
-  if (!options.bypassCache) {
+  options?: FetchUserGuildsOptions,
+): Promise<CachableGuild[]>;
+
+export async function fetchUserGuilds(userId: string, accessToken: string, options: FetchUserGuildsOptions = {}) {
+  options = Object.assign({ bypassCache: false, fullGuilds: false }, options);
+  if (!options.bypassCache && !options.fullGuilds) {
     const cachedGuilds = getUserGuilds(userId);
     if (cachedGuilds) {
       return cachedGuilds;
@@ -230,6 +255,40 @@ export async function fetchUserGuilds(
   }
 
   const guildResJson = (await guildRes.json()) as RESTAPIPartialCurrentUserGuild[];
+  if (options.fullGuilds) return guildResJson;
   const guilds = guildResJson.map((guild) => parseToCacheGuild(guild));
   return guilds;
+}
+
+/**
+ * Fetches a guild member's data from the Discord API.
+ *
+ * This function first attempts to retrieve the guild member's data from a cache.
+ * If the data is not found in the cache, it makes an API request to fetch the data.
+ *
+ * @param guildId - The ID of the guild.
+ * @param userId - The ID of the user.
+ * @param accessToken - The access token for authorization.
+ * @returns A promise that resolves to the guild member's data.
+ * @throws {Response} Will throw an error if the fetch operation fails.
+ */
+export async function fetchGuildMember(guildId: string, userId: string, accessToken: string): Promise<OAuth2GuildMember> {
+  const cachedMember = getMember(guildId, userId);
+  if (cachedMember) return cachedMember;
+
+  const memberRes = await fetch(RouteBases.api + Routes.guildMember(guildId, userId), {
+    method: "GET",
+    headers: {
+      "content-type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!memberRes.ok) {
+    if (memberRes.status != 429) console.error("Failed to fetch guild member data:", memberRes);
+    throw memberRes;
+  }
+
+  const memberResJson = (await memberRes.json()) as OAuth2GuildMember;
+  return memberResJson;
 }

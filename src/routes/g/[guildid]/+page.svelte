@@ -3,10 +3,12 @@
   import { page } from "$app/state";
   import { buildNavHref } from "$lib/components/navigation.svelte";
   import { APIRoutes, LANGUAGES, PLUGINS } from "$lib/constants";
+  import { configState, loadConfig } from "$lib/stores/config.svelte";
   import { gg } from "$lib/stores/guild.svelte";
   import { user } from "$lib/stores/user.svelte";
   import { cdnUrls } from "$lib/utils/formatting";
   import { CircleCheck, CircleX, Info, TriangleAlert } from "@lucide/svelte";
+  import { onMount } from "svelte";
 
   let serverIdCopied = $state(false);
   let serverIdText = $derived(serverIdCopied ? "Copied!" : "Copy Server ID");
@@ -19,26 +21,19 @@
 
   $effect(() => {
     console.log("guild", $state.snapshot(gg.guild));
-    console.log("config", $state.snapshot(gg.config));
+    console.log("config", $state.snapshot(configState.config));
     console.log("channels", $state.snapshot(gg.channels));
     console.log("roles", $state.snapshot(gg.roles));
   });
 
-  $effect(() => {
-    if (gg.config && guildLang.value == null) {
-      guildLang.value = $state.snapshot(gg.config.lang);
-      guildLang.loading = false;
-    }
-  });
-
   async function changeLanguage(e: Event & { currentTarget: EventTarget & HTMLSelectElement }) {
     console.log("Changing language", e.currentTarget.value);
-    if (!gg.config || !gg.guild) throw new Error("Guild or Config not loaded!");
+    if (!configState.config || !gg.guild) throw new Error("Guild or Config not loaded!");
     const lang = e.currentTarget.value;
 
     guildLang.loading = true;
 
-    const res = await fetch(APIRoutes.config.base(gg.guild!.id), {
+    const res = await fetch(APIRoutes.configBase(gg.guild!.id), {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -53,7 +48,9 @@
       return;
     }
 
-    gg.config.lang = lang;
+    const data = await res.json();
+
+    configState.config = data;
     guildLang.value = lang;
     guildLang.loading = false;
     document.getElementById("guild-language")?.classList.replace("dy-select-primary", "dy-select-success");
@@ -61,6 +58,10 @@
       document.getElementById("guild-language")?.classList.replace("dy-select-success", "dy-select-primary");
     }, 1500);
   }
+
+  onMount(async () => {
+    await loadConfig(APIRoutes.configBase(page.params.guildid));
+  });
 </script>
 
 <div class="flex w-full flex-row items-center justify-start gap-5">
@@ -92,7 +93,10 @@
     </h2>
   </div>
 </div>
-<span class="dy-divider dy-divider-neutral my-0"></span>
+<span class="dy-divider dy-divider-neutral my-0 w-full"></span>
+<div class="w-full">
+  <span class="dy-divider dy-divider-neutral my-0 w-full"></span>
+</div>
 {#if news.length > 0}
   <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
   <div tabindex="0" class="dy-collapse dy-collapse-arrow bg-base-300/60">
@@ -132,7 +136,7 @@
       disabled={guildLang.loading}
     >
       {#each LANGUAGES as lan}
-        <option value={lan.value} selected={gg.config!.lang == lan.value}>{lan.name}</option>
+        <option value={lan.value} selected={configState.config.lang == lan.value}>{lan.name}</option>
       {/each}
     </select>
     <p class="dy-fieldset-label text-xs">

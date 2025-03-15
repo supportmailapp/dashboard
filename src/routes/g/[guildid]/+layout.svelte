@@ -10,7 +10,8 @@
   import SaveAlert from "$lib/components/SaveAlert.svelte";
   import ServerSelectDialog from "$lib/components/ServerSelectDialog.svelte";
   import { mediaQuery } from "$lib/constants.js";
-  import { gg, loadGuildConfig, loadGuildData } from "$lib/stores/guild.svelte";
+  import { configState, unsavedChanges } from "$lib/stores/config.svelte.js";
+  import { gg, loadGuildData } from "$lib/stores/guild.svelte";
   import { site } from "$lib/stores/site.svelte.js";
   import { user } from "$lib/stores/user.svelte.js";
 
@@ -24,8 +25,7 @@
       if (!gg.guild || page.params.guildid !== gg.guild.id) {
         try {
           await loadGuildData(page.params.guildid);
-          await loadGuildConfig(page.params.guildid);
-          if (gg.guild && gg.config) break;
+          if (gg.guild) break;
         } catch (error) {
           retries++;
           if (retries < 3) {
@@ -49,8 +49,8 @@
     <DesktopNavigation />
     <div class="gradient-divider from-base-100 bg-gradient-to-l to-black/5"></div>
   {/if}
-  <div class="main-container" transition:slide={{ duration: 250, axis: "x" }}>
-    {#if !gg.config || !gg.guild || !user.discord || site.loading}
+  <div class="main-container">
+    {#if !configState.config || !gg.guild || !user.discord}
       <div class="flex h-max w-full items-center justify-center">
         <span class="dy-loading dy-loading-infinity dy-loading-xl select-none"></span>
         {#await new Promise((r) => setTimeout(r, 5000)) then}
@@ -70,8 +70,8 @@
   </div>
 </div>
 
-{#if true}
-  <SaveAlert payload={{}} method="PATCH" destination="/" />
+{#if $unsavedChanges}
+  <SaveAlert />
 {/if}
 
 <ServerSelectDialog />
@@ -84,7 +84,7 @@
     grid-template-columns: 1fr;
     grid-template-areas: "main";
 
-    @media screen and (min-width: 768px) {
+    @media (width >= 48rem) {
       grid-template-columns: 18rem 1rem 1fr;
       grid-template-areas: "nav div main";
     }
@@ -97,6 +97,10 @@
     width: 100%;
     height: 100%;
     overflow-y: auto;
+
+    @media (width >= 48rem) {
+      padding-right: 1rem;
+    }
   }
 
   .gradient-divider {

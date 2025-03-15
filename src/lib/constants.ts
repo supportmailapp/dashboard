@@ -1,6 +1,7 @@
 // PUBLIC constants
 
 import { env } from "$env/dynamic/public";
+import type { APIGuildForumTag, GuildForumTagData } from "discord.js";
 import type { IDBGuild, IDBUser } from "supportmail-types";
 
 export const mediaQuery = {
@@ -36,7 +37,7 @@ export const urls = {
       permissions: env.PUBLIC_botPermissions,
       scope: "bot applications.commands",
       response_type: "code",
-      redirect_uri: "http://localhost:5050/",
+      redirect_uri: env.PUBLIC_discordRedirectUri,
     });
     if (guildId) params.append("guild_id", guildId);
     return "https://discord.com/oauth2/authorize?" + params.toString();
@@ -68,7 +69,7 @@ export const BASIC_GET_FETCH_INIT = {
   headers: {
     "Content-Type": "application/json",
   },
-} as const;
+} as RequestInit;
 
 interface UserGuildsParams {
   bypassCache?: boolean;
@@ -95,25 +96,26 @@ export const APIRoutes = {
    */
   user: (userId: string) => `${API_BASE}/users/${userId}`,
   news: () => `${API_BASE}/news`,
-  config: {
-    /**
-     * Used for:
-     * - GET: Get the config for a guild
-     * - POST: Create a new config for a guild
-     * - PATCH: Update the base config for a guild
-     * - DELETE: Delete the config for a guild
-     */
-    base: (guildId: string) => `${API_BASE}/config/${guildId}`,
-    /**
-     * Used for:
-     * - PATCH: Update the ticket config for a guild.
-     */
-    tickets: (guildId: string) => `${API_BASE}/config/${guildId}/ticket-config`,
-    reports: (guildId: string) => `${API_BASE}/config/${guildId}/report-config`,
-    tags: (guildId: string) => `${API_BASE}/config/${guildId}/tags`,
-    blacklist: (guildId: string) => `${API_BASE}/config/${guildId}/blacklist`,
-  },
+  /**
+   * Used for:
+   * - GET: Get the config for a guild
+   * - POST: Create a new config for a guild
+   * - PATCH: Update the base config for a guild
+   * - DELETE: Delete the config for a guild
+   */
+  configBase: (guildId: string) => `${API_BASE}/config/${guildId}`,
+  /**
+   * Used for:
+   * - GET: Get the ticket config for a guild
+   * - PATCH: Update the ticket config for a guild.
+   */
+  configTicketsBase: (guildId: string) => `${API_BASE}/config/${guildId}/ticket-config`,
+  configTicketsSetup: (guildId: string) => `${API_BASE}/config/${guildId}/ticket-config/setup`,
+  configReports: (guildId: string) => `${API_BASE}/config/${guildId}/report-config`,
+  configTags: (guildId: string) => `${API_BASE}/config/${guildId}/tags`,
+  configBlacklist: (guildId: string) => `${API_BASE}/config/${guildId}/blacklist`,
   logout: () => `${API_BASE}/logout`,
+  /** @deprecated Not used atm */
   debug: (guildId: string) => `${API_BASE}/debug`,
 } as const;
 
@@ -174,7 +176,7 @@ export const DEFAULT_CONFIG = {
 } as IDBGuild;
 
 /**
- * Generic error responses for API routes
+ * Generic emtpy error responses for API routes
  */
 export const ErrorResponses = {
   badRequest: (text: string | null = null) => new Response(text, { status: 400, statusText: "Bad Request" }),
@@ -189,3 +191,31 @@ export const LongTooltips = {
   pausedUntil_reports:
     "Pausing reports will prevent users from creating new reports. Existing reports will still be processed and can be edited.",
 } as const;
+
+export const baseForumTagEmojis = {
+  open: "🟢",
+  closed: "🔴",
+  unanswered: "❗",
+  pendingQR: "🔐",
+  uResponded: "💬",
+  awaitingRes: "⏳",
+} as const;
+
+export function baseForumTags(lang: string): APIGuildForumTag[] {
+  const tagInfo: string[][] = [
+    ["open", baseForumTagEmojis.open],
+    ["closed", baseForumTagEmojis.closed],
+    ["unanswered", baseForumTagEmojis.unanswered],
+    ["closeRequested", baseForumTagEmojis.pendingQR],
+    ["userResponded", baseForumTagEmojis.uResponded],
+    ["awaitingResponse", baseForumTagEmojis.awaitingRes],
+  ];
+
+  return tagInfo.map((tag) => ({
+    emoji_name: tag[1],
+    name: tag[0],
+    id: "",
+    moderated: false,
+    emoji_id: "",
+  }));
+}

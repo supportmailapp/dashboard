@@ -29,20 +29,19 @@ export function verifySessionToken(token: string): { id: string; accessToken: st
   }
 }
 
-export async function checkUserGuildAccess(token: string, guildId: string, fetch: Function): Promise<boolean | undefined> {
+export async function checkUserGuildAccess(token: string, guildId: string): Promise<boolean | undefined> {
   const verified = verifySessionToken(token);
   if (!verified) return false;
 
   let guilds: CachableGuild[] | null = getUserGuilds(verified.id);
   let guildIds: string[] = [];
   if (!guilds) {
-    const guildsRes = await fetchUserGuilds(verified.id, verified.accessToken, fetch, {
-      bypassCache: true,
+    const guildsRes = await fetchUserGuilds(verified.id, verified.accessToken, {
+      fullGuilds: true,
     });
     guildIds = guildsRes.map((g) => g.id);
 
-    const validBotGuildIds = await clientAPI.filterMutualGuilds(guildIds, verified.accessToken);
-
+    const validBotGuildIds = await clientAPI.filterMutualGuilds(guildIds);
     let modifedGuilds = guildsRes.map((g) => parseToCacheGuild(g, validBotGuildIds.includes(guildId)));
 
     setGuilds(...modifedGuilds);

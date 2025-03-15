@@ -31,9 +31,9 @@ export const getDocument = async function <T extends Document>(
   return await collection.findOne(query);
 };
 
-export const getDocuments = async function <T extends Document>(collectionName: string, query: Filter<Document> = {}) {
+export const getDocuments = async function <T extends Document>(collectionName: string, filter: Filter<Document> = {}) {
   const collection = await getCollection<T>(collectionName);
-  return collection.find(query).toArray();
+  return collection.find(filter).toArray();
 };
 
 export const insertDocument = async function <T extends Document>(

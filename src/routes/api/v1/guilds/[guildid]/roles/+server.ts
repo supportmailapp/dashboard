@@ -1,6 +1,8 @@
 import { getGuildRoles, setGuildRoles } from "$lib/cache/guilds";
-import { discordREST } from "$lib/discord/utils";
+import { DiscordREST } from "$lib/discord/utils";
 import { apiRoleToBasic } from "$lib/utils/formatting";
+
+const discordREST = new DiscordREST();
 
 export const GET = async ({ locals }) => {
   const guildId = locals.guildId;
