@@ -1,25 +1,8 @@
 // @ts-nocheck
 
-const AVAILABLE_KEYS = [
-  "global",
-  "errors",
-  "commands",
-  "tickets",
-  "reports",
-  "labels",
-  "permissions",
-  "tips",
-];
+const AVAILABLE_KEYS = ["global", "errors", "commands", "tickets", "reports", "labels", "permissions", "tips"];
 
-type TranslationModules =
-  | "global"
-  | "errors"
-  | "commands"
-  | "tickets"
-  | "reports"
-  | "labels"
-  | "tips"
-  | "permissions";
+type TranslationModules = "global" | "errors" | "commands" | "tickets" | "reports" | "labels" | "tips" | "permissions";
 
 class Translation {
   constructor() {}
@@ -87,12 +70,7 @@ class Translation {
   /**
    * Returns a single translation
    */
-  static get(
-    path: string,
-    language: string,
-    data: { [key: string]: any } = {},
-    commands: ApplicationCommandManager = null,
-  ) {
+  static get(path: string, language: string, data: { [key: string]: any } = {}, commands: ApplicationCommandManager = null) {
     language = this.getLanguage(language);
 
     const l = global.languages[`${language}`];
