@@ -21,31 +21,6 @@
 </script>
 
 <!-- Servers -->
-{#snippet guildrow(guildId: string, guildName: string, guildIcon: string | null, isConfigured: boolean = false)}
-  <a
-    class="root-server-select-row {!isConfigured ? 'opacity-40 hover:opacity-90' : ''}"
-    href="/{isConfigured ? 'g/' : 'add/'}{guildId}"
-  >
-    <div class="flex items-center justify-center p-2">
-      <div class="dy-avatar">
-        <div class="dy-mask dy-mask-squircle h-12 w-12">
-          <img src={cdnUrls.guildIcon(guildId, guildIcon)} alt={guildName} />
-        </div>
-      </div>
-    </div>
-    <div class="flex max-w-3/5 min-w-1/5 justify-center truncate text-lg">
-      <span class="block w-fit truncate">{guildName}</span>
-    </div>
-    <div class="block min-w-fit items-center justify-center px-2">
-      <img
-        src={!isConfigured ? "/icons/plus-circle.svg" : "/icons/arrow-right-circle.svg"}
-        alt="Continue"
-        class="block size-8"
-      />
-    </div>
-  </a>
-{/snippet}
-
 <div class="flex h-screen w-screen flex-col items-center justify-center">
   <!-- It's needed to be in the wrapper because otherwise the layout breaks. Dunno why. -->
   <header class="bg-base-200 sticky top-0 right-0 left-0 w-full">
@@ -79,7 +54,28 @@
           {#if firstNotConfiguredGuild == guild.id}
             <div class="bg-base-300 h-0.5 w-full"></div>
           {/if}
-          {@render guildrow(guild.id, guild.name, guild.iconHash, guild.isConfigured)}
+          <a
+            class="root-server-select-row {!guild.isConfigured ? 'opacity-40 hover:opacity-90' : ''}"
+            href="/{guild.isConfigured ? 'g/' : 'add/'}{guild.id}"
+          >
+            <div class="flex items-center justify-center p-2">
+              <div class="dy-avatar">
+                <div class="dy-mask dy-mask-squircle h-12 w-12">
+                  <img src={cdnUrls.guildIcon(guild.id, guild.iconHash)} alt={guild.name} />
+                </div>
+              </div>
+            </div>
+            <div class="flex max-w-3/5 min-w-1/5 justify-center truncate text-lg">
+              <span class="block w-fit truncate">{guild.name}</span>
+            </div>
+            <div class="block min-w-fit items-center justify-center px-2">
+              <img
+                src={!guild.isConfigured ? "/icons/plus-circle.svg" : "/icons/arrow-right-circle.svg"}
+                alt="Continue"
+                class="block size-8"
+              />
+            </div>
+          </a>
         {/each}
       </div>
     </div>
