@@ -1,8 +1,8 @@
 import { ErrorResponses, LANGUAGES } from "$lib/constants.js";
 import { getUser, updateUser } from "$lib/server/db/utils.js";
 
-export const GET = async ({ params, locals }) => {
-  if (locals.userId !== params.userid) {
+export const GET = async ({ params }) => {
+  if (params.userid) {
     return ErrorResponses.forbidden();
   }
 

@@ -82,8 +82,8 @@ interface UserGuildsParams {
 export const APIRoutes = {
   roles: (guildId: string) => `${API_BASE}/guilds/${guildId}/roles`,
   channels: (guildId: string) => `${API_BASE}/guilds/${guildId}/channels`,
-  userGuilds: (userId: string, params: UserGuildsParams = {}) =>
-    `${API_BASE}/users/${userId}/guilds?` +
+  userGuilds: (params: UserGuildsParams = {}) =>
+    `${API_BASE}/@me/guilds?` +
     new URLSearchParams({
       bypass_cache: params.bypassCache ? "true" : "false",
       manage_bot_only: params.manageBotOnly ? "true" : "false",
@@ -94,7 +94,7 @@ export const APIRoutes = {
    * - PATCH: Update the DB user for a user
    * - DELETE: Delete the DB user for a user
    */
-  user: (userId: string) => `${API_BASE}/users/${userId}`,
+  user: () => `${API_BASE}/@me`,
   news: () => `${API_BASE}/news`,
   /**
    * Used for:
