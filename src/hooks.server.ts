@@ -9,9 +9,11 @@ import * as Sentry from "@sentry/node";
 import { error, redirect, type Handle, type HandleServerError, type ServerInit } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
 import dayjs from "dayjs";
-import { RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
+import arcjet, { detectBot, shield, tokenBucket } from "@arcjet/sveltekit";
 import { inspect } from "util";
 import { ErrorResponses } from "$lib/constants";
+
+const inDevMode = env.NODE_ENV === "development";
 
 export const init: ServerInit = async () => {
   mongoDB
@@ -28,7 +30,26 @@ export const init: ServerInit = async () => {
   console.log("Server started at", dayjs().toString());
 };
 
-const apiRateLimiter = new RateLimiterMemory({ duration: 4, points: 8, blockDuration: 10, keyPrefix: "API" });
+// Configure Arcjet for API rate limiting
+// For a Discord dashboard API, reasonable limits would be:
+// - 60 requests per minute
+const aj = arcjet({
+  key: env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+  characteristics: ["ip.src"], // Track requests by IP
+  rules: [
+    shield({ mode: env.ARCJET_MODE! as any }),
+    detectBot({
+      mode: env.ARCJET_MODE! as any,
+      allow: ["CATEGORY:SEARCH_ENGINE"],
+    }),
+    tokenBucket({
+      mode: env.ARCJET_MODE! as any,
+      refillRate: inDevMode ? 60000 : 60,
+      interval: inDevMode ? 60000 : 60,
+      capacity: inDevMode ? 60000 : 60,
+    }),
+  ],
+});
 
 const baseHandle: Handle = async ({ event, resolve }) => {
   // Early exit for API routes
@@ -72,68 +93,48 @@ const isProtectedRoute = (url: URL) => {
   return pathname.startsWith("/api") && !pathname.match(new RegExp(`/api/v\\d+/${notProtectedRoutes.join("|")}`, "i"));
 };
 
-const isUserRoute = (url: URL) => {
-  return url.pathname.toLowerCase().match(/\/api\/v\d+\/users\/(\d+)(\/\S*)?/i);
+const isRouteWithGuildId = (url: URL) => {
+  return url.pathname.toLowerCase().match(/\/api\/v\d+\/(config|guilds)(\/\S*)?/i);
 };
 
 const handleApiRequest: Handle = async ({ event, resolve }) => {
   if (isProtectedRoute(event.url)) {
-    const decision = await apiRateLimiter
-      .consume(event.getClientAddress(), 1)
-      .then((res: RateLimiterRes) => {
-        event.setHeaders({
-          "X-RateLimit-Remaining": `${res.remainingPoints}`,
-          "X-RateLimit-Reset": `${~~(res.msBeforeNext / 1000)}`,
-        });
-        return res;
-      })
-      .catch((rej: RateLimiterRes) => {
-        event.setHeaders({
-          "X-RateLimit-Remaining": "0",
-          "X-RateLimit-Reset": `${~~(rej.msBeforeNext / 1000)}`,
-        });
-        return rej;
-      });
-
-    if (decision.remainingPoints < 1) {
-      return error(429, {
-        message: "Rate limit exceeded",
-      });
-    }
-
-    let token = event.cookies.get("session");
-    if (!token) {
+    // Get authentication information
+    let eToken = event.cookies.get("session");
+    if (!eToken) {
       const authHeader = event.request.headers.get("Authorization");
       if (authHeader?.startsWith("Session ")) {
-        token = authHeader.split(" ")[1];
+        eToken = authHeader.split(" ")[1];
       }
     }
 
-    event.locals.token = token;
+    event.locals.token = eToken;
+    const decision = await aj.protect(event, { requested: 1 }); // Deduct 5 tokens from the bucket
+    console.log("Arcjet decision", decision);
 
-    if (!event.url.pathname.endsWith("news") && !isUserRoute(event.url)) {
+    if (decision.isDenied()) {
+      if (decision.reason.isRateLimit()) {
+        return ErrorResponses.tooManyRequests();
+      } else if (decision.reason.isBot()) {
+        return new Response(null, { status: 403, statusText: "Forbidden" });
+      } else {
+        return ErrorResponses.forbidden();
+      }
+    }
+
+    if (isRouteWithGuildId(event.url)) {
       // These are the route params that are used in the API
       const guildId = event.params.guildid || event.params.slug;
 
-      if (!guildId || !token) {
+      if (!guildId || !eToken) {
         return ErrorResponses.badRequest("Missing required parameters");
       }
-      const hasAccess = await checkUserGuildAccess(token, guildId);
+      const hasAccess = await checkUserGuildAccess(eToken, guildId);
       if (hasAccess === false) {
         return ErrorResponses.forbidden();
       }
 
       event.locals.guildId = guildId;
-    } else if (isUserRoute(event.url)) {
-      const sessionToken = event.cookies.get("session") || event.request.headers.get("Authorization")?.split(" ")[1];
-      if (!sessionToken) {
-        return ErrorResponses.unauthorized();
-      }
-      const userId = verifySessionToken(sessionToken)?.id;
-      if (!userId || userId !== (event.params.userid || event.params.slug)) {
-        return ErrorResponses.forbidden();
-      }
-      event.locals.userId = userId;
     }
   }
 
@@ -152,8 +153,6 @@ export const handleError: HandleServerError = async ({ error, event, status, mes
   });
 
   console.error(inspect(error));
-
-  // const errorId = crypto.randomUUID();
 
   return {
     message: message || "Internal server error",

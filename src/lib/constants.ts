@@ -183,6 +183,7 @@ export const ErrorResponses = {
   unauthorized: () => new Response(null, { status: 401, statusText: "Unauthorized" }),
   forbidden: () => new Response(null, { status: 403, statusText: "Forbidden" }),
   notFound: (text: string | null = null) => new Response(text, { status: 404, statusText: "Not Found" }),
+  tooManyRequests: () => new Response(null, { status: 429, statusText: "Too Many Requests" }),
 };
 
 export const LongTooltips = {
