@@ -1,14 +1,14 @@
 import { env } from "$env/dynamic/private";
-import { getUserGuilds, overwriteUserGuilds, parseToCacheGuild, setGuilds } from "$lib/cache/guilds";
-import { cacheToken } from "$lib/cache/users";
-import { APIRoutes } from "$lib/constants";
-import { fetchUserGuilds } from "$lib/discord/oauth2";
+import { getUserGuilds } from "$lib/cache/guilds";
+import { fetchUserGuilds } from "$lib/discord/utils";
+import type { RESTPostOAuth2AccessTokenResult } from "discord.js";
 import jwt from "jsonwebtoken";
-import clientAPI from "./clientApi";
-import { canManageBot } from "$lib/utils/permissions";
+import type { IDBUser } from "supportmail-types";
+import { DBUser } from "./db";
+import { getDBUser } from "$lib/cache/users";
 
-export function createSessionToken(userId: string, accessToken: string): string {
-  return jwt.sign({ id: userId, at: accessToken }, env.JWT_SECRET, {
+export function createSessionToken(userId: string): string {
+  return jwt.sign({ id: userId }, env.JWT_SECRET, {
     expiresIn: "3d",
     algorithm: "HS256",
     encoding: "utf-8",
@@ -17,44 +17,55 @@ export function createSessionToken(userId: string, accessToken: string): string 
 }
 
 /**
- * Validate a session and return the JWT payload or null.
+ * Signs a pair of access and refresh tokens for storage in the database.
  */
-export function verifySessionToken(token: string): { id: string; accessToken: string } | null {
+export function encodeDbTokens({ access_token, refresh_token }: RESTPostOAuth2AccessTokenResult): string {
+  return jwt.sign({ at: access_token, rt: refresh_token }, env.DB_ENCRPYTION_KEY, {
+    algorithm: "HS256",
+    issuer: "supportmail",
+    encoding: "utf-8",
+  });
+}
+
+// The refreshToken can be null if the user has not authorized the bot to refresh the token.
+type DBTokensResult = { accessToken: string; refreshToken: string | null } | { accessToken: null; refreshToken: null };
+
+export function decodeDbTokens(token: string): DBTokensResult {
   try {
-    const _token = jwt.verify(token, env.JWT_SECRET) as jwt.JwtPayload;
-    cacheToken(_token.id, _token.at);
-    return { id: _token.id, accessToken: _token.at };
+    const decoded = jwt.verify(token, env.DB_ENCRPYTION_KEY) as { at: string; rt: string };
+    return { accessToken: decoded.at, refreshToken: decoded.rt || null };
   } catch (e) {
-    return null;
+    return { accessToken: null, refreshToken: null };
   }
 }
 
-export async function checkUserGuildAccess(token: string, guildId: string): Promise<boolean | undefined> {
-  const verified = verifySessionToken(token);
-  if (!verified) return false;
+/**
+ * Validate a session and return the JWT payload or null.
+ */
+export function verifySessionToken(token: string): { id: string | null } {
+  try {
+    const _token = jwt.verify(token, env.JWT_SECRET) as jwt.JwtPayload;
+    return { id: _token.id };
+  } catch (e) {
+    return { id: null };
+  }
+}
 
-  let guilds: CachableGuild[] | null = getUserGuilds(verified.id);
+export async function checkUserGuildAccess(userId: string, aToken: string, guildId: string): Promise<boolean | undefined> {
+  let guilds: DCGuild[] | null = getUserGuilds(userId);
   let guildIds: string[] = [];
   if (!guilds) {
-    const guildsRes = await fetchUserGuilds(verified.id, verified.accessToken, {
-      fullGuilds: true,
-    });
-    guildIds = guildsRes.map((g) => g.id);
-
-    const validBotGuildIds = await clientAPI.filterMutualGuilds(guildIds);
-    let modifedGuilds = guildsRes.map((g) => parseToCacheGuild(g, validBotGuildIds.includes(guildId)));
-
-    setGuilds(...modifedGuilds);
-    overwriteUserGuilds(
-      verified.id,
-      modifedGuilds.map((g) => g.id),
-    );
-
-    guilds = modifedGuilds.filter((guild) => canManageBot(BigInt(guild.permissions)));
+    guilds = await fetchUserGuilds(userId, aToken);
     guildIds = guilds.map((g) => g.id);
   } else {
     guildIds = guilds.map((g) => g.id);
   }
 
   return guildIds?.includes(guildId);
+}
+
+export function fetchDBUser(userId: string) {
+  const cachedUser = getDBUser(userId);
+  if (cachedUser) new Promise((resolve) => resolve(cachedUser));
+  return DBUser.findOne({ id: userId }, null, { lean: true });
 }
