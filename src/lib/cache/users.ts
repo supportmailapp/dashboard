@@ -1,52 +1,50 @@
+import type { APIUser } from "discord.js";
 import NodeCache from "node-cache";
+import type { IDBUser } from "supportmail-types";
 
-const userCache = new NodeCache({
-  stdTTL: 10_800,
+// Cache for database users (has access tokens)
+const dbUserCache = new NodeCache({
+  stdTTL: 10800, // 3 hours
   checkperiod: 60,
-  errorOnMissing: false,
 });
 
-const tokenCache = new NodeCache({
-  stdTTL: 10_800,
+// Cache for Discord users (profile data)
+const discordUserCache = new NodeCache({
+  stdTTL: 3600, // 1 hour
   checkperiod: 60,
-  errorOnMissing: false,
 });
 
-// Setters //
-export function cacheUser(userId: string, data: BasicUser): void {
-  userCache.set<string>(userId, JSON.stringify(data));
+// DB User cache methods
+export function cacheDBUser(userId: string, data: IDBUser): void {
+  dbUserCache.set(userId, data);
 }
 
-export function cacheToken(userId: string, token: string): void {
-  tokenCache.set<string>(userId, token);
+export function getDBUser(userId: string): IDBUser | null {
+  return dbUserCache.get(userId) || null;
 }
 
-// Getters //
-export function getUser(userId: string): BasicUser | null {
-  const cached = userCache.get<string>(userId);
-  if (!cached) return null;
-
-  return JSON.parse(cached);
+export function removeDBUser(userId: string): void {
+  dbUserCache.del(userId);
 }
 
-export function getToken(userId: string): string | null {
-  return tokenCache.get<string>(userId) || null;
+// Discord User cache methods
+export function cacheDiscordUser(user: APIUser): void {
+  discordUserCache.set(user.id, user);
 }
 
-// Deleters //
-export function removeUser(userId: string) {
-  userCache.del(userId);
+export function getDiscordUser(userId: string): APIUser | null {
+  return discordUserCache.get(userId) || null;
 }
 
-export function removeToken(userId: string) {
-  tokenCache.del(userId);
+export function removeDiscordUser(userId: string): void {
+  discordUserCache.del(userId);
 }
 
-// Clearers //
-export function clearUsers() {
-  userCache.flushAll();
+// Clear methods
+export function clearDBUsers(): void {
+  dbUserCache.flushAll();
 }
 
-export function clearTokens() {
-  tokenCache.flushAll();
+export function clearDiscordUsers(): void {
+  discordUserCache.flushAll();
 }
