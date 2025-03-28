@@ -37,6 +37,6 @@ export function hasPermissions(permissions: PermissionResolvable, ...permissionF
  * @param permissions - The permission bits to check.
  * @returns `true` if the permissions include both "administrator" and "manageGuild", otherwise `false`.
  */
-export function canManageBot(permissions: PermissionResolvable): boolean {
+export function canManageBot(permissions: bigint): boolean {
   return hasPermissions(permissions, "Administrator", "ManageGuild");
 }
