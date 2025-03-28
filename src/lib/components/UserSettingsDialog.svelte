@@ -61,7 +61,7 @@
     }
     site.saving = true;
     try {
-      const res = await fetch(APIRoutes.user(newDbUser.id), {
+      const res = await fetch(APIRoutes.user(), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newDbUser),
