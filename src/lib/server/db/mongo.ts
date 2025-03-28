@@ -1,29 +1,46 @@
-import { mongoUri } from "$env/static/private";
-import { MongoClient } from "mongodb";
+import mongoose from "mongoose";
+import { mongoUri, NODE_ENV } from "$env/static/private";
 
-class MongoDB {
-  private client: MongoClient;
+/**
+ * Connection ready state
+ *
+ * - 0 = disconnected
+ * - 1 = connected
+ * - 2 = connecting
+ * - 3 = disconnecting
+ * - 99 = uninitialized
+ */
+const mongoConnection = {
+  isConnected: 0,
+};
 
-  constructor() {
-    this.client = new MongoClient(mongoUri);
+export async function dbConnect() {
+  if (mongoConnection.isConnected === 1) {
+    console.log("already connected");
+    return;
   }
 
-  // connect to the database
-  public async connect() {
-    await this.client.connect();
-  }
+  if (mongoose.connections.length > 0) {
+    mongoConnection.isConnected = mongoose.connections[0].readyState;
+    if (mongoConnection.isConnected === 1) {
+      console.log("using existing connection");
+      return;
+    }
 
-  // disconnect from the database
-  public async disconnect() {
-    await this.client.close();
+    await mongoose.disconnect();
   }
-
-  // get the database
-  public getDB() {
-    return this.client.db();
-  }
+  mongoConnection.isConnected = 2;
+  await mongoose.connect(mongoUri);
+  mongoConnection.isConnected = 1;
+  console.log("Connected to MongoDB");
 }
 
-const mongoDB = new MongoDB();
+export async function dbDisconnect() {
+  if (NODE_ENV === "development") return;
+  if (mongoConnection.isConnected === 0) return;
 
-export { mongoDB };
+  mongoConnection.isConnected = 3;
+  await mongoose.disconnect();
+  mongoConnection.isConnected = 0;
+  console.log("Disconnected from MongoDB");
+}
