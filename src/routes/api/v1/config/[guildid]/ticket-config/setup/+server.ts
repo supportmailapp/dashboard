@@ -1,25 +1,20 @@
 import { env } from "$env/dynamic/private";
-import { setGuilds } from "$lib/cache/guilds.js";
+import { cacheGuilds } from "$lib/cache/guilds.js";
 import { baseForumTagEmojis } from "$lib/constants.js";
-import { fetchUserGuilds } from "$lib/discord/oauth2.js";
-import { DiscordREST } from "$lib/discord/utils";
+import { DiscordREST, fetchUserGuilds } from "$lib/discord/utils";
 import { getGuild, updateGuild } from "$lib/server/db/utils.js";
-import { canManageBot, hasPermission } from "$lib/utils/permissions.js";
+import { canManageBot } from "$lib/utils/permissions.js";
 import {
   ChannelType,
   ForumLayoutType,
   OverwriteType,
   RESTJSONErrorCodes,
   Routes,
-  type APIChannel,
   type APIGuildCategoryChannel,
-  type APIGuildChannel,
   type APIGuildForumChannel,
-  type APIGuildMember,
   type RESTPostAPIGuildChannelJSONBody,
-  type RESTPostAPIGuildChannelResult,
 } from "discord-api-types/v10";
-import { DiscordAPIError, PermissionsBitField, type GuildBasedChannel } from "discord.js";
+import { DiscordAPIError, PermissionsBitField } from "discord.js";
 
 type SupportedLangs = "en" | "de" | "fr";
 
@@ -71,7 +66,7 @@ export async function POST({ locals, request }) {
     if (!guilds) {
       return new Response(null, { status: 401, statusText: "Unauthorized" });
     } else {
-      setGuilds(...guilds);
+      cacheGuilds(...guilds);
     }
 
     const guild = guilds.find((g) => g.id === guildId);
