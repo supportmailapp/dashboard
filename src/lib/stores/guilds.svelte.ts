@@ -17,11 +17,11 @@ export const guilds = $state<GuildsState>({
   },
 });
 
-export async function loadGuilds(userId: string) {
-  const guildsRes = await fetch(APIRoutes.userGuilds(userId, { manageBotOnly: true }), BASIC_GET_FETCH_INIT);
+export async function loadGuilds() {
+  const guildsRes = await fetch(APIRoutes.userGuilds({ manageBotOnly: true }), BASIC_GET_FETCH_INIT);
 
   if (guildsRes.ok) {
-    let guildsJson = (await guildsRes.json()) as CachableGuild[];
+    let guildsJson = (await guildsRes.json()) as DCGuild[];
     // Sort guilds by configured or not
     guildsJson.sort((a, b) => {
       if (a.isConfigured && !b.isConfigured) return -1;
