@@ -8,6 +8,7 @@
   import { slide } from "svelte/transition";
   import { buildNavHref, showServerSelect } from "./navigation.svelte";
   import UserSettingsDialog from "./UserSettingsDialog.svelte";
+  import { unsavedChanges } from "$lib/stores/config.svelte";
 
   let _user = $derived(user.discord)!;
   let showUserSettings = $state(false);
@@ -40,7 +41,7 @@
     {#if gg.guild}
       <div class="dy-avatar">
         <div class="dy-mask dy-mask-squircle size-7">
-          <img src={cdnUrls.guildIcon(gg.guild.id, gg.guild.iconHash, 256)} alt="Guild Icon" />
+          <img src={cdnUrls.guildIcon(gg.guild.id, gg.guild.icon, 256)} alt="Guild Icon" />
         </div>
       </div>
       <span class="max-w-[60%] truncate">{gg.guild.name}</span>
@@ -55,7 +56,7 @@
   <span class="dy-divider dy-divider-primary my-1"></span>
   <h2 class="nav-title">Plugins</h2>
   <!-- svelte-ignore a11y_invalid_attribute -->
-  {#if !gg.unsavedChanges}
+  {#if !$unsavedChanges}
     <a href={buildNavHref("/")} class="nav-item {isCurrentPage(buildNavHref('/')) ? 'bg-base-300 no-animation' : ''}">
       <Home size={6} />
       <span class={isCurrentPage(buildNavHref("/")) ? "text-warning text- font-semibold" : ""}>Home</span>
@@ -68,7 +69,7 @@
     </a>
   {/if}
   {#each PLUGINS as plugin}
-    {#if !gg.unsavedChanges}
+    {#if !$unsavedChanges}
       <a href={buildNavHref(plugin.slug)} class="nav-item {isCurrentPage(buildNavHref(plugin.slug)) ? 'active' : ''}">
         <img src={plugin.iconUrl} alt={plugin.name} class="size-6" />
         <span>{plugin.name}</span>

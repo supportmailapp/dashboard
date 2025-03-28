@@ -32,7 +32,7 @@
               <a class="bg-base-300 cursor-default">
                 <div class="dy-avatar">
                   <div class="dy-mask dy-mask-squircle size-8">
-                    <img src={cdnUrls.guildIcon(guild.id, guild.iconHash, "512")} alt="Guild Icon" />
+                    <img src={cdnUrls.guildIcon(guild.id, guild.icon, "512")} alt="Guild Icon" />
                   </div>
                 </div>
                 <span class="truncate">{guild.name}</span>
@@ -41,7 +41,7 @@
               <a href="/{!guild.isConfigured ? 'add/' : ''}{guild.id}" target="_self">
                 <div class="dy-avatar">
                   <div class="dy-mask dy-mask-squircle size-8">
-                    <img src={cdnUrls.guildIcon(guild.id, guild.iconHash, "512")} alt="Guild Icon" />
+                    <img src={cdnUrls.guildIcon(guild.id, guild.icon, "512")} alt="Guild Icon" />
                   </div>
                 </div>
                 <span class="truncate">{guild.name}</span>
