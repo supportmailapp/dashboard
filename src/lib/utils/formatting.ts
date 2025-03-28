@@ -50,11 +50,19 @@ export function apiRoleToBasic(role: APIRole): BasicRole {
   };
 }
 
-export function anyUserToBasic(user: { [key: string]: any }): BasicUser {
+type AnyUser = {
+  id: string;
+  username: string;
+  displayName?: string | null;
+  global_name?: string | null;
+  avatar: string | null;
+};
+
+export function anyUserToBasic(user: AnyUser): BasicUser {
   return {
     id: user.id,
     username: user.username,
-    displayName: user.displayName || user.global_name || null,
+    displayName: user.displayName ?? user.global_name ?? user.username ?? null,
     avatar: user.avatar,
   };
 }
