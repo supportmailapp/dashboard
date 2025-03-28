@@ -6,12 +6,14 @@ type UserState = {
   db: IDBUser | null;
 };
 
-export const user = $state<UserState>({ discord: null, db: null });
+export let user = $state<UserState>({ discord: null, db: null });
 
-export async function loadDbUser(userId: string) {
-  const res = await fetch(APIRoutes.user(userId), BASIC_GET_FETCH_INIT);
+export async function loadDbUser() {
+  const res = await fetch(APIRoutes.user(), BASIC_GET_FETCH_INIT);
 
   if (res.ok) {
     user.db = (await res.json()) as IDBUser;
+  } else {
+    console.error("Failed to load user data", res);
   }
 }
