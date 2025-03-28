@@ -1,38 +1,27 @@
 import { env } from "$env/dynamic/private";
-import { getUserGuilds } from "$lib/cache/guilds";
-import { mongoDB } from "$lib/server/db";
-import { fetchUserData } from "$lib/discord/oauth2";
-import { checkUserGuildAccess, verifySessionToken } from "$lib/server/auth";
-import { guilds } from "$lib/stores/guilds.svelte";
-import { user } from "$lib/stores/user.svelte";
+import { ErrorResponses } from "$lib/constants";
+import { fetchUserData } from "$lib/discord/utils";
+import { checkUserGuildAccess, decodeDbTokens, fetchDBUser, verifySessionToken } from "$lib/server/auth";
+import { dbConnect, DBUser } from "$lib/server/db";
+import { anyUserToBasic } from "$lib/utils/formatting";
+import arcjet, { detectBot, shield, tokenBucket } from "@arcjet/sveltekit";
 import * as Sentry from "@sentry/node";
-import { error, redirect, type Handle, type HandleServerError, type ServerInit } from "@sveltejs/kit";
+import { type Handle, type HandleServerError, type ServerInit } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
 import dayjs from "dayjs";
-import arcjet, { detectBot, shield, tokenBucket } from "@arcjet/sveltekit";
 import { inspect } from "util";
-import { ErrorResponses } from "$lib/constants";
 
 const inDevMode = env.NODE_ENV === "development";
 
 export const init: ServerInit = async () => {
-  mongoDB
-    .connect()
-    .then(() => {
-      console.log("Connected to MongoDB");
-    })
-    .catch((err) => {
-      console.error("MongoDB failed to connect", err);
-      process.exit(1);
-    });
-
+  await dbConnect();
   console.log("Environment:", env.NODE_ENV);
   console.log("Server started at", dayjs().toString());
 };
 
 // Configure Arcjet for API rate limiting
 // For a Discord dashboard API, reasonable limits would be:
-// - 60 requests per minute
+// - 120 requests per minute for all routes
 const aj = arcjet({
   key: env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
   characteristics: ["ip.src"], // Track requests by IP
@@ -44,98 +33,94 @@ const aj = arcjet({
     }),
     tokenBucket({
       mode: env.ARCJET_MODE! as any,
-      refillRate: inDevMode ? 60000 : 60,
+      refillRate: inDevMode ? 120000 : 120,
       interval: inDevMode ? 60000 : 60,
-      capacity: inDevMode ? 60000 : 60,
+      capacity: inDevMode ? 120000 : 120,
     }),
   ],
 });
 
-const baseHandle: Handle = async ({ event, resolve }) => {
-  // Early exit for API routes
-  if (event.url.pathname.startsWith("/api")) {
-    return await resolve(event);
+const notProtectedRoutes = ["testing", "discord-auth", "logout"];
+
+/**
+ * Middleware to check if the API route is protected and requires a token.
+ */
+const apiIsProtected = (url: URL) =>
+  url.pathname.startsWith("/api") && !url.pathname.match(new RegExp(`/api/v\\d+/${notProtectedRoutes.join("|")}`, "i"));
+const isRouteWithGuildId = (url: URL) => url.pathname.toLowerCase().match(/\/api\/v\d+\/(config|guilds)(\/\S*)?/i);
+
+const baseHandle: Handle = async function ({ event, resolve }) {
+  let eToken = event.cookies.get("session");
+  if (!eToken) {
+    const authHeader = event.request.headers.get("Authorization");
+    if (authHeader?.startsWith("Session ")) {
+      eToken = authHeader.split(" ")[1];
+    }
   }
 
-  const sessionCookie = event.cookies.get("session");
+  console.log("Session token", eToken);
 
-  if (sessionCookie) {
-    const tokenData = verifySessionToken(sessionCookie);
-    if (tokenData) {
-      event.locals.user = await fetchUserData(tokenData.id);
-    }
-  } else {
-    if (!event.url.pathname.startsWith("/login")) {
-      const redirectUrl = new URL("/login", event.url.origin);
-      if (event.url.pathname !== "/") {
-        redirectUrl.searchParams.set("redirect", event.url.pathname);
+  if (eToken) {
+    const { id: userId } = verifySessionToken(eToken);
+    if (userId) {
+      event.locals.userId = userId;
+      const dbUser = await fetchDBUser(userId);
+      if (dbUser?.tokens) {
+        const { accessToken } = decodeDbTokens(dbUser.tokens);
+        event.locals.token = accessToken ?? undefined;
       }
-      return redirect(303, redirectUrl.toString());
-    } else {
-      return resolve(event);
     }
   }
 
-  if (event.locals.user) {
-    const _guilds = getUserGuilds(event.locals.user.id);
-    if (_guilds) {
-      guilds.set(_guilds);
+  // Always try to fetch user data if token is available
+  if (event.locals.userId && event.locals.token) {
+    console.log("Fetching user data");
+    const rawUser = await fetchUserData(event.locals.userId, event.locals.token);
+    event.locals.user = anyUserToBasic(rawUser);
+  }
+
+  // Check if API request but no token
+  if (!event.locals.token && apiIsProtected(event.url)) {
+    console.log("No token found");
+    return ErrorResponses.unauthorized();
+  }
+
+  return resolve(event);
+};
+
+const rateLimitHandle: Handle = async function ({ event, resolve }) {
+  // Apply rate limiting to all routes, not just protected API routes
+  const decision = await aj.protect(event, { requested: 1 });
+  console.log("Arcjet decision", decision.conclusion, decision.reason);
+
+  if (decision.isDenied()) {
+    if (decision.reason.isRateLimit()) {
+      return ErrorResponses.tooManyRequests();
+    } else if (decision.reason.isBot()) {
+      return new Response(null, { status: 403, statusText: "Forbidden" });
+    } else {
+      return ErrorResponses.forbidden();
     }
   }
 
   return resolve(event);
 };
 
-const notProtectedRoutes = ["testing", "discord-auth", "logout"];
+const guildAccessHandle: Handle = async ({ event, resolve }) => {
+  if (apiIsProtected(event.url) && isRouteWithGuildId(event.url)) {
+    // These are the route params that are used in the API
+    const guildId = event.params.guildid;
 
-const isProtectedRoute = (url: URL) => {
-  const pathname = url.pathname.toLowerCase();
-  return pathname.startsWith("/api") && !pathname.match(new RegExp(`/api/v\\d+/${notProtectedRoutes.join("|")}`, "i"));
-};
-
-const isRouteWithGuildId = (url: URL) => {
-  return url.pathname.toLowerCase().match(/\/api\/v\d+\/(config|guilds)(\/\S*)?/i);
-};
-
-const handleApiRequest: Handle = async ({ event, resolve }) => {
-  if (isProtectedRoute(event.url)) {
-    // Get authentication information
-    let eToken = event.cookies.get("session");
-    if (!eToken) {
-      const authHeader = event.request.headers.get("Authorization");
-      if (authHeader?.startsWith("Session ")) {
-        eToken = authHeader.split(" ")[1];
-      }
+    if (!guildId) {
+      return ErrorResponses.badRequest("Missing required parameters");
     }
 
-    event.locals.token = eToken;
-    const decision = await aj.protect(event, { requested: 1 }); // Deduct 5 tokens from the bucket
-    console.log("Arcjet decision", decision);
-
-    if (decision.isDenied()) {
-      if (decision.reason.isRateLimit()) {
-        return ErrorResponses.tooManyRequests();
-      } else if (decision.reason.isBot()) {
-        return new Response(null, { status: 403, statusText: "Forbidden" });
-      } else {
-        return ErrorResponses.forbidden();
-      }
+    const hasAccess = await checkUserGuildAccess(event.locals.userId!, event.locals.token!, guildId);
+    if (hasAccess === false) {
+      return ErrorResponses.forbidden();
     }
 
-    if (isRouteWithGuildId(event.url)) {
-      // These are the route params that are used in the API
-      const guildId = event.params.guildid || event.params.slug;
-
-      if (!guildId || !eToken) {
-        return ErrorResponses.badRequest("Missing required parameters");
-      }
-      const hasAccess = await checkUserGuildAccess(eToken, guildId);
-      if (hasAccess === false) {
-        return ErrorResponses.forbidden();
-      }
-
-      event.locals.guildId = guildId;
-    }
+    event.locals.guildId = guildId;
   }
 
   if (event.url.searchParams.get("bypass_cache") == "true") {
@@ -145,7 +130,7 @@ const handleApiRequest: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
-export const handle = sequence(baseHandle, handleApiRequest);
+export const handle = sequence(baseHandle, rateLimitHandle, guildAccessHandle);
 
 export const handleError: HandleServerError = async ({ error, event, status, message }) => {
   const errorId = Sentry.captureException(error, {
