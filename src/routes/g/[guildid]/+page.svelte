@@ -65,7 +65,7 @@
 </script>
 
 <div class="flex w-full flex-row items-center justify-start gap-5">
-  <img src={cdnUrls.guildIcon(gg.guild!.id, gg.guild!.iconHash, "512")} alt="Server icon" class="size-20" />
+  <img src={cdnUrls.guildIcon(gg.guild!.id, gg.guild!.icon, "512")} alt="Server icon" class="size-20" />
   <div>
     <div class="flex flex-row items-center justify-start gap-3">
       <div
