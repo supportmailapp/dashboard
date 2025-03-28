@@ -16,9 +16,9 @@
       return;
     }
 
-    if (user.discord && !guilds.value.length) {
-      loadGuilds(user.discord.id);
-      loadDbUser(user.discord.id);
+    if (!guilds.value.length) {
+      loadGuilds();
+      loadDbUser();
     }
 
     const redirectParam = page.url.searchParams.get("redirect");
