@@ -4,10 +4,10 @@
 
   import Footer from "$lib/components/Footer.svelte";
   import RefreshButton from "$lib/components/RefreshButton.svelte";
+  import UserSettingsDialog from "$lib/components/UserSettingsDialog.svelte";
   import { guilds as guildsState } from "$lib/stores/guilds.svelte";
   import { user as userState } from "$lib/stores/user.svelte";
   import { cdnUrls } from "$lib/utils/formatting";
-  import UserSettingsDialog from "$lib/components/UserSettingsDialog.svelte";
 
   let showUserSettings = $state(false);
   let errorCopied = $state(false);
@@ -50,33 +50,39 @@
   <div class="flex h-full max-h-screen w-full items-center justify-center p-3">
     <div class="relative h-[97%] w-full max-w-[700px] overflow-hidden overflow-y-auto rounded-lg bg-slate-800">
       <div class="absolute top-0 left-0 flex h-fit max-h-fit w-full flex-col items-start justify-start gap-2 p-3 text-center">
-        {#each guilds as guild}
-          {#if firstNotConfiguredGuild == guild.id}
-            <div class="bg-base-300 h-0.5 w-full"></div>
-          {/if}
-          <a
-            class="root-server-select-row {!guild.isConfigured ? 'opacity-40 hover:opacity-90' : ''}"
-            href="/{guild.isConfigured ? 'g/' : 'add/'}{guild.id}"
-          >
-            <div class="flex items-center justify-center p-2">
-              <div class="dy-avatar">
-                <div class="dy-mask dy-mask-squircle h-12 w-12">
-                  <img src={cdnUrls.guildIcon(guild.id, guild.iconHash)} alt={guild.name} />
+        {#if guilds.length == 0}
+          <div class="flex h-[80vh] w-full items-center justify-center">
+            <span class="dy-loading dy-loading-xl dy-loading-spinner"></span>
+          </div>
+        {:else}
+          {#each guilds as guild}
+            {#if firstNotConfiguredGuild == guild.id}
+              <div class="bg-base-300 h-0.5 w-full"></div>
+            {/if}
+            <a
+              class="root-server-select-row {!guild.isConfigured ? 'opacity-40 hover:opacity-90' : ''}"
+              href="/{guild.isConfigured ? 'g/' : 'add/'}{guild.id}"
+            >
+              <div class="flex items-center justify-center p-2">
+                <div class="dy-avatar">
+                  <div class="dy-mask dy-mask-squircle h-12 w-12">
+                    <img src={cdnUrls.guildIcon(guild.id, guild.icon)} alt={guild.name} />
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="flex max-w-3/5 min-w-1/5 justify-center truncate text-lg">
-              <span class="block w-fit truncate">{guild.name}</span>
-            </div>
-            <div class="block min-w-fit items-center justify-center px-2">
-              <img
-                src={!guild.isConfigured ? "/icons/plus-circle.svg" : "/icons/arrow-right-circle.svg"}
-                alt="Continue"
-                class="block size-8"
-              />
-            </div>
-          </a>
-        {/each}
+              <div class="flex max-w-3/5 min-w-1/5 justify-center truncate text-lg">
+                <span class="block w-fit truncate">{guild.name}</span>
+              </div>
+              <div class="block min-w-fit items-center justify-center px-2">
+                <img
+                  src={!guild.isConfigured ? "/icons/plus-circle.svg" : "/icons/arrow-right-circle.svg"}
+                  alt="Continue"
+                  class="block size-8"
+                />
+              </div>
+            </a>
+          {/each}
+        {/if}
       </div>
     </div>
   </div>
