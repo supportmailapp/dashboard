@@ -1,7 +1,17 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
 
-import type { APIChannel, APIDMChannel, APIGroupDMChannel, APIThreadChannel, ChannelType } from "discord-api-types/v10";
+import type {
+  APIChannel,
+  APIDMChannel,
+  APIGroupDMChannel,
+  APIThreadChannel,
+  APIUser,
+  ChannelType,
+  RESTAPIPartialCurrentUserGuild,
+} from "discord-api-types/v10";
+import type { WithId } from "mongodb";
+import type { IDBUser } from "supportmail-types";
 
 declare global {
   namespace App {
@@ -23,9 +33,12 @@ declare global {
        * Just for the API routes. This is checked before based on the Auth header or "session" cookie. If given, the user is **authenticated**.
        */
       userId?: string;
+      /**
+       * A Basic User from Discord.
+       */
       user: BasicUser | null;
       /**
-       * Just for the API routes.
+       * The user's access token. Always given if the user is authenticated.
        */
       token?: string;
       bypassCache?: boolean;
@@ -33,6 +46,7 @@ declare global {
 
     interface PageData {
       user: BasicUser;
+      dbUser: WithId<IDBUser>;
       guilds?: DCGuild[] | null;
       guildId?: string;
       guild?: DCGuild | null;
@@ -68,41 +82,17 @@ declare global {
     parentId: string?;
   };
 
-  /**
-   * Represents a guild (server) in the application.
-   */
-  type DCGuild = {
-    /**
-     * The snowflake of the guild.
-     */
-    id: string;
-    /**
-     * The name of the guild.
-     */
-    name: string;
-    /**
-     * The hash of the guild's icon, or null if no icon is set.
-     *
-     * If not given, `/embeds/`
-     */
-    iconHash: string | null;
-    /**
-     * Indicates whether the guild is configured.
-     */
-    isConfigured: boolean;
-    /**
-     * The permissions associated with the guild.
-     */
-    permissions: number | bigint | string;
-  };
-
-  type CachableGuild = DCGuild & { permissions: string };
-
+  /** @see {APIUser} */
   type BasicUser = {
     id: string;
     username: string;
-    displayName: string;
-    avatar: string?;
+    /** global_name or username */
+    displayName: string | null;
+    avatar: string | null;
+  };
+
+  type DCGuild = RESTAPIPartialCurrentUserGuild & {
+    isConfigured: boolean;
   };
 
   /**
