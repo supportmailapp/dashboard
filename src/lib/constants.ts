@@ -68,6 +68,7 @@ export const BASIC_GET_FETCH_INIT = {
   credentials: "include",
   headers: {
     "Content-Type": "application/json",
+    Accept: "application/json",
   },
 } as RequestInit;
 
