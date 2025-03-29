@@ -51,4 +51,6 @@
 </script>
 
 <!-- Layout for server selection or login -->
-{@render children()}
+<div style="display: contents;">
+  {@render children()}
+</div>
