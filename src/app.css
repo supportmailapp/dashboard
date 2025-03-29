@@ -39,24 +39,24 @@
 }
 
 @layer base {
-  /*
-  ::-webkit-scrollbar {
-    width: 7px;
+  :root {
+    --dc-blurple: #5a65db;
+    --dark-blurple: rgba(61, 72, 187, 0.8);
+    --footer-height: 2.5rem;
+    --sidebar-width: 160px;
   }
 
+  ::-webkit-scrollbar {
+    width: 0.5rem;
+    height: 0.5rem;
+  }
   ::-webkit-scrollbar-track {
     background: transparent;
   }
-
   ::-webkit-scrollbar-thumb {
-    background: var(--light-blurple);
-    border-radius: 5rem;
+    @apply rounded-xl;
+    background-color: var(--dark-blurple);
   }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--dc-blurple);
-  }
-  */
 
   html {
     scroll-behavior: smooth;
@@ -76,7 +76,6 @@
     display: flex;
     justify-content: center;
     text-wrap: wrap;
-    overflow-y: hidden;
   }
 
   @media (width >= 48rem) {
@@ -88,11 +87,11 @@
   main {
     @apply items-center gap-5 p-[0.75rem] md:p-[1rem];
     align-items: center;
-    min-height: calc(100vh - var(--footer-height) - 1rem);
+    min-height: calc(100vh - var(--footer-height) - 6.5rem);
     display: flex;
     flex-direction: column;
-    overflow-x: hidden;
-    overflow-y: auto;
+    /* overflow-x: hidden;
+    overflow-y: auto; */
     width: 100%;
     flex: 1;
     z-index: 100;
@@ -125,23 +124,21 @@
     height: auto;
     display: block;
   }
+
+  button {
+    cursor: pointer;
+  }
 }
 
 /* Components */
 
 @layer components {
-  :root {
-    --dc-blurple: #5a65db;
-    --light-blurple: rgba(90, 101, 219, 0.8);
-    --footer-height: 2.5rem;
-  }
-
   .base-div {
     display: contents;
     width: 100%;
-    max-width: 1920px;
+    /* max-width: 1920px;
     justify-content: center;
-    margin-inline: auto;
+    margin-inline: auto; */
   }
 
   .btn-base-100 {
@@ -174,41 +171,26 @@
     z-index: 10;
   }
 
-  .dektop-nav {
-    @apply bg-base-200 gap-1 p-2 text-base;
-    z-index: 10;
-    width: 100%;
-    max-width: 18rem;
-    height: screen;
-    top: 0;
-    bottom: 0;
-    min-height: screen;
-    overflow-y: auto;
+  .desktop-nav {
+    @apply hidden h-screen w-fit flex-col border-r border-gray-800 bg-transparent p-2 text-base sm:flex;
     user-select: none;
-    display: flex;
-    flex-direction: column;
+    position: fixed;
+    top: 0;
+    width: var(--sidebar-width);
 
-    .nav-item {
-      @apply gap-2.5 rounded-md p-2 text-base font-normal;
+    .nav-btn {
+      @apply gap-2 rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800/50 hover:text-white;
+      width: 100%;
       display: flex;
       flex-direction: row;
       align-items: center;
-      transition: all 150ms ease-in-out;
-    }
-
-    .nav-item.active {
-      @apply bg-base-300 text-warning font-semibold;
-    }
-
-    .nav-item:hover,
-    .nav-item:focus {
-      @apply bg-base-300;
-    }
-
-    .nav-title {
-      @apply py-1 text-base font-semibold;
+      justify-content: space-around;
       text-align: center;
-      opacity: 0.75;
+      text-decoration: none;
+
+      &.active {
+        @apply text-primary bg-slate-700/30;
+      }
     }
   }
 
