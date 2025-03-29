@@ -29,7 +29,9 @@ export let error = writable<string | null>(null);
  */
 export async function loadConfig(endpoint: string, fetchOptions: RequestInit = BASIC_GET_FETCH_INIT) {
   const fetchOpts = Object.assign({}, BASIC_GET_FETCH_INIT, fetchOptions);
+  console.log(`Fetching config from ${endpoint} with options:`, fetchOpts);
   const configRes = await fetch(endpoint, fetchOpts);
+  console.log(`Response status: ${configRes.status}`);
 
   if (configRes.ok) {
     configState.config = (await configRes.json()) as IDBGuild;
