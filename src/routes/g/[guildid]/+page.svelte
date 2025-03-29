@@ -1,18 +1,14 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
   import { page } from "$app/state";
-  import { buildNavHref } from "$lib/components/navigation.svelte";
-  import { APIRoutes, LANGUAGES, PLUGINS } from "$lib/constants";
+  import { APIRoutes } from "$lib/constants";
   import { configState, loadConfig } from "$lib/stores/config.svelte";
   import { gg } from "$lib/stores/guild.svelte";
   import { user } from "$lib/stores/user.svelte";
-  import { cdnUrls } from "$lib/utils/formatting";
-  import { CircleCheck, CircleX, Info, TriangleAlert } from "@lucide/svelte";
   import { onMount } from "svelte";
 
   let serverIdCopied = $state(false);
   let serverIdText = $derived(serverIdCopied ? "Copied!" : "Copy Server ID");
-  let news = $state<News[]>(page.data.news || []);
+  // let news = $state<News[]>(page.data.news || []);
   let guildLang = $state<{ loading: boolean; value: string | null; saved: boolean }>({
     loading: true,
     value: null,
@@ -64,7 +60,52 @@
   });
 </script>
 
-<div class="flex w-full flex-row items-center justify-start gap-5">
+<div class="flex flex-col justify-start gap-2 text-start font-semibold">
+  <h1>
+    Welcome <span class="from-primary to-success bg-gradient-to-r bg-clip-text text-transparent">
+      {user.discord?.displayName}
+    </span>!
+  </h1>
+  <div
+    class="dy-tooltip md:dy-tooltip-right dy-tooltip-bottom {serverIdCopied ? 'dy-tooltip-success' : 'dy-tooltip-accent'}"
+    data-tip={serverIdText}
+  >
+    <button
+      class="server-id-button"
+      onclick={() => {
+        if (serverIdCopied || !gg.guild) return;
+        navigator.clipboard.writeText(gg.guild.id);
+        serverIdCopied = true;
+        setTimeout(() => {
+          serverIdCopied = false;
+        }, 2000);
+      }}
+    >
+      {gg.guild?.name || ""}
+    </button>
+  </div>
+</div>
+
+<div class="card h-56">
+  test content
+</div>
+<div class="card h-56">
+  test content
+</div>
+<div class="card h-56">
+  test content
+</div>
+<div class="card h-56">
+  test content
+</div>
+<div class="card h-56">
+  test content
+</div>
+<div class="card h-56">
+  test content
+</div>
+
+<!-- <div class="flex w-full flex-row items-center justify-start gap-5">
   <img src={cdnUrls.guildIcon(gg.guild!.id, gg.guild!.icon, "512")} alt="Server icon" class="size-20" />
   <div>
     <div class="flex flex-row items-center justify-start gap-3">
@@ -98,7 +139,6 @@
   <span class="dy-divider dy-divider-neutral my-0 w-full"></span>
 </div>
 {#if news.length > 0}
-  <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
   <div tabindex="0" class="dy-collapse dy-collapse-arrow bg-base-300/60">
     <input type="checkbox" class="news-peer" checked />
     <div class="dy-collapse-title flex flex-row items-center gap-2 font-semibold text-white">News</div>
@@ -123,7 +163,7 @@
     </div>
   </div>
 {/if}
-<!-- General Guild Settings -->
+
 <h2 class="mt-2 text-3xl font-semibold text-white underline-offset-2 select-none">General Settings</h2>
 <div class="settings-container p-0">
   <fieldset>
@@ -144,10 +184,4 @@
       It can also be the default for a user if the user has not set a language.
     </p>
   </fieldset>
-</div>
-
-<!-- Access Control -->
-<h2 class="mt-2 text-3xl font-semibold text-white underline-offset-2 select-none">Access Control</h2>
-<div class="pointer-events-none flex w-full flex-col items-center opacity-40 select-none">
-  <h3 class="text-base italic">Coming Soon...</h3>
-</div>
+</div> -->
