@@ -6,3 +6,4 @@
     goto("/", { replaceState: true }); // Redirect to the home page
   });
 </script>
+
