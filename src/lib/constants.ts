@@ -83,12 +83,12 @@ interface UserGuildsParams {
 export const APIRoutes = {
   roles: (guildId: string) => `${API_BASE}/guilds/${guildId}/roles`,
   channels: (guildId: string) => `${API_BASE}/guilds/${guildId}/channels`,
-  userGuilds: (params: UserGuildsParams = {}) =>
-    `${API_BASE}/@me/guilds?` +
-    new URLSearchParams({
-      bypass_cache: params.bypassCache ? "true" : "false",
-      manage_bot_only: params.manageBotOnly ? "true" : "false",
-    }).toString(),
+  userGuilds: (params: UserGuildsParams = {}) => {
+    let sParams = new URLSearchParams();
+    if (params.bypassCache === true) sParams.append("bypass_cache", "true");
+    if (params.manageBotOnly === true) sParams.append("manage_bot", "true");
+    return `${API_BASE}/@me/guilds` + (sParams.toString() ? `?${sParams.toString()}` : "");
+  },
   /**
    * Used for:
    * - GET: Get the DB user for a user
@@ -119,21 +119,6 @@ export const APIRoutes = {
   /** @deprecated Not used atm */
   debug: (guildId: string) => `${API_BASE}/debug`,
 } as const;
-
-export const PLUGINS: AppPlugin[] = [
-  {
-    slug: "/tickets",
-    name: "Tickets",
-    description: "Modmail-like ticket system",
-    iconUrl: "/icons/ticket.svg",
-  },
-  {
-    slug: "/reports",
-    name: "Reports",
-    description: "Report users to the staff",
-    iconUrl: "/icons/report.svg",
-  },
-];
 
 export const LANGUAGES = [
   { name: "English", value: "en" },
@@ -203,7 +188,7 @@ export const baseForumTagEmojis = {
   awaitingRes: "⏳",
 } as const;
 
-export function baseForumTags(lang: string): APIGuildForumTag[] {
+export function baseForumTags(): APIGuildForumTag[] {
   const tagInfo: string[][] = [
     ["open", baseForumTagEmojis.open],
     ["closed", baseForumTagEmojis.closed],
