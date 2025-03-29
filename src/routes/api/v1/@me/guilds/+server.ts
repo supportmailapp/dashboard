@@ -8,7 +8,7 @@ export const GET: RequestHandler = async ({ locals, url }) => {
   let guilds = await fetchUserGuilds(locals.userId, locals.token, {
     bypassCache: url.searchParams.get("bypass_cache") === "true",
     only: {
-      canManage: url.searchParams.get("manage_bot_only") === "true",
+      canManage: url.searchParams.get("manage_bot") === "true",
     },
   });
 
