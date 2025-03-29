@@ -1,110 +1,46 @@
-<script lang="ts">
+<script>
   import { page } from "$app/state";
-  import { onMount } from "svelte";
-  import { slide } from "svelte/transition";
-
   import DesktopNavigation from "$lib/components/DesktopNavigation.svelte";
   import Footer from "$lib/components/Footer.svelte";
-  import MobileNavigation from "$lib/components/MobileNavigation.svelte";
-  import RefreshButton from "$lib/components/RefreshButton.svelte";
-  import SaveAlert from "$lib/components/SaveAlert.svelte";
-  import ServerSelectDialog from "$lib/components/ServerSelectDialog.svelte";
-  import { mediaQuery } from "$lib/constants.js";
-  import { configState, unsavedChanges } from "$lib/stores/config.svelte.js";
   import { gg, loadGuildData } from "$lib/stores/guild.svelte";
-  import { site } from "$lib/stores/site.svelte.js";
-  import { user } from "$lib/stores/user.svelte.js";
+  import { user } from "$lib/stores/user.svelte";
+  import { cdnUrls } from "$lib/utils/formatting";
+  import { onMount } from "svelte";
 
-  let { children, data } = $props();
+  let { children } = $props();
 
-  let width = $state(800);
-
-  onMount(async function () {
-    let retries = 0;
-    while (retries < 3) {
-      if (!gg.guild || page.params.guildid !== gg.guild.id) {
-        try {
-          await loadGuildData(page.params.guildid);
-          if (gg.guild) break;
-        } catch (error) {
-          retries++;
-          if (retries < 3) {
-            console.log("Failed to load guild data and config, retrying in 11 seconds", error);
-            await new Promise((resolve) => setTimeout(resolve, 11000));
-          } else {
-            console.error("Failed to load guild data and config after 3 attempts", error);
-          }
-        }
-      } else {
-        break; // Exit loop if condition is not met
-      }
-    }
+  onMount(async () => {
+    if (!(gg.guild && gg.roles && gg.channels)) await loadGuildData();
   });
 </script>
 
-<svelte:window bind:innerWidth={width} />
-
-<div class="page-container">
-  {#if width >= mediaQuery.md}
+<div class="top-0 right-0 left-0 z-10 block h-screen w-full overflow-y-auto">
+  <div class="mx-auto flex w-full max-w-[1000px]">
     <DesktopNavigation />
-    <div class="gradient-divider from-base-100 bg-gradient-to-l to-black/5"></div>
-  {/if}
-  <div class="main-container">
-    {#if !configState.config || !gg.guild || !user.discord}
-      <div class="flex h-max w-full items-center justify-center">
-        <span class="dy-loading dy-loading-infinity dy-loading-xl select-none"></span>
-        {#await new Promise((r) => setTimeout(r, 5000)) then}
-          <RefreshButton text="Already added the bot? Refresh!" whatInvalidate={page.url} />
-        {/await}
-      </div>
-    {:else}
+    <div class="relative top-0 flex-1 overflow-y-auto px-2 pt-2 pb-2 sm:ml-(--sidebar-width) sm:px-4">
+      <header class="mb-5 flex h-16 items-center justify-between gap-2 overflow-hidden p-2">
+        <a href={page.url.origin} class="xy-center flex gap-1 rounded-full shadow-slate-200 transition-opacity hover:opacity-80">
+          <img src="/logo.png" alt="Logo" class="block aspect-square size-12 rounded-full border-2 border-slate-600" />
+          <span class="hidden font-semibold select-none sm:block">SupportMail</span>
+        </a>
+        <a href="/@me" class="dy-btn dy-btn-info dy-btn-soft xy-center ml-auto flex h-fit flex-row px-3 py-1 text-2xl">
+          {#if user.discord}
+            <img
+              src={cdnUrls.userAvatar(user.discord.id, user.discord.avatar, 64)}
+              alt="User Avatar"
+              class="size-[1.2em] rounded-md"
+            />
+            <span class="ml-2">{user.discord?.displayName}</span>
+          {:else}
+            <div class="dy-skeleton w-full"></div>
+          {/if}
+        </a>
+      </header>
+
       <main>
         {@render children()}
       </main>
-    {/if}
-    <Footer year={data.ccDate} />
-
-    {#if width < mediaQuery.md}
-      <MobileNavigation />
-    {/if}
+      <Footer />
+    </div>
   </div>
 </div>
-
-{#if $unsavedChanges}
-  <SaveAlert />
-{/if}
-
-<ServerSelectDialog />
-
-<style>
-  .page-container {
-    height: 100vh;
-    display: grid;
-    grid-template-rows: 1fr;
-    grid-template-columns: 1fr;
-    grid-template-areas: "main";
-
-    @media (width >= 48rem) {
-      grid-template-columns: 18rem 1rem 1fr;
-      grid-template-areas: "nav div main";
-    }
-  }
-
-  .main-container {
-    position: relative;
-    display: block;
-    grid-area: main;
-    width: 100%;
-    height: 100%;
-    overflow-y: auto;
-
-    @media (width >= 48rem) {
-      padding-right: 1rem;
-    }
-  }
-
-  .gradient-divider {
-    grid-area: div;
-    width: 1rem;
-  }
-</style>
