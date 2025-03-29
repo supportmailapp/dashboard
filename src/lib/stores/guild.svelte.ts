@@ -1,8 +1,6 @@
 // State for the current guild (guild, roles, channels)
 
-import equal from "fast-deep-equal/es6";
-import type { IDBGuild } from "supportmail-types";
-import { env } from "$env/dynamic/public";
+import { page } from "$app/state";
 import { APIRoutes, BASIC_GET_FETCH_INIT, urls } from "$lib/constants";
 import { sortByPositionAndId } from "$lib/utils/formatting";
 import { guilds } from "./guilds.svelte";
@@ -25,7 +23,9 @@ export function resetGuild() {
   gg.channels = null;
 }
 
-export async function loadGuildData(guildId: string) {
+export async function loadGuildData() {
+  const guildId = page.data.guildId;
+  if (!guildId) throw new Error("Guild ID is not defined");
   const rolesRes = await fetch(APIRoutes.roles(guildId), BASIC_GET_FETCH_INIT);
   await new Promise((resolve) => setTimeout(resolve, 500));
   const channelsRes = await fetch(APIRoutes.channels(guildId), BASIC_GET_FETCH_INIT);
