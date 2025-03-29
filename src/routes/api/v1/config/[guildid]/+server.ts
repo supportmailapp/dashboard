@@ -4,22 +4,34 @@ import type { IDBGuild } from "supportmail-types";
 
 export const GET = async ({ locals }) => {
   if (locals.guildId && locals.token) {
+    console.log(`GET request for guild: ${locals.guildId}, bypassCache: ${locals.bypassCache}`);
     let config: IDBGuild | undefined;
     if (!locals.bypassCache) {
+      console.log(`Attempting to get config from cache for guild: ${locals.guildId}`);
       config = getConfig(locals.guildId);
+      console.log(`Cache result: ${config ? 'Config found in cache' : 'Config not found in cache'}`);
+    } else {
+      console.log('Cache bypass requested, fetching directly from database');
     }
+    
     if (!config) {
+      console.log(`Fetching guild data from database for: ${locals.guildId}`);
       const guild = await getGuild(locals.guildId);
       if (!guild) {
+        console.log(`Guild not found in database: ${locals.guildId}`);
         return Response.json("Not Found", { status: 404, statusText: "Not Found" });
       }
+      console.log(`Guild found in database: ${locals.guildId}`);
       config = guild;
+      console.log(`Updating cache for guild: ${locals.guildId}`);
       setConfig(locals.guildId, config);
     }
 
+    console.log(`Returning config for guild: ${locals.guildId}`);
     return Response.json(config, { status: 200, statusText: "OK" });
   }
 
+  console.log('Bad request: Missing guildId or token');
   return Response.json("Bad Request", { status: 400, statusText: "Bad Request" });
 };
 
