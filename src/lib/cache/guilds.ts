@@ -29,6 +29,7 @@ export function parseToCacheGuild(guild: RESTAPIPartialCurrentUserGuild, configu
 // Guilds functions
 export function cacheGuilds(...guilds: DCGuild[]): void {
   guildsStore.mset(guilds.map((guild) => ({ key: guild.id, val: JSON.stringify(guild) })));
+  console.log("Cached guilds: ", guilds.map((guild) => ({ key: guild.id, val: JSON.stringify(guild) })));
 }
 
 export function getDCGuild(id: string): DCGuild | null {
@@ -61,26 +62,38 @@ export function delGuildRoles(guildId: string): void {
 }
 
 export function clearGuildRoles(): void {
-  guildRolesAndChannelsStore.flushAll();
+  const toDelete: string[] = [];
+  guildRolesAndChannelsStore.keys().forEach((key) => {
+    if (key.startsWith("r:")) {
+      toDelete.push(key);
+    }
+  });
+  guildRolesAndChannelsStore.del(toDelete);
 }
 
 // Guild channels functions
 export function setGuildChannels(guildId: string, channels: BasicChannel[]): void {
-  guildsStore.set(buildKey("c", guildId), JSON.stringify(channels));
+  guildRolesAndChannelsStore.set(buildKey("c", guildId), JSON.stringify(channels));
 }
 
 export function getGuildChannels(guildId: string): BasicChannel[] | null {
-  const channels = guildsStore.get(buildKey("c", guildId)) as any;
+  const channels = guildRolesAndChannelsStore.get(buildKey("c", guildId)) as any;
   if (!channels) return null;
   return JSON.parse(channels);
 }
 
 export function delGuildChannels(guildId: string): void {
-  guildsStore.del(buildKey("c", guildId));
+  guildRolesAndChannelsStore.del(buildKey("c", guildId));
 }
 
 export function clearGuildChannels(): void {
-  guildsStore.flushAll();
+  const toDelete: string[] = [];
+  guildRolesAndChannelsStore.keys().forEach((key) => {
+    if (key.startsWith("c:")) {
+      toDelete.push(key);
+    }
+  });
+  guildRolesAndChannelsStore.del(toDelete);
 }
 
 // userGuildsStore functions
