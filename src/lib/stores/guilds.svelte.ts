@@ -18,16 +18,19 @@ export const guilds = $state<GuildsState>({
 });
 
 export async function loadGuilds() {
-  const guildsRes = await fetch(APIRoutes.userGuilds({ manageBotOnly: true }), BASIC_GET_FETCH_INIT);
+  if (!guilds.get().length) {
+    const guildsRes = await fetch(APIRoutes.userGuilds({ manageBotOnly: true }), BASIC_GET_FETCH_INIT);
+    console.log("guildsRes", guildsRes);
 
-  if (guildsRes.ok) {
-    let guildsJson = (await guildsRes.json()) as DCGuild[];
-    // Sort guilds by configured or not
-    guildsJson.sort((a, b) => {
-      if (a.isConfigured && !b.isConfigured) return -1;
-      if (!a.isConfigured && b.isConfigured) return 1;
-      return 0;
-    });
-    guilds.set(guildsJson);
+    if (guildsRes.ok) {
+      let guildsJson = (await guildsRes.json()) as DCGuild[];
+      // Sort guilds by configured or not
+      guildsJson.sort((a, b) => {
+        if (a.isConfigured && !b.isConfigured) return -1;
+        if (!a.isConfigured && b.isConfigured) return 1;
+        return 0;
+      });
+      guilds.set(guildsJson);
+    }
   }
 }
