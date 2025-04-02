@@ -1,7 +1,7 @@
 // Private utility stuff for Discord-related operations
 
 import { env } from "$env/dynamic/private";
-import { cacheGuilds, getUserGuilds, parseToCacheGuild } from "$lib/cache/guilds";
+import { cacheGuilds, getUserGuilds, overwriteUserGuilds, parseToCacheGuild } from "$lib/cache/guilds";
 import { getMember } from "$lib/cache/members";
 import { getDiscordUser } from "$lib/cache/users";
 import { DBGuild } from "$lib/server/db";
@@ -108,13 +108,28 @@ export async function fetchUserGuilds(
   options: FetchUserGuildsOptions = {},
 ): Promise<DCGuild[]> {
   options = { bypassCache: false, only: {}, ...options };
+
+  // Function to apply filters based on options
+  const applyFilters = (guilds: DCGuild[]): DCGuild[] => {
+    if (options.only?.isConfigured) {
+      return guilds.filter((g) => g.isConfigured);
+    }
+    if (options.only?.canManage) {
+      return guilds.filter((g) => g.isConfigured && canManageBot(BigInt(g.permissions)));
+    }
+    return guilds;
+  };
+
+  // Try to use cached guilds if not bypassing cache
   if (!options.bypassCache) {
     const cachedGuilds = getUserGuilds(userId);
+    console.log("Cached guilds", cachedGuilds);
     if (cachedGuilds) {
-      return cachedGuilds;
+      return applyFilters(cachedGuilds);
     }
   }
 
+  // Fetch fresh data from API
   const guildRes = await fetch(RouteBases.api + Routes.userGuilds(), {
     method: "GET",
     headers: {
@@ -124,7 +139,7 @@ export async function fetchUserGuilds(
   });
 
   if (!guildRes.ok) {
-    throw { status: guildRes.status, message: guildRes.statusText };
+    throw guildRes;
   }
 
   const guildResJson = (await guildRes.json()) as RESTAPIPartialCurrentUserGuild[];
@@ -137,16 +152,14 @@ export async function fetchUserGuilds(
     ),
   );
 
+  console.log("Fetched guilds", guilds);
   cacheGuilds(...guilds);
+  overwriteUserGuilds(
+    userId,
+    guilds.map((g) => g.id),
+  );
 
-  if (options.only?.isConfigured) {
-    return guilds.filter((g) => g.isConfigured);
-  }
-  if (options.only?.canManage) {
-    return guilds.filter((g) => canManageBot(BigInt(g.permissions)));
-  }
-
-  return guilds;
+  return applyFilters(guilds);
 }
 
 /**
