@@ -4,10 +4,10 @@
 
   import Footer from "$lib/components/Footer.svelte";
   import RefreshButton from "$lib/components/RefreshButton.svelte";
-  import UserSettingsDialog from "$lib/components/UserSettingsDialog.svelte";
   import { guilds as guildsState } from "$lib/stores/guilds.svelte";
   import { user as userState } from "$lib/stores/user.svelte";
   import { cdnUrls } from "$lib/utils/formatting";
+  import { CircleArrowRight, Plus } from "@lucide/svelte";
 
   let showUserSettings = $state(false);
   let errorCopied = $state(false);
@@ -23,11 +23,16 @@
 <!-- Servers -->
 <div class="flex h-screen w-screen flex-col items-center justify-center">
   <!-- It's needed to be in the wrapper because otherwise the layout breaks. Dunno why. -->
-  <header class="bg-base-200 sticky top-0 right-0 left-0 w-full">
+  <header class="bg-base-200 sticky top-0 right-0 left-0 h-(--header-height) w-full">
     <nav class="dy-navbar mx-auto max-w-[1200px]">
-      <div id="branding" class="dy-navbar-start gap-x-3 gap-y-2 py-1 select-none">
-        <img src="/logo.png" alt="Logo" class="size-12" />
-        <span class="hidden text-3xl font-bold text-white sm:block">SupportMail</span>
+      <div class="dy-navbar-start">
+        <a
+          href="https://supportmail.dev/"
+          class="inline-flex items-center gap-x-3 gap-y-2 py-1 transition-opacity duration-100 select-none hover:opacity-70"
+        >
+          <img src="/logo.png" alt="Logo" class="size-12" />
+          <span class="hidden text-3xl font-semibold text-white sm:block">SupportMail</span>
+        </a>
       </div>
 
       <div class="dy-navbar-center justify-center">
@@ -74,11 +79,11 @@
                 <span class="block w-fit truncate">{guild.name}</span>
               </div>
               <div class="block min-w-fit items-center justify-center px-2">
-                <img
-                  src={!guild.isConfigured ? "/icons/plus-circle.svg" : "/icons/arrow-right-circle.svg"}
-                  alt="Continue"
-                  class="block size-8"
-                />
+                {#if guild.isConfigured}
+                  <CircleArrowRight />
+                {:else}
+                  <Plus />
+                {/if}
               </div>
             </a>
           {/each}
@@ -87,9 +92,7 @@
     </div>
   </div>
 
-  <UserSettingsDialog bind:showModal={showUserSettings} />
-
-  <Footer year={page.data.ccDate} />
+  <Footer />
 </div>
 
 {#if errorCopied}
@@ -99,3 +102,9 @@
     </div>
   </div>
 {/if}
+
+<style>
+  :root {
+    --header-height: 70px;
+  }
+</style>

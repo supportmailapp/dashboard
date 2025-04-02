@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+.page-wrapper {
+  display: block;
+  position: relative;
+  min-height: max-content;
+  height: 100vh;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.desktop-nav-wrapper {
+  display: block;
+  position: fixed;
+  top: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-right: 1px solid;
+  border-color: var(--color-base-300);
+}
+
+.content-wrapper {
+  @apply ml-0 md:ml-(--sidebar-width);
+  display: block;
+  position: relative;
+  padding-inline: 1rem;
+  padding-top: 1.5rem;
+  width: 100%;
+  height: calc(100% - var(--footer-height));
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-base-100/70);
+}

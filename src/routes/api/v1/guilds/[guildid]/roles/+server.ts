@@ -10,6 +10,7 @@ export const GET = async ({ locals }) => {
 
   if (guildId && token) {
     const cachedRoles = getGuildRoles(guildId);
+    console.log("Cached roles", cachedRoles);
     if (cachedRoles) return Response.json(cachedRoles, { status: 200, statusText: "OK" });
 
     try {

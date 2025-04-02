@@ -11,6 +11,7 @@ export const GET = async ({ locals }) => {
 
   if (guildId && token) {
     const cachedChannels = getGuildChannels(guildId);
+    console.log("Cached channels", cachedChannels);
     if (cachedChannels) return json(cachedChannels, { status: 200, statusText: "OK" });
 
     try {
