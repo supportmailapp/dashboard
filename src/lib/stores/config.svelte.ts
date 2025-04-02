@@ -22,6 +22,10 @@ export let unsavedChanges = writable<boolean>(false);
 export let saving = writable<boolean>(false);
 export let error = writable<string | null>(null);
 
+error.subscribe((value) => {
+  console.log("Error:", value);
+});
+
 /**
  * Loads config data from a specified endpoint and sets it in the config store.
  * @param endpoint The endpoint to fetch the config from
@@ -36,8 +40,9 @@ export async function loadConfig(endpoint: string, fetchOptions: RequestInit = B
   if (configRes.ok) {
     configState.config = (await configRes.json()) as IDBGuild;
   } else {
-    throw new Error("Failed to fetch guild config", {
-      cause: configRes,
-    });
+    // throw new Error("Failed to fetch guild config", {
+    //   cause: configRes,
+    // });
+    error.set(configRes.statusText);
   }
 }
