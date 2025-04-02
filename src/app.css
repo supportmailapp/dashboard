@@ -43,19 +43,7 @@
     --dc-blurple: #5a65db;
     --dark-blurple: rgba(61, 72, 187, 0.8);
     --footer-height: 2.5rem;
-    --sidebar-width: 160px;
-  }
-
-  ::-webkit-scrollbar {
-    width: 0.5rem;
-    height: 0.5rem;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    @apply rounded-xl;
-    background-color: var(--dark-blurple);
+    --sidebar-width: 14rem;
   }
 
   html {
@@ -63,59 +51,26 @@
     display: flex;
     max-width: screen;
     overflow: hidden;
+
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--dc-blurple) var(--color-base-100);
+    }
   }
 
   body {
     font-family: "Poppins", sans-serif;
     font-size: 1rem;
     line-height: 1.5;
-    color: var(--color-base-content);
-    background-color: var(--color-base-100);
     width: 100%;
     min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    text-wrap: wrap;
+    overflow-y: scroll;
+    overflow-x: hidden;
   }
 
   @media (width >= 48rem) {
     body {
       font-size: 1.5rem;
-    }
-  }
-
-  main {
-    @apply items-center gap-5 p-[0.75rem] md:p-[1rem];
-    align-items: center;
-    min-height: calc(100vh - var(--footer-height) - 6.5rem);
-    display: flex;
-    flex-direction: column;
-    /* overflow-x: hidden;
-    overflow-y: auto; */
-    width: 100%;
-    flex: 1;
-    z-index: 100;
-
-    > * {
-      max-width: 1200px;
-    }
-
-    > h1,
-    > h2,
-    > h3 {
-      @apply text-center md:text-start;
-    }
-
-    > h1 {
-      @apply text-xl md:text-2xl;
-    }
-
-    > h2 {
-      @apply text-lg md:text-xl;
-    }
-
-    > h3 {
-      @apply text-base md:text-lg;
     }
   }
 
@@ -133,14 +88,6 @@
 /* Components */
 
 @layer components {
-  .base-div {
-    display: contents;
-    width: 100%;
-    /* max-width: 1920px;
-    justify-content: center;
-    margin-inline: auto; */
-  }
-
   .btn-base-100 {
     --dy-btn-color: var(--color-base-100);
     --dy-btn-fg: var(--color-base-content);
@@ -171,12 +118,32 @@
     z-index: 10;
   }
 
-  .desktop-nav {
-    @apply hidden h-screen w-fit flex-col border-r border-gray-800 bg-transparent p-2 text-base sm:flex;
+  nav.desktop-nav {
+    @apply gap-2 p-2 pt-4 text-base;
+    display: flex;
+    flex-direction: column;
+    background-color: transparent;
     user-select: none;
-    position: fixed;
-    top: 0;
-    width: var(--sidebar-width);
+    width: 100%;
+    height: 100%;
+    align-items: center;
+
+    ul {
+      @apply flex-row md:flex-col;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+
+      li {
+        width: 100%;
+      }
+    }
+
+    footer {
+      padding: 0;
+      padding-top: 0.5rem;
+    }
 
     .nav-btn {
       @apply gap-2 rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800/50 hover:text-white;
@@ -227,21 +194,23 @@
   }
 
   .footer-container {
-    @apply gap-5 text-xs text-white/60;
-    min-height: var(--footer-height);
+    @apply gap-2 text-xs text-white/60;
+    /* margin-top: max(auto, 2rem); */
+    padding: 0.4rem;
     user-select: none;
     -webkit-user-select: none;
     width: 100%;
-    background-color: transparent;
+    position: relative;
+    bottom: 0;
+    left: 0;
+    right: 0;
     display: flex;
-    flex-direction: row;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    text-align: center;
-    gap: 1rem;
-    margin-top: auto;
+    justify-content: center;
+    background-color: transparent;
 
-    > nav > a {
+    a {
       @apply dy-link dy-link-hover;
     }
   }
