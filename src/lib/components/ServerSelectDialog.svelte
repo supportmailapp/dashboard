@@ -9,7 +9,7 @@
 
 <svelte:window bind:innerWidth />
 
-<dialog id="server-select" class="dy-modal dy-modal-bottom md:dy-modal-middle">
+<dialog id="server-select" class="dy-modal dy-modal-bottom md:dy-modal-middle overflow-hidden">
   <div class="dy-modal-box bg-base-200 h-screen max-h-screen md:h-fit" transition:slide={{ duration: 200, axis: "y" }}>
     <div class="mb-3 flex flex-row">
       <h3 class="dy-modal-title font-semibold select-none">Select a Server</h3>
