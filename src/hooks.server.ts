@@ -137,7 +137,7 @@ export const handleError: HandleServerError = async ({ error, event, status, mes
     extra: { event, status },
   });
 
-  console.error(inspect(error));
+  console.error(event.url.toString(), inspect(error));
 
   return {
     message: message || "Internal server error",
