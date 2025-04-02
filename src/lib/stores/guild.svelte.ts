@@ -1,7 +1,7 @@
 // State for the current guild (guild, roles, channels)
 
 import { page } from "$app/state";
-import { APIRoutes, BASIC_GET_FETCH_INIT, urls } from "$lib/constants";
+import { APIRoutes, BASIC_GET_FETCH_INIT } from "$lib/constants";
 import { sortByPositionAndId } from "$lib/utils/formatting";
 import { guilds } from "./guilds.svelte";
 
@@ -27,15 +27,20 @@ export async function loadGuildData() {
   const guildId = page.data.guildId;
   if (!guildId) throw new Error("Guild ID is not defined");
   const rolesRes = await fetch(APIRoutes.roles(guildId), BASIC_GET_FETCH_INIT);
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   const channelsRes = await fetch(APIRoutes.channels(guildId), BASIC_GET_FETCH_INIT);
 
   if (rolesRes.ok && channelsRes.ok) {
     const _roles = (await rolesRes.json()) as BasicRole[];
     const _channels = (await channelsRes.json()) as BasicChannel[];
 
+    console.log("Roles", _roles);
+    console.log("Channels", _channels);
+
     const sortedChannels = sortByPositionAndId(_channels);
+    console.log("Sorted Channels", sortedChannels);
     const sortedRoles = sortByPositionAndId(_roles);
+    console.log("Sorted Roles", sortedRoles);
     gg.guild = guilds.get().find((g) => g.id === guildId) || null;
     gg.roles = sortedRoles.reverse(); // Reverse because we want the highest role to be at the top
     gg.channels = sortedChannels;
