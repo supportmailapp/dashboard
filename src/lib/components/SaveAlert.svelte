@@ -5,15 +5,13 @@
 
   beforeNavigate(async (nav) => {
     if (unsavedChanges) {
-      if (nav.type == "leave" || nav.type == "popstate" || nav.type == "goto" || nav.type == "link") {
-        if (confirm("You have unsaved changes! Are you sure you want to leave?")) {
-          unsavedChanges.set(false);
-        } else {
+      if (nav.to?.url.origin === location.origin) {
+        const confirm = window.confirm("You have unsaved changes. Are you sure you want to leave this page?");
+        if (!confirm) {
           nav.cancel();
+          unsavedChanges.set(false);
           return;
         }
-      } else {
-        unsavedChanges.set(false);
       }
     }
   });

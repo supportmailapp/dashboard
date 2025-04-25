@@ -8,6 +8,7 @@
   import { cdnUrls } from "$lib/utils/formatting";
   import { onMount } from "svelte";
   import ServerSelectDialog from "$lib/components/ServerSelectDialog.svelte";
+  import SaveAlert from "$lib/components/SaveAlert.svelte";
 
   let { children } = $props();
 
@@ -28,3 +29,5 @@
     </main>
   </div>
 </div>
+
+<SaveAlert />

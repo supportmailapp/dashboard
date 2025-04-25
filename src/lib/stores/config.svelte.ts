@@ -2,21 +2,12 @@ import { BASIC_GET_FETCH_INIT } from "$lib/constants";
 import type { IDBGuild } from "supportmail-types";
 import { writable } from "svelte/store";
 
-type GGType = {
-  /**
-   * This can be anything, depending on the route where this store is used.\
-   * For example, in the tickets route, this would be the ticket config.\
-   * For the reports route, this would be the report config.\
-   * ...
-   *
-   * Initially set to `null`.
-   */
-  config: any | null;
-};
-
-export const configState = $state<GGType>({
-  config: null,
-});
+/**
+ * This can be used to store ANY config data. It is not type-safe and should be used with caution.
+ *
+ * It's recommended to use a derived state on each page for type safety.
+ */
+export const configStore = writable<any | null>(null);
 
 export let unsavedChanges = writable<boolean>(false);
 export let saving = writable<boolean>(false);
@@ -38,7 +29,7 @@ export async function loadConfig(endpoint: string, fetchOptions: RequestInit = B
   console.log(`Response status: ${configRes.status}`);
 
   if (configRes.ok) {
-    configState.config = (await configRes.json()) as IDBGuild;
+    configStore.set((await configRes.json()) as IDBGuild);
   } else {
     // throw new Error("Failed to fetch guild config", {
     //   cause: configRes,

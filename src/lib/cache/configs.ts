@@ -8,7 +8,7 @@ export function setConfig(guildId: string, config: IDBGuild) {
 }
 
 export function getConfig(guildId: string) {
-  return cache.get<IDBGuild>(guildId);
+  return cache.get<IDBGuild>(guildId) || null;
 }
 
 export function deleteConfig(guildId: string) {

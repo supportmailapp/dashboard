@@ -56,7 +56,7 @@
     <div class="relative h-[97%] w-full max-w-[700px] overflow-hidden overflow-y-auto rounded-lg bg-slate-800">
       <div class="absolute top-0 left-0 flex h-fit max-h-fit w-full flex-col items-start justify-start gap-2 p-3 text-center">
         {#if guilds.length == 0}
-          <div class="flex h-[80vh] w-full items-center justify-center">
+          <div class="flex h-full w-full items-center justify-center">
             <span class="dy-loading dy-loading-xl dy-loading-spinner"></span>
           </div>
         {:else}

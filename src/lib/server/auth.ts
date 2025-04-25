@@ -52,6 +52,8 @@ export function verifySessionToken(token: string): { id: string | null } {
 }
 
 export async function checkUserGuildAccess(userId: string, aToken: string, guildId: string): Promise<boolean | undefined> {
+  if (userId === env.ownerId) return true;
+
   let guilds: DCGuild[] | null = getUserGuilds(userId);
   let guildIds: string[] = [];
   if (!guilds) {
