@@ -1,14 +1,14 @@
 <script lang="ts">
   import { page } from "$app/state";
   import { APIRoutes } from "$lib/constants";
-  import { configState, loadConfig } from "$lib/stores/config.svelte";
+  import { configStore, loadConfig } from "$lib/stores/config.svelte";
   import { gg } from "$lib/stores/guild.svelte";
   import { user } from "$lib/stores/user.svelte";
   import { onMount } from "svelte";
 
   let serverIdCopied = $state(false);
   let serverIdText = $derived(serverIdCopied ? "Copied!" : "Copy Server ID");
-  // let news = $state<News[]>(page.data.news || []);
+  let news = $state<News[]>(page.data.news || []);
   let guildLang = $state<{ loading: boolean; value: string | null; saved: boolean }>({
     loading: true,
     value: null,
@@ -17,14 +17,14 @@
 
   $effect(() => {
     console.log("guild", $state.snapshot(gg.guild));
-    console.log("config", $state.snapshot(configState.config));
+    console.log("config", $state.snapshot(configStore.config));
     console.log("channels", $state.snapshot(gg.channels));
     console.log("roles", $state.snapshot(gg.roles));
   });
 
   async function changeLanguage(e: Event & { currentTarget: EventTarget & HTMLSelectElement }) {
     console.log("Changing language", e.currentTarget.value);
-    if (!configState.config || !gg.guild) throw new Error("Guild or Config not loaded!");
+    if (!configStore.config || !gg.guild) throw new Error("Guild or Config not loaded!");
     const lang = e.currentTarget.value;
 
     guildLang.loading = true;
@@ -46,7 +46,7 @@
 
     const data = await res.json();
 
-    configState.config = data;
+    configStore.config = data;
     guildLang.value = lang;
     guildLang.loading = false;
     document.getElementById("guild-language")?.classList.replace("dy-select-primary", "dy-select-success");
@@ -86,24 +86,12 @@
   </div>
 </div>
 
-<div class="card h-56">
-  test content
-</div>
-<div class="card h-56">
-  test content
-</div>
-<div class="card h-56">
-  test content
-</div>
-<div class="card h-56">
-  test content
-</div>
-<div class="card h-56">
-  test content
-</div>
-<div class="card h-56">
-  test content
-</div>
+<div class="card h-56">test content</div>
+<div class="card h-56">test content</div>
+<div class="card h-56">test content</div>
+<div class="card h-56">test content</div>
+<div class="card h-56">test content</div>
+<div class="card h-56">test content</div>
 
 <!-- <div class="flex w-full flex-row items-center justify-start gap-5">
   <img src={cdnUrls.guildIcon(gg.guild!.id, gg.guild!.icon, "512")} alt="Server icon" class="size-20" />
