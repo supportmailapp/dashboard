@@ -25,7 +25,7 @@
 <div class="absolute flex min-h-screen w-full items-center justify-center p-3">
   <!-- Login Card -->
   <div
-    class="bg-base-200 flex h-fit w-full max-w-md flex-col gap-3 overflow-hidden rounded-2xl p-8 shadow-2xl shadow-black backdrop-blur-sm"
+    class="bg-base-100 flex h-fit w-full max-w-md flex-col gap-3 overflow-hidden rounded-2xl p-8 shadow-2xl shadow-black backdrop-blur-sm"
   >
     <Branding />
 
