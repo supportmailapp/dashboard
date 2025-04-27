@@ -34,13 +34,8 @@ export async function loadGuildData() {
     const _roles = (await rolesRes.json()) as BasicRole[];
     const _channels = (await channelsRes.json()) as BasicChannel[];
 
-    console.log("Roles", _roles);
-    console.log("Channels", _channels);
-
     const sortedChannels = sortByPositionAndId(_channels);
-    console.log("Sorted Channels", sortedChannels);
     const sortedRoles = sortByPositionAndId(_roles);
-    console.log("Sorted Roles", sortedRoles);
     gg.guild = guilds.get().find((g) => g.id === guildId) || null;
     gg.roles = sortedRoles.reverse(); // Reverse because we want the highest role to be at the top
     gg.channels = sortedChannels;
