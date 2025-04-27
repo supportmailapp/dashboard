@@ -4,7 +4,7 @@ import { fetchUserGuilds } from "$lib/discord/utils";
 import type { RESTPostOAuth2AccessTokenResult } from "discord.js";
 import jwt from "jsonwebtoken";
 import type { IDBUser } from "supportmail-types";
-import { DBUser } from "./db";
+import { DBUser, getUser } from "./db";
 import { getDBUser } from "$lib/cache/users";
 
 export function createSessionToken(userId: string): string {
@@ -68,6 +68,6 @@ export async function checkUserGuildAccess(userId: string, aToken: string, guild
 
 export function fetchDBUser(userId: string) {
   const cachedUser = getDBUser(userId);
-  if (cachedUser) new Promise((resolve) => resolve(cachedUser));
+  if (cachedUser) return new Promise<IDBUser>((resolve) => resolve(cachedUser));
   return DBUser.findOne({ id: userId }, null, { lean: true });
 }
