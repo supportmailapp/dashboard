@@ -34,10 +34,10 @@ export const urls = {
   botAuth: function (clientId: string, guildId: string | null = null): string {
     const params = new URLSearchParams({
       client_id: clientId,
-      permissions: env.PUBLIC_botPermissions,
+      permissions: env.PUBLIC_botPermissions!,
       scope: "bot applications.commands",
       response_type: "code",
-      redirect_uri: env.PUBLIC_discordRedirectUri,
+      redirect_uri: env.PUBLIC_discordRedirectUri!,
     });
     if (guildId) params.append("guild_id", guildId);
     return "https://discord.com/oauth2/authorize?" + params.toString();
@@ -206,3 +206,9 @@ export function baseForumTags(): APIGuildForumTag[] {
     emoji_id: "",
   }));
 }
+
+export const SupportedLanguages = [
+  { name: "English", value: "en" },
+  { name: "Deutsch", value: "de" },
+  { name: "Français", value: "fr" },
+];
