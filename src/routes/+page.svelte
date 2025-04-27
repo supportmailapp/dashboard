@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { page } from "$app/state";
   import { slide } from "svelte/transition";
 
   import Footer from "$lib/components/Footer.svelte";
@@ -8,6 +7,7 @@
   import { user as userState } from "$lib/stores/user.svelte";
   import { cdnUrls } from "$lib/utils/formatting";
   import { CircleArrowRight, Plus } from "@lucide/svelte";
+  import { site } from "$lib/stores/site.svelte";
 
   let showUserSettings = $state(false);
   let errorCopied = $state(false);
@@ -55,9 +55,9 @@
   <div class="flex h-full max-h-screen w-full items-center justify-center p-3">
     <div class="relative h-[97%] w-full max-w-[700px] overflow-hidden overflow-y-auto rounded-lg bg-slate-800">
       <div class="absolute top-0 left-0 flex h-fit max-h-fit w-full flex-col items-start justify-start gap-2 p-3 text-center">
-        {#if guilds.length == 0}
+        {#if guilds.length == 0 || site.showLoading}
           <div class="flex h-full w-full items-center justify-center">
-            <span class="dy-loading dy-loading-xl dy-loading-spinner"></span>
+            <span class="dy-loading dy-loading-xl dy-loading-dots"></span>
           </div>
         {:else}
           {#each guilds as guild}
