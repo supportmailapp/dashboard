@@ -6,14 +6,13 @@
   prefix: "dy-";
 }
 
-
 @plugin "daisyui/theme" {
   name: "nightV2";
   default: true;
   prefersdark: true;
   color-scheme: "dark";
-  --color-base-100: oklch(20% 0.042 265.755);
-  --color-base-200: oklch(13% 0.028 261.692);
+  --color-base-100: oklch(27% 0.041 260.031);
+  --color-base-200: oklch(20% 0.042 265.755);
   --color-base-300: oklch(12% 0.042 264.695);
   --color-base-content: oklch(98% 0.003 247.858);
   --color-primary: oklch(54% 0.245 262.881);
@@ -122,56 +121,15 @@
     z-index: 10;
   }
 
-  nav.desktop-nav {
-    @apply gap-2 p-2 pt-4 text-base;
-    display: flex;
-    flex-direction: column;
-    background-color: transparent;
-    user-select: none;
-    width: 100%;
-    height: 100%;
-    align-items: center;
-
-    ul {
-      @apply flex-row md:flex-col;
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-
-      li {
-        width: 100%;
-      }
-    }
-
-    footer {
-      padding: 0;
-      padding-top: 0.5rem;
-    }
-
-    .nav-btn {
-      @apply gap-2 rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800/50 hover:text-white;
-      width: 100%;
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-around;
-      text-align: center;
-      text-decoration: none;
-
-      &.active {
-        @apply text-primary bg-slate-700/30;
-      }
-    }
-  }
-
   .discord-channel {
     @apply text-sm font-medium;
     @apply transition-colors duration-100 ease-in;
     background-color: color-mix(in oklab, var(--dc-blurple) 65%, transparent);
     max-width: 10rem;
     width: fit-content;
-    display: inline-flex;
+    display: grid;
+    place-items: center;
+    grid-template-columns: auto 1fr;
     gap: 0.2rem;
     cursor: pointer;
     color: #ffffff;
@@ -179,7 +137,7 @@
     justify-content: start;
     padding-inline: 0.25rem;
     padding-block: 0.1rem;
-    border-radius: 0.5rem;
+    border-radius: 0.3rem;
     user-select: none;
 
     &:hover {
@@ -265,31 +223,11 @@
   }
 
   .server-id-button {
-    @apply text-primary p-1 text-2xl font-bold transition-all duration-150 ease-linear;
+    @apply p-1 text-3xl font-bold text-cyan-300 transition-all duration-150 ease-linear;
     cursor: pointer;
     text-align: start;
     text-decoration: underline;
     text-underline-offset: 4px;
-  }
-
-  .plugin-card {
-    @apply bg-base-200 hover:bg-base-300/70 transition-all duration-150 ease-linear;
-    @apply w-full min-w-56 gap-2 rounded-lg p-3 shadow-md;
-    align-items: start;
-    justify-content: start;
-    text-align: start;
-    display: flex;
-    flex-direction: column;
-    flex: auto;
-    cursor: pointer;
-
-    h1 {
-      @apply text-base font-semibold;
-    }
-
-    p {
-      @apply text-sm font-normal;
-    }
   }
 
   .root-server-select-row {
