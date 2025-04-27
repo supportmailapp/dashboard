@@ -3,8 +3,9 @@
   import { loadDbUser, user } from "$lib/stores/user.svelte";
   import { onMount } from "svelte";
   import "../app.css";
-  import { goto } from "$app/navigation";
+  import { afterNavigate, beforeNavigate, goto } from "$app/navigation";
   import { page } from "$app/state";
+  import { site } from "$lib/stores/site.svelte";
 
   let { children, data } = $props();
 
@@ -47,6 +48,18 @@
       console.log("Redirecting to", redirect.path);
       goto(redirect.path, { replaceState: true });
     }
+  });
+
+  beforeNavigate((nav) => {
+    if (nav.to?.url.origin === page.url.origin) {
+      site.showLoading = true;
+    }
+  });
+
+  afterNavigate((nav) => {
+    nav.complete.finally(() => {
+      site.showLoading = false;
+    });
   });
 </script>
 
