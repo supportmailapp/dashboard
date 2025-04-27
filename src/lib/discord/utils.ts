@@ -1,6 +1,6 @@
 // Private utility stuff for Discord-related operations
 
-import { env } from "$env/dynamic/private";
+import { discordBotToken } from "$env/static/private";
 import { cacheGuilds, getUserGuilds, overwriteUserGuilds, parseToCacheGuild } from "$lib/cache/guilds";
 import { getMember } from "$lib/cache/members";
 import { getDiscordUser } from "$lib/cache/users";
@@ -16,12 +16,11 @@ import {
   type RESTAPIPartialCurrentUserGuild,
   type RESTPostOAuth2AccessTokenResult,
 } from "discord-api-types/v10";
-import jwt from "jsonwebtoken";
 
 export class DiscordREST {
   private readonly rest: REST;
   constructor() {
-    this.rest = new REST({ version: "10" }).setToken(env.discordBotToken);
+    this.rest = new REST({ version: "10" }).setToken(discordBotToken);
   }
 
   public get instance(): REST {
@@ -115,7 +114,7 @@ export async function fetchUserGuilds(
       return guilds.filter((g) => g.isConfigured);
     }
     if (options.only?.canManage) {
-      return guilds.filter((g) => g.isConfigured && canManageBot(BigInt(g.permissions)));
+      return guilds.filter((g) => canManageBot(BigInt(g.permissions)));
     }
     return guilds;
   };
