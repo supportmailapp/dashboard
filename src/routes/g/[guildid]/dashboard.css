@@ -1,11 +1,30 @@
 @import "tailwindcss";
+@plugin "daisyui" {
+  themes: nightV2 --default;
+  prefix: "dy-";
+}
+
+:root {
+  --guild-header-height: 40px;
+}
+
+#guild-header {
+  @apply text-sm;
+  height: var(--guild-header-height);
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--color-base-200);
+}
 
 .page-wrapper {
+  @apply mt-10;
   display: block;
   position: relative;
   min-height: max-content;
   height: 100vh;
-  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -13,7 +32,8 @@
 .desktop-nav-wrapper {
   display: block;
   position: fixed;
-  top: 0;
+  top: var(--guild-header-height);
+  bottom: 0;
   width: var(--sidebar-width);
   height: 100vh;
   overflow-x: hidden;
@@ -22,18 +42,83 @@
   border-color: var(--color-base-300);
 }
 
+nav.desktop-nav {
+  @apply gap-2 p-2 pt-4 text-base;
+  display: flex;
+  flex-direction: column;
+  background-color: transparent;
+  user-select: none;
+  width: 100%;
+  height: calc(100% - var(--footer-height));
+  align-items: center;
+
+  ul {
+    @apply flex-row gap-1 md:flex-col;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+    li {
+      width: 100%;
+      position: relative;
+      transition: background-color 0.25s ease-in-out;
+    }
+
+    li:has(.nav-btn:not(.active)) {
+      background-color: transparent;
+    }
+
+    li:has(.nav-btn.active) {
+      background-color: var(--color-base-300);
+      border-radius: 0.5rem;
+    }
+  }
+
+  footer {
+    padding: 0;
+    padding-top: 0.5rem;
+  }
+
+  .nav-btn {
+    @apply gap-2 rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800/50 hover:text-white;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    text-align: center;
+    text-decoration: none;
+
+    &.active {
+      @apply text-primary bg-slate-700/30;
+    }
+  }
+}
+
 .content-wrapper {
   @apply ml-0 md:ml-(--sidebar-width);
   display: block;
   position: relative;
   padding-inline: 1rem;
-  padding-top: 1.5rem;
+  padding-top: 0.5rem;
   width: 100%;
   height: calc(100% - var(--footer-height));
+
+  @media (min-width: 48rem) {
+    width: calc(100% - var(--sidebar-width));
+  }
 }
 
 main {
+  position: relative;
+  width: 100%;
   display: flex;
   flex-direction: column;
   background-color: var(--color-base-100/70);
+  padding: 0.75rem;
+}
+
+.section-header {
+  @apply mb-3 text-xl font-semibold;
 }
