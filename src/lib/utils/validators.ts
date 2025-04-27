@@ -1,7 +1,5 @@
 /**
- * @license
- * Copyright (c) 2025, The-LukeZ
- * All rights reserved.
+ * Input validation is headache-inducing, so I did this.
  */
 
 /**
