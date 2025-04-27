@@ -1,4 +1,6 @@
 import { model, Schema } from "mongoose";
+import pkg from "mongoose";
+const { models } = pkg;
 import type { IBlacklistEntry } from "supportmail-types";
 
 const BlacklistEntrySchema = new Schema<IBlacklistEntry>(
@@ -18,4 +20,6 @@ const BlacklistEntrySchema = new Schema<IBlacklistEntry>(
 // an ID can only be blacklisted once per module + per type + per guild
 BlacklistEntrySchema.index({ id: 1, _type: 1, _module: 1, guildId: 1 }, { unique: true });
 
-export const BlacklistEntry = model<IBlacklistEntry>("BlacklistEntry", BlacklistEntrySchema, "blacklist");
+export const BlacklistEntry = models.BlacklistEntry
+  ? model<IBlacklistEntry>("BlacklistEntry")
+  : model<IBlacklistEntry>("BlacklistEntry", BlacklistEntrySchema, "blacklist");

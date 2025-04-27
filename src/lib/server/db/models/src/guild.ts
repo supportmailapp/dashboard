@@ -1,4 +1,6 @@
 import { model, Schema } from "mongoose";
+import pkg from "mongoose";
+const { models } = pkg;
 import {
   NotificationLevel,
   type ICustomMessage,
@@ -129,23 +131,25 @@ const GuildFlagsSchema = new Schema<IGuildFlags>(
   { id: false },
 );
 
-export const DBGuild = model<IDBGuild>(
-  "Guild",
-  new Schema<IDBGuild>(
-    {
-      id: { type: String, required: true, unique: true },
-      icon: {
-        type: String,
-        default: "3e8fb5ca5c7e2c1acd5727bbf9c8076c",
-      }, // the guild icon's hash
-      name: { type: String, required: true },
-      lang: { type: String, enum: ["en", "de", "fr"], default: "en" },
-      ticketConfig: { type: ticketConfigSchema, default: { enabled: false } },
-      reportConfig: { type: reportConfigSchema, default: { enabled: false } },
-      blacklistImmune: { type: [[Number, String]], required: false },
-      flags: { type: GuildFlagsSchema, default: {} },
-    },
-    { timestamps: true },
-  ),
-  "guilds",
-);
+export const DBGuild = models.Guild
+  ? model<IDBGuild>("Guild")
+  : model<IDBGuild>(
+      "Guild",
+      new Schema<IDBGuild>(
+        {
+          id: { type: String, required: true, unique: true },
+          icon: {
+            type: String,
+            default: "3e8fb5ca5c7e2c1acd5727bbf9c8076c",
+          }, // the guild icon's hash
+          name: { type: String, required: true },
+          lang: { type: String, enum: ["en", "de", "fr"], default: "en" },
+          ticketConfig: { type: ticketConfigSchema, default: { enabled: false } },
+          reportConfig: { type: reportConfigSchema, default: { enabled: false } },
+          blacklistImmune: { type: [[Number, String]], required: false },
+          flags: { type: GuildFlagsSchema, default: {} },
+        },
+        { timestamps: true },
+      ),
+      "guilds",
+    );

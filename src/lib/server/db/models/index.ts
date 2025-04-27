@@ -5,6 +5,5 @@ export * from "./src/blacklistEntry.js";
 export * from "./src/ticket.js";
 export * from "./src/report.js";
 export * from "./src/closeRequest.js";
-export * from "./src/logConfig.js";
 export * from "./src/tag.js";
 export * from "./src/botVote.js";

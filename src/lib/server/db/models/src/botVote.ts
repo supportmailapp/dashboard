@@ -1,4 +1,6 @@
-import { type HydratedDocument, model, Schema } from "mongoose";
+import { model, Schema } from "mongoose";
+import pkg from "mongoose";
+const { models } = pkg;
 import type { IBotVote } from "supportmail-types";
 
 const botVoteSchema = new Schema<IBotVote>({
@@ -8,4 +10,4 @@ const botVoteSchema = new Schema<IBotVote>({
   removeRoleBy: { type: Date, required: false },
 });
 
-export const BotVote = model<IBotVote>("BotVote", botVoteSchema, "botVotes");
+export const BotVote = models.BotVote ? model<IBotVote>("BotVote") : model<IBotVote>("BotVote", botVoteSchema, "botVotes");

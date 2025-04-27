@@ -1,4 +1,6 @@
 import { model, Schema } from "mongoose";
+import pkg from "mongoose";
+const { models } = pkg;
 import type { ITag } from "supportmail-types";
 
 let tagSchema = new Schema<ITag>(
@@ -21,4 +23,4 @@ let tagSchema = new Schema<ITag>(
 
 tagSchema.index({ guildId: 1, name: 1 }, { unique: true }); // Names should be unique per guild
 
-export const DBTag = model<ITag>("Tag", tagSchema, "tags");
+export const DBTag = models.Tag ? model<ITag>("Tag") : model<ITag>("Tag", tagSchema, "tags");

@@ -22,4 +22,4 @@ export const LogConfigSchema = new Schema<unknown>({
 
 LogConfigSchema.index({ guildId: 1, moduleType: 1 }, { unique: true });
 
-export const DBLogConfig = model<unknown>("LogConfig", LogConfigSchema, "logConfigs");
+// export const DBLogConfig = model<unknown>("LogConfig", LogConfigSchema, "logConfigs");

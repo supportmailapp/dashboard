@@ -1,4 +1,6 @@
 import { model, Schema } from "mongoose";
+import pkg from "mongoose";
+const { models } = pkg;
 import type { IDBUser } from "supportmail-types";
 
 export const userSchema = new Schema<IDBUser>(
@@ -13,4 +15,4 @@ export const userSchema = new Schema<IDBUser>(
   { timestamps: true },
 );
 
-export const DBUser = model<IDBUser>("User", userSchema, "users");
+export const DBUser = models.User ? model<IDBUser>("User") : model<IDBUser>("User", userSchema, "users");
