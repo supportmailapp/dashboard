@@ -2,7 +2,7 @@ import { env } from "$env/dynamic/private";
 import { ErrorResponses } from "$lib/constants";
 import { fetchUserData } from "$lib/discord/utils";
 import { checkUserGuildAccess, decodeDbTokens, fetchDBUser, verifySessionToken } from "$lib/server/auth";
-import { dbConnect, DBUser } from "$lib/server/db";
+import { dbConnect } from "$lib/server/db";
 import { anyUserToBasic } from "$lib/utils/formatting";
 import arcjet, { detectBot, shield, tokenBucket } from "@arcjet/sveltekit";
 import * as Sentry from "@sentry/node";
