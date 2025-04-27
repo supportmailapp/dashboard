@@ -1,8 +1,7 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import { gg } from "$lib/stores/guild.svelte";
   import { cdnUrls } from "$lib/utils/formatting";
-  import { ArrowLeftRight, House, MessageSquareWarning, Ticket } from "@lucide/svelte";
+  import { House, MessageSquareWarning, Ticket } from "@lucide/svelte";
   import { slide } from "svelte/transition";
   import { buildNavHref, showServerSelect } from "./navigation.svelte";
   import Footer from "./Footer.svelte";
@@ -53,29 +52,6 @@
           {/if}
         </div>
       </a>
-    </div>
-
-    <div class="dy-tooltip dy-tooltip-bottom dy-tooltip-accent" data-tip="Change Server">
-      <button
-        class="cursor-pointer rounded transition-colors duration-100 hover:bg-slate-600"
-        onclick={showServerSelect}
-        aria-label="Change Server"
-      >
-        <div class="relative size-12">
-          {#if gg.guild?.icon}
-            <img
-              src={cdnUrls.guildIcon(gg.guild.id, gg.guild?.icon, 128)}
-              alt="Server icon"
-              class="h-full w-full rounded-full border-0 object-cover"
-            />
-            <ArrowLeftRight class="bg-base-100 absolute -right-0.5 -bottom-0.5 size-5 rounded-full p-0.5 shadow-md" />
-          {:else}
-            <div class="h-full w-full rounded-full bg-slate-800 shadow-md">
-              <div class="dy-skeleton h-full w-full rounded-full"></div>
-            </div>
-          {/if}
-        </div>
-      </button>
     </div>
   </div>
 
