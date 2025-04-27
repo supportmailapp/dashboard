@@ -1,132 +1,128 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import { APIRoutes } from "$lib/constants";
-  import { configStore, loadConfig } from "$lib/stores/config.svelte";
+  import { turnGuildConfigIntoOverview, type ConfigOverview } from "$lib";
+  import DiscordChannel from "$lib/components/DiscordChannel.svelte";
+  import LoadingDots from "$lib/components/LoadingDots.svelte";
+  import { APIRoutes, BASIC_GET_FETCH_INIT, SupportedLanguages } from "$lib/constants";
+  import { configError, oldConfig, resetConfig, saving, unsavedChanges } from "$lib/stores/config.svelte";
   import { gg } from "$lib/stores/guild.svelte";
   import { user } from "$lib/stores/user.svelte";
+  import {
+    CircleCheck,
+    CircleX,
+    Info,
+    MessageSquareDashed,
+    MessageSquareWarning,
+    ShieldBan,
+    Star,
+    Ticket,
+    TriangleAlert,
+  } from "@lucide/svelte";
+  import equal from "fast-deep-equal/es6";
+  import ky from "ky";
+  import type { FlattenMaps } from "mongoose";
+  import type { IDBGuild } from "supportmail-types";
   import { onMount } from "svelte";
 
+  const guildId = page.params.guildid;
+  let config = $state<ConfigOverview | null>(null);
   let serverIdCopied = $state(false);
-  let serverIdText = $derived(serverIdCopied ? "Copied!" : "Copy Server ID");
   let news = $state<News[]>(page.data.news || []);
-  let guildLang = $state<{ loading: boolean; value: string | null; saved: boolean }>({
-    loading: true,
-    value: null,
-    saved: false,
-  });
+
+  const navigation = [
+    {
+      name: "Tickets",
+      href: `/g/${guildId}/tickets`,
+      description: "Manage Ticket Configurations",
+      icon: Ticket,
+      color: "bg-primary text-primary-content",
+    },
+    {
+      name: "Reports",
+      href: `/g/${guildId}/reports`,
+      description: "Manage Report Configurations",
+      icon: MessageSquareWarning,
+      color: "bg-amber-600 text-amber-600-content",
+    },
+    {
+      name: "Tags",
+      href: `/g/${guildId}/tags`,
+      description: "Manage Tags",
+      icon: MessageSquareDashed,
+      color: "bg-info text-info-content",
+    },
+    {
+      name: "Blacklist",
+      href: `/g/${guildId}/blacklist`,
+      description: "Manage the Blacklist",
+      icon: ShieldBan,
+      color: "bg-red-700 text-error-content",
+    },
+    {
+      name: "Premium",
+      href: `/g/${guildId}/premium`,
+      description: "Manage Premium for this server",
+      icon: Star,
+      color: "bg-warning text-warning-content",
+    },
+  ];
 
   $effect(() => {
-    console.log("guild", $state.snapshot(gg.guild));
-    console.log("config", $state.snapshot(configStore.config));
-    console.log("channels", $state.snapshot(gg.channels));
-    console.log("roles", $state.snapshot(gg.roles));
+    if (config !== null) {
+      if (equal($oldConfig, $state.snapshot(config))) {
+        unsavedChanges.set(false);
+        console.log("No changes detected");
+      } else {
+        unsavedChanges.set(true);
+        console.log("Changes detected");
+      }
+    }
   });
 
-  async function changeLanguage(e: Event & { currentTarget: EventTarget & HTMLSelectElement }) {
-    console.log("Changing language", e.currentTarget.value);
-    if (!configStore.config || !gg.guild) throw new Error("Guild or Config not loaded!");
-    const lang = e.currentTarget.value;
-
-    guildLang.loading = true;
-
-    const res = await fetch(APIRoutes.configBase(gg.guild!.id), {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ lang: lang }),
-      credentials: "include",
-    });
-
-    if (!res.ok) {
-      console.error("Failed to change language", res);
-      guildLang.loading = false;
-      return;
+  // Save the config when the save-button is clicked
+  $effect(() => {
+    if (saving.value && saving.progress === null) {
+      ky.patch(APIRoutes.configBase(guildId), {
+        ...BASIC_GET_FETCH_INIT,
+        json: {
+          ...$state.snapshot(config),
+        },
+      });
     }
+  });
 
-    const data = await res.json();
-
-    configStore.config = data;
-    guildLang.value = lang;
-    guildLang.loading = false;
-    document.getElementById("guild-language")?.classList.replace("dy-select-primary", "dy-select-success");
-    setTimeout(() => {
-      document.getElementById("guild-language")?.classList.replace("dy-select-success", "dy-select-primary");
-    }, 1500);
-  }
+  resetConfig.subscribe((value) => {
+    if (value) {
+      config = $oldConfig as ConfigOverview;
+      resetConfig.set(false);
+    }
+  });
 
   onMount(async () => {
-    await loadConfig(APIRoutes.configBase(page.params.guildid));
+    const response = await ky.get(APIRoutes.configBase(guildId), BASIC_GET_FETCH_INIT);
+
+    if (response.ok) {
+      const data = (await response.json()) as FlattenMaps<IDBGuild & { _id: string }>;
+      config = turnGuildConfigIntoOverview(data);
+      oldConfig.set($state.snapshot(config));
+      unsavedChanges.set(false);
+    } else {
+      configError.set({
+        note: `Failed to load guild config: ${response.status} ${response.statusText}`,
+        objs: [response],
+      });
+    }
   });
 </script>
 
-<div class="flex flex-col justify-start gap-2 text-start font-semibold">
-  <h1>
-    Welcome <span class="from-primary to-success bg-gradient-to-r bg-clip-text text-transparent">
-      {user.discord?.displayName}
-    </span>!
-  </h1>
-  <div
-    class="dy-tooltip md:dy-tooltip-right dy-tooltip-bottom {serverIdCopied ? 'dy-tooltip-success' : 'dy-tooltip-accent'}"
-    data-tip={serverIdText}
-  >
-    <button
-      class="server-id-button"
-      onclick={() => {
-        if (serverIdCopied || !gg.guild) return;
-        navigator.clipboard.writeText(gg.guild.id);
-        serverIdCopied = true;
-        setTimeout(() => {
-          serverIdCopied = false;
-        }, 2000);
-      }}
-    >
-      {gg.guild?.name || ""}
-    </button>
-  </div>
-</div>
+<h1 class="text-3xl font-bold">
+  Welcome <span class="from-primary to-success w-fit bg-gradient-to-r bg-clip-text text-transparent">
+    {user.discord?.displayName}
+  </span>!
+</h1>
 
-<div class="card h-56">test content</div>
-<div class="card h-56">test content</div>
-<div class="card h-56">test content</div>
-<div class="card h-56">test content</div>
-<div class="card h-56">test content</div>
-<div class="card h-56">test content</div>
-
-<!-- <div class="flex w-full flex-row items-center justify-start gap-5">
-  <img src={cdnUrls.guildIcon(gg.guild!.id, gg.guild!.icon, "512")} alt="Server icon" class="size-20" />
-  <div>
-    <div class="flex flex-row items-center justify-start gap-3">
-      <div
-        class="dy-tooltip md:dy-tooltip-right dy-tooltip-bottom {serverIdCopied ? 'dy-tooltip-success' : 'dy-tooltip-accent'}"
-        data-tip={serverIdText}
-      >
-        <button
-          class="server-id-button"
-          onclick={() => {
-            if (serverIdCopied || !gg.guild) return;
-            navigator.clipboard.writeText(gg.guild.id);
-            serverIdCopied = true;
-            setTimeout(() => {
-              serverIdCopied = false;
-            }, 2000);
-          }}
-        >
-          {gg.guild!.name}
-        </button>
-      </div>
-    </div>
-    <div class="h-3"></div>
-    <h2 class="pl-1 text-xl font-semibold text-white">
-      Welcome <span class="text-amber-300">{user.discord?.displayName}</span>!
-    </h2>
-  </div>
-</div>
-<span class="dy-divider dy-divider-neutral my-0 w-full"></span>
-<div class="w-full">
-  <span class="dy-divider dy-divider-neutral my-0 w-full"></span>
-</div>
 {#if news.length > 0}
+  <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
   <div tabindex="0" class="dy-collapse dy-collapse-arrow bg-base-300/60">
     <input type="checkbox" class="news-peer" checked />
     <div class="dy-collapse-title flex flex-row items-center gap-2 font-semibold text-white">News</div>
@@ -134,13 +130,13 @@
       {#each news as news}
         <div role="alert" class="dy-alert dy-alert-horizontal {`dy-alert-${news.type}`}">
           {#if news.type === "info"}
-            <Info color="currentColor" />
+            <Info class="text-info-content" />
           {:else if news.type === "success"}
-            <CircleCheck color="currentColor" />
+            <CircleCheck class="text-success-content" />
           {:else if news.type === "warning"}
-            <TriangleAlert color="currentColor" />
+            <TriangleAlert class="text-warning-content" />
           {:else}
-            <CircleX color="currentColor" />
+            <CircleX class="text-error-content" />
           {/if}
           <div>
             <h3 class="font-bold">{news.title}</h3>
@@ -152,24 +148,107 @@
   </div>
 {/if}
 
-<h2 class="mt-2 text-3xl font-semibold text-white underline-offset-2 select-none">General Settings</h2>
-<div class="settings-container p-0">
-  <fieldset>
-    <legend>Server Language</legend>
-    <select
-      class="dy-select dy-select-primary w-full border-2 transition-colors duration-200"
-      id="guild-language"
-      name="guild-language"
-      onchangecapture={changeLanguage}
-      disabled={guildLang.loading}
-    >
-      {#each LANGUAGES as lan}
-        <option value={lan.value} selected={configState.config.lang == lan.value}>{lan.name}</option>
+{#if config}
+  <!-- Language Selector -->
+  <section>
+    <h2 class="section-header">Server Settings</h2>
+    <div class="flex flex-col gap-3">
+      <fieldset class="dy-fieldset bg-base-200 border-base-300 rounded-box w-full max-w-md p-4">
+        <legend class="dy-fieldset-legend">Server Language</legend>
+        <select class="dy-select dy-select-bordered w-full" bind:value={config.lang}>
+          {#each SupportedLanguages as language}
+            <option value={language.value}>
+              {language.name}
+            </option>
+          {/each}
+        </select>
+        <p class="label text-sm text-slate-400">
+          This will be used for the bot's public responses as well as when a user does not have a language set.
+        </p>
+      </fieldset>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-header">Overview</h2>
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div class="dy-card bg-base-200 shadow-xl">
+        <div class="dy-card-body">
+          <h3 class="dy-card-title">Ticket Forum</h3>
+          {#if gg.channels && config?.ticketForum}
+            <div>
+              <DiscordChannel
+                id={config?.ticketForum}
+                name={gg.channels.find((c) => c.id === config?.ticketForum)?.name || "Unknown"}
+              />
+            </div>
+          {:else if !gg.channels}
+            <LoadingDots />
+          {:else}
+            <p class="text-warning">No ticket forum configured</p>
+          {/if}
+        </div>
+      </div>
+
+      <div class="dy-card bg-base-200 shadow-xl">
+        <div class="dy-card-body">
+          <h3 class="dy-card-title">Alert Channel</h3>
+          {#if gg.channels && config?.alertChannel}
+            <div>
+              <DiscordChannel
+                id={config?.alertChannel}
+                name={gg.channels.find((c) => c.id === config?.alertChannel)?.name || "Unknown"}
+              />
+            </div>
+          {:else if !gg.channels}
+            <LoadingDots />
+          {:else}
+            <p class="text-warning">No alert channel configured</p>
+          {/if}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Navigation Cards -->
+  <section class="mt-6">
+    <h2 class="mb-3 text-xl font-semibold">Dashboard Navigation</h2>
+    <div class="nav-grid">
+      {#each navigation as item}
+        <a
+          href={item.href}
+          class="nav-grid-item dy-card {item.color} text-neutral-content transition-opacity duration-150 hover:opacity-70"
+        >
+          <div class="dy-card-body">
+            <h3 class="dy-card-title"><item.icon class="size-8" />{item.name}</h3>
+            <p>{item.description}</p>
+          </div>
+        </a>
       {/each}
-    </select>
-    <p class="dy-fieldset-label text-xs">
-      This changes the language the bot uses in your server for non-ephemeral messages.<br />
-      It can also be the default for a user if the user has not set a language.
-    </p>
-  </fieldset>
-</div> -->
+    </div>
+  </section>
+{:else}
+  <div class="p-10">
+    <LoadingDots />
+  </div>
+{/if}
+
+<style>
+  .nav-grid {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    .nav-grid-item {
+      flex: 1 1 250px;
+      margin: 5px;
+    }
+  }
+
+  section {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+  }
+</style>
