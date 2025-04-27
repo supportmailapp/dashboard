@@ -258,4 +258,3 @@ class ObjectValidator<T extends object> implements IValidator<T> {
 export default ObjectValidator;
 export { BooleanValidator, NumberValidator, ObjectValidator, PropertyValidator, StringValidator, UnionValidator };
 export type { CustomCheck, IUnionValidator, IValidator, ValidationResult };
-

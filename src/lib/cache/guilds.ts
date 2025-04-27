@@ -29,7 +29,10 @@ export function parseToCacheGuild(guild: RESTAPIPartialCurrentUserGuild, configu
 // Guilds functions
 export function cacheGuilds(...guilds: DCGuild[]): void {
   guildsStore.mset(guilds.map((guild) => ({ key: guild.id, val: JSON.stringify(guild) })));
-  console.log("Cached guilds: ", guilds.map((guild) => ({ key: guild.id, val: JSON.stringify(guild) })));
+  console.log(
+    "Cached guilds: ",
+    guilds.map((guild) => ({ key: guild.id, val: JSON.stringify(guild) })),
+  );
 }
 
 export function getDCGuild(id: string): DCGuild | null {
