@@ -43,9 +43,7 @@ export const PATCH = async ({ locals, request }) => {
       },
     });
 
-    const newDoc = await getGuild(locals.guildId);
-    console.debug("Updated guild", newDoc);
-    return Response.json(newDoc, { status: 200, statusText: "OK" });
+    return new Response(null, { status: 204, statusText: "OK" });
   }
 
   return Response.json("Bad Request", { status: 400, statusText: "Bad Request" });
