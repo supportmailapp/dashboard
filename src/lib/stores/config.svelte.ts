@@ -14,6 +14,15 @@ export let saving = $state<{ value: boolean; progress: number | null }>({
 export let resetConfig = writable<boolean>(false);
 export let configError = writable<{ note: string; objs: unknown[] } | null>(null);
 
+$effect(() => {
+  if (saving.progress && saving.progress >= 100) {
+    saving.value = false;
+    saving.progress = null;
+    resetConfig.set(false);
+    unsavedChanges.set(false);
+  }
+});
+
 configError.subscribe((value) => {
   if (value) {
     console.error(value);
