@@ -1,5 +1,4 @@
-import type { ConfigOverview } from "$lib";
-import { ObjectValidator, PropertyValidator, StringValidator, UnionValidator } from "$lib";
+import { SchemaValidator, type ConfigOverview } from "$lib";
 import { SupportedLanguages } from "$lib/constants.js";
 import { getGuild, updateGuild } from "$lib/server/db";
 import type { IDBGuild } from "supportmail-types";
@@ -22,23 +21,18 @@ export const GET = async ({ locals }) => {
   return Response.json("Bad Request", { status: 400, statusText: "Bad Request" });
 };
 
-const baseConfigValidator = new ObjectValidator<Omit<ConfigOverview, "ticketForum" | "alertChannel">>()
-  .addValidator("id", StringValidator)
-  .addValidator("name", StringValidator)
-  .addValidator(
-    "icon",
-    new PropertyValidator<string | null>(
-      "string | null",
-      (value): value is string | null => typeof value === "string" || value === null,
-    ),
-  )
-  .addValidator("lang", new UnionValidator(SupportedLanguages.map((l) => l.value)));
+const baseConfigSchema = new SchemaValidator<Omit<ConfigOverview, "_id" | "ticketForum" | "alertChannel">>({
+  id: { type: "string", required: true },
+  icon: { type: ["string", "null"], required: true },
+  name: { type: "string", required: true },
+  lang: { type: "string", required: true, enum: SupportedLanguages.map((lang) => lang.value) },
+});
 
 export const PATCH = async ({ locals, request }) => {
   if (locals.guildId && locals.token) {
     const update = (await request.json()) as Record<string, any>;
-    const result = baseConfigValidator.validate(update);
-    if (!result.isValid) {
+    const result = baseConfigSchema.validate(update);
+    if (!result.isValid || Object.keys(result.value).length > 0) {
       console.debug("Validation errors", result.errors);
       return Response.json(result, { status: 400, statusText: "Bad Request" });
     }
