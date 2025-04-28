@@ -76,7 +76,7 @@ type Schema<T> = Record<keyof T, SchemaProperty>;
 interface ValidationResult<T> {
   isValid: boolean;
   errors: ValidationError[];
-  value: T;
+  value: Partial<T>;
 }
 
 /**
@@ -106,14 +106,14 @@ export class SchemaValidator<T extends Record<string, any>> {
    * @param data The object to validate
    * @returns A ValidationResult with the validation status, errors, and sanitized value
    */
-  validate(data: any): ValidationResult<T> {
+  validate(data: unknown): ValidationResult<T> {
     const errors: ValidationError[] = [];
     const validatedData = this.validateObject(data, this.schema, "", errors);
 
     return {
       isValid: errors.length === 0,
       errors,
-      value: validatedData as T,
+      value: validatedData,
     };
   }
 
@@ -125,7 +125,7 @@ export class SchemaValidator<T extends Record<string, any>> {
     schemaProperties: Record<string, SchemaProperty>,
     path: string,
     errors: ValidationError[],
-  ): Record<string, any> {
+  ): Partial<T> {
     if (typeof data !== "object" || data === null) {
       errors.push({
         path: path || "root",
@@ -178,7 +178,7 @@ export class SchemaValidator<T extends Record<string, any>> {
       }
     }
 
-    return validatedObject;
+    return validatedObject as Partial<T>; // TS is hard sometimes
   }
 
   /**
