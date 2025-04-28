@@ -87,6 +87,21 @@
         json: {
           ...$state.snapshot(config),
         },
+      }).then(async (kyRes) => {
+        if (kyRes.ok) {
+          // If OK, then status 204
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+
+          await loadConfigOverview();
+          saving.progress = 100;
+        } else {
+          // If not OK, then status 4xx or 5xx
+          const error = await kyRes.json<any>();
+          configError.set({
+            note: `Failed to save guild config`,
+            objs: [error],
+          });
+        }
       });
     }
   });
@@ -98,7 +113,7 @@
     }
   });
 
-  onMount(async () => {
+  async function loadConfigOverview() {
     const response = await ky.get(APIRoutes.configBase(guildId), BASIC_GET_FETCH_INIT);
 
     if (response.ok) {
@@ -112,7 +127,9 @@
         objs: [response],
       });
     }
-  });
+  }
+
+  onMount(loadConfigOverview);
 </script>
 
 <h1 class="text-3xl font-bold">
