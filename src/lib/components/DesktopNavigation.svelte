@@ -1,35 +1,36 @@
 <script lang="ts">
   import { page } from "$app/state";
   import { cdnUrls } from "$lib/utils/formatting";
-  import { House, MessageSquareWarning, Ticket } from "@lucide/svelte";
+  import { House } from "@lucide/svelte";
   import { slide } from "svelte/transition";
-  import { buildNavHref, showServerSelect } from "./navigation.svelte";
+  import { buildNavHref } from "./navigation.svelte";
   import Footer from "./Footer.svelte";
   import { user } from "$lib/stores/user.svelte";
+  import { NavigationItems } from "$lib/constants";
 
   function isCurrentPage(href: string = "/") {
     return page.url.pathname === href;
   }
 
-  const navItems = $derived([
+  let baseNavItems = NavigationItems(page.params.guildid).filter((item) => item.id !== "premium");
+  let premiumNavItem = NavigationItems(page.params.guildid).find((item) => item.id === "premium")!;
+
+  let navItems = $derived([
     {
-      label: "Home",
+      name: "Home",
       icon: House,
       active: isCurrentPage(buildNavHref("/")),
-      slug: buildNavHref("/"),
+      href: buildNavHref("/"),
+      color: "text-slate-200",
     },
     {
-      label: "Tickets",
-      icon: Ticket,
-      active: isCurrentPage(buildNavHref("/tickets")),
-      slug: buildNavHref("/tickets"),
+      ...premiumNavItem,
+      active: isCurrentPage(premiumNavItem.href),
     },
-    {
-      label: "Reports",
-      icon: MessageSquareWarning,
-      active: isCurrentPage(buildNavHref("/reports")),
-      slug: buildNavHref("/reports"),
-    },
+    ...baseNavItems.map((item) => ({
+      ...item,
+      active: isCurrentPage(item.href),
+    })),
   ]);
 </script>
 
@@ -59,8 +60,8 @@
   <ul>
     {#each navItems as item}
       <li>
-        <a href={item.slug} class="nav-btn h-fit {item.active ? 'active' : ''}">
-          <span class="w-full px-4 text-center">{item.label}</span>
+        <a href={item.href} class="nav-btn {item.active ? 'active' : ''}">
+          <span class="w-full px-4 text-center">{item.name}</span>
           <item.icon class="size-8" />
         </a>
       </li>
