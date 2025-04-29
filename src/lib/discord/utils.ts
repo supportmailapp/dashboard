@@ -122,7 +122,6 @@ export async function fetchUserGuilds(
   // Try to use cached guilds if not bypassing cache
   if (!options.bypassCache) {
     const cachedGuilds = getUserGuilds(userId);
-    console.log("Cached guilds", cachedGuilds);
     if (cachedGuilds) {
       return applyFilters(cachedGuilds);
     }
@@ -151,7 +150,6 @@ export async function fetchUserGuilds(
     ),
   );
 
-  console.log("Fetched guilds", guilds);
   cacheGuilds(...guilds);
   overwriteUserGuilds(
     userId,

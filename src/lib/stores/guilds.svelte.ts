@@ -20,7 +20,6 @@ export const guilds = $state<GuildsState>({
 export async function loadGuilds() {
   if (!guilds.get().length) {
     const guildsRes = await fetch(APIRoutes.userGuilds({ manageBotOnly: true }), BASIC_GET_FETCH_INIT);
-    console.log("guildsRes", guildsRes);
 
     if (guildsRes.ok) {
       let guildsJson = (await guildsRes.json()) as DCGuild[];
