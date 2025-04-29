@@ -1,6 +1,7 @@
 // PUBLIC constants
 
 import { env } from "$env/dynamic/public";
+import { MessageSquareDashed, MessageSquareWarning, ShieldBan, Star, Ticket } from "@lucide/svelte";
 import type { APIGuildForumTag, GuildForumTagData } from "discord.js";
 import type { IDBGuild, IDBUser } from "supportmail-types";
 
@@ -72,6 +73,16 @@ export const BASIC_GET_FETCH_INIT = {
   },
 } as RequestInit;
 
+export const BASIC_REQUEST_INIT = (method: "POST" | "PATCH" | "DELETE") =>
+  ({
+    method: method,
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+  }) as RequestInit;
+
 interface UserGuildsParams {
   bypassCache?: boolean;
   manageBotOnly?: boolean;
@@ -117,7 +128,7 @@ export const APIRoutes = {
   configBlacklist: (guildId: string) => `${API_BASE}/config/${guildId}/blacklist`,
   logout: () => `${API_BASE}/logout`,
   /** @deprecated Not used atm */
-  debug: (guildId: string) => `${API_BASE}/debug`,
+  debug: () => `${API_BASE}/debug`,
 } as const;
 
 export const LANGUAGES = [
@@ -125,41 +136,6 @@ export const LANGUAGES = [
   { name: "Deutsch", value: "de" },
   { name: "Français", value: "fr" },
 ];
-
-export const DEFAULT_LANGUAGE = "en" as const;
-
-/**
- * Default DB user object for type-safety
- */
-export const DEFAULT_DBUSER: IDBUser = {
-  id: "",
-  autoRedirect: false,
-  language: DEFAULT_LANGUAGE,
-  t_left: 0,
-  tips: true,
-  createdAt: new Date(0),
-  updatedAt: new Date(0),
-} as const;
-
-export const DEFAULT_CONFIG = {
-  id: "",
-  icon: "",
-  lang: "en",
-  name: "",
-  createdAt: new Date(0),
-  ticketConfig: {
-    enabled: false,
-    anonym: {
-      enabled: false,
-      user: false,
-    },
-    autoForwarding: true,
-  },
-  reportConfig: {
-    enabled: false,
-    actionsEnabled: true,
-  },
-} as IDBGuild;
 
 /**
  * Generic emtpy error responses for API routes
@@ -211,4 +187,47 @@ export const SupportedLanguages = [
   { name: "English", value: "en" },
   { name: "Deutsch", value: "de" },
   { name: "Français", value: "fr" },
+];
+
+export const NavigationItems = (guildId: string) => [
+  {
+    id: "tickets",
+    name: "Tickets",
+    href: `/g/${guildId}/tickets`,
+    description: "Manage Ticket Configurations",
+    icon: Ticket,
+    color: "bg-primary text-primary-content",
+  },
+  {
+    id: "reports",
+    name: "Reports",
+    href: `/g/${guildId}/reports`,
+    description: "Manage Report Configurations",
+    icon: MessageSquareWarning,
+    color: "bg-amber-600 text-amber-600-content",
+  },
+  {
+    id: "tags",
+    name: "Tags",
+    href: `/g/${guildId}/tags`,
+    description: "Manage Tags",
+    icon: MessageSquareDashed,
+    color: "bg-info text-info-content",
+  },
+  {
+    id: "blacklist",
+    name: "Blacklist",
+    href: `/g/${guildId}/blacklist`,
+    description: "Manage the Blacklist",
+    icon: ShieldBan,
+    color: "bg-red-700 text-error-content",
+  },
+  {
+    id: "premium",
+    name: "Premium",
+    href: `/g/${guildId}/premium`,
+    description: "Manage Premium for this server",
+    icon: Star,
+    color: "bg-warning text-warning-content",
+  },
 ];
