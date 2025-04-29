@@ -13,6 +13,7 @@
         }
       }
     }
+    page.data.dataState.revert();
   });
 </script>
 
