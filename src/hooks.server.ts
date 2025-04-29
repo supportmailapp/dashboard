@@ -133,9 +133,12 @@ const guildAccessHandle: Handle = async ({ event, resolve }) => {
 export const handle = sequence(baseHandle, rateLimitHandle, guildAccessHandle);
 
 export const handleError: HandleServerError = async ({ error, event, status, message }) => {
-  const errorId = Sentry.captureException(error, {
-    extra: { event, status },
-  });
+  const errorId =
+    env.NODE_ENV != "development"
+      ? Sentry.captureException(error, {
+          extra: { event, status },
+        })
+      : crypto.randomUUID();
 
   console.error(event.url.toString(), inspect(error));
 
