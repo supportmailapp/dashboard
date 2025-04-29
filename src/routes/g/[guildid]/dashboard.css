@@ -63,16 +63,11 @@
       li {
         width: 100%;
         position: relative;
-        transition: background-color 0.25s ease-in-out;
+        transition: all 0.25s ease-in-out;
       }
 
       li:has(.nav-btn:not(.active)) {
         background-color: transparent;
-      }
-
-      li:has(.nav-btn.active) {
-        background-color: var(--color-base-300);
-        border-radius: 0.5rem;
       }
     }
 
@@ -82,8 +77,9 @@
     }
 
     .nav-btn {
-      @apply gap-2 rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800/50 hover:text-white;
+      @apply text-primary-content hover:bg-neutral/30 gap-2 rounded-lg p-2 transition-all duration-100;
       width: 100%;
+      height: fit-content;
       display: flex;
       flex-direction: row;
       align-items: center;
@@ -92,7 +88,7 @@
       text-decoration: none;
 
       &.active {
-        @apply text-primary bg-slate-700/30;
+        @apply from-primary bg-gradient-to-br to-cyan-500 font-semibold;
       }
     }
   }
@@ -173,13 +169,16 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-  }
-}
 
-@layer utilities {
-  .text-ellipsis {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    /* Optional Classes for specific channel types */
+    &.category {
+      @apply text-gray-400;
+      background-color: color-mix(in oklab, var(--color-slate-500) 40%, transparent);
+      color: white;
+
+      &:hover {
+        background-color: color-mix(in oklab, var(--color-slate-500) 70%, transparent);
+      }
+    }
   }
 }
