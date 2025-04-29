@@ -1,6 +1,7 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
 
+import type {ConfigState} from "$lib/stores/DataManager.svelte";
 import type {
   APIChannel,
   APIDMChannel,
@@ -58,6 +59,7 @@ declare global {
       ccDate: string;
       basePath: string;
       configData: any;
+      dataState: ConfigState;
     }
 
     // interface PageState {}
@@ -138,4 +140,5 @@ declare global {
   };
 }
 
-export {};
+export { };
+

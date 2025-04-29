@@ -4,13 +4,13 @@
   import Footer from "$lib/components/Footer.svelte";
   import RefreshButton from "$lib/components/RefreshButton.svelte";
   import { guilds as guildsState } from "$lib/stores/guilds.svelte";
+  import { site } from "$lib/stores/site.svelte";
   import { user as userState } from "$lib/stores/user.svelte";
   import { cdnUrls } from "$lib/utils/formatting";
   import { CircleArrowRight, Plus } from "@lucide/svelte";
-  import { site } from "$lib/stores/site.svelte";
+  import "./serverSelect.css";
+  import LoadingDots from "$lib/components/LoadingDots.svelte";
 
-  let showUserSettings = $state(false);
-  let errorCopied = $state(false);
   let user = $derived(userState.discord as BasicUser);
   let guilds = $derived(guildsState.value as DCGuild[]);
   let firstNotConfiguredGuild = $derived.by(() => {
@@ -39,15 +39,13 @@
         <RefreshButton text="Reload Servers" />
       </div>
       <div class="dy-navbar-end">
-        <button
+        <a
+          href="/@me"
           tabindex="0"
           class="hover:border-info cursor-pointer rounded-2xl border-2 border-transparent transition-all duration-100 ease-in-out"
-          onclick={() => {
-            showUserSettings = true;
-          }}
         >
           <img src={cdnUrls.userAvatar(user.id, user.avatar, "64")} alt="User Avatar" class="size-12 rounded-2xl object-cover" />
-        </button>
+        </a>
       </div>
     </nav>
   </header>
@@ -57,7 +55,7 @@
       <div class="absolute top-0 left-0 flex h-fit max-h-fit w-full flex-col items-start justify-start gap-2 p-3 text-center">
         {#if guilds.length == 0 || site.showLoading}
           <div class="flex h-full w-full items-center justify-center">
-            <span class="dy-loading dy-loading-xl dy-loading-dots"></span>
+            <LoadingDots />
           </div>
         {:else}
           {#each guilds as guild}
@@ -65,7 +63,7 @@
               <div class="bg-base-300 h-0.5 w-full"></div>
             {/if}
             <a
-              class="root-server-select-row {!guild.isConfigured ? 'opacity-40 hover:opacity-90' : ''}"
+              class="root-server-select-row {!guild.isConfigured ? 'opacity-40 hover:opacity-100' : ''}"
               href="/{guild.isConfigured ? 'g/' : 'add/'}{guild.id}"
             >
               <div class="flex items-center justify-center p-2">
@@ -94,14 +92,6 @@
 
   <Footer />
 </div>
-
-{#if errorCopied}
-  <div class="dy-toast dy-toast-right z-50 select-none" transition:slide>
-    <div class="dy-alert dy-alert-info">
-      <span>Error message copied to clipboard</span>
-    </div>
-  </div>
-{/if}
 
 <style>
   :root {

@@ -5,7 +5,6 @@
   import { onMount } from "svelte";
   import ServerSelectDialog from "$lib/components/ServerSelectDialog.svelte";
   import SaveAlert from "$lib/components/SaveAlert.svelte";
-  import { unsavedChanges } from "$lib/stores/config.svelte";
   import { cdnUrls } from "$lib/utils/formatting";
   import { showServerSelect } from "$lib/components/navigation.svelte";
   import { mediaQuery } from "$lib/constants";
@@ -76,6 +75,4 @@
   </div>
 </div>
 
-{#if $unsavedChanges}
-  <SaveAlert />
-{/if}
+<SaveAlert />

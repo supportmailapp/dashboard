@@ -1,10 +1,9 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import { turnGuildConfigIntoOverview, type ConfigOverview } from "$lib";
+  import { delay, turnGuildConfigIntoOverview, type ConfigOverview } from "$lib";
   import DiscordChannel from "$lib/components/DiscordChannel.svelte";
   import LoadingDots from "$lib/components/LoadingDots.svelte";
   import { APIRoutes, BASIC_GET_FETCH_INIT, SupportedLanguages } from "$lib/constants";
-  import { configError, oldConfig, resetConfig, saving, unsavedChanges } from "$lib/stores/config.svelte";
   import { gg } from "$lib/stores/guild.svelte";
   import { user } from "$lib/stores/user.svelte";
   import {
@@ -26,7 +25,6 @@
 
   const guildId = page.params.guildid;
   let config = $state<ConfigOverview | null>(null);
-  let serverIdCopied = $state(false);
   let news = $state<News[]>(page.data.news || []);
 
   const navigation = [
@@ -69,49 +67,49 @@
 
   $effect(() => {
     if (config !== null) {
-      if (equal($oldConfig, $state.snapshot(config))) {
-        unsavedChanges.set(false);
+      const current = $state.snapshot(config);
+      console.debug("Old config", page.data.dataState.oldConfig);
+      console.debug("New config", current);
+      if (equal(page.data.dataState.oldConfig, current)) {
         console.log("No changes detected");
+        page.data.dataState.unsaved = false;
       } else {
-        unsavedChanges.set(true);
         console.log("Changes detected");
+        page.data.dataState.unsaved = true;
       }
     }
   });
 
   // Save the config when the save-button is clicked
-  $effect(() => {
-    if (saving.value && saving.progress === null) {
-      ky.patch(APIRoutes.configBase(guildId), {
-        ...BASIC_GET_FETCH_INIT,
-        json: {
-          ...$state.snapshot(config),
-        },
-      }).then(async (kyRes) => {
-        if (kyRes.ok) {
-          // If OK, then status 204
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+  page.data.dataState.save = async () => {
+    page.data.dataState.saveProgress = 0;
+    const res = await ky.patch(APIRoutes.configBase(guildId), {
+      ...BASIC_GET_FETCH_INIT,
+      json: {
+        ...$state.snapshot(config),
+      },
+    });
+    page.data.dataState.saveProgress = 40;
 
-          await loadConfigOverview();
-          saving.progress = 100;
-        } else {
-          // If not OK, then status 4xx or 5xx
-          const error = await kyRes.json<any>();
-          configError.set({
-            note: `Failed to save guild config`,
-            objs: [error],
-          });
-        }
-      });
+    if (!res.ok) {
+      const error = await res.json<any>();
+      console.error("Failed to save config", error);
+      page.data.dataState.saveProgress = 0;
+      page.data.dataState.unsaved = true;
+      return;
     }
-  });
 
-  resetConfig.subscribe((value) => {
-    if (value) {
-      config = $oldConfig as ConfigOverview;
-      resetConfig.set(false);
-    }
-  });
+    await delay(1000);
+    page.data.dataState.saveProgress = 80;
+
+    await loadConfigOverview();
+    page.data.dataState.saveProgress = 100; // Ensure save progress is set to 100 after loading config
+  };
+
+  page.data.dataState.oldConfig = () => {
+    console.log("Reverting changes");
+    config = page.data.dataState.oldConfig as ConfigOverview;
+  };
 
   async function loadConfigOverview() {
     const response = await ky.get(APIRoutes.configBase(guildId), BASIC_GET_FETCH_INIT);
@@ -119,13 +117,10 @@
     if (response.ok) {
       const data = (await response.json()) as FlattenMaps<IDBGuild & { _id: string }>;
       config = turnGuildConfigIntoOverview(data);
-      oldConfig.set($state.snapshot(config));
-      unsavedChanges.set(false);
+      console.log("Loaded config", config);
+      page.data.dataState.oldConfig = $state.snapshot(config);
     } else {
-      configError.set({
-        note: `Failed to load guild config: ${response.status} ${response.statusText}`,
-        objs: [response],
-      });
+      console.error(`Failed to load guild config: ${response.status} ${response.statusText}`, [response]);
     }
   }
 

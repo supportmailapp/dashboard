@@ -29,6 +29,7 @@ const baseConfigSchema = new SchemaValidator<Omit<ConfigOverview, "_id" | "ticke
 });
 
 export const PATCH = async ({ locals, request }) => {
+  console.log("PATCH /api/v1/config/[guildid]/+server");
   if (locals.guildId && locals.token) {
     const update = (await request.json()) as Record<string, any>;
     const result = baseConfigSchema.validate(update);
