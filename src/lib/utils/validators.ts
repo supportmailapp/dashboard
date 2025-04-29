@@ -48,7 +48,7 @@ interface SchemaProperty {
   /**
    * Defines the schema for items in an array. This is used when the type is "array".
    */
-  items?: SchemaProperty;
+  items?: Omit<SchemaProperty, "items" | "customValidator">;
   /**
    * Defines the allowed values for the property. This is used when the type is "string" or "number".
    * The value must be one of the specified values in the enum array.
@@ -58,6 +58,15 @@ interface SchemaProperty {
    * Defines the schema for properties in an object. This is used when the type is "object".
    */
   properties?: Record<string, SchemaProperty>;
+  /**
+   * Custom validation function that can be used to perform additional checks on the value.
+   *
+   * The function should return true if the value is valid, or false if it is invalid.
+   *
+   * @param value The value to validate.
+   * @returns `true` if the value is valid, `false` otherwise.
+   */
+  customValidator?: (value: any) => boolean;
 }
 
 /**
@@ -65,7 +74,9 @@ interface SchemaProperty {
  * It's a record where keys are property names of T and values are their corresponding SchemaProperty definitions.
  * @template T The type of the object being described by the schema.
  */
-type Schema<T> = Record<keyof T, SchemaProperty>;
+type Schema<T> = {
+  [K in keyof T]: SchemaProperty | (T[K] extends Record<string, any> ? SchemaValidator<T[K]> : never);
+};
 
 // Validation Return Type
 /**
@@ -122,7 +133,7 @@ export class SchemaValidator<T extends Record<string, any>> {
    */
   private validateObject(
     data: any,
-    schemaProperties: Record<string, SchemaProperty>,
+    schemaProperties: Record<string, SchemaProperty | SchemaValidator<any>>,
     path: string,
     errors: ValidationError[],
   ): Partial<T> {
@@ -138,9 +149,20 @@ export class SchemaValidator<T extends Record<string, any>> {
 
     // Check all required fields
     for (const propName in schemaProperties) {
-      const propSchema = schemaProperties[propName];
       const currentPath = path ? `${path}.${propName}` : propName;
       const value = data[propName];
+
+      const propSchema = schemaProperties[propName];
+
+      if (propSchema instanceof SchemaValidator) {
+        // If schemaProperties is a SchemaValidator, validate the data using it
+        const result = propSchema.validate(data);
+        if (!result.isValid) {
+          errors.push(...result.errors);
+        }
+        validatedObject[propName] = result.value as Partial<T>;
+        continue;
+      }
 
       // Check if required field is present
       if (propSchema.required && value === undefined) {
@@ -294,6 +316,15 @@ export class SchemaValidator<T extends Record<string, any>> {
       }
       return true;
     }
+
+    if (propSchema.customValidator !== undefined && !propSchema.customValidator(value)) {
+      errors.push({
+        path,
+        message: `Custom validation failed`,
+      });
+      return false;
+    }
+    // If all checks pass, return true
 
     return true;
   }
