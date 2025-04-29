@@ -33,7 +33,7 @@ export const PATCH = async ({ locals, request }) => {
   if (locals.guildId && locals.token) {
     const update = (await request.json()) as Record<string, any>;
     const result = baseConfigSchema.validate(update);
-    if (!result.isValid || Object.keys(result.value).length > 0) {
+    if (!result.isValid || Object.entries(result.errors).length > 0) {
       console.debug("Validation errors", result.errors);
       return Response.json(result, { status: 400, statusText: "Bad Request" });
     }
@@ -44,7 +44,7 @@ export const PATCH = async ({ locals, request }) => {
       },
     });
 
-    return new Response(null, { status: 204, statusText: "OK" });
+    return new Response(null, { status: 204, statusText: "No Content" });
   }
 
   return Response.json("Bad Request", { status: 400, statusText: "Bad Request" });
