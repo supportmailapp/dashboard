@@ -15,3 +15,7 @@ export function turnGuildConfigIntoOverview(_config: IDBGuild & { _id: string })
 export type ConfigOverview = ReturnType<typeof turnGuildConfigIntoOverview>;
 
 export * from "./utils/validators";
+
+export function delay(ms: number) {
+  return new Promise((_r) => setTimeout(_r, ms));
+}
