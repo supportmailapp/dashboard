@@ -3,20 +3,11 @@
   import { delay, turnGuildConfigIntoOverview, type ConfigOverview } from "$lib";
   import DiscordChannel from "$lib/components/DiscordChannel.svelte";
   import LoadingDots from "$lib/components/LoadingDots.svelte";
-  import { APIRoutes, BASIC_GET_FETCH_INIT, SupportedLanguages } from "$lib/constants";
+  import SiteHeader from "$lib/components/SiteHeader.svelte";
+  import { APIRoutes, BASIC_GET_FETCH_INIT, BASIC_REQUEST_INIT, NavigationItems, SupportedLanguages } from "$lib/constants";
   import { gg } from "$lib/stores/guild.svelte";
   import { user } from "$lib/stores/user.svelte";
-  import {
-    CircleCheck,
-    CircleX,
-    Info,
-    MessageSquareDashed,
-    MessageSquareWarning,
-    ShieldBan,
-    Star,
-    Ticket,
-    TriangleAlert,
-  } from "@lucide/svelte";
+  import { CircleCheck, CircleX, Info, TriangleAlert } from "@lucide/svelte";
   import equal from "fast-deep-equal/es6";
   import ky from "ky";
   import type { FlattenMaps } from "mongoose";
@@ -27,43 +18,7 @@
   let config = $state<ConfigOverview | null>(null);
   let news = $state<News[]>(page.data.news || []);
 
-  const navigation = [
-    {
-      name: "Tickets",
-      href: `/g/${guildId}/tickets`,
-      description: "Manage Ticket Configurations",
-      icon: Ticket,
-      color: "bg-primary text-primary-content",
-    },
-    {
-      name: "Reports",
-      href: `/g/${guildId}/reports`,
-      description: "Manage Report Configurations",
-      icon: MessageSquareWarning,
-      color: "bg-amber-600 text-amber-600-content",
-    },
-    {
-      name: "Tags",
-      href: `/g/${guildId}/tags`,
-      description: "Manage Tags",
-      icon: MessageSquareDashed,
-      color: "bg-info text-info-content",
-    },
-    {
-      name: "Blacklist",
-      href: `/g/${guildId}/blacklist`,
-      description: "Manage the Blacklist",
-      icon: ShieldBan,
-      color: "bg-red-700 text-error-content",
-    },
-    {
-      name: "Premium",
-      href: `/g/${guildId}/premium`,
-      description: "Manage Premium for this server",
-      icon: Star,
-      color: "bg-warning text-warning-content",
-    },
-  ];
+  const navigation = NavigationItems(guildId);
 
   $effect(() => {
     if (config !== null) {
@@ -84,7 +39,7 @@
   page.data.dataState.save = async () => {
     page.data.dataState.saveProgress = 0;
     const res = await ky.patch(APIRoutes.configBase(guildId), {
-      ...BASIC_GET_FETCH_INIT,
+      ...BASIC_REQUEST_INIT("PATCH"),
       json: {
         ...$state.snapshot(config),
       },
@@ -106,7 +61,7 @@
     page.data.dataState.saveProgress = 100; // Ensure save progress is set to 100 after loading config
   };
 
-  page.data.dataState.oldConfig = () => {
+  page.data.dataState.revert = () => {
     console.log("Reverting changes");
     config = page.data.dataState.oldConfig as ConfigOverview;
   };
@@ -116,9 +71,10 @@
 
     if (response.ok) {
       const data = (await response.json()) as FlattenMaps<IDBGuild & { _id: string }>;
-      config = turnGuildConfigIntoOverview(data);
-      console.log("Loaded config", config);
-      page.data.dataState.oldConfig = $state.snapshot(config);
+      const _config = turnGuildConfigIntoOverview(data);
+      config = _config;
+      console.log("Loaded config", _config);
+      page.data.dataState.oldConfig = structuredClone(_config);
     } else {
       console.error(`Failed to load guild config: ${response.status} ${response.statusText}`, [response]);
     }
@@ -127,11 +83,11 @@
   onMount(loadConfigOverview);
 </script>
 
-<h1 class="text-3xl font-bold">
+<SiteHeader>
   Welcome <span class="from-primary to-success w-fit bg-gradient-to-r bg-clip-text text-transparent">
     {user.discord?.displayName}
   </span>!
-</h1>
+</SiteHeader>
 
 {#if news.length > 0}
   <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
