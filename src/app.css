@@ -106,55 +106,6 @@
     --dy-btn-fg: var(--color-base-content);
   }
 
-  .mobile-nav {
-    @apply bg-neutral text-neutral-content/70 border-base-300;
-    @apply gap-2 border-t-[1px] px-2 py-2.5;
-    position: sticky;
-    right: 0;
-    left: 0;
-    bottom: 0;
-    height: fit-content;
-    width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    place-items: center;
-    z-index: 10;
-  }
-
-  .discord-channel {
-    @apply text-sm font-medium;
-    @apply transition-colors duration-100 ease-in;
-    background-color: color-mix(in oklab, var(--dc-blurple) 65%, transparent);
-    max-width: 10rem;
-    width: fit-content;
-    display: grid;
-    place-items: center;
-    grid-template-columns: auto 1fr;
-    gap: 0.2rem;
-    cursor: pointer;
-    color: #ffffff;
-    align-items: center;
-    justify-content: start;
-    padding-inline: 0.25rem;
-    padding-block: 0.1rem;
-    border-radius: 0.3rem;
-    user-select: none;
-
-    &:hover {
-      background-color: color-mix(in oklab, var(--dc-blurple) 100%, transparent);
-    }
-
-    svg {
-      @apply h-4 w-4 min-w-4;
-    }
-
-    * {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-  }
-
   .footer-container {
     @apply gap-2 text-xs text-white/60;
     /* margin-top: max(auto, 2rem); */
@@ -177,66 +128,12 @@
     }
   }
 
-  form.userdata {
-    @apply flex w-full flex-col items-start justify-start gap-y-2 sm:max-w-3/5;
-
-    fieldset {
-      @apply dy-fieldset;
-
-      legend {
-        @apply dy-fieldset-legend;
-      }
-
-      label {
-        @apply dy-fieldset-label;
-      }
-
-      select {
-        @apply dy-select dy-select-primary;
-      }
-    }
-
-    button {
-      @apply dy-btn;
-    }
-  }
-
-  div.settings-container {
-    @apply rounded-lg p-0 md:p-4;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    user-select: none;
-
-    fieldset {
-      @apply dy-fieldset rounded-lg px-4 drop-shadow-xl;
-      background-color: var(--color-base-200);
-
-      legend {
-        @apply dy-fieldset-legend text-base;
-      }
-
-      > div.settings-row {
-        @apply gap-3 pt-2 pb-4;
-      }
-    }
-  }
-
   .server-id-button {
     @apply p-1 text-3xl font-bold text-cyan-300 transition-all duration-150 ease-linear;
     cursor: pointer;
     text-align: start;
     text-decoration: underline;
     text-underline-offset: 4px;
-  }
-
-  .root-server-select-row {
-    @apply hover:bg-base-300 gap-x-2 rounded-lg transition-all duration-100 ease-in-out;
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
   }
 
   .save-alert-container {
