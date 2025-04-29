@@ -33,8 +33,9 @@ export class ConfigState {
    */
   set revert(fn) {
     this.#reset = () => {
-      console.log("cancel");
       fn();
+      this.unsaved = false;
+      this.saveProgress = 0;
     };
   }
 
@@ -54,6 +55,7 @@ export class ConfigState {
    */
   set save(fn) {
     this.#save = () => {
+      this.saveProgress = 1;
       fn();
     };
   }
