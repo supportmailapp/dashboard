@@ -26,7 +26,7 @@
     "@types/node": "^22.12.0",
     "autoprefixer": "^10.4.20",
     "cross-env": "^7.0.3",
-    "daisyui": "^5.0.0",
+    "daisyui": "^5.0.30",
     "discord-api-types": "^0.37.117",
     "mongoose": "^8.13.0",
     "prettier": "^3.4.2",
@@ -56,7 +56,7 @@
     "paneforge": "^0.0.6",
     "rate-limiter-flexible": "^7.1.0",
     "tailwind-scrollbar-hide": "^2.0.0",
-    "tailwindcss": "^4.0.4",
+    "tailwindcss": "^4.1.4",
     "thumbhash": "^0.1.1",
     "uuid": "^11.0.5"
   },
