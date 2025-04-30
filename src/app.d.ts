@@ -1,7 +1,7 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
 
-import type {ConfigState} from "$lib/stores/DataManager.svelte";
+import type { ConfigState } from "$lib/stores/DataManager.svelte";
 import type {
   APIChannel,
   APIDMChannel,
@@ -138,7 +138,28 @@ declare global {
     title: string;
     content: string;
   };
+
+  /**
+   * A partial guild member object. This is used to display the member in the UI.
+   *
+   * Roles are not included, as they are a) not needed and b) a security risk.
+   */
+  type PartialGuildMember = {
+    id: string;
+    username: string;
+    /**
+     * Either the global_name (global nick) or the username.
+     */
+    displayName: string;
+    nick: string | null;
+    avatar: string | null;
+    /**
+     * An optional guild avatar. Can be different from the user avatar.
+     *
+     * Only available if the user has Nitro.
+     */
+    guildAvatar: string | null;
+  };
 }
 
-export { };
-
+export {};
