@@ -3,10 +3,8 @@
   import { cdnUrls } from "$lib/utils/formatting";
   import { slide } from "svelte/transition";
   import { showServerSelect } from "./navigation.svelte";
-  import UserSettingsDialog from "./UserSettingsDialog.svelte";
 
   const _user = $derived(user.discord!);
-  let showUserSettings = $state(false);
 </script>
 
 <div class="mobile-nav" transition:slide={{ duration: 350, axis: "y" }}>
@@ -40,10 +38,7 @@
     <span class="text-sm">Servers</span>
   </button>
 
-  <button
-    class="dy-btn dy-btn-xl bg-base-100 flex h-full w-full flex-col truncate p-1.5"
-    onclick={() => (showUserSettings = true)}
-  >
+  <a href="/@me" class="dy-btn dy-btn-xl bg-base-100 flex h-full w-full flex-col truncate p-1.5">
     {#if _user}
       <div class="size-6">
         <img src={cdnUrls.userAvatar(_user.id, _user.avatar, "128")} alt="User Avatar" class="rounded-sm" />
@@ -54,7 +49,5 @@
     <span class="h-fit w-full truncate">
       <span class="text-sm">{_user.displayName}</span>
     </span>
-  </button>
+  </a>
 </div>
-
-<UserSettingsDialog bind:showModal={showUserSettings} />
