@@ -1,6 +1,7 @@
 <script lang="ts">
   import { beforeNavigate } from "$app/navigation";
   import { page } from "$app/state";
+  import { site } from "$lib/stores/site.svelte";
   import { scale, slide } from "svelte/transition";
 
   beforeNavigate(async (nav) => {
@@ -13,6 +14,7 @@
         }
       }
     }
+    site.showLoading = true;
     page.data.dataState.revert();
   });
 </script>
