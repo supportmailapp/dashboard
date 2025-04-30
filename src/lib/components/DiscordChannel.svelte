@@ -6,7 +6,7 @@
   export type ChannelProps = {
     id: string;
     name?: string | undefined;
-    typ?: "thread" | "channel" | "category" | undefined;
+    typ?: "thread" | "channel" | "category";
     /**
      * If true, the channel name will be cut off at 10rem (160px) and will show an ellipsis.
      */
@@ -27,9 +27,8 @@
   });
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 <div
-  class="discord-channel {channelClasses[typ]}"
+  class="discord-mention {channelClasses[typ]}"
   onclickcapture={function clickFunction(_: any) {
     navigator.clipboard.writeText(id);
     alert(`Copied ${typ} ID to clipboard!`);
