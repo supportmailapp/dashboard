@@ -2,25 +2,31 @@
   import { page } from "$app/state";
   import { delay } from "$lib";
   import DiscordChannel from "$lib/components/DiscordChannel.svelte";
+  import DiscordMention from "$lib/components/DiscordMention.svelte";
   import LoadingDots from "$lib/components/LoadingDots.svelte";
+  import RoleSelector from "$lib/components/RoleSelector.svelte";
   import SiteHeader from "$lib/components/SiteHeader.svelte";
   import { APIRoutes, BASIC_GET_FETCH_INIT, BASIC_REQUEST_INIT } from "$lib/constants";
   import { gg } from "$lib/stores/guild.svelte";
-  import { MessageSquareText, MessagesSquare, XIcon } from "@lucide/svelte";
+  import { numberToHex } from "$lib/utils/formatting";
+  import { Circle, MessageSquareText, MessagesSquare, XIcon } from "@lucide/svelte";
   import equal from "fast-deep-equal/es6";
   import ky from "ky";
-  import type { FlattenMaps } from "mongoose";
   import type { ITicketConfig } from "supportmail-types";
   import { onMount } from "svelte";
 
+  type BasicTicketConfig = Omit<ITicketConfig, "_id" | "creationMessage" | "closeMessage" | "feedback" | "pings"> & {
+    pings: ["@" | "@&", string][];
+  };
+
   const guildId = page.params.guildid;
-  let config = $state<ITicketConfig | null>(null);
+  let config = $state<BasicTicketConfig | null>(null);
 
   $effect(() => {
+    const current = $state.snapshot(config);
+    console.debug("Old config", page.data.dataState.oldConfig);
+    console.debug("New config", current);
     if (config !== null) {
-      const current = $state.snapshot(config);
-      console.debug("Old config", page.data.dataState.oldConfig);
-      console.debug("New config", current);
       if (equal(page.data.dataState.oldConfig, current)) {
         console.log("No changes detected");
         page.data.dataState.unsaved = false;
@@ -59,14 +65,14 @@
 
   page.data.dataState.revert = () => {
     console.log("Reverting changes");
-    config = page.data.dataState.oldConfig as ITicketConfig;
+    config = page.data.dataState.oldConfig as BasicTicketConfig;
   };
 
   async function loadTicketConfig() {
     const response = await ky.get(APIRoutes.configTicketsBase(guildId), BASIC_GET_FETCH_INIT);
 
     if (response.ok) {
-      const data = (await response.json()) as FlattenMaps<ITicketConfig>;
+      const data = (await response.json()) as BasicTicketConfig;
       config = data;
       console.log("Loaded config", data);
       page.data.dataState.oldConfig = structuredClone(data);
@@ -246,26 +252,26 @@
       <legend class="dy-fieldset-legend">Notify Roles/Users</legend>
       <div class="flex flex-col gap-3">
         <p class="text-sm text-slate-400">Select roles or users to ping when a new ticket is created.</p>
-        <!-- Placeholder for selected pings display -->
-        <div class="border-base-300 min-h-10 rounded-md border border-dashed p-2">
-          {#if config.pings && config.pings.length > 0}
-            <!-- TODO: Display selected roles/users -->
-            Selected: {config.pings.join(", ")}
-          {:else}
-            <span class="text-slate-500 italic">No pings selected</span>
-          {/if}
+        <div class="dy-dropdown dy-dropdown-start">
+          <div
+            tabindex="0"
+            role="checkbox"
+            class="bg-base-100 flex h-fit w-full flex-wrap justify-start gap-1 rounded border-[1px] border-slate-500 p-2 md:max-w-[500px]"
+          >
+            {#if config.pings && config.pings.length > 0}
+              {#each config.pings as ping}
+                <DiscordMention id={ping[1]} typ={ping[0] == "@" ? "user" : "role"} />
+              {/each}
+            {:else}
+              <span class="text-slate-500 italic">No pings selected</span>
+            {/if}
+          </div>
+          <RoleSelector
+            onselect={(role) => {
+              config?.pings.push(["@", role.id]);
+            }}
+          />
         </div>
-        <!-- Placeholder for role/user selector -->
-        <select class="dy-select dy-select-bordered" multiple bind:value={config.pings}>
-          {#if gg.roles}
-            {#each gg.roles as role}
-              <option value={role.id}>@ {role.name}</option>
-            {/each}
-            <!-- TODO: Add user selection possibility -->
-          {:else}
-            <option disabled>Loading roles...</option>
-          {/if}
-        </select>
       </div>
     </fieldset>
   </section>
