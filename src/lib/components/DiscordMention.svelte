@@ -41,7 +41,7 @@
     name = id,
     typ = "user",
     roleColor = 0,
-    cutLengthAt = 40,
+    cutLengthAt = 20,
     deleted = $bindable(false),
     withDelete = false,
   }: MentionProps = $props();
@@ -70,15 +70,15 @@
 </script>
 
 <div
-  class="discord-mention text-base-content font-light"
-  onclickcapture={function clickFunction(_: any) {
+  class="discord-mention text-base-content font-light {'max-w-' + cutLengthAt.toString()}"
+  onclickcapture={() => {
     navigator.clipboard.writeText(id);
     alert(`Copied ${typ[0].toUpperCase() + typ.slice(1)} ID to clipboard!`);
-    if (name === id) fetchUser(id);
+    if (name === id && typ === "user") fetchUser(id);
   }}
 >
   {#if typ === "role"}
-    <Circle color={numberToHex(roleColor)} fill={numberToHex(roleColor)} class="size-3" />
+    <Circle fill={"#" + numberToHex(roleColor)} color="none" class="size-3" />
   {:else if typ === "user"}
     <CircleUserRound />
   {:else}
@@ -86,7 +86,7 @@
     <CircleHelp />
   {/if}
   {#if !loadingUser}
-    <span class={name != id ? `w-fit ${"max-w-" + cutLengthAt.toString()} truncate` : ""}>{String(name)}</span>
+    <span class={name != id ? `w-full truncate` : ""}>{String(name)}</span>
   {:else}
     <span class="dy-loading dy-loading-dots"></span>
   {/if}
