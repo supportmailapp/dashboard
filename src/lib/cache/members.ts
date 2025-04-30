@@ -13,8 +13,8 @@ export function getMember(guildId: string, memberId: string): APIGuildMember | u
   return memberCache.get(buildKey(guildId, memberId));
 }
 
-export function setMember(guildId: string, memberId: string, member: APIGuildMember) {
-  return memberCache.set(buildKey(guildId, memberId), member);
+export function setMember(guildId: string, member: APIGuildMember) {
+  return memberCache.set(buildKey(guildId, member.user.id), member);
 }
 
 export function delMember(guildId: string, memberId: string) {
