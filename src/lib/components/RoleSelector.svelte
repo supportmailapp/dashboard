@@ -111,6 +111,11 @@
     {:else}
       <div class="dy-list-item">No roles found</div>
     {/if}
+    <div class="dy-modal-action" style="width: 100%" onsubmit={() => (show = false)}>
+      <form method="dialog" style="width: 100%">
+        <button class="dy-btn dy-btn-error dy-btn-sm bg-error/80 hover:bg-error" style="width: 100%">I changed my mind</button>
+      </form>
+    </div>
   </div>
   <form method="dialog" class="dy-modal-backdrop" onsubmit={() => (show = false)}>
     <button>close</button>
