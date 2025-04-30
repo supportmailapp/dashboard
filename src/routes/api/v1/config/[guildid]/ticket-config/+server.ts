@@ -1,5 +1,5 @@
 import { SchemaValidator } from "$lib";
-import { updateGuild } from "$lib/server/db";
+import { DBGuild, updateGuild } from "$lib/server/db";
 import type { ITicketConfig } from "supportmail-types";
 
 /**
@@ -33,7 +33,25 @@ const configSchema = new SchemaValidator<TicketConfigSchema>({
   },
 });
 
-export const PATCH = async ({ request, locals }) => {
+export async function GET({ locals }) {
+  if (locals.guildId && locals.token) {
+    const guildId = locals.guildId;
+    const guildConfig = await DBGuild.findOne({ id: guildId }, null, { lean: true });
+    if (!guildConfig) {
+      return Response.json("Guild not found", { status: 404, statusText: "Not Found" });
+    }
+    const ticketConfig = guildConfig.ticketConfig;
+    const finalConfig = configSchema.validate(ticketConfig); // We don't need to validate the config, but it removes the extra properties...
+    return Response.json({
+      ...finalConfig.value,
+      pings: [],
+    });
+  }
+
+  return Response.json("Bad Request", { status: 400, statusText: "Bad Request" });
+}
+
+export async function PATCH({ request, locals }) {
   if (locals.guildId && locals.token) {
     const update = (await request.json()) as Record<string, any>;
     const result = configSchema.validate(update);
@@ -60,4 +78,4 @@ export const PATCH = async ({ request, locals }) => {
   }
 
   return Response.json("Bad Request", { status: 400, statusText: "Bad Request" });
-};
+}
