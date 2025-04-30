@@ -71,7 +71,7 @@ export const BASIC_GET_FETCH_INIT = {
     "Content-Type": "application/json",
     Accept: "application/json",
   },
-} as RequestInit;
+} as const;
 
 export const BASIC_REQUEST_INIT = (method: "POST" | "PATCH" | "DELETE") =>
   ({
@@ -100,6 +100,7 @@ export const APIRoutes = {
     if (params.manageBotOnly === true) sParams.append("manage_bot", "true");
     return `${API_BASE}/@me/guilds` + (sParams.toString() ? `?${sParams.toString()}` : "");
   },
+  guildMember: (guildId: string, memberId: string) => `${API_BASE}/guilds/${guildId}/members/${memberId}`,
   /**
    * Used for:
    * - GET: Get the DB user for a user
@@ -145,7 +146,8 @@ export const ErrorResponses = {
   unauthorized: () => new Response(null, { status: 401, statusText: "Unauthorized" }),
   forbidden: () => new Response(null, { status: 403, statusText: "Forbidden" }),
   notFound: (text: string | null = null) => new Response(text, { status: 404, statusText: "Not Found" }),
-  tooManyRequests: () => new Response(null, { status: 429, statusText: "Too Many Requests" }),
+  tooManyRequests: (tryAgainIn: number) =>
+    new Response(null, { status: 429, statusText: "Too Many Requests", headers: { "Retry-After": tryAgainIn.toString() } }),
 };
 
 export const LongTooltips = {
