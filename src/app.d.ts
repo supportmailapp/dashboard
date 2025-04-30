@@ -74,6 +74,7 @@ declare global {
     color: number;
     position: number;
     permissions: string; // ? Is this needed?
+    managed: boolean;
   };
 
   type BasicChannel = {

@@ -47,6 +47,7 @@ export function apiRoleToBasic(role: APIRole): BasicRole {
     color: role.color,
     position: role.position,
     permissions: role.permissions,
+    managed: role.managed,
   };
 }
 
