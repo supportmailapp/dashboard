@@ -4,7 +4,7 @@ import { fetchUserData } from "$lib/discord/utils";
 import { checkUserGuildAccess, decodeDbTokens, fetchDBUser, verifySessionToken } from "$lib/server/auth";
 import { dbConnect } from "$lib/server/db";
 import { anyUserToBasic } from "$lib/utils/formatting";
-import arcjet, { detectBot, shield, tokenBucket } from "@arcjet/sveltekit";
+import arcjet, { detectBot, shield, slidingWindow, tokenBucket } from "@arcjet/sveltekit";
 import * as Sentry from "@sentry/node";
 import { type Handle, type HandleServerError, type ServerInit } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
@@ -19,23 +19,20 @@ export const init: ServerInit = async () => {
   console.log("Server started at", dayjs().toString());
 };
 
-// Configure Arcjet for API rate limiting
-// For a Discord dashboard API, reasonable limits would be:
-// - 120 requests per minute for all routes
+// 100 requests per minute for all routes (Live)
 const aj = arcjet({
-  key: env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
-  characteristics: ["ip.src"], // Track requests by IP
+  key: env.ARCJET_KEY!,
+  characteristics: ["ip.src"],
   rules: [
     shield({ mode: env.ARCJET_MODE! as any }),
     detectBot({
       mode: env.ARCJET_MODE! as any,
       allow: ["CATEGORY:SEARCH_ENGINE"],
     }),
-    tokenBucket({
+    slidingWindow({
       mode: env.ARCJET_MODE! as any,
-      refillRate: inDevMode ? 120000 : 120,
       interval: inDevMode ? 60000 : 60,
-      capacity: inDevMode ? 120000 : 120,
+      max: inDevMode ? 8000 : 100,
     }),
   ],
 });
@@ -90,12 +87,12 @@ const baseHandle: Handle = async function ({ event, resolve }) {
 
 const rateLimitHandle: Handle = async function ({ event, resolve }) {
   // Apply rate limiting to all routes, not just protected API routes
-  const decision = await aj.protect(event, { requested: 1 });
+  const decision = await aj.protect(event);
   console.log("Arcjet decision", decision.conclusion, decision.reason);
 
   if (decision.isDenied()) {
     if (decision.reason.isRateLimit()) {
-      return ErrorResponses.tooManyRequests();
+      return ErrorResponses.tooManyRequests(decision.results[0].ttl);
     } else if (decision.reason.isBot()) {
       return new Response(null, { status: 403, statusText: "Forbidden" });
     } else {
