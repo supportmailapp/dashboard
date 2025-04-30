@@ -187,4 +187,9 @@
       }
     }
   }
+
+  .dy-toggle {
+    /* The toggle is very big by default */
+    @apply dy-toggle-xs;
+  }
 }
