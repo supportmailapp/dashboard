@@ -48,7 +48,7 @@ interface SchemaProperty<T> {
   /**
    * Defines the schema for items in an array. This is used when the type is "array".
    */
-  items?: Omit<SchemaProperty<T>, "items" | "customValidator">;
+  items?: SchemaProperty<T>;
   /**
    * Defines the allowed values for the property. This is used when the type is "string" or "number".
    * The value must be one of the specified values in the enum array.
