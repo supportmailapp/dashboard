@@ -11,12 +11,12 @@
   import { MessageSquareText, MessagesSquare, Plus, PlusSquare, XIcon } from "@lucide/svelte";
   import dayjs from "dayjs";
   import equal from "fast-deep-equal/es6";
-  import ky from "ky";
+  import ky, { type KyResponse } from "ky";
   import type { ITicketConfig } from "supportmail-types";
   import { onMount } from "svelte";
   import { blur, scale, slide } from "svelte/transition";
 
-  type BasicTicketConfig = Omit<ITicketConfig, "_id" | "creationMessage" | "closeMessage" | "feedback" | "pings"> & {
+  type BasicTicketConfig = Omit<ITicketConfig, "_id" | "creationMessage" | "closeMessage" | "feedback" | "pings" | "tags"> & {
     pings: ["@" | "@&", string][];
   };
 
@@ -40,10 +40,7 @@
     }
   });
 
-  // Save the config when the save-button is clicked
   page.data.dataState.save = async () => {
-    page.data.dataState.saveProgress = 0;
-
     // Prepare data for sending
     const data = $state.snapshot(config);
     if (!data) {
@@ -54,13 +51,20 @@
       date: estimatedResumeDate,
     };
 
-    const res = await ky.patch(APIRoutes.configTicketsBase(guildId), {
-      ...BASIC_REQUEST_INIT("PATCH"),
-      json: {
-        ...$state.snapshot(config),
-      },
-    });
-    page.data.dataState.saveProgress = 40;
+    page.data.dataState.saveProgress = 20;
+    console.log("Saving config", data);
+
+    const res = await ky
+      .patch(APIRoutes.configTicketsBase(guildId), {
+        ...BASIC_REQUEST_INIT("PATCH"),
+        json: data,
+      })
+      .catch((err) => {
+        console.error("Failed to save config", err);
+        page.data.dataState.saveProgress = 0;
+        return err.response as KyResponse; // Somehow this is a KyResponse
+      });
+    page.data.dataState.saveProgress = 50;
 
     if (!res.ok) {
       const error = await res.json<any>();
