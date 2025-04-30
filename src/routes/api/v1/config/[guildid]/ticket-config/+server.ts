@@ -1,4 +1,5 @@
 import { SchemaValidator } from "$lib";
+import { ErrorResponses } from "$lib/constants.js";
 import { DBGuild, updateGuild } from "$lib/server/db";
 import type { ITicketConfig } from "supportmail-types";
 
@@ -26,9 +27,12 @@ const configSchema = new SchemaValidator<TicketConfigSchema>({
   pings: {
     type: "array",
     required: false,
-    items: { type: "string" },
-    customValidator: (arr) => {
-      return arr.length == 2 && (arr[0] == "@" || arr[0] == "@&") && /\d{10,22}/.test(arr[1]);
+    items: {
+      type: "array",
+      items: { type: "string" },
+      customValidator: (arr) => {
+        return arr.length == 2 && (arr[0] == "@" || arr[0] == "@&") && /\d{10,22}/.test(arr[1]);
+      },
     },
   },
 });
@@ -55,9 +59,36 @@ export async function PATCH({ request, locals }) {
   if (locals.guildId && locals.token) {
     const update = (await request.json()) as Record<string, any>;
     const result = configSchema.validate(update);
+
     if (!result.isValid || Object.entries(result.errors).length > 0) {
       console.debug("Validation errors", result.errors);
       return Response.json(result, { status: 400, statusText: "Bad Request" });
+    }
+
+    const currentConfig = await DBGuild.findOne({ id: locals.guildId }, null, { lean: true });
+
+    if (!currentConfig) return ErrorResponses.notFound("Guild not found");
+
+    // Initialize pings array to avoid null reference errors in later operations
+    result.value.pings = result.value.pings ?? [];
+
+    // Convert pings to string format for easier comparison when checking for duplicates
+    const currentPings = currentConfig.ticketConfig.pings?.map((p) => p[0] + p[1]) ?? [];
+    const newPings = result.value.pings?.map((p) => p[0] + p[1]) ?? [];
+
+    // Use structuredClone to create a deep copy to avoid modifying the original array by reference
+    const finalPings: ["@" | "@&", string][] = new Array().concat(currentConfig.ticketConfig.pings ?? []);
+
+    // Helper function to check if a ping is unique to avoid duplicates in the database
+    const newPingIsUnique = (ping: string) => !currentPings.includes(ping);
+
+    // Filter out duplicates from the new pings and add them to the final pings array
+    if (newPings.length > 0) {
+      for (let i = 0; i < newPings.length; i++) {
+        if (newPingIsUnique(newPings[i])) {
+          finalPings.push(result.value.pings[i]);
+        }
+      }
     }
 
     const modifiedUpdate = Object.keys(result.value).reduce(
