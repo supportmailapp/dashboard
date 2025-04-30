@@ -1,9 +1,7 @@
 <script lang="ts">
-  import { APIRoutes, BASIC_GET_FETCH_INIT } from "$lib/constants";
   import { gg } from "$lib/stores/guild.svelte";
   import { numberToHex } from "$lib/utils/formatting";
-  import { Circle, CircleHelp, CircleUserRound, XIcon } from "@lucide/svelte";
-  import ky from "ky";
+  import { CircleHelp, CircleUserRound, Files, Trash } from "@lucide/svelte";
 
   export type MentionProps = {
     id: string;
@@ -23,7 +21,7 @@
      */
     cutLengthAt?: number | string;
     /**
-     * If true, a delete button will be shown on the right side of the mention.
+     * If true, a delete button will be rendered on hover on the side of the mention.
      *
      * If clicked, the `deleted` prop will be set to true.
      *
@@ -33,7 +31,7 @@
     /**
      * If true, the user clicked the mention to be deleted. Decide what you want to do with it - it's bindable.
      */
-    deleted?: boolean;
+    deleteFn?: () => void;
   };
 
   let {
@@ -42,24 +40,11 @@
     typ = "user",
     roleColor = 0,
     cutLengthAt = 20,
-    deleted = $bindable(false),
-    withDelete = false,
+    deleteFn = () => console.warn("No function set!"),
+    withDelete = true,
   }: MentionProps = $props();
   let loadingUser = $state(false);
-
-  async function fetchUser(uid: string) {
-    if (!gg.guild || id == name) return;
-    loadingUser = true;
-    const res = await ky.get(APIRoutes.guildMember(gg.guild.id, uid), {
-      ...BASIC_GET_FETCH_INIT,
-    });
-
-    if (res.ok) {
-      const data = await res.json<PartialGuildMember>();
-      if (data) name = data.username || "undefined";
-    }
-    loadingUser = false;
-  }
+  let showActions = $state(false);
 
   $effect(() => {
     if (typ === "role") {
@@ -69,16 +54,42 @@
   });
 </script>
 
+<!-- svelte-ignore a11y_no_static_element_interactions, a11y_mouse_events_have_key_events -->
 <div
-  class="discord-mention text-base-content font-light {'max-w-' + cutLengthAt.toString()}"
-  onclickcapture={() => {
-    navigator.clipboard.writeText(id);
-    alert(`Copied ${typ[0].toUpperCase() + typ.slice(1)} ID to clipboard!`);
-    if (name === id && typ === "user") fetchUser(id);
-  }}
+  data-id={id}
+  class="discord-mention text-base-content relative overflow-clip font-light {'max-w-' + cutLengthAt.toString()}"
+  onmouseover={() => (showActions = true)}
+  onmouseleave={() => (showActions = false)}
 >
+  <!-- Add click state -->
+  {#if withDelete}
+    <button
+      class="discord-mention-action left-0"
+      style={showActions ? "top: 0" : "top: -100px"}
+      onclick={(e) => {
+        e.stopPropagation();
+        deleteFn();
+      }}
+    >
+      <Trash class="text-error" size="1.25rem" />
+    </button>
+  {/if}
+  <button
+    class="discord-mention-action right-0 {withDelete ? 'w-1/2' : 'w-full'}"
+    style={showActions ? "top: 0" : "top: -100px"}
+    onclick={(e) => {
+      e.stopPropagation();
+      navigator.clipboard.writeText(id);
+      alert(`Copied ${typ[0].toUpperCase() + typ.slice(1)} ID.`);
+    }}
+  >
+    <Files class="text-info" size="1.25rem" />
+  </button>
   {#if typ === "role"}
-    <Circle fill={"#" + numberToHex(roleColor)} color="none" class="size-3" />
+    <div
+      class="{withDelete ? 'size-4' : 'size-3'} dy-btn-circle grid place-items-center"
+      style="background-color: {'#' + numberToHex(roleColor)};"
+    ></div>
   {:else if typ === "user"}
     <CircleUserRound />
   {:else}
@@ -89,15 +100,5 @@
     <span class={name != id ? `w-full truncate` : ""}>{String(name)}</span>
   {:else}
     <span class="dy-loading dy-loading-dots"></span>
-  {/if}
-  {#if withDelete}
-    <button
-      class="text-error ml-2"
-      onclick={() => {
-        deleted = true;
-      }}
-    >
-      <XIcon class="size-4" />
-    </button>
   {/if}
 </div>
