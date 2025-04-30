@@ -17,6 +17,7 @@
 
   let navItems = $derived([
     {
+      id: "home",
       name: "Home",
       icon: House,
       active: isCurrentPage(buildNavHref("/")),
@@ -61,8 +62,9 @@
     {#each navItems as item}
       <li>
         <a href={item.href} class="nav-btn {item.active ? 'active' : ''}">
-          <span class="w-full px-4 text-center">{item.name}</span>
-          <item.icon class="size-8" />
+          <span class="w-full px-4 text-center {item.id == 'premium' ? 'text-amber-400' : ''}">{item.name}</span>
+
+          <item.icon class="size-8 {item.id == 'premium' ? 'text-amber-400' : ''}" />
         </a>
       </li>
     {/each}
