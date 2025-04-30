@@ -8,12 +8,13 @@
   import SiteHeader from "$lib/components/SiteHeader.svelte";
   import { APIRoutes, BASIC_GET_FETCH_INIT, BASIC_REQUEST_INIT } from "$lib/constants";
   import { gg } from "$lib/stores/guild.svelte";
-  import { MessageSquareText, MessagesSquare, Plus, XIcon } from "@lucide/svelte";
+  import { MessageSquareText, MessagesSquare, Plus, PlusSquare, XIcon } from "@lucide/svelte";
+  import dayjs from "dayjs";
   import equal from "fast-deep-equal/es6";
   import ky from "ky";
   import type { ITicketConfig } from "supportmail-types";
   import { onMount } from "svelte";
-  import { scale } from "svelte/transition";
+  import { blur, scale, slide } from "svelte/transition";
 
   type BasicTicketConfig = Omit<ITicketConfig, "_id" | "creationMessage" | "closeMessage" | "feedback" | "pings"> & {
     pings: ["@" | "@&", string][];
@@ -42,6 +43,17 @@
   // Save the config when the save-button is clicked
   page.data.dataState.save = async () => {
     page.data.dataState.saveProgress = 0;
+
+    // Prepare data for sending
+    const data = $state.snapshot(config);
+    if (!data) {
+      return console.error("No data to save");
+    }
+    data.pausedUntil = {
+      value: !!data.pausedUntil?.value,
+      date: estimatedResumeDate,
+    };
+
     const res = await ky.patch(APIRoutes.configTicketsBase(guildId), {
       ...BASIC_REQUEST_INIT("PATCH"),
       json: {
@@ -100,8 +112,54 @@
 
   // Placeholder for pause duration unit
   let pauseDurations = $state<{ amount: number; unit: "m" | "h" | "d" }[]>([]);
+  const allDurationUnits = [
+    {
+      name: "Minutes",
+      value: "m",
+    },
+    {
+      name: "Hours",
+      value: "h",
+    },
+    {
+      name: "Days",
+      value: "d",
+    },
+  ] as const;
+  let availableUnits = $derived(
+    allDurationUnits.reduce(
+      (acc, unit) => {
+        if (pauseDurations.length === 0) {
+          acc.push({
+            name: unit.name,
+            value: unit.value,
+          });
+          return acc;
+        }
+        if (!pauseDurations.find((duration) => duration.unit === unit.value)) {
+          acc.push({
+            name: unit.name,
+            value: unit.value,
+          });
+        }
+        return acc;
+      },
+      [] as { name: "Minutes" | "Hours" | "Days"; value: "m" | "h" | "d" }[],
+    ),
+  );
   // Placeholder for pause type
   let pauseType = $state<"infinite" | "datetime" | "duration">("infinite");
+  let estimatedResumeDate = $derived.by<Date | null>(() => {
+    if (pauseType === "infinite") {
+      return null;
+    } else if (pauseType === "datetime") {
+      return config?.pausedUntil?.date ?? null;
+    } else {
+      return pauseDurations.length > 0
+        ? pauseDurations.reduce((acc, duration) => acc.add(duration.amount, duration.unit), dayjs()).toDate()
+        : null;
+    }
+  });
 </script>
 
 <SiteHeader>Tickets</SiteHeader>
@@ -148,11 +206,12 @@
         {#if !!config.pausedUntil?.value}
           <div class="border-base-300 flex flex-col gap-3 rounded-md border p-3" transition:scale={{ duration: 150 }}>
             <p class="text-sm text-slate-400">Choose how long to pause ticket creation:</p>
-            <div class="dy-join dy-join-vertical w-full sm:w-max">
+            <div role="tablist" class="dy-tabs dy-tabs-box w-full sm:w-max">
               <button
-                class="dy-btn dy-join-item"
-                class:dy-btn-active={pauseType === "infinite"}
-                onclick={() => {
+                transition:blur={{ duration: 150 }}
+                class="dy-tab transition-all duration-150"
+                class:dy-tab-active={pauseType === "infinite"}
+                onclickcapture={() => {
                   pauseType = "infinite";
                   if (config) config.pausedUntil = { value: true, date: null };
                 }}
@@ -160,19 +219,21 @@
                 Until I Unpause
               </button>
               <button
-                class="dy-btn dy-join-item"
-                class:dy-btn-active={pauseType === "datetime"}
-                onclick={() => {
+                transition:blur={{ duration: 150 }}
+                class="dy-tab transition-all duration-150"
+                class:dy-tab-active={pauseType === "datetime"}
+                onclickcapture={() => {
                   pauseType = "datetime";
-                  if (config) config.pausedUntil = { value: true, date: null };
+                  if (config) config.pausedUntil = { value: true, date: new Date() };
                 }}
               >
                 Until Date/Time
               </button>
               <button
-                class="dy-btn dy-join-item"
-                class:dy-btn-active={pauseType === "duration"}
-                onclick={() => {
+                transition:blur={{ duration: 150 }}
+                class="dy-tab transition-all duration-150"
+                class:dy-tab-active={pauseType === "duration"}
+                onclickcapture={() => {
                   pauseType = "duration";
                   if (config) config.pausedUntil = { value: true, date: null };
                 }}
@@ -190,47 +251,81 @@
                   type="datetime-local"
                   placeholder="Select date and time"
                   class="dy-input dy-input-bordered w-full max-w-xs"
-                  bind:value={config.pausedUntil}
+                  bind:value={config.pausedUntil.date}
                 />
               </label>
             {:else if pauseType === "duration"}
-              <div class="flex flex-col gap-1">
-                <!-- Dynamic and multiple duration combinations are possible by having a button at the bottom which can add another item -->
-                {#each pauseDurations as duration, index}
-                  <div class="dy-join dy-join-horizontal w-full sm:w-max">
-                    <div class="dy-join-item">
-                      <label class="dy-form-control w-full max-w-xs">
-                        <div class="dy-label">
-                          <span class="dy-label-text">Duration</span>
-                        </div>
-                        <input
-                          type="number"
-                          placeholder="e.g., 1"
-                          class="dy-input dy-input-bordered w-full max-w-xs"
-                          bind:value={duration.amount}
-                        />
-                      </label>
-                    </div>
-                    <div class="dy-join-item w-40">
-                      <select class="dy-select dy-select-bordered" bind:value={duration.unit}>
-                        <option value="m">Minutes</option>
-                        <option value="h">Hours</option>
-                        <option value="d">Days</option>
-                      </select>
-                    </div>
-                    <div class="dy-join-item">
+              <div class="flex w-full flex-col gap-1 sm:max-w-sm">
+                {#key pauseDurations}
+                  {#each pauseDurations as duration}
+                    <div class="dy-join dy-join-horizontal w-full items-end">
+                      <input
+                        bind:value={duration.amount}
+                        type="number"
+                        placeholder="Duration"
+                        class="dy-join-item dy-input dy-input-bordered w-full max-w-xs"
+                        min="1"
+                        max={duration.unit === "m" ? 59 : duration.unit === "h" ? 23 : 30}
+                      />
+                      <div class="dy-dropdown dy-dropdown-center">
+                        <button tabindex="0" class="dy-input w-24 cursor-pointer border-x-0">
+                          {allDurationUnits.find((u) => u.value === duration.unit)?.name}
+                        </button>
+                        <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+                        <ul tabindex="0" class="dy-dropdown-content dy-menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+                          {#if availableUnits.length === 0}
+                            <li>
+                              <button disabled class="dy-btn dy-btn-disabled">No available units</button>
+                            </li>
+                          {:else}
+                            {#each availableUnits as unit}
+                              <li>
+                                <button
+                                  onclickcapture={() => {
+                                    duration.unit = unit.value;
+                                  }}
+                                >
+                                  {unit.name}
+                                </button>
+                              </li>
+                            {/each}
+                          {/if}
+                        </ul>
+                      </div>
                       <button
-                        class="dy-btn dy-btn-error w-fit"
+                        class="dy-btn dy-btn-error dy-join-item dy-btn-square w-10"
                         onclick={() => {
-                          pauseDurations = pauseDurations.filter((_, i) => i !== index);
+                          pauseDurations = pauseDurations.filter((d) => d !== duration);
                         }}
                       >
                         <XIcon class="size-4" />
                       </button>
                     </div>
-                  </div>
-                {/each}
+                  {/each}
+                {/key}
+                {#if pauseDurations.length < 3}
+                  <!-- Add new duration group button -->
+                  <button
+                    class="dy-btn dy-btn-neutral dy-btn-soft dy-btn-sm w-full"
+                    onclick={() => {
+                      pauseDurations.push({
+                        unit: availableUnits[0].value,
+                        amount: 1,
+                      });
+                    }}
+                  >
+                    <Plus class="size-4" />
+                  </button>
+                {/if}
               </div>
+              {#if estimatedResumeDate}
+                <div class="dy-alert dy-alert-info max-w-sm text-sm font-normal">
+                  <b>Estimated Resume Date:</b>
+                  <span style="margin-left: auto">
+                    {estimatedResumeDate ? estimatedResumeDate.toLocaleString() : "N/A"}
+                  </span>
+                </div>
+              {/if}
             {/if}
           </div>
         {/if}
@@ -268,9 +363,6 @@
       <div class="flex flex-col gap-3">
         <p class="text-sm text-slate-400">Select roles or users to ping when a new ticket is created.</p>
         <div
-          tabindex="0"
-          role="checkbox"
-          aria-checked={config.pings && config.pings.length > 0}
           class="bg-base-100 flex h-fit w-full max-w-[500px] flex-wrap justify-start gap-1 rounded border-[1px] border-slate-500 p-2"
         >
           {#if config.pings && config.pings.length > 0}
@@ -278,8 +370,11 @@
               <DiscordMention
                 id={ping[1]}
                 name={gg.roles?.find((r) => r.id === ping[1])?.name}
-                typ={ping[0] === "@" ? "user" : "role"}
+                typ="role"
                 roleColor={gg.roles?.find((r) => r.id === ping[1])?.color}
+                deleteFn={() => {
+                  if (config) config.pings = config.pings.filter((p) => p[1] !== ping[1]);
+                }}
               />
             {/each}
           {/if}
