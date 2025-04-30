@@ -14,7 +14,6 @@ import {
   type APIRole,
   type APIUser,
   type RESTAPIPartialCurrentUserGuild,
-  type RESTPostOAuth2AccessTokenResult,
 } from "discord-api-types/v10";
 
 export class DiscordREST {
@@ -33,6 +32,10 @@ export class DiscordREST {
 
   public async getGuildRoles(guildId: string): Promise<APIRole[]> {
     return this.rest.get(Routes.guildRoles(guildId)) as any;
+  }
+
+  public async getGuildMember(guildId: string, memberId: string): Promise<APIGuildMember> {
+    return this.rest.get(Routes.guildMember(guildId, memberId)) as any;
   }
 }
 
