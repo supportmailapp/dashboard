@@ -12,7 +12,7 @@ type SchemaType = "null" | "string" | "number" | "boolean" | "object" | "array" 
  * Represents the schema definition for a single property within an object or array.
  * Defines validation rules like type, required status, length, range, and patterns.
  */
-interface SchemaProperty {
+interface SchemaProperty<T> {
   /**
    * The type of the property. Can be a single type or an array of types.\
    * Supported types: "string", "number", "boolean", "object", "array", "null", "bigint".
@@ -48,7 +48,7 @@ interface SchemaProperty {
   /**
    * Defines the schema for items in an array. This is used when the type is "array".
    */
-  items?: Omit<SchemaProperty, "items" | "customValidator">;
+  items?: Omit<SchemaProperty<T>, "items" | "customValidator">;
   /**
    * Defines the allowed values for the property. This is used when the type is "string" or "number".
    * The value must be one of the specified values in the enum array.
@@ -57,7 +57,7 @@ interface SchemaProperty {
   /**
    * Defines the schema for properties in an object. This is used when the type is "object".
    */
-  properties?: Record<string, SchemaProperty>;
+  properties?: Record<string, SchemaProperty<T>>;
   /**
    * Custom validation function that can be used to perform additional checks on the value.
    *
@@ -75,7 +75,7 @@ interface SchemaProperty {
  * @template T The type of the object being described by the schema.
  */
 type Schema<T> = {
-  [K in keyof T]: SchemaProperty | (T[K] extends Record<string, any> ? SchemaValidator<T[K]> : never);
+  [K in keyof T]: SchemaProperty<T>;
 };
 
 // Validation Return Type
@@ -133,7 +133,7 @@ export class SchemaValidator<T extends Record<string, any>> {
    */
   private validateObject(
     data: any,
-    schemaProperties: Record<string, SchemaProperty | SchemaValidator<any>>,
+    schemaProperties: Record<string, SchemaProperty<T>>,
     path: string,
     errors: ValidationError[],
   ): Partial<T> {
@@ -154,9 +154,11 @@ export class SchemaValidator<T extends Record<string, any>> {
 
       const propSchema = schemaProperties[propName];
 
-      if (propSchema instanceof SchemaValidator) {
+      if (propSchema.properties) {
         // If schemaProperties is a SchemaValidator, validate the data using it
-        const result = propSchema.validate(data);
+        const validator =
+          propSchema.properties instanceof SchemaValidator ? propSchema.properties : new SchemaValidator(propSchema.properties);
+        const result = validator.validate(value);
         if (!result.isValid) {
           errors.push(...result.errors);
         }
@@ -206,7 +208,7 @@ export class SchemaValidator<T extends Record<string, any>> {
   /**
    * Validates an array recursively against the schema
    */
-  private validateArray(data: any[], itemSchema: SchemaProperty, path: string, errors: ValidationError[]): any[] {
+  private validateArray(data: any[], itemSchema: SchemaProperty<T>, path: string, errors: ValidationError[]): any[] {
     if (!Array.isArray(data)) {
       errors.push({
         path,
@@ -235,7 +237,15 @@ export class SchemaValidator<T extends Record<string, any>> {
           itemSchema.properties
         ) {
           // Validate nested objects
-          validatedArray.push(this.validateObject(item, itemSchema.properties, itemPath, errors));
+          const validator =
+            itemSchema.properties instanceof SchemaValidator
+              ? itemSchema.properties
+              : new SchemaValidator(itemSchema.properties);
+          const res = validator.validate(item);
+          if (!res.isValid) {
+            errors.push(...res.errors);
+          }
+          validatedArray.push(res.value);
         } else if (this.hasType(itemSchema, "array") && Array.isArray(item) && itemSchema.items) {
           // Validate nested arrays
           validatedArray.push(this.validateArray(item, itemSchema.items, itemPath, errors));
@@ -253,7 +263,7 @@ export class SchemaValidator<T extends Record<string, any>> {
   /**
    * Checks if the schema contains a specific type
    */
-  private hasType(propSchema: SchemaProperty, type: SchemaType): boolean {
+  private hasType(propSchema: SchemaProperty<T>, type: SchemaType): boolean {
     if (Array.isArray(propSchema.type)) {
       return propSchema.type.includes(type);
     }
@@ -263,7 +273,7 @@ export class SchemaValidator<T extends Record<string, any>> {
   /**
    * Validates a single property against its schema
    */
-  private validateProperty(value: any, propSchema: SchemaProperty, path: string, errors: ValidationError[]): boolean {
+  private validateProperty(value: any, propSchema: SchemaProperty<T>, path: string, errors: ValidationError[]): boolean {
     // Null value check
     if (value === null) {
       if (!this.hasType(propSchema, "null")) {
@@ -346,7 +356,7 @@ export class SchemaValidator<T extends Record<string, any>> {
   /**
    * Validates a string value
    */
-  private validateString(value: string, propSchema: SchemaProperty, path: string, errors: ValidationError[]): boolean {
+  private validateString(value: string, propSchema: SchemaProperty<T>, path: string, errors: ValidationError[]): boolean {
     let isValid = true;
 
     if (propSchema.minLength !== undefined && value.length < propSchema.minLength) {
@@ -386,7 +396,7 @@ export class SchemaValidator<T extends Record<string, any>> {
   /**
    * Validates a number value
    */
-  private validateNumber(value: number, propSchema: SchemaProperty, path: string, errors: ValidationError[]): boolean {
+  private validateNumber(value: number, propSchema: SchemaProperty<T>, path: string, errors: ValidationError[]): boolean {
     let isValid = true;
 
     if (propSchema.minimum !== undefined) {
@@ -421,7 +431,7 @@ export class SchemaValidator<T extends Record<string, any>> {
   /**
    * Validates a BigInt value
    */
-  private validateBigInt(value: bigint, propSchema: SchemaProperty, path: string, errors: ValidationError[]): boolean {
+  private validateBigInt(value: bigint, propSchema: SchemaProperty<T>, path: string, errors: ValidationError[]): boolean {
     let isValid = true;
 
     if (propSchema.minimum !== undefined) {
@@ -454,7 +464,7 @@ export class SchemaValidator<T extends Record<string, any>> {
    *
    * Either a string or number
    */
-  private validateEnum(value: string | number, propSchema: SchemaProperty, path: string, errors: ValidationError[]): boolean {
+  private validateEnum(value: string | number, propSchema: SchemaProperty<T>, path: string, errors: ValidationError[]): boolean {
     if (propSchema.enum && !propSchema.enum.includes(value)) {
       errors.push({
         path,
