@@ -8,8 +8,7 @@
   import SiteHeader from "$lib/components/SiteHeader.svelte";
   import { APIRoutes, BASIC_GET_FETCH_INIT, BASIC_REQUEST_INIT } from "$lib/constants";
   import { gg } from "$lib/stores/guild.svelte";
-  import { numberToHex } from "$lib/utils/formatting";
-  import { Circle, MessageSquareText, MessagesSquare, XIcon } from "@lucide/svelte";
+  import { MessageSquareText, MessagesSquare, XIcon } from "@lucide/svelte";
   import equal from "fast-deep-equal/es6";
   import ky from "ky";
   import type { ITicketConfig } from "supportmail-types";
@@ -21,6 +20,7 @@
 
   const guildId = page.params.guildid;
   let config = $state<BasicTicketConfig | null>(null);
+  let selectorElement = $state<HTMLElement | null>(null);
 
   $effect(() => {
     const current = $state.snapshot(config);
@@ -254,21 +254,30 @@
         <p class="text-sm text-slate-400">Select roles or users to ping when a new ticket is created.</p>
         <div class="dy-dropdown dy-dropdown-start">
           <div
+            bind:this={selectorElement}
             tabindex="0"
             role="checkbox"
+            aria-checked={config.pings && config.pings.length > 0}
             class="bg-base-100 flex h-fit w-full flex-wrap justify-start gap-1 rounded border-[1px] border-slate-500 p-2 md:max-w-[500px]"
           >
             {#if config.pings && config.pings.length > 0}
               {#each config.pings as ping}
-                <DiscordMention id={ping[1]} typ={ping[0] == "@" ? "user" : "role"} />
+                <DiscordMention
+                  id={ping[1]}
+                  name={gg.roles?.find((r) => r.id === ping[1])?.name}
+                  typ={ping[0] === "@" ? "user" : "role"}
+                  roleColor={gg.roles?.find((r) => r.id === ping[1])?.color}
+                />
               {/each}
             {:else}
               <span class="text-slate-500 italic">No pings selected</span>
             {/if}
           </div>
           <RoleSelector
+            anchor={selectorElement}
+            exclude={config.pings?.map((ping) => ping[1])}
             onselect={(role) => {
-              config?.pings.push(["@", role.id]);
+              config?.pings.push(["@&", role.id]);
             }}
           />
         </div>
