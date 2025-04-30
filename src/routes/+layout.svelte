@@ -1,8 +1,8 @@
 <script lang="ts">
+  import "../app.css";
   import { guilds, loadGuilds } from "$lib/stores/guilds.svelte";
   import { loadDbUser, user } from "$lib/stores/user.svelte";
   import { onMount } from "svelte";
-  import "../app.css";
   import { afterNavigate, beforeNavigate, goto } from "$app/navigation";
   import { page } from "$app/state";
   import { site } from "$lib/stores/site.svelte";
@@ -63,7 +63,6 @@
   });
 </script>
 
-<!-- Layout for server selection or login -->
 <div style="display: contents;">
   {@render children()}
 </div>
