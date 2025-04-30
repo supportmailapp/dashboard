@@ -8,11 +8,12 @@
   import SiteHeader from "$lib/components/SiteHeader.svelte";
   import { APIRoutes, BASIC_GET_FETCH_INIT, BASIC_REQUEST_INIT } from "$lib/constants";
   import { gg } from "$lib/stores/guild.svelte";
-  import { MessageSquareText, MessagesSquare, XIcon } from "@lucide/svelte";
+  import { MessageSquareText, MessagesSquare, Plus, XIcon } from "@lucide/svelte";
   import equal from "fast-deep-equal/es6";
   import ky from "ky";
   import type { ITicketConfig } from "supportmail-types";
   import { onMount } from "svelte";
+  import { scale } from "svelte/transition";
 
   type BasicTicketConfig = Omit<ITicketConfig, "_id" | "creationMessage" | "closeMessage" | "feedback" | "pings"> & {
     pings: ["@" | "@&", string][];
@@ -20,7 +21,8 @@
 
   const guildId = page.params.guildid;
   let config = $state<BasicTicketConfig | null>(null);
-  let selectorElement = $state<HTMLElement | null>(null);
+  let addPingsBtnRef = $state<HTMLElement | null>(null);
+  let showRoleSelector = $state(false);
 
   $effect(() => {
     const current = $state.snapshot(config);
@@ -72,7 +74,20 @@
     const response = await ky.get(APIRoutes.configTicketsBase(guildId), BASIC_GET_FETCH_INIT);
 
     if (response.ok) {
-      const data = (await response.json()) as BasicTicketConfig;
+      const jsonData = (await response.json()) as BasicTicketConfig;
+      const data: BasicTicketConfig = {
+        ...jsonData,
+        anonym: {
+          enabled: jsonData.anonym?.enabled ?? false,
+          user: jsonData.anonym?.user ?? false,
+        },
+        pausedUntil: jsonData.pausedUntil?.value
+          ? {
+              value: jsonData.pausedUntil?.value ?? false,
+              date: jsonData.pausedUntil?.date ?? null,
+            }
+          : null,
+      };
       config = data;
       console.log("Loaded config", data);
       page.data.dataState.oldConfig = structuredClone(data);
@@ -131,7 +146,7 @@
         </div>
 
         {#if !!config.pausedUntil?.value}
-          <div class="border-base-300 flex flex-col gap-3 rounded-md border p-3">
+          <div class="border-base-300 flex flex-col gap-3 rounded-md border p-3" transition:scale={{ duration: 150 }}>
             <p class="text-sm text-slate-400">Choose how long to pause ticket creation:</p>
             <div class="dy-join dy-join-vertical w-full sm:w-max">
               <button
@@ -252,29 +267,32 @@
       <legend class="dy-fieldset-legend">Notify Roles/Users</legend>
       <div class="flex flex-col gap-3">
         <p class="text-sm text-slate-400">Select roles or users to ping when a new ticket is created.</p>
-        <div class="dy-dropdown dy-dropdown-start">
-          <div
-            bind:this={selectorElement}
-            tabindex="0"
-            role="checkbox"
-            aria-checked={config.pings && config.pings.length > 0}
-            class="bg-base-100 flex h-fit w-full flex-wrap justify-start gap-1 rounded border-[1px] border-slate-500 p-2 md:max-w-[500px]"
+        <div
+          tabindex="0"
+          role="checkbox"
+          aria-checked={config.pings && config.pings.length > 0}
+          class="bg-base-100 flex h-fit w-full max-w-[500px] flex-wrap justify-start gap-1 rounded border-[1px] border-slate-500 p-2"
+        >
+          {#if config.pings && config.pings.length > 0}
+            {#each config.pings as ping}
+              <DiscordMention
+                id={ping[1]}
+                name={gg.roles?.find((r) => r.id === ping[1])?.name}
+                typ={ping[0] === "@" ? "user" : "role"}
+                roleColor={gg.roles?.find((r) => r.id === ping[1])?.color}
+              />
+            {/each}
+          {/if}
+          <button
+            bind:this={addPingsBtnRef}
+            class="bg-base-200 hover:bg-base-200/70 border-base-200 aspect-square size-fit rounded border p-1"
+            onclick={() => (showRoleSelector = !showRoleSelector)}
           >
-            {#if config.pings && config.pings.length > 0}
-              {#each config.pings as ping}
-                <DiscordMention
-                  id={ping[1]}
-                  name={gg.roles?.find((r) => r.id === ping[1])?.name}
-                  typ={ping[0] === "@" ? "user" : "role"}
-                  roleColor={gg.roles?.find((r) => r.id === ping[1])?.color}
-                />
-              {/each}
-            {:else}
-              <span class="text-slate-500 italic">No pings selected</span>
-            {/if}
-          </div>
+            <Plus class="size-4" />
+          </button>
           <RoleSelector
-            anchor={selectorElement}
+            bind:show={showRoleSelector}
+            text="Add a role"
             exclude={config.pings?.map((ping) => ping[1])}
             onselect={(role) => {
               config?.pings.push(["@&", role.id]);
@@ -293,14 +311,14 @@
       <div class="flex flex-col gap-4">
         <div class="dy-form-control w-fit">
           <label class="dy-label cursor-pointer gap-2">
+            <input type="checkbox" class="dy-toggle dy-toggle-success" bind:checked={config.anonym.enabled} />
             <span class="dy-label-text">Allow Anonymous Staff Replies</span>
-            <input type="checkbox" class="dy-toggle" bind:checked={config.anonym.enabled} />
           </label>
         </div>
         <div class="dy-form-control w-fit">
           <label class="dy-label cursor-pointer gap-2">
+            <input type="checkbox" class="dy-toggle dy-toggle-success" bind:checked={config.anonym.user} />
             <span class="dy-label-text">Allow Anonymous Ticket Creation</span>
-            <input type="checkbox" class="dy-toggle" bind:checked={config.anonym.user} />
           </label>
         </div>
       </div>
