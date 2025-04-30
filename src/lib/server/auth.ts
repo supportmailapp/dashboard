@@ -71,3 +71,8 @@ export function fetchDBUser(userId: string) {
   if (cachedUser) return new Promise<IDBUser>((resolve) => resolve(cachedUser));
   return DBUser.findOne({ id: userId }, null, { lean: true });
 }
+
+export async function hasPremium(guildId: string, userId: string | null = null) {
+  return false;
+  /* Not implemented yet... */
+}
