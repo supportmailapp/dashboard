@@ -6,6 +6,7 @@
   import SiteHeader from "$lib/components/SiteHeader.svelte";
   import { APIRoutes, BASIC_GET_FETCH_INIT, BASIC_REQUEST_INIT, NavigationItems, SupportedLanguages } from "$lib/constants";
   import { gg } from "$lib/stores/guild.svelte";
+  import { site } from "$lib/stores/site.svelte";
   import { user } from "$lib/stores/user.svelte";
   import { CircleCheck, CircleX, Info, TriangleAlert } from "@lucide/svelte";
   import equal from "fast-deep-equal/es6";
@@ -75,6 +76,7 @@
       config = _config;
       console.log("Loaded config", _config);
       page.data.dataState.oldConfig = structuredClone(_config);
+      site.showLoading = false;
     } else {
       console.error(`Failed to load guild config: ${response.status} ${response.statusText}`, [response]);
     }
@@ -116,13 +118,13 @@
   </div>
 {/if}
 
-{#if config}
-  <!-- Language Selector -->
-  <section>
-    <h2 class="section-header">Server Settings</h2>
-    <div class="flex flex-col gap-3">
-      <fieldset class="dy-fieldset bg-base-200 border-base-300 rounded-box w-full max-w-md p-4">
-        <legend class="dy-fieldset-legend">Server Language</legend>
+<!-- Language Selector -->
+<section>
+  <h2 class="section-header">Server Settings</h2>
+  <div class="flex flex-col gap-3">
+    <fieldset class="dy-fieldset bg-base-200 border-base-300 rounded-box w-full max-w-md p-4">
+      <legend class="dy-fieldset-legend">Server Language</legend>
+      {#if !!config?.lang}
         <select class="dy-select dy-select-bordered w-full" bind:value={config.lang}>
           {#each SupportedLanguages as language}
             <option value={language.value}>
@@ -133,73 +135,71 @@
         <p class="label text-sm text-slate-400">
           This will be used for the bot's public responses as well as when a user does not have a language set.
         </p>
-      </fieldset>
-    </div>
-  </section>
-
-  <section>
-    <h2 class="section-header">Overview</h2>
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-      <div class="dy-card bg-base-200 shadow-xl">
-        <div class="dy-card-body">
-          <h3 class="dy-card-title">Ticket Forum</h3>
-          {#if gg.channels && config?.ticketForum}
-            <div>
-              <DiscordChannel
-                id={config?.ticketForum}
-                name={gg.channels.find((c) => c.id === config?.ticketForum)?.name || "Unknown"}
-              />
-            </div>
-          {:else if !gg.channels}
-            <LoadingDots />
-          {:else}
-            <p class="text-warning">No ticket forum configured</p>
-          {/if}
-        </div>
-      </div>
-
-      <div class="dy-card bg-base-200 shadow-xl">
-        <div class="dy-card-body">
-          <h3 class="dy-card-title">Alert Channel</h3>
-          {#if gg.channels && config?.alertChannel}
-            <div>
-              <DiscordChannel
-                id={config?.alertChannel}
-                name={gg.channels.find((c) => c.id === config?.alertChannel)?.name || "Unknown"}
-              />
-            </div>
-          {:else if !gg.channels}
-            <LoadingDots />
-          {:else}
-            <p class="text-warning">No alert channel configured</p>
-          {/if}
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Navigation Cards -->
-  <section class="mt-6">
-    <h2 class="mb-3 text-xl font-semibold">Dashboard Navigation</h2>
-    <div class="nav-grid">
-      {#each navigation as item}
-        <a
-          href={item.href}
-          class="nav-grid-item dy-card {item.color} text-neutral-content transition-opacity duration-150 hover:opacity-70"
-        >
-          <div class="dy-card-body">
-            <h3 class="dy-card-title"><item.icon class="size-8" />{item.name}</h3>
-            <p>{item.description}</p>
-          </div>
-        </a>
-      {/each}
-    </div>
-  </section>
-{:else}
-  <div class="p-10">
-    <LoadingDots />
+      {:else}
+        <LoadingDots />
+      {/if}
+    </fieldset>
   </div>
-{/if}
+</section>
+
+<section>
+  <h2 class="section-header">Overview</h2>
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <div class="dy-card bg-base-200 shadow-xl">
+      <div class="dy-card-body">
+        <h3 class="dy-card-title">Ticket Forum</h3>
+        {#if gg.channels && config?.ticketForum}
+          <div>
+            <DiscordChannel
+              id={config?.ticketForum}
+              name={gg.channels.find((c) => c.id === config?.ticketForum)?.name || "Unknown"}
+            />
+          </div>
+        {:else if !gg.channels}
+          <LoadingDots />
+        {:else}
+          <p class="text-warning">No ticket forum configured</p>
+        {/if}
+      </div>
+    </div>
+
+    <div class="dy-card bg-base-200 shadow-xl">
+      <div class="dy-card-body">
+        <h3 class="dy-card-title">Alert Channel</h3>
+        {#if gg.channels && config?.alertChannel}
+          <div>
+            <DiscordChannel
+              id={config?.alertChannel}
+              name={gg.channels.find((c) => c.id === config?.alertChannel)?.name || "Unknown"}
+            />
+          </div>
+        {:else if !gg.channels}
+          <LoadingDots />
+        {:else}
+          <p class="text-warning">No alert channel configured</p>
+        {/if}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Navigation Cards -->
+<section class="mt-6">
+  <h2 class="mb-3 text-xl font-semibold">Dashboard Navigation</h2>
+  <div class="nav-grid">
+    {#each navigation as item}
+      <a
+        href={item.href}
+        class="nav-grid-item dy-card {item.color} text-neutral-content transition-opacity duration-150 hover:opacity-70"
+      >
+        <div class="dy-card-body">
+          <h3 class="dy-card-title"><item.icon class="size-8" />{item.name}</h3>
+          <p>{item.description}</p>
+        </div>
+      </a>
+    {/each}
+  </div>
+</section>
 
 <style>
   .nav-grid {
@@ -212,11 +212,5 @@
       flex: 1 1 250px;
       margin: 5px;
     }
-  }
-
-  section {
-    margin-top: 1.5rem;
-    display: flex;
-    flex-direction: column;
   }
 </style>
