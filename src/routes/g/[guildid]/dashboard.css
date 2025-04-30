@@ -9,6 +9,12 @@
     --guild-header-height: 40px;
   }
 
+  section {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+  }
+
   #guild-header {
     @apply text-sm;
     height: var(--guild-header-height);
@@ -137,7 +143,7 @@
     z-index: 10;
   }
 
-  .discord-channel {
+  .discord-mention {
     @apply text-sm font-medium;
     @apply transition-colors duration-100 ease-in;
     background-color: color-mix(in oklab, var(--dc-blurple) 65%, transparent);
