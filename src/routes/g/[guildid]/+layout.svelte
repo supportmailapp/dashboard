@@ -42,17 +42,23 @@
     {/if}
     <span class="text-base font-semibold">{gg.guild?.name || "..."}</span>
   </button>
-  <button
-    class="flex flex-row items-center gap-1 rounded p-1 text-xs transition-colors duration-100 hover:bg-slate-800"
-    onclick={() => {
-      if (!gg.guild) return;
-      navigator.clipboard.writeText(gg.guild.id || "Guild ID not found - please report this issue.");
-      alert("Server ID copied to clipboard!");
-    }}
-  >
-    <Files size={18} />
-    <span class="hidden sm:block">Copy ID</span>
-  </button>
+  {#if gg.guild}
+    <button
+      class="flex flex-row items-center gap-1 rounded p-1 text-xs transition-colors duration-100 hover:bg-slate-800"
+      onclick={() => {
+        if (!gg.guild) return;
+        navigator.clipboard.writeText(gg.guild.id || "Guild ID not found - please report this issue.");
+        alert("Server ID copied to clipboard!");
+      }}
+    >
+      <Files size={18} />
+      <span class="hidden sm:block">Copy ID</span>
+    </button>
+  {:else}
+    <div class="flex flex-row items-center gap-1 rounded p-1 text-xs">
+      <div class="dy-skeleton h-4 w-16 rounded"></div>
+    </div>
+  {/if}
 </div>
 
 <div class="page-wrapper">
