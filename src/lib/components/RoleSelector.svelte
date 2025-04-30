@@ -69,7 +69,7 @@
     {#if text}
       <h1 class="text-lg font-semibold">{text}</h1>
     {/if}
-    <label class="dy-input h-8">
+    <label class="dy-input h-8 w-full">
       <input type="search" bind:value={search} placeholder="Role..." class="h-8" />
     </label>
     {#if filteredRoles.length}
