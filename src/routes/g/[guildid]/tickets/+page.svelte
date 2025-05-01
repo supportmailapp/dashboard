@@ -8,13 +8,19 @@
   import SiteHeader from "$lib/components/SiteHeader.svelte";
   import { APIRoutes, BASIC_GET_FETCH_INIT, BASIC_REQUEST_INIT } from "$lib/constants";
   import { gg } from "$lib/stores/guild.svelte";
-  import { MessageSquareText, MessagesSquare, Plus, X } from "@lucide/svelte";
+  import timezones, { getTimezone } from "$lib/utils/timezones";
+  import { Files, MessageSquareText, MessagesSquare, Plus, X } from "@lucide/svelte";
   import dayjs from "dayjs";
+  import utc from "dayjs/plugin/utc";
+  import dayjsTimezone from "dayjs/plugin/timezone";
   import equal from "fast-deep-equal";
   import ky, { type KyResponse } from "ky";
   import type { ITicketConfig } from "supportmail-types";
   import { onMount } from "svelte";
   import { blur, scale } from "svelte/transition";
+
+  dayjs.extend(utc);
+  dayjs.extend(dayjsTimezone);
 
   type BasicTicketConfig = Omit<ITicketConfig, "_id" | "creationMessage" | "closeMessage" | "feedback" | "pings" | "tags"> & {
     pings: ["@" | "@&", string][];
@@ -31,15 +37,32 @@
    * */
   let isPausedUntil = $state<Date | null>(null);
   let pauseType = $state<"infinite" | "datetime" | "duration">("infinite");
-  let pauseDateInput = $state<string>(new Date().toISOString());
-  let estimatedResumeDate = $derived.by<Date | null>(() => {
+  let pauseDateInput = $derived<string>(new Date().toISOString());
+  let timezone = $state<string>(Intl.DateTimeFormat().resolvedOptions().timeZone);
+  let tzSearch = $state({
+    value: "",
+    show: false,
+    reset() {
+      this.value = "";
+      this.show = false;
+    },
+  });
+  let filteredTimezones = $derived(
+    timezones.filter(
+      (tz) =>
+        tz.name.toLowerCase().includes(tzSearch.value.toLowerCase()) ||
+        tz.tzCode.toLowerCase().includes(tzSearch.value.toLowerCase()),
+    ),
+  );
+
+  let estimatedResumeDate = $derived.by<dayjs.Dayjs | null>(() => {
     if (pauseType === "infinite") {
       return null;
     } else if (pauseType === "datetime") {
-      return dayjs(pauseDateInput).toDate() ?? null;
+      return dayjs(pauseDateInput).tz(timezone, true) ?? null;
     } else {
       return pauseDurations.length > 0
-        ? pauseDurations.reduce((acc, duration) => acc.add(duration.amount, duration.unit), dayjs()).toDate()
+        ? pauseDurations.reduce((acc, duration) => acc.add(duration.amount, duration.unit), dayjs())
         : null;
     }
   });
@@ -273,23 +296,60 @@
             {#if pauseType === "datetime"}
               <fieldset class="dy-fieldset">
                 <legend class="dy-fieldset-legend">Pause Until</legend>
-                <!--
-                  TODO: HOW do we deal with timezones? Local TZ and then into dayjs with it?
-                  Also, Get Back to the github issue about this.
-                  Exmaple: If I put in the time 07:27, the server loggs 05:27, which doesn't seem correct.
-                  - Test, if it still works when site is refreshed. If so, no issue.
-                -->
                 <input
                   type="datetime-local"
                   placeholder="Select date and time"
                   class="dy-input dy-input-bordered w-full max-w-xs"
                   value={pauseDateInput}
+                  min={new Date().toISOString()}
                   onchangecapture={(e) => {
                     // No, we can't bind the value to the input, because we need an ISOString (because of timezone...)
                     pauseDateInput = dayjs(e.currentTarget.value).toISOString();
                     if (config) config.pausedUntil = { value: true, date: new Date(pauseDateInput) };
                   }}
                 />
+                <label class="dy-input dy-input-primary dy-input-bordered h-8 w-full max-w-xs">
+                  <input
+                    readonly
+                    type="text"
+                    value={timezone.replace("_", " ")}
+                    placeholder="Timezone"
+                    class="w-full truncate"
+                  />
+                </label>
+                <div class="relative">
+                  <input
+                    type="text"
+                    id="timezone-search"
+                    placeholder="Search your timezone..."
+                    class="dy-input dy-input-bordered w-full max-w-xs"
+                    bind:value={tzSearch.value}
+                    onfocusin={() => (tzSearch.show = true)}
+                    onfocusout={() => (tzSearch.show = false)}
+                    autocomplete="off"
+                  />
+                  {#if tzSearch.show}
+                    <div
+                      class="bg-base-200 border-neutral absolute z-10 mt-1 max-h-64 w-full max-w-xs overflow-y-auto rounded-md border-[1.5px] shadow-lg"
+                      transition:scale={{ duration: 150, delay: 150 }}
+                    >
+                      {#each filteredTimezones as tz}
+                        <button
+                          class="w-full px-4 py-2 text-left {timezone !== tz.tzCode ? 'hover:bg-neutral/60' : 'bg-neutral/60'}"
+                          onclick={() => {
+                            timezone = tz.tzCode;
+                            tzSearch.reset();
+                          }}
+                        >
+                          {tz.label}
+                        </button>
+                      {/each}
+                      {#if filteredTimezones.length === 0}
+                        <div class="px-4 py-2 text-sm text-slate-400">No results found</div>
+                      {/if}
+                    </div>
+                  {/if}
+                </div>
               </fieldset>
             {:else if pauseType === "duration"}
               <div class="flex w-full flex-col gap-1 sm:max-w-sm">
@@ -360,7 +420,7 @@
                   <span class="mx-auto font-semibold sm:ml-0">Estimated Resume Date</span>
                   <span class="mx-auto sm:mr-0 sm:ml-auto">
                     {estimatedResumeDate
-                      ? estimatedResumeDate.toLocaleString("en-us", {
+                      ? estimatedResumeDate.toDate().toLocaleString("en-us", {
                           dateStyle: "medium",
                           timeStyle: "short",
                           hourCycle: "h24",
