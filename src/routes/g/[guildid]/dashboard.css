@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    --guild-header-height: 40px;
+    --guild-header-height: 50px;
   }
 
   section {
@@ -15,9 +15,20 @@
     flex-direction: column;
   }
 
+  main {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-base-100/70);
+    padding: 0.75rem;
+  }
+}
+
+@layer components {
   #guild-header {
-    @apply text-sm shadow-lg;
-    position: fixed;
+    @apply p-2 text-sm shadow-lg md:justify-center;
+    position: sticky;
     top: 0;
     left: 0;
     right: 0;
@@ -25,44 +36,40 @@
     display: flex;
     flex-direction: row;
     gap: 0.5rem;
-    justify-content: center;
     align-items: center;
     background-color: var(--color-base-200);
     z-index: 100;
   }
 
   .page-wrapper {
-    @apply mt-10;
     display: block;
     position: relative;
     min-height: max-content;
-    height: 100vh;
+    height: calc(100vh - var(--guild-header-height));
     max-width: 1200px;
-    margin: 0 auto;
+    margin-inline: auto;
   }
-
-  .desktop-nav-wrapper {
-    display: block;
+  .desktop-nav {
+    @apply gap-2 p-2 pt-4 text-base;
     position: fixed;
-    top: var(--guild-header-height);
+    top: 0;
     bottom: 0;
     width: var(--sidebar-width);
-    height: 100vh;
-    overflow-x: hidden;
-    overflow-y: auto;
-    border-right: 1px solid;
-    border-color: var(--color-base-300);
-  }
+    height: calc(100vh - var(--guild-header-height));
+    margin-top: var(--guild-header-height);
 
-  nav.desktop-nav {
-    @apply gap-2 p-2 pt-4 text-base;
     display: flex;
     flex-direction: column;
-    background-color: transparent;
-    user-select: none;
-    width: 100%;
-    height: calc(100% - var(--footer-height));
     align-items: center;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    background-color: transparent;
+    border-right: 1px solid;
+    border-color: var(--color-base-200);
+
+    user-select: none;
 
     ul {
       @apply flex-row gap-1 md:flex-col;
@@ -112,32 +119,20 @@
     padding-top: 0.5rem;
     width: 100%;
     height: calc(100% - var(--footer-height));
-    margin-top: var(--guild-header-height);
 
     @media (min-width: 48rem) {
       width: calc(100% - var(--sidebar-width));
     }
   }
 
-  main {
-    position: relative;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    background-color: var(--color-base-100/70);
-    padding: 0.75rem;
-  }
-}
-
-@layer components {
   .section-header {
     @apply mb-3 text-xl font-semibold;
   }
 
   .mobile-nav {
-    @apply bg-neutral text-neutral-content/70 border-base-300;
-    @apply gap-2 border-t-[1px] px-2 py-2.5;
-    position: sticky;
+    @apply bg-base-300 text-base-content/70;
+    @apply gap-2 px-2 py-2.5;
+    position: fixed;
     right: 0;
     left: 0;
     bottom: 0;
@@ -146,7 +141,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     place-items: center;
-    z-index: 10;
+    z-index: 500;
   }
 
   .discord-mention {
@@ -195,6 +190,22 @@
   .dy-toggle {
     /* The toggle is very big by default */
     @apply dy-toggle-xs;
+  }
+
+  .save-alert-container {
+    @apply px-4 py-2 md:ml-[18rem];
+    display: flex;
+    justify-content: center;
+    background-color: transparent;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+
+    button {
+      @apply dy-btn;
+    }
   }
 }
 
