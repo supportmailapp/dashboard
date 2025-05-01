@@ -355,7 +355,7 @@ export class SchemaValidator<T extends Record<string, any>> {
   private getValueType(value: any): SchemaType {
     if (value === null) return "null";
     else if (Array.isArray(value)) return "array";
-    else if (dayjs(value).isValid() && Object.prototype.toString.call(value) === "[object Date]") return "date";
+    else if (dayjs(value).isValid()) return "date";
     else if (typeof value === "object") return "object";
     else if (typeof value === "string") return "string";
     else if (typeof value === "number") return "number";
