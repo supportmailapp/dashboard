@@ -22,28 +22,45 @@
 
   const guildId = page.params.guildid;
   let config = $state<BasicTicketConfig | null>(null);
-  let addPingsBtnRef = $state<HTMLElement | null>(null);
   let showRoleSelector = $state(false);
+
   /**
-   * This state is partially independent of the config state.
+   * This is used only for showing that tickets are currently paused.
    *
-   * Use for display and manually resuming.
-   *
-   * Is set once after loading and when manually resuming.
-   */
-  let pausedUntilDate = $state<Date | null>(new Date());
+   * has to be set null again when config is modifed.
+   * */
+  let isPausedUntil = $state<Date | null>(null);
+  let pauseType = $state<"infinite" | "datetime" | "duration">("infinite");
+  let pauseDateInput = $state<string>(new Date().toISOString());
+  let estimatedResumeDate = $derived.by<Date | null>(() => {
+    if (pauseType === "infinite") {
+      return null;
+    } else if (pauseType === "datetime") {
+      return dayjs(pauseDateInput).toDate() ?? null;
+    } else {
+      return pauseDurations.length > 0
+        ? pauseDurations.reduce((acc, duration) => acc.add(duration.amount, duration.unit), dayjs()).toDate()
+        : null;
+    }
+  });
 
   $effect(() => {
     const current = $state.snapshot(config);
     console.debug("Old config", page.data.dataState.oldConfig);
     console.debug("New config", current);
-    if (config !== null) {
+    if (current !== null) {
       if (equal(page.data.dataState.oldConfig, current)) {
         console.log("No changes detected");
         page.data.dataState.unsaved = false;
       } else {
         console.log("Changes detected");
         page.data.dataState.unsaved = true;
+
+        if (!equal((page.data.dataState.oldConfig as any)?.pausedUntil?.date ?? null, current?.pausedUntil?.date ?? null)) {
+          isPausedUntil = null;
+        } else {
+          isPausedUntil = current?.pausedUntil?.date ?? null;
+        }
       }
     }
   });
@@ -56,7 +73,7 @@
     }
     data.pausedUntil = {
       value: !!data.pausedUntil?.value,
-      date: estimatedResumeDate,
+      date: (estimatedResumeDate?.toISOString() ?? null) as any, // We need to ship it to the server as a string
     };
 
     page.data.dataState.saveProgress = 20;
@@ -92,6 +109,8 @@
   page.data.dataState.revert = () => {
     console.log("Reverting changes");
     config = page.data.dataState.oldConfig as BasicTicketConfig;
+    isPausedUntil = $state.snapshot(config.pausedUntil?.date) ?? null;
+    pauseType = !!$state.snapshot(config.pausedUntil?.date) ? "datetime" : "infinite";
   };
 
   async function loadTicketConfig() {
@@ -108,14 +127,18 @@
         pausedUntil: jsonData.pausedUntil?.value
           ? {
               value: jsonData.pausedUntil?.value ?? false,
-              date: jsonData.pausedUntil?.date ?? null,
+              // jsonData.pausedUntil?.date is a ISOString because we can't ship Date objects in HTTP requests
+              date: jsonData.pausedUntil?.date ? new Date(jsonData.pausedUntil?.date) : null,
             }
           : null,
       };
       config = data;
       console.log("Loaded config", data);
       page.data.dataState.oldConfig = structuredClone(data);
-      pausedUntilDate = new Date(data.pausedUntil?.date ?? "0");
+      isPausedUntil = data.pausedUntil?.date ?? null;
+      if (isPausedUntil) {
+        pauseType = "datetime";
+      }
     } else {
       console.error(`Failed to load ticket config: ${response.status} ${response.statusText}`, [response]);
     }
@@ -160,19 +183,6 @@
       [] as { name: "Minutes" | "Hours" | "Days"; value: "m" | "h" | "d" }[],
     ),
   );
-  // Placeholder for pause type
-  let pauseType = $state<"infinite" | "datetime" | "duration">("infinite");
-  let estimatedResumeDate = $derived.by<Date | null>(() => {
-    if (pauseType === "infinite") {
-      return null;
-    } else if (pauseType === "datetime") {
-      return config?.pausedUntil?.date ?? null;
-    } else {
-      return pauseDurations.length > 0
-        ? pauseDurations.reduce((acc, duration) => acc.add(duration.amount, duration.unit), dayjs()).toDate()
-        : null;
-    }
-  });
 </script>
 
 <SiteHeader>Tickets</SiteHeader>
@@ -204,19 +214,22 @@
             <input
               type="checkbox"
               class="dy-toggle dy-toggle-warning"
-              checked={!!pausedUntilDate || config.pausedUntil?.value || false}
+              checked={config.pausedUntil?.value || false}
               onchange={(e) => {
                 if (config && e.currentTarget.checked) {
                   config.pausedUntil = { value: true, date: null };
                 } else if (config && !e.currentTarget.checked) {
-                  config.pausedUntil = null;
+                  config.pausedUntil = { value: false, date: null };
+                }
+                if (isPausedUntil !== null) {
+                  isPausedUntil = null;
                 }
               }}
             />
           </label>
         </div>
 
-        {#if !!config.pausedUntil?.value}
+        {#if !isPausedUntil && !!config.pausedUntil?.value}
           <div class="border-base-300 flex flex-col gap-3 rounded-md border p-3" transition:scale={{ duration: 150 }}>
             <p class="text-sm text-slate-400">Choose how long to pause ticket creation:</p>
             <div role="tablist" class="dy-tabs-box flex h-auto w-full flex-col sm:flex-row">
@@ -237,7 +250,7 @@
                 class:dy-tab-active={pauseType === "datetime"}
                 onclickcapture={() => {
                   pauseType = "datetime";
-                  if (config) config.pausedUntil = { value: true, date: new Date() };
+                  if (config) config.pausedUntil = { value: true, date: null };
                 }}
               >
                 Until Date/Time
@@ -256,71 +269,62 @@
             </div>
 
             {#if pauseType === "datetime"}
-              <label class="dy-form-control w-full max-w-xs">
-                <div class="dy-label">
-                  <span class="dy-label-text">Pause Until</span>
-                </div>
+              <fieldset class="dy-fieldset">
+                <legend class="dy-fieldset-legend">Pause Until</legend>
                 <input
                   type="datetime-local"
                   placeholder="Select date and time"
                   class="dy-input dy-input-bordered w-full max-w-xs"
-                  value={pausedUntilDate}
-                  onchange={(e) => {
-                    const date = new Date(e.currentTarget.value);
-                    if (config) config.pausedUntil = { value: true, date };
-                    pausedUntilDate = date;
-                  }}
+                  bind:value={pauseDateInput}
                 />
-              </label>
+              </fieldset>
             {:else if pauseType === "duration"}
               <div class="flex w-full flex-col gap-1 sm:max-w-sm">
-                {#key pauseDurations}
-                  {#each pauseDurations as duration}
-                    <div class="dy-join dy-join-horizontal w-full items-end">
-                      <input
-                        bind:value={duration.amount}
-                        type="number"
-                        placeholder="Duration"
-                        class="dy-join-item dy-input dy-input-bordered w-full max-w-xs"
-                        min="1"
-                        max={duration.unit === "m" ? 59 : duration.unit === "h" ? 23 : 30}
-                      />
-                      <div class="dy-dropdown dy-dropdown-center">
-                        <button tabindex="0" class="dy-input w-24 cursor-pointer border-x-0">
-                          {allDurationUnits.find((u) => u.value === duration.unit)?.name}
-                        </button>
-                        <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-                        <ul tabindex="0" class="dy-dropdown-content dy-menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
-                          {#if availableUnits.length === 0}
-                            <li>
-                              <button disabled class="dy-btn dy-btn-disabled">No available units</button>
-                            </li>
-                          {:else}
-                            {#each availableUnits as unit}
-                              <li>
-                                <button
-                                  onclickcapture={() => {
-                                    duration.unit = unit.value;
-                                  }}
-                                >
-                                  {unit.name}
-                                </button>
-                              </li>
-                            {/each}
-                          {/if}
-                        </ul>
-                      </div>
-                      <button
-                        class="dy-btn dy-btn-error dy-join-item dy-btn-square w-10"
-                        onclick={() => {
-                          pauseDurations = pauseDurations.filter((d) => d !== duration);
-                        }}
-                      >
-                        <X class="size-4" />
+                {#each pauseDurations as duration}
+                  <div class="dy-join dy-join-horizontal w-full items-end">
+                    <input
+                      bind:value={duration.amount}
+                      type="number"
+                      placeholder="Duration"
+                      class="dy-join-item dy-input dy-input-bordered w-full max-w-xs"
+                      min="1"
+                      max={duration.unit === "m" ? 59 : duration.unit === "h" ? 23 : 30}
+                    />
+                    <div class="dy-dropdown dy-dropdown-center">
+                      <button tabindex="0" class="dy-input w-24 cursor-pointer border-x-0">
+                        {allDurationUnits.find((u) => u.value === duration.unit)?.name}
                       </button>
+                      <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+                      <ul tabindex="0" class="dy-dropdown-content dy-menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+                        {#if availableUnits.length === 0}
+                          <li>
+                            <button disabled class="dy-btn dy-btn-disabled">No available units</button>
+                          </li>
+                        {:else}
+                          {#each availableUnits as unit}
+                            <li>
+                              <button
+                                onclickcapture={() => {
+                                  duration.unit = unit.value;
+                                }}
+                              >
+                                {unit.name}
+                              </button>
+                            </li>
+                          {/each}
+                        {/if}
+                      </ul>
                     </div>
-                  {/each}
-                {/key}
+                    <button
+                      class="dy-btn dy-btn-error dy-join-item dy-btn-square w-10"
+                      onclick={() => {
+                        pauseDurations = pauseDurations.filter((d) => d !== duration);
+                      }}
+                    >
+                      <X class="size-4" />
+                    </button>
+                  </div>
+                {/each}
                 {#if pauseDurations.length < 3}
                   <!-- Add new duration group button -->
                   <button
@@ -353,6 +357,22 @@
                 </div>
               {/if}
             {/if}
+          </div>
+        {:else if isPausedUntil}
+          <div class="dy-alert dy-alert-warning dy-alert-vertical">
+            <h1 class="font-semibold">Ticket Creation is Paused</h1>
+            <p class="text-sm">
+              {#if config.pausedUntil?.date}
+                Resumes on {isPausedUntil.toLocaleString("en-us", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                  hourCycle: "h24",
+                })}.
+              {:else}
+                Resumes when unpaused.
+              {/if}
+            </p>
+            <p class="text-sm">To unpause, please uncheck the "Pause Ticket Creation" option above.</p>
           </div>
         {/if}
       </div>
@@ -405,7 +425,6 @@
             {/each}
           {/if}
           <button
-            bind:this={addPingsBtnRef}
             class="bg-base-200 hover:bg-base-200/70 border-base-200 aspect-square size-fit rounded border p-1"
             onclick={() => (showRoleSelector = !showRoleSelector)}
           >
