@@ -13,6 +13,7 @@ import {
   type IReportConfig,
   type IGuildFlags,
   type IDBGuild,
+  type PausedUntil,
 } from "supportmail-types";
 
 const CustomMessageSchema = new Schema<ICustomMessage>(
@@ -73,9 +74,17 @@ const statusTagsSchema = new Schema<IStatusTags>(
   { id: false },
 );
 
+const pausedUntilSchema = new Schema<PausedUntil>(
+  {
+    value: { type: Boolean, default: false },
+    date: { type: Date, default: null }, // timestamp when it should resume
+  },
+  { _id: false },
+);
+
 const ticketConfigSchema = new Schema<ITicketConfig>({
   enabled: { type: Boolean, default: false },
-  pausedUntil: { type: String, default: null }, // ISO timestamp if the date + time when it should resume
+  pausedUntil: { type: pausedUntilSchema, default: { value: false, date: null } }, // ISO timestamp if the date + time when it should resume
   forumId: { type: String, default: null },
   tags: { type: statusTagsSchema, required: false },
   anonym: {
@@ -102,7 +111,7 @@ const reportLimitsSchema = new Schema<ReportLimitsConfig>(
 
 const reportConfigSchema = new Schema<IReportConfig>({
   enabled: { type: Boolean, default: false },
-  pausedUntil: { type: Date, default: null }, // timestamp when it should resume
+  pausedUntil: { type: pausedUntilSchema, default: { value: false, date: null } },
   channelId: { type: String, default: null },
   actionsEnabled: { type: Boolean, default: true },
   channels: {

@@ -10,7 +10,7 @@
   import { gg } from "$lib/stores/guild.svelte";
   import { MessageSquareText, MessagesSquare, Plus, X } from "@lucide/svelte";
   import dayjs from "dayjs";
-  import equal from "fast-deep-equal/es6";
+  import equal from "fast-deep-equal";
   import ky, { type KyResponse } from "ky";
   import type { ITicketConfig } from "supportmail-types";
   import { onMount } from "svelte";
@@ -24,6 +24,14 @@
   let config = $state<BasicTicketConfig | null>(null);
   let addPingsBtnRef = $state<HTMLElement | null>(null);
   let showRoleSelector = $state(false);
+  /**
+   * This state is partially independent of the config state.
+   *
+   * Use for display and manually resuming.
+   *
+   * Is set once after loading and when manually resuming.
+   */
+  let pausedUntilDate = $state<Date | null>(new Date());
 
   $effect(() => {
     const current = $state.snapshot(config);
@@ -107,6 +115,7 @@
       config = data;
       console.log("Loaded config", data);
       page.data.dataState.oldConfig = structuredClone(data);
+      pausedUntilDate = new Date(data.pausedUntil?.date ?? "0");
     } else {
       console.error(`Failed to load ticket config: ${response.status} ${response.statusText}`, [response]);
     }
@@ -195,7 +204,7 @@
             <input
               type="checkbox"
               class="dy-toggle dy-toggle-warning"
-              checked={config.pausedUntil?.value || false}
+              checked={!!pausedUntilDate || config.pausedUntil?.value || false}
               onchange={(e) => {
                 if (config && e.currentTarget.checked) {
                   config.pausedUntil = { value: true, date: null };
@@ -255,7 +264,12 @@
                   type="datetime-local"
                   placeholder="Select date and time"
                   class="dy-input dy-input-bordered w-full max-w-xs"
-                  bind:value={config.pausedUntil.date}
+                  value={pausedUntilDate}
+                  onchange={(e) => {
+                    const date = new Date(e.currentTarget.value);
+                    if (config) config.pausedUntil = { value: true, date };
+                    pausedUntilDate = date;
+                  }}
                 />
               </label>
             {:else if pauseType === "duration"}

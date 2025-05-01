@@ -9,9 +9,9 @@
   import { site } from "$lib/stores/site.svelte";
   import { user } from "$lib/stores/user.svelte";
   import { CircleCheck, CircleX, Info, TriangleAlert } from "@lucide/svelte";
-  import equal from "fast-deep-equal/es6";
+  import equal from "fast-deep-equal";
   import ky from "ky";
-  import type { FlattenMaps } from "mongoose";
+  import { type FlattenMaps } from "mongoose";
   import type { IDBGuild } from "supportmail-types";
   import { onMount } from "svelte";
 

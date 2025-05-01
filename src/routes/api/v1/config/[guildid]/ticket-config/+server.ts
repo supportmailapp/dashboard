@@ -51,6 +51,7 @@ export async function GET({ locals }) {
     }
     const ticketConfig = guildConfig.ticketConfig;
     const finalConfig = configSchema.validate(ticketConfig); // We don't need to validate the config, but it removes the extra properties...
+    console.debug("Final config", finalConfig);
     return Response.json({
       ...finalConfig.value,
     });
