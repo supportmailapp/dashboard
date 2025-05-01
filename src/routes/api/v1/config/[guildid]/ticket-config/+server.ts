@@ -9,7 +9,7 @@ import type { ITicketConfig } from "supportmail-types";
  * It is a partial version of the ITicketConfig type, excluding some properties.\
  * Excluded properties are handled by a seperate route.
  */
-type TicketConfigSchema = Omit<ITicketConfig, "closeMessage" | "creationMessage" | "feedback" | "pausedUntil" | "tags">;
+type TicketConfigSchema = Omit<ITicketConfig, "closeMessage" | "creationMessage" | "feedback" | "tags">;
 
 const configSchema = new SchemaValidator<TicketConfigSchema>({
   enabled: { type: "boolean", required: true },
@@ -30,9 +30,14 @@ const configSchema = new SchemaValidator<TicketConfigSchema>({
     items: {
       type: "array",
       items: { type: "string" },
-      customValidator: (arr) => {
-        return arr.length == 2 && (arr[0] == "@" || arr[0] == "@&") && /\d{10,22}/.test(arr[1]);
-      },
+    },
+  },
+  pausedUntil: {
+    type: ["object", "null"],
+    required: false,
+    properties: {
+      value: { type: "boolean", required: true },
+      date: { type: ["date", "null"], required: true },
     },
   },
 });
@@ -48,7 +53,6 @@ export async function GET({ locals }) {
     const finalConfig = configSchema.validate(ticketConfig); // We don't need to validate the config, but it removes the extra properties...
     return Response.json({
       ...finalConfig.value,
-      pings: [],
     });
   }
 
