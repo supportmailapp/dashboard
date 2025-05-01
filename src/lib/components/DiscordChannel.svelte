@@ -34,12 +34,12 @@
     alert(`Copied ${typ} ID to clipboard!`);
   }}
 >
-    {#if typ === "thread"}
-      <DcThreadIcon />
-    {:else if typ === "category"}
-      <AlignJustify />
-    {:else}
-      <Hash />
-    {/if}
-    <span class={cutLength ? "w-fit max-w-40 truncate" : ""}>{String(name)}</span>
+  {#if typ === "thread"}
+    <DcThreadIcon />
+  {:else if typ === "category"}
+    <AlignJustify />
+  {:else}
+    <Hash />
+  {/if}
+  <span class={cutLength ? "w-fit max-w-40 truncate" : ""}>{String(name)}</span>
 </div>
