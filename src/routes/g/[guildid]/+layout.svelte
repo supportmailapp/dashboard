@@ -11,6 +11,8 @@
   import { Files } from "@lucide/svelte";
   import { site } from "$lib/stores/site.svelte";
   import LoadingDots from "$lib/components/LoadingDots.svelte";
+  import MobileNavigation from "$lib/components/MobileNavigation.svelte";
+  import { scale } from "svelte/transition";
 
   let { children } = $props();
   let clientWidth = $state(0);
@@ -63,9 +65,7 @@
 
 <div class="page-wrapper">
   {#if clientWidth > mediaQuery.md}
-    <div class="desktop-nav-wrapper">
-      <DesktopNavigation />
-    </div>
+    <DesktopNavigation />
   {/if}
   <!-- Display server -->
   <div class="content-wrapper">
