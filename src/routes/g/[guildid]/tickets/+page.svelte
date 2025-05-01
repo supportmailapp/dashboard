@@ -110,7 +110,9 @@
     console.log("Reverting changes");
     config = page.data.dataState.oldConfig as BasicTicketConfig;
     isPausedUntil = $state.snapshot(config.pausedUntil?.date) ?? null;
-    pauseType = !!$state.snapshot(config.pausedUntil?.date) ? "datetime" : "infinite";
+    if (isPausedUntil) {
+      pauseType = "datetime";
+    }
   };
 
   async function loadTicketConfig() {
@@ -271,11 +273,22 @@
             {#if pauseType === "datetime"}
               <fieldset class="dy-fieldset">
                 <legend class="dy-fieldset-legend">Pause Until</legend>
+                <!--
+                  TODO: HOW do we deal with timezones? Local TZ and then into dayjs with it?
+                  Also, Get Back to the github issue about this.
+                  Exmaple: If I put in the time 07:27, the server loggs 05:27, which doesn't seem correct.
+                  - Test, if it still works when site is refreshed. If so, no issue.
+                -->
                 <input
                   type="datetime-local"
                   placeholder="Select date and time"
                   class="dy-input dy-input-bordered w-full max-w-xs"
-                  bind:value={pauseDateInput}
+                  value={pauseDateInput}
+                  onchangecapture={(e) => {
+                    // No, we can't bind the value to the input, because we need an ISOString (because of timezone...)
+                    pauseDateInput = dayjs(e.currentTarget.value).toISOString();
+                    if (config) config.pausedUntil = { value: true, date: new Date(pauseDateInput) };
+                  }}
                 />
               </fieldset>
             {:else if pauseType === "duration"}
