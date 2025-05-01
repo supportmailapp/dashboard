@@ -62,6 +62,7 @@ export async function GET({ locals }) {
 export async function PATCH({ request, locals }) {
   if (locals.guildId && locals.token) {
     const update = (await request.json()) as Record<string, any>;
+    console.debug("Update", update);
     const result = configSchema.validate(update);
 
     if (!result.isValid || Object.entries(result.errors).length > 0) {

@@ -70,7 +70,7 @@
   <!-- Display server -->
   <div class="content-wrapper">
     {#if !site.showLoading}
-      <main>
+      <main transition:scale={{ duration: 200 }}>
         {@render children()}
       </main>
     {:else}

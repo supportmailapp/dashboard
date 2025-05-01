@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { slide } from "svelte/transition";
-
   import Footer from "$lib/components/Footer.svelte";
   import RefreshButton from "$lib/components/RefreshButton.svelte";
   import { guilds as guildsState } from "$lib/stores/guilds.svelte";

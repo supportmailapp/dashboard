@@ -8,13 +8,13 @@
   import SiteHeader from "$lib/components/SiteHeader.svelte";
   import { APIRoutes, BASIC_GET_FETCH_INIT, BASIC_REQUEST_INIT } from "$lib/constants";
   import { gg } from "$lib/stores/guild.svelte";
-  import { MessageSquareText, MessagesSquare, Plus, PlusSquare, XIcon } from "@lucide/svelte";
+  import { MessageSquareText, MessagesSquare, Plus, X } from "@lucide/svelte";
   import dayjs from "dayjs";
   import equal from "fast-deep-equal/es6";
   import ky, { type KyResponse } from "ky";
   import type { ITicketConfig } from "supportmail-types";
   import { onMount } from "svelte";
-  import { blur, scale, slide } from "svelte/transition";
+  import { blur, scale } from "svelte/transition";
 
   type BasicTicketConfig = Omit<ITicketConfig, "_id" | "creationMessage" | "closeMessage" | "feedback" | "pings" | "tags"> & {
     pings: ["@" | "@&", string][];
@@ -302,7 +302,7 @@
                           pauseDurations = pauseDurations.filter((d) => d !== duration);
                         }}
                       >
-                        <XIcon class="size-4" />
+                        <X class="size-4" />
                       </button>
                     </div>
                   {/each}
