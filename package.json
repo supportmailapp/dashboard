@@ -7,6 +7,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
+    "dev-2": "vite build && vite preview",
     "local": "cross-env PORT=5050 HOST=localhost ORIGIN=http://localhost:5050 node build/index.js",
     "start": "cross-env PORT=4013 HOST=localhost ORIGIN=https://dash.supportmail.dev node build/index.js",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
