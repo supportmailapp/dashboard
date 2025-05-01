@@ -2,11 +2,13 @@
   import { beforeNavigate } from "$app/navigation";
   import { page } from "$app/state";
   import { site } from "$lib/stores/site.svelte";
-  import { scale, slide } from "svelte/transition";
+  import { slide } from "svelte/transition";
 
   beforeNavigate(async (nav) => {
     if (page.data.dataState.unsaved) {
-      if (nav.to?.url.origin === location.origin) {
+      // TODO: If user clicks a link and then "cancel" in the confirm alert, the page kind of "reloads" and
+      // loads indefinitely. Fix it.
+      if (nav.to?.url.origin === location.origin || nav.type === "goto" || nav.type === "leave") {
         const confirm = window.confirm("You have unsaved changes. Are you sure you want to leave this page?");
         if (!confirm) {
           nav.cancel();
