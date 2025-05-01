@@ -3,10 +3,12 @@
  * Supports multiple types including bigint and null values.
  */
 
+import dayjs from "dayjs";
+
 /**
  * Defines the possible data types supported by the schema validator.
  */
-type SchemaType = "null" | "string" | "number" | "boolean" | "object" | "array" | "bigint" | "enum";
+type SchemaType = "null" | "string" | "number" | "boolean" | "object" | "array" | "bigint" | "enum" | "date";
 
 /**
  * Represents the schema definition for a single property within an object or array.
@@ -274,6 +276,14 @@ export class SchemaValidator<T extends Record<string, any>> {
    * Validates a single property against its schema
    */
   private validateProperty(value: any, propSchema: SchemaProperty<T>, path: string, errors: ValidationError[]): boolean {
+    if (propSchema.customValidator !== undefined && !propSchema.customValidator(value)) {
+      errors.push({
+        path,
+        message: `Custom validation failed`,
+      });
+      return false;
+    }
+
     // Null value check
     if (value === null) {
       if (!this.hasType(propSchema, "null")) {
@@ -307,6 +317,15 @@ export class SchemaValidator<T extends Record<string, any>> {
       return this.validateBigInt(value, propSchema, path, errors);
     } else if (valueType === "boolean") {
       return true; // Boolean requires no further validation
+    } else if (valueType === "date") {
+      if (!dayjs(value).isValid()) {
+        errors.push({
+          path,
+          message: `Invalid date format`,
+        });
+        return false;
+      }
+      return true;
     } else if (valueType === "object") {
       if (!propSchema.properties) {
         errors.push({
@@ -327,15 +346,6 @@ export class SchemaValidator<T extends Record<string, any>> {
       return true;
     }
 
-    if (propSchema.customValidator !== undefined && !propSchema.customValidator(value)) {
-      errors.push({
-        path,
-        message: `Custom validation failed`,
-      });
-      return false;
-    }
-    // If all checks pass, return true
-
     return true;
   }
 
@@ -345,6 +355,7 @@ export class SchemaValidator<T extends Record<string, any>> {
   private getValueType(value: any): SchemaType {
     if (value === null) return "null";
     else if (Array.isArray(value)) return "array";
+    else if (dayjs(value).isValid() && Object.prototype.toString.call(value) === "[object Date]") return "date";
     else if (typeof value === "object") return "object";
     else if (typeof value === "string") return "string";
     else if (typeof value === "number") return "number";
