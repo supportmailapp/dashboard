@@ -12,6 +12,10 @@ export default defineConfig({
     },
   },
 
+  optimizeDeps: {
+    include: ["@sveltejs/kit", "@sveltejs/adapter-auto", "clsx"],
+  },
+
   appType: "custom",
   logLevel: "info",
 });
