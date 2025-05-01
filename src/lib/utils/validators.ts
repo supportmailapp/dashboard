@@ -355,11 +355,11 @@ export class SchemaValidator<T extends Record<string, any>> {
   private getValueType(value: any): SchemaType {
     if (value === null) return "null";
     else if (Array.isArray(value)) return "array";
+    else if (value instanceof Date) return "date";
     else if (typeof value === "object") return "object";
     else if (typeof value === "number") return "number";
     else if (typeof value === "boolean") return "boolean";
     else if (typeof value === "bigint") return "bigint";
-    else if (value instanceof Date) return "date";
     else if (typeof value === "string") {
       // Check if string is a valid date format (ISO 8601)
       if (dayjs(value).isValid() && /^\d{4}-\d{2}-\d{2}(T|\s)\d{2}:\d{2}:\d{2}.*/.test(value)) return "date";
