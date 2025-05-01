@@ -4,7 +4,7 @@ import { fetchUserData } from "$lib/discord/utils";
 import { checkUserGuildAccess, decodeDbTokens, fetchDBUser, verifySessionToken } from "$lib/server/auth";
 import { dbConnect } from "$lib/server/db";
 import { anyUserToBasic } from "$lib/utils/formatting";
-import arcjet, { detectBot, shield, slidingWindow, tokenBucket } from "@arcjet/sveltekit";
+import arcjet, { detectBot, shield, slidingWindow } from "@arcjet/sveltekit";
 import * as Sentry from "@sentry/node";
 import { type Handle, type HandleServerError, type ServerInit } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
