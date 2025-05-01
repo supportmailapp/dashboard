@@ -210,7 +210,7 @@
         {#if !!config.pausedUntil?.value}
           <div class="border-base-300 flex flex-col gap-3 rounded-md border p-3" transition:scale={{ duration: 150 }}>
             <p class="text-sm text-slate-400">Choose how long to pause ticket creation:</p>
-            <div role="tablist" class="dy-tabs dy-tabs-box w-full sm:w-max">
+            <div role="tablist" class="dy-tabs-box flex h-auto w-full flex-col sm:flex-row">
               <button
                 transition:blur={{ duration: 150 }}
                 class="dy-tab transition-all duration-150"
@@ -310,7 +310,7 @@
                 {#if pauseDurations.length < 3}
                   <!-- Add new duration group button -->
                   <button
-                    class="dy-btn dy-btn-neutral dy-btn-soft dy-btn-sm w-full"
+                    class="dy-btn dy-btn-neutral dy-btn-soft dy-btn-sm bg-neutral/70 hover:bg-neutral border-neutral w-full border-2"
                     onclick={() => {
                       pauseDurations.push({
                         unit: availableUnits[0].value,
@@ -318,15 +318,23 @@
                       });
                     }}
                   >
-                    <Plus class="size-4" />
+                    <Plus class="size-4 text-white" />
                   </button>
                 {/if}
               </div>
               {#if estimatedResumeDate}
-                <div class="dy-alert dy-alert-info max-w-sm text-sm font-normal">
-                  <b>Estimated Resume Date:</b>
-                  <span style="margin-left: auto">
-                    {estimatedResumeDate ? estimatedResumeDate.toLocaleString() : "N/A"}
+                <div
+                  class="bg-info text-info-content rounded-box flex max-w-sm flex-col px-5 py-3 text-sm font-normal sm:flex-row"
+                >
+                  <span class="mx-auto font-semibold sm:ml-0">Estimated Resume Date</span>
+                  <span class="mx-auto sm:mr-0 sm:ml-auto">
+                    {estimatedResumeDate
+                      ? estimatedResumeDate.toLocaleString("en-us", {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                          hourCycle: "h24",
+                        })
+                      : "N/A"}
                   </span>
                 </div>
               {/if}
