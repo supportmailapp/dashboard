@@ -20,7 +20,7 @@
 </script>
 
 {#if page.data.dataState.unsaved}
-  <div class="save-alert-container" transition:scale={{ duration: 150 }}>
+  <div class="save-alert-container" transition:slide={{ duration: 150, axis: "y" }}>
     <savealert
       role="alert"
       class="dy-alert dy-alert-warning dy-alert-soft sm:dy-alert-horizontal dy-alert-vertical {page.data.dataState.saving
