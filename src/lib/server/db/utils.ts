@@ -1,6 +1,7 @@
-import type { IDBGuild, IDBUser } from "supportmail-types";
-import { DBGuild, DBUser } from "./models";
+import { V2ComponentsValidator, type IDBGuild, type IDBUser } from "supportmail-types";
 import type { UpdateQuery, UpdateWithAggregationPipeline } from "mongoose";
+import { ValidationError } from "zod-validation-error";
+import { DBGuild, DBUser } from "./models";
 
 export function getGuild(guildId: string) {
   return DBGuild.findOne({ id: guildId }, null, { lean: true });
@@ -23,4 +24,25 @@ export async function updateUser(userId: string, update: UpdateQuery<IDBUser> | 
   }
 
   return await DBUser.updateOne({ id: userId }, update);
+}
+
+export async function verifyComponentsV2Payload(components: any[]) {
+  try {
+    const res = new V2ComponentsValidator(components).toJSON();
+    return {
+      valid: true,
+      components: res,
+    };
+  } catch (err: any) {
+    if (err instanceof ValidationError) {
+      return {
+        valid: false,
+        error: {
+          message: err.message,
+          details: err,
+        },
+      };
+    }
+    throw err;
+  }
 }
