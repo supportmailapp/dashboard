@@ -8,11 +8,11 @@
   import SiteHeader from "$lib/components/SiteHeader.svelte";
   import { APIRoutes, BASIC_GET_FETCH_INIT, BASIC_REQUEST_INIT } from "$lib/constants";
   import { gg } from "$lib/stores/guild.svelte";
-  import timezones, { getTimezone } from "$lib/utils/timezones";
-  import { Files, MessageSquareText, MessagesSquare, Plus, X } from "@lucide/svelte";
+  import timezones from "$lib/utils/timezones";
+  import { MessageSquareText, MessagesSquare, Plus, X } from "@lucide/svelte";
   import dayjs from "dayjs";
-  import utc from "dayjs/plugin/utc";
   import dayjsTimezone from "dayjs/plugin/timezone";
+  import utc from "dayjs/plugin/utc";
   import equal from "fast-deep-equal";
   import ky, { type KyResponse } from "ky";
   import type { ITicketConfig } from "supportmail-types";
@@ -552,7 +552,7 @@
         </div>
       </a>
       <a
-        href={`/g/${guildId}/tickets/messages`}
+        href={`/g/${guildId}/tickets/custom-messages`}
         class="nav-grid-item dy-card bg-success text-success-content transition-opacity duration-150 hover:opacity-70"
       >
         <div class="dy-card-body">
