@@ -9,7 +9,7 @@
   import { APIRoutes, BASIC_GET_FETCH_INIT, BASIC_REQUEST_INIT } from "$lib/constants";
   import { gg } from "$lib/stores/guild.svelte";
   import timezones from "$lib/utils/timezones";
-  import { MessageSquareText, MessagesSquare, Plus, X } from "@lucide/svelte";
+  import { Folder, MessageSquareText, MessagesSquare, Plus, X } from "@lucide/svelte";
   import dayjs from "dayjs";
   import dayjsTimezone from "dayjs/plugin/timezone";
   import utc from "dayjs/plugin/utc";
@@ -537,34 +537,43 @@
       </div>
     </fieldset>
   </section>
-
-  <!-- Navigation Section -->
-  <section class="mt-6">
-    <h2 class="mb-3 text-xl font-semibold">Other Configurations</h2>
-    <div class="nav-grid">
-      <a
-        href={`/g/${guildId}/tickets/feedback`}
-        class="nav-grid-item dy-card bg-info text-info-content transition-opacity duration-150 hover:opacity-70"
-      >
-        <div class="dy-card-body">
-          <h3 class="dy-card-title"><MessageSquareText class="size-8" />Feedback</h3>
-          <p>Configure the feedback system.</p>
-        </div>
-      </a>
-      <a
-        href={`/g/${guildId}/tickets/custom-messages`}
-        class="nav-grid-item dy-card bg-success text-success-content transition-opacity duration-150 hover:opacity-70"
-      >
-        <div class="dy-card-body">
-          <h3 class="dy-card-title"><MessagesSquare class="size-8" />Custom Messages</h3>
-          <p>Custom Messages</p>
-        </div>
-      </a>
-    </div>
-  </section>
 {:else}
   <LoadingDots />
 {/if}
+
+<!-- Navigation Section -->
+<section class="mt-6">
+  <h2 class="mb-3 text-xl font-semibold">Other Configurations</h2>
+  <div class="nav-grid">
+    <a
+      href={`/g/${guildId}/tickets/feedback`}
+      class="nav-grid-item dy-card bg-info text-info-content transition-opacity duration-150 hover:opacity-70"
+    >
+      <div class="dy-card-body">
+        <h3 class="dy-card-title"><MessageSquareText class="size-8" />Feedback</h3>
+        <p>Configure the feedback system.</p>
+      </div>
+    </a>
+    <a
+      href={`/g/${guildId}/tickets/custom-messages`}
+      class="nav-grid-item dy-card bg-success text-success-content transition-opacity duration-150 hover:opacity-70"
+    >
+      <div class="dy-card-body">
+        <h3 class="dy-card-title"><MessagesSquare class="size-8" />Custom Messages</h3>
+        <p>Custom Messages</p>
+      </div>
+    </a>
+    <a
+      href={`/g/${guildId}/tickets/categories`}
+      class="nav-grid-item dy-card bg-warning text-warning-content transition-opacity duration-150 hover:opacity-70"
+    >
+      <div class="dy-card-body">
+        <h3 class="dy-card-title"><Folder class="size-8" />Categories</h3>
+        <p>Configure ticket categories.</p>
+      </div>
+    </a>
+  </div>
+</section>
 
 <style>
   .nav-grid {
