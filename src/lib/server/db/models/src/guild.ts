@@ -3,7 +3,6 @@ import pkg from "mongoose";
 const { models } = pkg;
 import {
   NotificationLevel,
-  type ICustomMessage,
   type ICustomModalField,
   type IFeedbackConfig,
   type IFeedbackTags,
@@ -15,15 +14,6 @@ import {
   type IDBGuild,
   type PausedUntil,
 } from "supportmail-types";
-
-const CustomMessageSchema = new Schema<ICustomMessage>(
-  {
-    content: { type: String, required: false },
-    color: { type: Number, required: false },
-    image: { type: String, required: false },
-  },
-  { id: false },
-);
 
 const CustomModalFieldSchema = new Schema<ICustomModalField>(
   {
@@ -93,9 +83,6 @@ const ticketConfigSchema = new Schema<ITicketConfig>({
     alias: { type: String, default: null },
   },
   autoForwarding: { type: Boolean, default: true },
-  creationMessage: { type: CustomMessageSchema, required: false },
-  closeMessage: { type: CustomMessageSchema, required: false },
-  pings: { type: [[String, String]], required: false }, // [ [ "prefix", "id" ] ]
   allowedBots: { type: [String], required: false },
   feedback: { type: FeedbackConfigSchema, required: false },
 });
