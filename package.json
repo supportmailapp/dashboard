@@ -28,11 +28,9 @@
     "autoprefixer": "^10.4.20",
     "cross-env": "^7.0.3",
     "daisyui": "^5.0.30",
-    "discord-api-types": "^0.37.117",
     "prettier": "^3.4.2",
     "prettier-plugin-svelte": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.10",
-    "supportmail-types": "github:supportmailapp/global-types",
     "svelte": "^5.19.2",
     "svelte-check": "^4.0.0",
     "typescript": "^5.0.0",
@@ -47,7 +45,8 @@
     "@svelte-plugins/datepicker": "^1.0.11",
     "@tailwindcss/vite": "^4.0.4",
     "dayjs": "^1.11.13",
-    "discord.js": "^14.18.0",
+    "discord-api-types": "^0.38.2",
+    "discord.js": "^14.19.2",
     "fast-deep-equal": "^3.1.3",
     "iovalkey": "^0.3.1",
     "jsonwebtoken": "^9.0.2",
@@ -56,10 +55,12 @@
     "node-cache": "^5.1.2",
     "paneforge": "^0.0.6",
     "rate-limiter-flexible": "^7.1.0",
+    "supportmail-types": "github:supportmailapp/global-types",
     "tailwind-scrollbar-hide": "^2.0.0",
     "tailwindcss": "^4.1.4",
     "thumbhash": "^0.1.1",
-    "uuid": "^11.0.5"
+    "uuid": "^11.0.5",
+    "zod-validation-error": "^3.4.0"
   },
   "overrides": {
     "@svelte-plugins/datepicker": {
