@@ -3,7 +3,7 @@ import pkg from "mongoose";
 const { models } = pkg;
 import type { ITag } from "supportmail-types";
 
-let tagSchema = new Schema<ITag>(
+const tagSchema = new Schema<ITag>(
   {
     guildId: { type: String, required: true },
     name: {
@@ -16,7 +16,7 @@ let tagSchema = new Schema<ITag>(
       lowercase: true,
     },
     content: { type: String, trim: true, maxlength: 4000 },
-    onlyTickets: { type: Boolean, default: false }, // ? Add this or not?
+    onlyTickets: { type: Boolean, default: false },
   },
   { timestamps: true },
 );
