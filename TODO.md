@@ -38,7 +38,7 @@ Routes-Structure:
   - Navigation Section | Show cards for all other configs, refer to sub-routes
 
     - `~/feedback` | Feedback config
-    - `~/messages` | Custom Messages
+    - `~/custom-messages` | Custom Messages
 
 - `~/tickets/feedback` | Display the feedback config
 
@@ -55,6 +55,21 @@ Routes-Structure:
     - required (checkbox)
     - min/max length (2 number-inputs; min (min): 0, min (max): 1, max: 4000)
     - placeholder (max. 100 chars)
+
+- `~/custom-messages` | Display the custom messages
+
+  - Write CSS for discord copy
+  - Display all custom messages with (table with pagination?)
+
+    - Display custom message info (\_id, name, createdAt, updatedAt)
+    - Display custom message in \<dialog> as markdown with controls
+    - Button to add a new one (modal, same as the bot itself uses)
+    - Dialog:
+
+      - Tabs: Edit, Preview, Settings
+      - Edit:
+
+        - Components V2... (See [ICustomMessage](https://github.com/supportmailapp/global-types/blob/main/src/database/customMessage.ts))
 
 - `~/reports` | Display the report config
 
@@ -128,7 +143,7 @@ Routes-Structure:
   - button to add a new one (modal, same as the bot itself uses)
   - Display all tags with (table with pagination?)
   - Display tag info (\_id, name, createdAt, updatedAt)
-  - Display tag content in <dialog> as markdown with controls
+  - Display tag content in \<dialog> as markdown with controls
 
 - `~/blacklist` | Display blacklisted users & roles
 
