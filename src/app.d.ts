@@ -107,18 +107,19 @@ declare global {
     userId: string;
   };
 
-  type AppPlugin = {
+  type NavItem = {
+    id: string;
     /**
-     * The slug of the plugin. Starts with a slash.
+     * The href of the plugin. Starts with a slash.
      */
-    slug: string;
+    href: string;
     name: string;
     description?: string;
-    iconUrl: string;
+    icon: any;
     isNew?: true;
+    children?: NavItem[];
+    active?: boolean;
   };
-
-  type NavItem = AppPlugin;
 
   type RedirectData = {
     /**
