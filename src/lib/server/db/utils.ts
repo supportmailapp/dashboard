@@ -2,6 +2,7 @@ import { V2ComponentsValidator, type IDBGuild, type IDBUser } from "supportmail-
 import type { UpdateQuery, UpdateWithAggregationPipeline } from "mongoose";
 import { ValidationError } from "zod-validation-error";
 import { DBGuild, DBUser } from "./models";
+import { TicketCategory } from "./models/src/ticketCategory";
 
 export function getGuild(guildId: string) {
   return DBGuild.findOne({ id: guildId }, null, { lean: true });
@@ -24,6 +25,10 @@ export async function updateUser(userId: string, update: UpdateQuery<IDBUser> | 
   }
 
   return await DBUser.updateOne({ id: userId }, update);
+}
+
+export function getTicketCategories(guildId: string) {
+  return TicketCategory.find({ guildId: guildId }, null, { lean: true });
 }
 
 export async function verifyComponentsV2Payload(components: any[]) {
