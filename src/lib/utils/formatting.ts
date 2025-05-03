@@ -74,6 +74,7 @@ export const cdnUrls = {
   userAvatar: (userId: string, avatar: string | null, size: number | string = "512") =>
     DISCORD_CDN_BASE +
     (avatar ? `/avatars/${userId}/${avatar}.webp?size=${size}` : `/embed/avatars/${(Number(userId) >> 22) % 6}.png`),
+  guildEmoji: (emojiId: string, size = 64) => `${DISCORD_CDN_BASE}/emojis/${emojiId}.webp?size=${size}` as const,
 };
 
 export function numberToHex(number: number): string {
