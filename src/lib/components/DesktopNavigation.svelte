@@ -4,8 +4,7 @@
   import { user } from "$lib/stores/user.svelte";
   import { cdnUrls } from "$lib/utils/formatting";
   import { House } from "@lucide/svelte";
-  import { onMount } from "svelte";
-  import { slide } from "svelte/transition";
+  import { slide, fade } from "svelte/transition";
   import Footer from "./Footer.svelte";
   import { buildNavHref } from "./navigation.svelte";
 
@@ -13,18 +12,14 @@
     return page.url.pathname === href;
   }
 
+  function isSubPage(href: string) {
+    return page.url.pathname.startsWith(href) && page.url.pathname !== href;
+  }
+
   let baseNavItems = NavigationItems(page.params.guildid).filter((item) => item.id !== "premium");
   let premiumNavItem = NavigationItems(page.params.guildid).find((item) => item.id === "premium")!;
 
-  let navItems = $derived([
-    {
-      id: "home",
-      name: "Home",
-      icon: House,
-      active: isCurrentPage(buildNavHref("/")),
-      href: buildNavHref("/"),
-      color: "text-slate-200",
-    },
+  let navItems: NavItem[] = $derived([
     {
       ...premiumNavItem,
       active: isCurrentPage(premiumNavItem.href),
@@ -62,12 +57,31 @@
   <div style="position: relative; width: 100%;">
     <!-- Navigation Items -->
     <ul class="relative">
+      <li>
+        <a href={buildNavHref()} class="nav-btn nav-parent" class:active={isCurrentPage(buildNavHref())}>
+          <span class="w-full px-4 text-center">Home</span>
+          <House class="size-8" />
+        </a>
+      </li>
       {#each navItems as item}
         <li>
-          <a href={item.href} class="nav-btn {item.active ? 'active' : ''}">
-            <span class="w-full px-4 text-center {item.id == 'premium' ? 'text-amber-400' : ''}">{item.name}</span>
-            <item.icon class="size-8 {item.id == 'premium' ? 'text-amber-400' : ''}" />
+          <a href={item.href} class="nav-btn nav-parent" class:active={item.active} class:subpage-active={isSubPage(item.href)}>
+            <span class="w-full px-4 text-center" class:text-amber-400={item.id == "premium"}>{item.name}</span>
+            <item.icon class="size-8 {item.id === 'premium' ? 'text-amber-400' : ''}" />
           </a>
+          {#if item.children?.length && page.url.pathname.startsWith(item.href)}
+            <ul class="nav-submenu" transition:fade={{ duration: 200 }}>
+              <div class="bg-neutral w-1 rounded"></div>
+              {#each item.children as child, i}
+                <li>
+                  <a href={child.href} class="nav-btn nav-child" class:active={isCurrentPage(child.href)}>
+                    <span class="w-full px-4 text-center">{child.name}</span>
+                    <child.icon class="size-6" />
+                  </a>
+                </li>
+              {/each}
+            </ul>
+          {/if}
         </li>
       {/each}
     </ul>

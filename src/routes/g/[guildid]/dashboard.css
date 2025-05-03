@@ -49,6 +49,7 @@
     max-width: 1200px;
     margin-inline: auto;
   }
+
   .desktop-nav {
     @apply gap-2 p-2 pt-4 text-base;
     position: fixed;
@@ -71,31 +72,24 @@
 
     user-select: none;
 
-    ul {
-      @apply flex-row gap-1 md:flex-col;
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-
-      li {
-        width: 100%;
-        position: relative;
-        transition: all 0.25s ease-in-out;
-      }
-
-      li:has(.nav-btn:not(.active)) {
-        background-color: transparent;
-      }
-    }
-
     footer {
       padding: 0;
       padding-top: 0.5rem;
     }
 
+    ul {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+
+      ul {
+        padding: 0.5rem;
+        width: auto;
+      }
+    }
+
     .nav-btn {
-      @apply text-primary-content hover:bg-neutral/30 gap-2 rounded-lg p-2 transition-all duration-100;
+      @apply text-primary-content gap-2 rounded-lg bg-transparent p-2 transition-all duration-100;
       width: 100%;
       height: fit-content;
       display: flex;
@@ -104,9 +98,51 @@
       justify-content: space-around;
       text-align: center;
       text-decoration: none;
+      background-color: transparent;
+    }
 
-      &.active {
-        @apply from-primary bg-gradient-to-br to-cyan-500 font-semibold;
+    .nav-parent {
+      @apply text-primary-content hover:bg-primary/30;
+      width: 100%;
+      height: fit-content;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      text-align: center;
+      text-decoration: none;
+
+      &.active,
+      &.subpage-active {
+        @apply bg-primary/50;
+      }
+
+      &.subpage-active {
+        @apply hover:bg-primary/60;
+      }
+    }
+
+    .nav-submenu {
+      margin-left: 1rem;
+      margin-bottom: 0.5rem;
+      padding-inline: 0;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 1rem;
+
+      li {
+        display: flex;
+        flex-direction: row;
+        justify-content: end;
+        gap: 0.15rem;
+        width: 100%;
+      }
+
+      a.nav-child {
+        @apply hover:bg-primary/30 text-sm;
+
+        &.active {
+          @apply bg-primary/40 hover:bg-primary/40 rounded-lg;
+        }
       }
     }
   }
