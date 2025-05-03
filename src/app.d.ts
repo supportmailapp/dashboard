@@ -28,7 +28,7 @@ declare global {
       /**
        * Just for the API routes.
        */
-      guildId?: string;
+      guildId: string;
       guild?: DCGuild | null;
       /**
        * Just for the API routes. This is checked before based on the Auth header or "session" cookie. If given, the user is **authenticated**.
