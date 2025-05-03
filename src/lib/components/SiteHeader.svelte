@@ -14,17 +14,17 @@
   let { children, breadcrumbs = [] }: Props = $props();
 </script>
 
-<div class="dy-breadcrumbs text-3xl font-bold">
+<div class="dy-breadcrumbs text-3xl font-bold *:select-none">
   <ul>
     {#if breadcrumbs.length > 0}
       {#each breadcrumbs as crumb}
-        <li>
-          <a href={crumb.href} class="text-gray-500 hover:text-gray-700">
+        <li class="hover:bg-neutral/40 rounded-md p-1 transition-all duration-150">
+          <a href={crumb.href} class="text-white/90" style="text-decoration: none;">
             {crumb.title}
           </a>
         </li>
       {/each}
     {/if}
-    <li>{@render children()}</li>
+    <li><span style="text-decoration: none;">{@render children()}</span></li>
   </ul>
 </div>
