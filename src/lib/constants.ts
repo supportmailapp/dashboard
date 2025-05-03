@@ -137,6 +137,6 @@ export const NavigationItems: (guildId: string) => NavItem[] = (guildId: string)
     href: `/g/${guildId}/premium`,
     description: "Manage Premium for this server",
     icon: Star,
-    color: "bg-warning text-warning-content",
+    color: "bg-yellow-400 text-yellow-950",
   },
 ];
