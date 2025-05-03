@@ -1,7 +1,8 @@
 // State for the current guild (guild, roles, channels)
 
 import { page } from "$app/state";
-import { APIRoutes, BASIC_GET_FETCH_INIT } from "$lib/constants";
+import { APIRoutes } from "$lib/urls";
+import { BASIC_GET_FETCH_INIT } from "$lib/constants";
 import { sortByPositionAndId } from "$lib/utils/formatting";
 import { guilds } from "./guilds.svelte";
 

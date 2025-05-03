@@ -4,8 +4,9 @@
   import DiscordChannel from "$lib/components/DiscordChannel.svelte";
   import LoadingDots from "$lib/components/LoadingDots.svelte";
   import SiteHeader from "$lib/components/SiteHeader.svelte";
-  import { APIRoutes, BASIC_GET_FETCH_INIT, BASIC_REQUEST_INIT, NavigationItems, SupportedLanguages } from "$lib/constants";
-  import { gg } from "$lib/stores/guild.svelte";
+  import { BASIC_GET_FETCH_INIT, BASIC_REQUEST_INIT, NavigationItems, SupportedLanguages } from "$lib/constants";
+  import { APIRoutes } from "$lib/urls";
+
   import { site } from "$lib/stores/site.svelte";
   import { user } from "$lib/stores/user.svelte";
   import { CircleCheck, CircleX, Info, TriangleAlert } from "@lucide/svelte";
@@ -14,6 +15,7 @@
   import { type FlattenMaps } from "mongoose";
   import type { IDBGuild } from "supportmail-types";
   import { onMount } from "svelte";
+  import { gg } from "$lib/stores/guild.svelte";
 
   const guildId = page.params.guildid;
   let config = $state<ConfigOverview | null>(null);

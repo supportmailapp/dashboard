@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { env } from "$env/dynamic/public";
-  import { urls } from "$lib/constants.js";
+  import { urls } from "$lib/urls";
   import { page } from "$app/state";
 
   onMount(() => {

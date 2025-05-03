@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import { ImportantLinks } from "$lib/constants";
+  import { ImportantLinks } from "$lib/urls";
 </script>
 
 <footer class="footer-container">

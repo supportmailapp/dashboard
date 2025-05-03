@@ -1,4 +1,5 @@
-import { APIRoutes, BASIC_GET_FETCH_INIT } from "$lib/constants";
+import { APIRoutes } from "$lib/urls";
+import { BASIC_GET_FETCH_INIT } from "$lib/constants";
 import type { IDBUser } from "supportmail-types";
 
 type UserState = {
