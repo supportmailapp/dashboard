@@ -6,14 +6,15 @@
   import LoadingDots from "$lib/components/LoadingDots.svelte";
   import RoleSelector from "$lib/components/RoleSelector.svelte";
   import SiteHeader from "$lib/components/SiteHeader.svelte";
-  import { APIRoutes, BASIC_GET_FETCH_INIT, BASIC_REQUEST_INIT } from "$lib/constants";
+  import { BASIC_GET_FETCH_INIT, BASIC_REQUEST_INIT } from "$lib/constants";
   import { gg } from "$lib/stores/guild.svelte";
+  import { APIRoutes } from "$lib/urls";
   import timezones from "$lib/utils/timezones";
   import { Folder, MessageSquareText, MessagesSquare, Plus, X } from "@lucide/svelte";
   import dayjs from "dayjs";
   import dayjsTimezone from "dayjs/plugin/timezone";
   import utc from "dayjs/plugin/utc";
-  import equal from "fast-deep-equal";
+  import equal from "fast-deep-equal/es6";
   import ky, { type KyResponse } from "ky";
   import type { ITicketConfig } from "supportmail-types";
   import { onMount } from "svelte";
@@ -546,6 +547,15 @@
   <h2 class="mb-3 text-xl font-semibold">Other Configurations</h2>
   <div class="nav-grid">
     <a
+      href={`/g/${guildId}/tickets/categories`}
+      class="nav-grid-item full-width dy-card bg-warning text-warning-content transition-opacity duration-150 hover:opacity-70"
+    >
+      <div class="dy-card-body">
+        <h3 class="dy-card-title"><Folder class="size-8" />Categories</h3>
+        <p>Configure ticket categories.</p>
+      </div>
+    </a>
+    <a
       href={`/g/${guildId}/tickets/feedback`}
       class="nav-grid-item dy-card bg-info text-info-content transition-opacity duration-150 hover:opacity-70"
     >
@@ -563,15 +573,6 @@
         <p>Custom Messages</p>
       </div>
     </a>
-    <a
-      href={`/g/${guildId}/tickets/categories`}
-      class="nav-grid-item dy-card bg-warning text-warning-content transition-opacity duration-150 hover:opacity-70"
-    >
-      <div class="dy-card-body">
-        <h3 class="dy-card-title"><Folder class="size-8" />Categories</h3>
-        <p>Configure ticket categories.</p>
-      </div>
-    </a>
   </div>
 </section>
 
@@ -580,11 +581,15 @@
     width: 100%;
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
+    gap: 1rem;
+  }
 
-    .nav-grid-item {
-      flex: 1 1 250px;
-      margin: 5px;
-    }
+  .nav-grid-item {
+    flex: 1 1 250px;
+  }
+
+  .full-width {
+    width: 100%;
+    flex: 1 1 100%;
   }
 </style>
