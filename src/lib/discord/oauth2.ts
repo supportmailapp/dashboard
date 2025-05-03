@@ -12,24 +12,19 @@
  */
 
 import { env } from "$env/dynamic/private";
-import { getUserGuilds, parseToCacheGuild } from "$lib/cache/guilds";
-import { getMember } from "$lib/cache/members";
 import { cacheDiscordUser } from "$lib/cache/users";
-import { urls } from "$lib/constants";
-import { createSessionToken, verifySessionToken } from "$lib/server/auth";
+import { createSessionToken, encodeDbTokens } from "$lib/server/auth";
 import { discord } from "$lib/server/constants";
 import { updateUser } from "$lib/server/db";
-import { anyUserToBasic } from "$lib/utils/formatting";
+import { urls } from "$lib/urls";
 import { error, redirect, type RequestHandler } from "@sveltejs/kit";
 import {
-  OAuth2Routes,
-  RouteBases,
-  Routes,
-  type APIUser,
-  type RESTPostOAuth2AccessTokenResult,
-  type RESTGetCurrentUserGuildMemberResult as OAuth2GuildMember,
+    OAuth2Routes,
+    RouteBases,
+    Routes,
+    type APIUser,
+    type RESTPostOAuth2AccessTokenResult
 } from "discord-api-types/v10";
-import { encodeDbTokens } from "$lib/server/auth";
 
 export const createOAuth2Login = function (url: URL) {
   const redirectUrl = url.searchParams.get("redirect") || null;
