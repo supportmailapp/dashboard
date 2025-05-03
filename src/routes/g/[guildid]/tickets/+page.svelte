@@ -402,7 +402,7 @@
                 {#if pauseDurations.length < 3}
                   <!-- Add new duration group button -->
                   <button
-                    class="dy-btn dy-btn-neutral dy-btn-soft dy-btn-sm bg-neutral/70 hover:bg-neutral border-neutral w-full border-2"
+                    class="dy-btn dy-btn-sm dy-btn-neutral"
                     onclick={() => {
                       pauseDurations.push({
                         unit: availableUnits[0].value,
@@ -548,7 +548,7 @@
   <div class="nav-grid">
     <a
       href={`/g/${guildId}/tickets/categories`}
-      class="nav-grid-item full-width dy-card bg-warning text-warning-content transition-opacity duration-150 hover:opacity-70"
+      class="nav-grid-item full-width dy-card bg-accent text-accent-content transition-opacity duration-150 hover:opacity-70"
     >
       <div class="dy-card-body">
         <h3 class="dy-card-title"><Folder class="size-8" />Categories</h3>
@@ -557,7 +557,7 @@
     </a>
     <a
       href={`/g/${guildId}/tickets/feedback`}
-      class="nav-grid-item dy-card bg-info text-info-content transition-opacity duration-150 hover:opacity-70"
+      class="nav-grid-item dy-card bg-secondary text-secondary-content transition-opacity duration-150 hover:opacity-70"
     >
       <div class="dy-card-body">
         <h3 class="dy-card-title"><MessageSquareText class="size-8" />Feedback</h3>
@@ -566,7 +566,7 @@
     </a>
     <a
       href={`/g/${guildId}/tickets/custom-messages`}
-      class="nav-grid-item dy-card bg-success text-success-content transition-opacity duration-150 hover:opacity-70"
+      class="nav-grid-item dy-card bg-info text-info-content transition-opacity duration-150 hover:opacity-70"
     >
       <div class="dy-card-body">
         <h3 class="dy-card-title"><MessagesSquare class="size-8" />Custom Messages</h3>
