@@ -67,12 +67,12 @@
         <li>
           <a href={item.href} class="nav-btn nav-parent" class:active={item.active} class:subpage-active={isSubPage(item.href)}>
             <span class="w-full px-4 text-center" class:text-amber-400={item.id == "premium"}>{item.name}</span>
-            <item.icon class="size-8 {item.id === 'premium' ? 'text-amber-400' : ''}" />
+            <item.icon class="size-8 {item.id === 'premium' ? 'text-yellow-400' : ''}" />
           </a>
           {#if item.children?.length && page.url.pathname.startsWith(item.href)}
             <ul class="nav-submenu" transition:fade={{ duration: 200 }}>
               <div class="bg-neutral w-1 rounded"></div>
-              {#each item.children as child, i}
+              {#each item.children as child}
                 <li>
                   <a href={child.href} class="nav-btn nav-child" class:active={isCurrentPage(child.href)}>
                     <span class="w-full px-4 text-center">{child.name}</span>
