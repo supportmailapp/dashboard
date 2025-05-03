@@ -63,6 +63,4 @@
   });
 </script>
 
-<div style="display: contents;">
-  {@render children()}
-</div>
+{@render children()}
