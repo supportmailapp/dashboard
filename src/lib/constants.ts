@@ -113,7 +113,7 @@ export const NavigationItems: (guildId: string) => NavItem[] = (guildId: string)
     href: `/g/${guildId}/reports`,
     description: "Manage Report Configurations",
     icon: MessageSquareWarning,
-    color: "bg-amber-600 text-amber-600-content",
+    color: "bg-green-400 text-green-950",
   },
   {
     id: "tags",
@@ -129,7 +129,7 @@ export const NavigationItems: (guildId: string) => NavItem[] = (guildId: string)
     href: `/g/${guildId}/blacklist`,
     description: "Manage the Blacklist",
     icon: ShieldBan,
-    color: "bg-red-700 text-error-content",
+    color: "bg-red-500 text-red-950",
   },
   {
     id: "premium",
