@@ -12,7 +12,7 @@
   import { site } from "$lib/stores/site.svelte";
   import LoadingDots from "$lib/components/LoadingDots.svelte";
   import MobileNavigation from "$lib/components/MobileNavigation.svelte";
-  import { scale } from "svelte/transition";
+  import { blur } from "svelte/transition";
 
   let { children } = $props();
   let clientWidth = $state(0);
@@ -70,7 +70,7 @@
   <!-- Display server -->
   <div class="content-wrapper">
     {#if !site.showLoading}
-      <main transition:scale={{ duration: 200 }}>
+      <main transition:blur={{ duration: 100 }}>
         {@render children()}
       </main>
     {:else}
