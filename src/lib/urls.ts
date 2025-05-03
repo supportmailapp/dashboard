@@ -68,7 +68,9 @@ export const APIRoutes = {
   /** @deprecated Not used atm */
   debug: () => `${API_BASE}/debug`,
 } as const;
+
 export const DISCORD_CDN_BASE = "https://cdn.discordapp.com" as const;
+
 export const urls = {
   botAuth: function (clientId: string, guildId: string | null = null): string {
     const params = new URLSearchParams({
