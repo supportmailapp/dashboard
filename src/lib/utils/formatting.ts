@@ -1,4 +1,4 @@
-import { DISCORD_CDN_BASE } from "$lib/constants";
+import { DISCORD_CDN_BASE } from "$lib/urls";
 import type { APIRole } from "discord-api-types/v10";
 
 /**
@@ -86,4 +86,38 @@ export function hexToNumber(hex: string): number {
 
 export function clipTextToLength(text: string, maxLength: number = 30): string {
   return text.slice(0, maxLength) + (text.length > maxLength ? "..." : "");
+}
+
+type FormatNumberOptions =
+  | {
+      step?: number;
+      roundUp?: boolean;
+      plus?: boolean;
+      comma?: boolean;
+    }
+  | undefined;
+
+/**
+ * Format a large number with commas and a '+' sign.
+ * For example, 1234567 becomes "1,234,500+"
+ *
+ * @param num - The number to format.
+ * @param step - The step to round down to. Default is 100.
+ * @returns The formatted number as a string.
+ */
+export function roundAndFormatNumber(num: number, opts: FormatNumberOptions = {}): string {
+  const options = Object.assign({}, { step: 100, roundUp: false, plus: true, comma: true }, opts) as Required<typeof opts>;
+  // Round down to nearest step
+  if (options.roundUp) {
+    num = Math.ceil(num / options.step) * options.step;
+  } else {
+    num = Math.floor(num / options.step) * options.step;
+  }
+
+  // Format with commas + '+'
+  let formattedNumber = num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  if (!options.comma) {
+    formattedNumber = formattedNumber.replace(/,/g, "");
+  }
+  return formattedNumber + (options.plus ? "+" : "");
 }
