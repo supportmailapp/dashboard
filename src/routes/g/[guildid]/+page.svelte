@@ -192,7 +192,9 @@
     {#each navigation as item}
       <a
         href={item.href}
-        class="nav-grid-item dy-card {item.color} text-neutral-content transition-opacity duration-150 hover:opacity-70"
+        class="nav-grid-item dy-card {item.color
+          ? item.color
+          : ''} text-neutral-content transition-opacity duration-150 hover:opacity-70"
       >
         <div class="dy-card-body">
           <h3 class="dy-card-title"><item.icon class="size-8" />{item.name}</h3>

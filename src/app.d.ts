@@ -115,6 +115,7 @@ declare global {
     href: string;
     name: string;
     description?: string;
+    color?: string;
     icon: any;
     isNew?: true;
     children?: NavItem[];
