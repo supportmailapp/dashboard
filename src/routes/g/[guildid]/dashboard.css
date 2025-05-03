@@ -9,6 +9,10 @@
     --guild-header-height: 50px;
   }
 
+  body {
+    background-color: var(--color-bg);
+  }
+
   section {
     margin-top: 1.5rem;
     display: flex;
@@ -20,8 +24,10 @@
     width: 100%;
     display: flex;
     flex-direction: column;
-    background-color: var(--color-base-100/70);
+    background-color: var(--color-base-300);
     padding: 0.75rem;
+    border-radius: var(--radius-box);
+    min-height: calc(100%);
   }
 }
 
@@ -44,10 +50,22 @@
   .page-wrapper {
     display: block;
     position: relative;
-    min-height: max-content;
     height: calc(100vh - var(--guild-header-height));
     max-width: 1200px;
     margin-inline: auto;
+  }
+
+  .content-wrapper {
+    @apply ml-0 md:ml-(--sidebar-width);
+    display: block;
+    position: relative;
+    padding: 0.8rem;
+    width: 100%;
+    height: calc(100vh - var(--guild-header-height));
+
+    @media (min-width: 48rem) {
+      width: calc(100% - var(--sidebar-width));
+    }
   }
 
   .desktop-nav {
@@ -111,13 +129,12 @@
       text-align: center;
       text-decoration: none;
 
-      &.active,
-      &.subpage-active {
-        @apply bg-primary/50;
+      &.active {
+        @apply bg-primary/50 font-bold;
       }
 
       &.subpage-active {
-        @apply hover:bg-primary/60;
+        @apply bg-primary/50 hover:bg-primary/60;
       }
     }
 
@@ -141,23 +158,9 @@
         @apply hover:bg-primary/30 text-sm;
 
         &.active {
-          @apply bg-primary/40 hover:bg-primary/40 rounded-lg;
+          @apply bg-primary/40 hover:bg-primary/40 rounded-lg font-semibold;
         }
       }
-    }
-  }
-
-  .content-wrapper {
-    @apply ml-0 md:ml-(--sidebar-width);
-    display: block;
-    position: relative;
-    padding-inline: 1rem;
-    padding-top: 0.5rem;
-    width: 100%;
-    height: calc(100% - var(--footer-height));
-
-    @media (min-width: 48rem) {
-      width: calc(100% - var(--sidebar-width));
     }
   }
 
@@ -211,7 +214,6 @@
       white-space: nowrap;
     }
 
-    /* Optional Classes for specific channel types */
     &.category {
       @apply text-gray-400;
       background-color: color-mix(in oklab, var(--color-slate-500) 40%, transparent);
