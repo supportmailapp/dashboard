@@ -10,12 +10,12 @@
   border-radius: var(--radius-lg);
   transition-property: all;
   transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
-  transition-duration: var(--tw-duration, var(--default-transition-duration));
+  transition-duration: calc(var(--tw-duration, var(--default-transition-duration)) * 0.75);
   transition-timing-function: var(--ease-in-out);
 
   &:hover {
-    @media (hover: hover) {
-      background-color: color-mix(in oklab, var(--color-base-200) 90%, transparent);
-    }
+    background-color: color-mix(in oklab, var(--color-primary) 90%, transparent);
+    font-weight: bold;
+    transform: scale(1.01);
   }
 }
