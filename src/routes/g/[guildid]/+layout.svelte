@@ -31,10 +31,7 @@
 <ServerSelectDialog />
 
 <div id="guild-header">
-  <button
-    class="flex cursor-pointer items-center gap-2 rounded px-1 py-0.5 transition-colors duration-100 hover:bg-slate-800"
-    onclick={showServerSelect}
-  >
+  <button class="dy-btn dy-btn-neutral dy-btn-sm h-fit rounded-xl p-1" onclick={showServerSelect}>
     {#if gg.guild}
       <img src={cdnUrls.guildIcon(gg.guild.id, gg.guild.icon, 64)} alt="Guild icon" class="size-7 rounded-full" />
     {:else}
@@ -46,7 +43,7 @@
   </button>
   {#if gg.guild}
     <button
-      class="flex flex-row items-center gap-1 rounded p-1 text-xs transition-colors duration-100 hover:bg-slate-800"
+      class="dy-btn dy-btn-sm dy-btn-ghost dy-btn-neutral h-fit p-1"
       onclick={() => {
         if (!gg.guild) return;
         navigator.clipboard.writeText(gg.guild.id || "Guild ID not found - please report this issue.");
