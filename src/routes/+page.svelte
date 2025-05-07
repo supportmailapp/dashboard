@@ -18,10 +18,12 @@
   });
 </script>
 
+<div id="bg" style="background-image: url(https://picsum.photos/1920/1080);"></div>
+
 <!-- Servers -->
-<div class="flex h-screen w-screen flex-col items-center justify-center">
+<div class="h-screen w-screen flex-col items-center justify-center">
   <!-- It's needed to be in the wrapper because otherwise the layout breaks. Dunno why. -->
-  <header class="bg-base-200 sticky top-0 right-0 left-0 h-(--header-height) w-full">
+  <header class="bg-base-200">
     <nav class="dy-navbar mx-auto max-w-[1200px]">
       <div class="dy-navbar-start">
         <a
@@ -48,9 +50,9 @@
     </nav>
   </header>
 
-  <div class="flex h-full max-h-screen w-full items-center justify-center p-3">
-    <div class="relative h-[97%] w-full max-w-[700px] overflow-hidden overflow-y-auto rounded-lg bg-slate-800">
-      <div class="absolute top-0 left-0 flex h-fit max-h-fit w-full flex-col items-start justify-start gap-2 p-3 text-center">
+  <div class="main-container">
+    <div class="bg-base-200 h-full w-full overflow-y-auto rounded-lg inset-shadow-sm">
+      <div class="flex h-fit max-h-fit w-full flex-col items-start justify-start gap-2 p-3 text-center">
         {#if guilds.length == 0 || site.showLoading}
           <div class="flex h-full w-full items-center justify-center">
             <LoadingDots />
@@ -58,7 +60,7 @@
         {:else}
           {#each guilds as guild}
             {#if firstNotConfiguredGuild == guild.id}
-              <div class="bg-base-300 h-0.5 w-full"></div>
+              <span class="dy-divider my-1"></span>
             {/if}
             <a
               class="root-server-select-row {!guild.isConfigured ? 'opacity-40 hover:opacity-100' : ''}"
@@ -71,7 +73,7 @@
                   </div>
                 </div>
               </div>
-              <div class="flex max-w-3/5 min-w-1/5 justify-center truncate text-lg">
+              <div class="flex max-w-3/5 min-w-1/5 justify-center truncate">
                 <span class="block w-fit truncate">{guild.name}</span>
               </div>
               <div class="block min-w-fit items-center justify-center px-2">
@@ -86,13 +88,55 @@
         {/if}
       </div>
     </div>
+    <Footer />
   </div>
-
-  <Footer />
 </div>
 
 <style>
   :root {
     --header-height: 70px;
+  }
+
+  header {
+    height: var(--header-height);
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+  }
+
+  .main-container {
+    height: calc(100vh - var(--header-height));
+    max-height: 1080px;
+    padding: 10px;
+    margin-inline: auto;
+    max-width: 650px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    overflow-x: clip;
+    overflow-y: auto;
+    font-size: 1rem;
+    line-height: 1.5;
+    z-index: 20;
+  }
+
+  #bg {
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    object-fit: cover;
+    backdrop-filter: blur(0.75vh);
+    filter: blur(0.75vh);
+    -webkit-filter: blur(0.75vh);
+    box-shadow: 0 0 200px rgb(0, 0, 0);
+    z-index: -1;
   }
 </style>
