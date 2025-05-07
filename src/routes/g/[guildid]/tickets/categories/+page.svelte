@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from "$app/state";
   import DiscordEmoji from "$lib/components/DiscordEmoji.svelte";
+  import EmojiSelector from "$lib/components/EmojiSelector.svelte";
   import { buildNavHref } from "$lib/components/navigation.svelte";
   import SiteHeader from "$lib/components/SiteHeader.svelte";
   import { BASIC_GET_FETCH_INIT } from "$lib/constants";
@@ -51,4 +52,4 @@
 
 <SiteHeader breadcrumbs={[{ title: "Tickets", href: buildNavHref("/tickets") }]}>Ticket Categories</SiteHeader>
 
-<DiscordEmoji id="1312118778439405649" name="Arrows" />
+<EmojiSelector />
