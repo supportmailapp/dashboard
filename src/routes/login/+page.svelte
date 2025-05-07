@@ -1,46 +1,18 @@
 <script lang="ts">
   import Branding from "$lib/assets/Branding.svelte";
-  import { roundAndFormatNumber } from "$lib/utils/formatting.js";
-  import { writable } from "svelte/store";
 
   let loading = $state(false);
   let error = $state<string | null>(null);
-  class Dimensions {
-    oldWidth = 500;
-    oldHeight = 500;
-    width = $state(1920);
-    height = $state(1080);
-    formattedWidth = $derived(roundAndFormatNumber(this.width, { plus: false, comma: false }));
-    formattedHeight = $derived(roundAndFormatNumber(this.height, { plus: false, comma: false }));
-    constructor() {}
-  }
-  const dimensions = new Dimensions();
-  let pictureUrl = writable<string | null>(null);
-
-  $effect(() => {
-    if (
-      $pictureUrl === null ||
-      Math.abs(dimensions.oldWidth - dimensions.width) > 200 ||
-      Math.abs(dimensions.oldHeight - dimensions.height) > 200
-    ) {
-      dimensions.oldWidth = dimensions.width;
-      dimensions.oldHeight = dimensions.height;
-      $pictureUrl = `https://picsum.photos/${dimensions.formattedWidth}/${dimensions.formattedHeight}`;
-      console.log("Updated picture URL:", $pictureUrl);
-    }
-  });
 </script>
 
-<svelte:window bind:innerHeight={dimensions.height} bind:innerWidth={dimensions.width} />
-
-<div id="bg" style="background-image: url({$pictureUrl});"></div>
+<div id="bg" style="background-image: url(https://picsum.photos/1920/1080.webp);"></div>
 <!-- Static Alternative: /login_bg.svg -->
 <!-- Credits, bottom right corner -->
 <a
   href="https://picsum.photos/"
   target="_blank"
   rel="noopener noreferrer"
-  class="text-opacity-50 absolute right-3 bottom-3 z-50 text-[0.6rem] text-slate-600"
+  class="text-opacity-50 absolute right-3 bottom-3 z-50 text-[0.6rem] text-slate-600 hover:text-slate-400"
 >
   Photo by <b>Picsum Photos</b>
 </a>
