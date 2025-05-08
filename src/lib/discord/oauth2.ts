@@ -18,13 +18,7 @@ import { discord } from "$lib/server/constants";
 import { updateUser } from "$lib/server/db";
 import { urls } from "$lib/urls";
 import { error, redirect, type RequestHandler } from "@sveltejs/kit";
-import {
-    OAuth2Routes,
-    RouteBases,
-    Routes,
-    type APIUser,
-    type RESTPostOAuth2AccessTokenResult
-} from "discord-api-types/v10";
+import { OAuth2Routes, RouteBases, Routes, type APIUser, type RESTPostOAuth2AccessTokenResult } from "discord-api-types/v10";
 
 export const createOAuth2Login = function (url: URL) {
   const redirectUrl = url.searchParams.get("redirect") || null;
