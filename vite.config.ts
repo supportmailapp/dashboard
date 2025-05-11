@@ -14,6 +14,7 @@ export default defineConfig({
 
   optimizeDeps: {
     include: ["@sveltejs/kit", "clsx"],
+    exclude: ["@lucide/svelte"],
   },
 
   appType: "custom",
