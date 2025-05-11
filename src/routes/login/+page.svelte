@@ -1,27 +1,12 @@
 <script lang="ts">
   import { enhance } from "$app/forms";
-  import { goto } from "$app/navigation";
   import Branding from "$lib/assets/Branding.svelte";
-  import { onMount } from "svelte";
-
-  let { form } = $props();
 
   let loading = $state(false);
-  let remember = $state(false);
+  let stayLoggedIn = $state(Boolean(window?.localStorage.getItem("stayLoggedIn") || false));
   let joinDiscord = $state(true);
   $effect(() => {
-    window.localStorage.setItem("keep-logged-in", String($state.snapshot(remember)));
-  });
-
-  $effect(() => {
-    if (form?.url) {
-      goto(form.url);
-    }
-  });
-
-  onMount(() => {
-    const _remember = window.localStorage.getItem("keep-logged-in");
-    remember = Boolean(_remember || false);
+    window.localStorage.setItem("stayLoggedIn", String($state.snapshot(stayLoggedIn)));
   });
 </script>
 
@@ -43,15 +28,18 @@
     <div class="dy-card-body">
       <Branding />
       <form
-        use:enhance={({}) => {
+        use:enhance={() => {
           loading = true;
-          return async ({ update }) => {
-            await update();
+          return async ({ update, result }) => {
+            await update({ reset: false, invalidateAll: false });
             loading = false;
+            if (result.type === "success") {
+              window.location.assign(result.data?.url as string);
+            }
           };
         }}
         method="POST"
-        class="dy-fieldset justify-center space-y-2 {loading ? 'cursor-not-allowed opacity-80' : ''}"
+        class="dy-fieldset justify-center space-y-2 {loading ? 'pointer-events-none cursor-not-allowed opacity-80' : ''}"
       >
         <div class="flex w-full flex-col items-center gap-2">
           <label class="dy-label">
@@ -59,17 +47,17 @@
               type="checkbox"
               name="remember"
               id="remember"
-              class="dy-checkbox dy-checkbox-accent"
-              bind:checked={remember}
+              class="dy-checkbox dy-checkbox-info dy-checkbox-sm"
+              bind:checked={stayLoggedIn}
             />
-            Keep me logged in
+            Stay logged in
           </label>
           <label class="dy-label">
             <input
               type="checkbox"
               name="join-discord"
               id="join-discord"
-              class="dy-checkbox dy-checkbox-accent"
+              class="dy-checkbox dy-checkbox-info dy-checkbox-sm"
               bind:checked={joinDiscord}
             />
             Join the Support Server

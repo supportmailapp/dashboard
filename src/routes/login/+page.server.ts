@@ -12,11 +12,11 @@ export async function load({ locals }) {
 export const actions = {
   default: async ({ url, cookies, request }) => {
     const data = await request.formData();
-    console.debug("Login form data", data.entries());
+    console.debug("Login form data", Array.from(data.entries()));
     const res = createOAuth2Login({
       url: new URL(url),
-      prompt: data.get("remember") === "true" ? "true" : "none",
-      joinDiscord: data.get("join-discord") === "true",
+      prompt: data.get("remember") === "on" ? "none" : "true",
+      joinDiscord: data.get("join-discord") === "on",
     });
     cookies.set("discord-oauth2-state", res.state, { path: "/" });
     return {
