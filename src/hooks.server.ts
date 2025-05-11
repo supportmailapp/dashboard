@@ -77,8 +77,9 @@ const baseHandle: Handle = async function ({ event, resolve }) {
   }
 
   // Check if API request but no token
-  if (!event.locals.token && apiIsProtected(event.url)) {
-    console.log("No token found");
+  const isProtected = apiIsProtected(event.url);
+  if (isProtected && (!event.locals.userId || !event.locals.token)) {
+    console.log("No user ID or token found");
     return ErrorResponses.unauthorized();
   }
 
