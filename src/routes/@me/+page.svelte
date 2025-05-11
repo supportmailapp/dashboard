@@ -81,7 +81,7 @@
   });
 </script>
 
-<div class="relative mx-auto block h-screen w-full max-w-lg">
+<div class="page-wrapper max-w-lg">
   <div class="flex h-full w-full flex-col items-center gap-5 p-4 pt-8">
     <!-- Back button -->
     <div class="w-full">
@@ -182,10 +182,10 @@
         <LoadingDots />
       </div>
     {/if}
-    <div style="margin-top: auto;">
-      <Footer />
-    </div>
   </div>
+</div>
+<div class="footer-container-wrapper">
+  <Footer />
 </div>
 
 {#if toasts.length > 0}
@@ -204,5 +204,19 @@
   .dy-fieldset {
     user-select: none;
     -webkit-user-select: none;
+  }
+
+  .page-wrapper {
+    min-height: calc(100vh - var(--footer-height));
+    max-height: 100vh;
+    width: 100%;
+    position: relative;
+    display: block;
+    margin-inline: auto;
+  }
+
+  .footer-container-wrapper {
+    max-width: 700px;
+    margin-inline: auto;
   }
 </style>

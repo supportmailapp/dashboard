@@ -119,8 +119,9 @@
     place-items: center;
     background-color: transparent;
 
-    &.server-select {
+    &.horizontal {
       grid-auto-flow: column;
+      height: var(--footer-height);
 
       @media screen and (max-width: 450px) {
         grid-auto-flow: row;
