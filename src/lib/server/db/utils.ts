@@ -3,6 +3,7 @@ import type { UpdateQuery, UpdateWithAggregationPipeline } from "mongoose";
 import { ValidationError } from "zod-validation-error";
 import { DBGuild, DBUser } from "./models";
 import { TicketCategory } from "./models/src/ticketCategory";
+import { LANGUAGES } from "$lib/constants";
 
 export function getGuild(guildId: string) {
   return DBGuild.findOne({ id: guildId }, null, { lean: true });
@@ -51,3 +52,10 @@ export async function verifyComponentsV2Payload(components: any[]) {
     throw err;
   }
 }
+
+/**
+ * Verifies if the provided language is supported.
+ */
+export const verifyLanguage = (language: string) => {
+  return LANGUAGES.some((lang) => lang.value === language);
+};
