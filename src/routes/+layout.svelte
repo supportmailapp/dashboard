@@ -1,7 +1,7 @@
 <script lang="ts">
   import "../app.css";
   import { guilds, loadGuilds } from "$lib/stores/guilds.svelte";
-  import { loadDbUser, user } from "$lib/stores/user.svelte";
+  import { user } from "$lib/stores/user.svelte";
   import { onMount } from "svelte";
   import { afterNavigate, beforeNavigate, goto } from "$app/navigation";
   import { page } from "$app/state";
@@ -19,7 +19,6 @@
 
     if (!guilds.value.length) {
       loadGuilds();
-      loadDbUser();
     }
 
     const redirectParam = page.url.searchParams.get("redirect");
