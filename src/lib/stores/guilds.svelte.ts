@@ -18,8 +18,9 @@ export const guilds = $state<GuildsState>({
   },
 });
 
-export async function loadGuilds() {
-  if (!guilds.get().length) {
+export async function loadGuilds(overwrite = false) {
+  console.debug("Loading guilds, overwrite:", overwrite);
+  if (!guilds.get().length || overwrite) {
     const guildsRes = await fetch(APIRoutes.userGuilds({ manageBotOnly: true }), BASIC_GET_FETCH_INIT);
 
     if (guildsRes.ok) {
