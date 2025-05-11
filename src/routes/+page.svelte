@@ -72,7 +72,7 @@
   </header>
 
   <div class="main-container">
-    <div class="bg-base-200 h-full w-full overflow-y-auto rounded-lg inset-shadow-sm">
+    <div class="bg-base-200 w-full shrink overflow-y-auto rounded-lg inset-shadow-sm">
       <div
         class="flex h-full max-h-fit w-full flex-col items-start justify-start gap-2 p-3 text-center"
         class:fade-bottom={guilds.length == 0 || site.showLoading}
@@ -128,6 +128,9 @@
     </div>
     <Footer />
   </div>
+  <!-- <div class="footer-container-wrapper">
+    <Footer />
+  </div> -->
 </div>
 
 <style>

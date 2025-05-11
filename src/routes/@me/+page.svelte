@@ -183,8 +183,6 @@
       </div>
     {/if}
   </div>
-</div>
-<div class="footer-container-wrapper">
   <Footer />
 </div>
 
@@ -207,16 +205,10 @@
   }
 
   .page-wrapper {
-    min-height: calc(100vh - var(--footer-height));
-    max-height: 100vh;
+    height: 100vh;
     width: 100%;
     position: relative;
     display: block;
-    margin-inline: auto;
-  }
-
-  .footer-container-wrapper {
-    max-width: 700px;
     margin-inline: auto;
   }
 </style>

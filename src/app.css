@@ -45,7 +45,6 @@
   :root {
     --dc-blurple: #5a65db;
     --dark-blurple: rgba(61, 72, 187, 0.8);
-    --footer-height: 2.5rem;
     --sidebar-width: 14rem;
     --color-bg: oklch(22.4% 0.009 277.42);
   }
@@ -119,18 +118,14 @@
     place-items: center;
     background-color: transparent;
 
-    &.horizontal {
-      grid-auto-flow: column;
-      height: var(--footer-height);
-
-      @media screen and (max-width: 450px) {
-        grid-auto-flow: row;
-      }
-    }
-
     a {
       @apply dy-link dy-link-hover;
     }
+  }
+
+  .footer-container-wrapper {
+    max-width: 700px;
+    margin-inline: auto;
   }
 
   .save-alert-container {
