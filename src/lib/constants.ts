@@ -20,14 +20,10 @@ export const BASIC_GET_FETCH_INIT = {
   },
 } as const;
 
-export const BASIC_REQUEST_INIT = (method: "POST" | "PATCH" | "DELETE") =>
+export const BASIC_REQUEST_INIT = (method: "POST" | "PATCH" | "PUT" | "DELETE") =>
   ({
+    ...BASIC_GET_FETCH_INIT,
     method: method,
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
   }) as RequestInit;
 
 export const LANGUAGES = [
@@ -37,7 +33,7 @@ export const LANGUAGES = [
 ];
 
 /**
- * Generic emtpy error responses for API routes
+ * Generic empty error responses for API routes
  */
 export const ErrorResponses = {
   badRequest: (text: string | null = null) => new Response(text, { status: 400, statusText: "Bad Request" }),
