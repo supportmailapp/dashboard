@@ -236,19 +236,7 @@
   }
 
   .save-alert-container {
-    @apply px-4 py-2 md:ml-[18rem];
-    display: flex;
-    justify-content: center;
-    background-color: transparent;
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 100;
-
-    button {
-      @apply dy-btn;
-    }
+    @apply md:ml-[18rem];
   }
 }
 

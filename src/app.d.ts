@@ -58,7 +58,6 @@ declare global {
       news?: News[];
       ccDate: string;
       basePath: string;
-      configData: any;
       dataState: ConfigState;
     }
 

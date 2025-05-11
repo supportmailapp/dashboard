@@ -27,9 +27,9 @@
   --color-info-content: oklch(28% 0.091 267.935);
   --color-success: oklch(80% 0.169 151.711);
   --color-success-content: oklch(26% 0.065 152.934);
-  --color-warning: oklch(90.9% 0.169 91.605);
+  --color-warning: oklch(90.4% 0.139 94.545);
   --color-warning-content: oklch(42.1% 0.095 57.708);
-  --color-error: oklch(88.5% 0.062 18.334);
+  --color-error: oklch(74.6% 0.149 29.385);
   --color-error-content: oklch(25.8% 0.092 26.042);
   --radius-selector: 2rem;
   --radius-field: 0.5rem;
@@ -69,6 +69,7 @@
     width: 100%;
     min-height: 100vh;
     overflow: hidden;
+    background-color: var(--color-bg);
   }
 
   @media (width >= 48rem) {
@@ -128,6 +129,22 @@
 
     a {
       @apply dy-link dy-link-hover;
+    }
+  }
+
+  .save-alert-container {
+    @apply px-4 py-2;
+    display: flex;
+    justify-content: center;
+    background-color: transparent;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+
+    button {
+      @apply dy-btn;
     }
   }
 }
@@ -193,5 +210,10 @@
     background-color: var(--color-base-100);
     cursor: text;
     user-select: text;
+  }
+
+  .input-while-saving {
+    pointer-events: none;
+    opacity: 50%;
   }
 }
