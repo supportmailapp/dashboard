@@ -59,7 +59,7 @@
           </div>
         {:else}
           {#each guilds as guild}
-            {#if firstNotConfiguredGuild == guild.id}
+            {#if firstNotConfiguredGuild === guild.id}
               <span class="dy-divider my-1"></span>
             {/if}
             <a

@@ -10,6 +10,7 @@ import { REST } from "@discordjs/rest";
 import {
   RouteBases,
   Routes,
+  type APIEmoji,
   type APIGuildMember,
   type APIRole,
   type APIUser,
@@ -36,6 +37,24 @@ export class DiscordREST {
 
   public async getGuildMember(guildId: string, memberId: string): Promise<APIGuildMember> {
     return this.rest.get(Routes.guildMember(guildId, memberId)) as any;
+  }
+
+  /**
+   * Fetches the emojis of a guild from the Discord API.
+   *
+   * This function retrieves the emojis of a specified guild and filters them based on their availability.
+   * If `keepAvailable` is set to `true`, all emojis will be returned regardless of their availability.
+   */
+  public async getGuildEmojis(guildId: string, keepAvailable = false): Promise<APIEmoji[]> {
+    const _emojis = (await this.rest.get(Routes.guildEmojis(guildId))) as any;
+    return _emojis
+      .filter((e: APIEmoji) => (keepAvailable ? true : e.available))
+      .map((emoji: APIEmoji) => ({
+        id: emoji.id,
+        name: emoji.name,
+        animated: emoji.animated,
+        managed: emoji.managed,
+      }));
   }
 }
 

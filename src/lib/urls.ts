@@ -5,7 +5,7 @@ export interface AuthorizeUrlParams {
   scope: string;
   state: string;
   redirectUri: string;
-  promt?: string;
+  prompt?: string;
 }
 
 export interface UserGuildsParams {
@@ -28,6 +28,8 @@ export const APIRoutes = {
     return `${API_BASE}/@me/guilds` + (sParams.toString() ? `?${sParams.toString()}` : "");
   },
   guildMember: (guildId: string, memberId: string) => `${API_BASE}/guilds/${guildId}/members/${memberId}` as const,
+  guildEmojis: (guildId: string) => `${API_BASE}/guilds/${guildId}/emojis` as const,
+  emojis: (emojiKey: string) => `/emojis/${emojiKey}.svg` as const,
   /**
    * Used for:
    * - GET: Get the DB user for a user
@@ -83,13 +85,13 @@ export const urls = {
     if (guildId) params.append("guild_id", guildId);
     return "https://discord.com/oauth2/authorize?" + params.toString();
   },
-  authorize: function ({ clientId, scope, state, redirectUri, promt = "none" }: AuthorizeUrlParams): string {
+  authorize: function ({ clientId, scope, state, redirectUri, prompt = "none" }: AuthorizeUrlParams): string {
     return (
       "https://discord.com/oauth2/authorize?" +
       new URLSearchParams({
         client_id: clientId,
         response_type: "code",
-        prompt: promt,
+        prompt: prompt,
         scope: scope,
         redirect_uri: redirectUri,
         state: state,
@@ -99,6 +101,7 @@ export const urls = {
   token: () => "https://discord.com/api/oauth2/token",
   revocation: () => "https://discord.com/api/oauth2/token/revoke",
 } as const;
+
 export const ImportantLinks = {
   legal: {
     notice: "https://legal.supportmail.dev",

@@ -19,21 +19,33 @@ import { updateUser } from "$lib/server/db";
 import { urls } from "$lib/urls";
 import { error, redirect, type RequestHandler } from "@sveltejs/kit";
 import { OAuth2Routes, RouteBases, Routes, type APIUser, type RESTPostOAuth2AccessTokenResult } from "discord-api-types/v10";
+import ky from "ky";
 
-export const createOAuth2Login = function (url: URL) {
-  const redirectUrl = url.searchParams.get("redirect") || null;
+type OAuth2LoginOpts = {
+  url: URL;
+  prompt: "true" | "none";
+  joinDiscord: boolean;
+};
+
+export const createOAuth2Login = function (opts: OAuth2LoginOpts) {
+  // TODO: Add redirect logic
+  // const redirectUrl = opts.url.searchParams.get("redirect") || null;
   const state = crypto.randomUUID();
+
+  const scopes = discord.scopes as unknown as string[];
+  if (opts.joinDiscord) {
+    scopes.push("guilds.join");
+  }
 
   return {
     url: urls.authorize({
       clientId: env.clientId,
-      scope: discord.scopes.join(" "),
+      scope: scopes.join(" "),
       state: state,
-      promt: "true",
+      prompt: opts.prompt,
       redirectUri: discord.redirectUri,
     }),
     state: state,
-    redirectUrl: redirectUrl,
   };
 };
 
@@ -94,6 +106,30 @@ export const callbackHandler: RequestHandler = async ({ url, fetch, cookies }) =
     if (!userRes.ok) throw { message: "Failed to fetch user data" };
 
     userData = (await userRes.json()) as APIUser;
+
+    // Check if the user has the guilds.join scope by seeing if it's in the granted scopes
+    const grantedScopes = oauthResJson.scope.split(" ");
+    if (grantedScopes.includes("guilds.join") && env.PUBLIC_SupportServer) {
+      try {
+        // Add user to the specified guild using Discord API
+        const joinRes = await ky.put(`${RouteBases.api}${Routes.guildMember(env.PUBLIC_SupportServer, userData.id)}`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bot ${env.botToken}`,
+          },
+          json: {
+            access_token: oauthResJson.access_token,
+          },
+        });
+
+        if (!joinRes.ok) {
+          console.error("Failed to add user to guild:", await joinRes.text());
+        }
+      } catch (joinErr) {
+        // Log the error but continue with the authentication process
+        console.error("Error adding user to guild:", joinErr);
+      }
+    }
   } catch (err: any) {
     console.error(err);
     return error(500, {
