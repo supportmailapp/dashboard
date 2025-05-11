@@ -1,13 +1,13 @@
 <script lang="ts">
+  import "./serverSelect.css";
   import Footer from "$lib/components/Footer.svelte";
   import RefreshButton from "$lib/components/RefreshButton.svelte";
-  import { guilds as guildsState } from "$lib/stores/guilds.svelte";
+  import { guilds as guildsState, loadGuilds } from "$lib/stores/guilds.svelte";
   import { site } from "$lib/stores/site.svelte";
   import { user as userState } from "$lib/stores/user.svelte";
   import { cdnUrls } from "$lib/utils/formatting";
   import { CircleArrowRight, Plus } from "@lucide/svelte";
-  import "./serverSelect.css";
-  import LoadingDots from "$lib/components/LoadingDots.svelte";
+  import { beforeNavigate } from "$app/navigation";
 
   let user = $derived(userState.discord as BasicUser);
   let guilds = $derived(guildsState.value as DCGuild[]);
@@ -15,6 +15,13 @@
     if (guilds.length) {
       return guilds.find((guild) => !guild.isConfigured)?.id;
     }
+  });
+
+  beforeNavigate(({ complete }) => {
+    site.showLoading = true;
+    complete.catch(undefined).finally(() => {
+      site.showLoading = false;
+    });
   });
 </script>
 
@@ -36,7 +43,21 @@
       </div>
 
       <div class="dy-navbar-center justify-center">
-        <RefreshButton text="Reload Servers" />
+        <RefreshButton
+          text="Reload Servers"
+          clickFunction={() => {
+            site.showLoading = true;
+            console.log("Reloading servers...");
+            loadGuilds(true)
+              .catch((reason) => {
+                console.error("Failed to load guilds", reason);
+              })
+              .finally(() => {
+                site.showLoading = false;
+                console.log("Finished reloading servers");
+              });
+          }}
+        />
       </div>
       <div class="dy-navbar-end">
         <a
@@ -52,11 +73,28 @@
 
   <div class="main-container">
     <div class="bg-base-200 h-full w-full overflow-y-auto rounded-lg inset-shadow-sm">
-      <div class="flex h-fit max-h-fit w-full flex-col items-start justify-start gap-2 p-3 text-center">
+      <div
+        class="flex h-full max-h-fit w-full flex-col items-start justify-start gap-2 p-3 text-center"
+        class:fade-bottom={guilds.length == 0 || site.showLoading}
+      >
         {#if guilds.length == 0 || site.showLoading}
-          <div class="flex h-full w-full items-center justify-center">
-            <LoadingDots />
-          </div>
+          {#each Array(5) as _}
+            <div class="flex w-full flex-row items-center justify-between gap-2">
+              <div class="flex items-center justify-center p-2">
+                <div class="dy-avatar">
+                  <div class="dy-mask dy-mask-squircle size-12">
+                    <div class="dy-skeleton size-full"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex w-3/5 justify-center truncate">
+                <span class="dy-skeleton block h-[1rem] w-32 rounded"></span>
+              </div>
+              <div class="block min-w-fit items-center justify-center px-2">
+                <div class="dy-skeleton size-5 rounded-full"></div>
+              </div>
+            </div>
+          {/each}
         {:else}
           {#each guilds as guild}
             {#if firstNotConfiguredGuild === guild.id}
@@ -68,7 +106,7 @@
             >
               <div class="flex items-center justify-center p-2">
                 <div class="dy-avatar">
-                  <div class="dy-mask dy-mask-squircle h-12 w-12">
+                  <div class="dy-mask dy-mask-squircle size-12">
                     <img src={cdnUrls.guildIcon(guild.id, guild.icon)} alt={guild.name} />
                   </div>
                 </div>
@@ -78,9 +116,9 @@
               </div>
               <div class="block min-w-fit items-center justify-center px-2">
                 {#if guild.isConfigured}
-                  <CircleArrowRight />
+                  <CircleArrowRight class="size-5" />
                 {:else}
-                  <Plus />
+                  <Plus class="size-5" />
                 {/if}
               </div>
             </a>
@@ -138,5 +176,20 @@
     -webkit-filter: blur(0.75vh);
     box-shadow: 0 0 200px rgb(0, 0, 0);
     z-index: -1;
+  }
+
+  .fade-bottom {
+    position: relative;
+  }
+
+  .fade-bottom::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 90%;
+    background: linear-gradient(to bottom, rgb(255, 255, 255, 0) 0%, var(--color-base-200) 100%);
+    pointer-events: none;
   }
 </style>
