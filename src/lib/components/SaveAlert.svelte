@@ -12,6 +12,7 @@
         const confirm = window.confirm("You have unsaved changes. Are you sure you want to leave this page?");
         if (!confirm) {
           nav.cancel();
+          site.showLoading = false;
           return;
         }
       }
