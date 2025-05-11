@@ -26,11 +26,6 @@ export class ConfigState {
     this.unsaved = initialVal;
   }
 
-  /**
-   * Sets the cancel function to be called when the user cancels the save.
-   *
-   * @memberof DataState
-   */
   set revert(fn) {
     this.#reset = () => {
       fn();
@@ -48,11 +43,6 @@ export class ConfigState {
     return this.#reset;
   }
 
-  /**
-   * Sets the save function to be called when the user saves the data.
-   *
-   * @memberof DataState
-   */
   set save(fn) {
     this.#save = () => {
       this.saveProgress = 1;
