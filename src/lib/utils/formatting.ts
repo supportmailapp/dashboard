@@ -1,5 +1,5 @@
 import { DISCORD_CDN_BASE } from "$lib/urls";
-import type { APIRole } from "discord-api-types/v10";
+import { ChannelType, type APIRole } from "discord-api-types/v10";
 
 /**
  * Sorts an array of items by their position property in ascending order.
@@ -16,6 +16,27 @@ export function sortByPositionAndId<T extends { id: string; position: number }>(
     }
     return a.position - b.position;
   });
+}
+
+/**
+ * Sorts an array of channels by:
+ * ???
+ */
+export function sortChannels<T extends BasicChannel>(channels: T[]): T[] {
+  const sorted = sortByPositionAndId(channels);
+  const grouped = [];
+  // First all uncategorized channels
+  for (const channel of sorted) {
+    if (channel.parentId === null && channel.type !== ChannelType.GuildCategory) {
+      grouped.push(channel);
+    }
+  }
+
+  const categories = sorted.filter((c) => c.type === ChannelType.GuildCategory);
+  for (const cat of categories) {
+    grouped.push(cat, ...channels.filter((c) => c.parentId === cat.id));
+  }
+  return grouped;
 }
 
 /**
