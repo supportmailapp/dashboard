@@ -15,8 +15,8 @@
   import { onMount } from "svelte";
 
   let stayLoggedIn = $state<boolean>();
-  let toasts = $state<string[]>([]);
   let config = $state<Pick<IDBUser, "language" | "autoRedirect"> | null>(null);
+  let toast = $state<string | null>(null);
 
   function goBack() {
     const previousUrl = document.referrer;
@@ -28,6 +28,10 @@
       window.location.href = "/";
     }
   }
+
+  $effect(() => {
+    if (typeof stayLoggedIn !== "undefined") window.localStorage.setItem("stayLoggedIn", String(stayLoggedIn));
+  });
 
   $effect(() => {
     if (config !== null) {
@@ -81,8 +85,8 @@
   });
 </script>
 
-<div class="page-wrapper max-w-lg">
-  <div class="flex h-full w-full flex-col items-center gap-5 p-4 pt-8">
+<div class="main-wrapper max-w-lg">
+  <div class="min-h-xl flex w-full grow flex-col items-center gap-5 p-4 pt-8">
     <!-- Back button -->
     <div class="w-full">
       <button class="dy-btn dy-btn-outline" onclick={goBack} disabled={page.data.dataState.saving || site.showLoading}>
@@ -154,18 +158,13 @@
             <input
               type="checkbox"
               class="dy-toggle dy-toggle-success"
-              checked={stayLoggedIn}
-              onchange={(e) => {
-                window.localStorage.setItem("stayLoggedIn", String(e.currentTarget.checked));
-                if (toasts.length >= 10) toasts.pop();
-                if (e.currentTarget.checked) {
-                  toasts.unshift("You will be remembered!");
-                } else {
-                  toasts.unshift("You will not be remembered!");
-                }
+              bind:checked={stayLoggedIn}
+              onchange={() => {
+                if (toast) return;
+                toast = "✅ Saved";
                 setTimeout(() => {
-                  toasts.pop();
-                }, 3000);
+                  toast = null;
+                }, 2000);
               }}
             />
             Stay logged in (remember me)
@@ -183,16 +182,16 @@
       </div>
     {/if}
   </div>
-  <Footer />
+  <div class="mt-auto">
+    <Footer />
+  </div>
 </div>
 
-{#if toasts.length > 0}
+{#if toast}
   <div class="dy-toast dy-toast-top dy-toast-center">
-    {#each toasts as toast, i}
-      <div class="dy-alert dy-alert-success" class:grayscale-90={i !== 0}>
-        <span>{toast}</span>
-      </div>
-    {/each}
+    <div class="dy-alert dy-alert-info">
+      <span>{toast}</span>
+    </div>
   </div>
 {/if}
 
@@ -204,11 +203,12 @@
     -webkit-user-select: none;
   }
 
-  .page-wrapper {
+  .main-wrapper {
     height: 100vh;
     width: 100%;
     position: relative;
-    display: block;
+    display: flex;
+    flex-direction: column;
     margin-inline: auto;
   }
 </style>
