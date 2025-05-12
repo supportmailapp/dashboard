@@ -31,17 +31,11 @@
 <ServerSelectDialog />
 
 <div id="guild-header">
-  <button class="dy-btn dy-btn-neutral dy-btn-sm h-fit rounded-xl p-1" onclick={showServerSelect}>
-    {#if gg.guild}
-      <img src={cdnUrls.guildIcon(gg.guild.id, gg.guild.icon, 64)} alt="Guild icon" class="size-7 rounded-full" />
-    {:else}
-      <div class="size-8 rounded-full bg-slate-800 shadow-md">
-        <div class="dy-skeleton h-full w-full rounded-full"></div>
-      </div>
-    {/if}
-    <span class="text-base font-semibold">{gg.guild?.name || "..."}</span>
-  </button>
   {#if gg.guild}
+    <button class="dy-btn dy-btn-neutral dy-btn-sm h-fit rounded-xl p-1" onclick={showServerSelect}>
+      <img src={cdnUrls.guildIcon(gg.guild.id, gg.guild.icon, 64)} alt="Guild icon" class="size-7 rounded-full" />
+      <span class="text-base font-semibold">{gg.guild.name}</span>
+    </button>
     <button
       class="dy-btn dy-btn-sm dy-btn-ghost dy-btn-neutral h-fit p-1"
       onclick={() => {
@@ -54,9 +48,7 @@
       <span class="hidden sm:block">Copy ID</span>
     </button>
   {:else}
-    <div class="flex flex-row items-center gap-1 rounded p-1 text-xs">
-      <div class="dy-skeleton h-4 w-16 rounded"></div>
-    </div>
+    <div class="dy-skeleton h-8 w-48 rounded"></div>
   {/if}
 </div>
 
