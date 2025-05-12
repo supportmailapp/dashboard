@@ -72,65 +72,64 @@
   </header>
 
   <div class="main-container">
-    <div class="bg-base-200 w-full shrink overflow-y-auto rounded-lg inset-shadow-sm">
-      <div
-        class="flex h-full max-h-fit w-full flex-col items-start justify-start gap-2 p-3 text-center"
-        class:fade-bottom={guilds.length == 0 || site.showLoading}
-      >
-        {#if guilds.length == 0 || site.showLoading}
-          {#each Array(5) as _}
-            <div class="flex w-full flex-row items-center justify-between gap-2">
-              <div class="flex items-center justify-center p-2">
-                <div class="dy-avatar">
-                  <div class="dy-mask dy-mask-squircle size-12">
-                    <div class="dy-skeleton size-full"></div>
+    <div class="bg-base-200 rounded-box w-full grow overflow-hidden p-3 inset-shadow-sm">
+      <div class="h-full overflow-y-auto">
+        <div
+          class="flex h-full w-full flex-col items-start justify-start gap-2 text-center"
+          class:fade-bottom={guilds.length == 0 || site.showLoading}
+        >
+          {#if guilds.length == 0 || site.showLoading}
+            {#each Array(5) as _}
+              <div class="flex w-full flex-row items-center justify-between gap-2">
+                <div class="flex items-center justify-center p-2">
+                  <div class="dy-avatar">
+                    <div class="dy-mask dy-mask-squircle size-12">
+                      <div class="dy-skeleton size-full"></div>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div class="flex w-3/5 justify-center truncate">
-                <span class="dy-skeleton block h-[1rem] w-32 rounded"></span>
-              </div>
-              <div class="block min-w-fit items-center justify-center px-2">
-                <div class="dy-skeleton size-5 rounded-full"></div>
-              </div>
-            </div>
-          {/each}
-        {:else}
-          {#each guilds as guild}
-            {#if firstNotConfiguredGuild === guild.id}
-              <span class="dy-divider my-1"></span>
-            {/if}
-            <a
-              class="root-server-select-row {!guild.isConfigured ? 'opacity-40 hover:opacity-100' : ''}"
-              href="/{guild.isConfigured ? 'g/' : 'add/'}{guild.id}"
-            >
-              <div class="flex items-center justify-center p-2">
-                <div class="dy-avatar">
-                  <div class="dy-mask dy-mask-squircle size-12">
-                    <img src={cdnUrls.guildIcon(guild.id, guild.icon)} alt={guild.name} />
-                  </div>
+                <div class="flex w-3/5 justify-center truncate">
+                  <span class="dy-skeleton block h-[1rem] w-32 rounded"></span>
+                </div>
+                <div class="block min-w-fit items-center justify-center px-2">
+                  <div class="dy-skeleton size-5 rounded-full"></div>
                 </div>
               </div>
-              <div class="flex max-w-3/5 min-w-1/5 justify-center truncate">
-                <span class="block w-fit truncate">{guild.name}</span>
-              </div>
-              <div class="block min-w-fit items-center justify-center px-2">
-                {#if guild.isConfigured}
-                  <CircleArrowRight class="size-5" />
-                {:else}
-                  <Plus class="size-5" />
-                {/if}
-              </div>
-            </a>
-          {/each}
-        {/if}
+            {/each}
+          {:else}
+            {#each guilds as guild}
+              {#if firstNotConfiguredGuild === guild.id}
+                <span class="dy-divider my-1"></span>
+              {/if}
+              <a
+                class="root-server-select-row {!guild.isConfigured ? 'opacity-40 hover:opacity-100' : ''}"
+                href="/{guild.isConfigured ? 'g/' : 'add/'}{guild.id}"
+              >
+                <div class="flex items-center justify-center p-2">
+                  <div class="dy-avatar">
+                    <div class="dy-mask dy-mask-squircle size-12">
+                      <img src={cdnUrls.guildIcon(guild.id, guild.icon)} alt={guild.name} />
+                    </div>
+                  </div>
+                </div>
+                <div class="flex max-w-3/5 min-w-1/5 justify-center truncate">
+                  <span class="block w-fit truncate">{guild.name}</span>
+                </div>
+                <div class="block min-w-fit items-center justify-center px-2">
+                  {#if guild.isConfigured}
+                    <CircleArrowRight class="size-5 sm:size-6" />
+                  {:else}
+                    <Plus class="size-5 sm:size-6" />
+                  {/if}
+                </div>
+              </a>
+            {/each}
+          {/if}
+        </div>
       </div>
     </div>
     <Footer />
   </div>
-  <!-- <div class="footer-container-wrapper">
-    <Footer />
-  </div> -->
 </div>
 
 <style>
@@ -152,6 +151,7 @@
     height: calc(100vh - var(--header-height));
     max-height: 1080px;
     padding: 10px;
+    padding-bottom: 0;
     margin-inline: auto;
     max-width: 650px;
     width: 100%;
