@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 .root-server-select-row {
+  z-index: 1000;
   width: 100%;
   display: flex;
   flex-direction: row;
@@ -16,6 +17,5 @@
   &:hover {
     background-color: color-mix(in oklab, var(--color-primary) 90%, transparent);
     font-weight: bold;
-    transform: scale(1.01);
   }
 }
