@@ -1,3 +1,4 @@
+import { ChannelType } from "discord.js";
 import type { IDBGuild } from "supportmail-types";
 
 export function turnGuildConfigIntoOverview(_config: IDBGuild & { _id: string }) {
@@ -18,4 +19,13 @@ export * from "./utils/validators";
 
 export function delay(ms: number) {
   return new Promise((_r) => setTimeout(_r, ms));
+}
+
+export function discordChannelTypeToBasic(type: ChannelType): "thread" | "channel" | "category" {
+  if (type === ChannelType.PublicThread || type === ChannelType.PrivateThread) {
+    return "thread";
+  } else if (type === ChannelType.GuildCategory) {
+    return "category";
+  }
+  return "channel";
 }
