@@ -136,10 +136,6 @@
       &.active {
         @apply bg-primary/50 font-bold;
       }
-
-      &.subpage-active {
-        @apply bg-primary/50 hover:bg-primary/60;
-      }
     }
 
     .nav-submenu {
