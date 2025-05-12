@@ -1,7 +1,7 @@
 // PUBLIC constants
 
 import { Folder, MessageSquareDashed, MessageSquareWarning, ShieldBan, Star, Ticket } from "@lucide/svelte";
-import type { APIGuildForumTag } from "discord.js";
+import type { APIGuildForumTag } from "discord-api-types/v10";
 
 export const mediaQuery = {
   sm: 640,

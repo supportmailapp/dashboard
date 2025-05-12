@@ -1,4 +1,4 @@
-import type { APIUser } from "discord.js";
+import type { APIUser } from "discord-api-types/v10";
 import NodeCache from "node-cache";
 import type { IDBUser } from "supportmail-types";
 

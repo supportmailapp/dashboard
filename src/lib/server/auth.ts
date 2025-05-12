@@ -1,7 +1,7 @@
 import { env } from "$env/dynamic/private";
 import { getUserGuilds } from "$lib/cache/guilds";
 import { fetchUserGuilds } from "$lib/discord/utils";
-import type { RESTPostOAuth2AccessTokenResult } from "discord.js";
+import type { RESTPostOAuth2AccessTokenResult } from "discord-api-types/v10";
 import jwt from "jsonwebtoken";
 import type { IDBUser } from "supportmail-types";
 import { DBUser, getUser } from "./db";

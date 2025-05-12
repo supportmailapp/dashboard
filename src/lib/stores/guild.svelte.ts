@@ -5,7 +5,7 @@ import { APIRoutes } from "$lib/urls";
 import { BASIC_GET_FETCH_INIT } from "$lib/constants";
 import { sortByPositionAndId } from "$lib/utils/formatting";
 import { guilds } from "./guilds.svelte";
-import type { APIEmoji } from "discord.js";
+import type { APIEmoji } from "discord-api-types/v10";
 import ky from "ky";
 
 type GGType = {

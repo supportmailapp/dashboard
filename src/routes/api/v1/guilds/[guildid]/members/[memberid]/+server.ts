@@ -1,8 +1,7 @@
 import { getMember, setMember } from "$lib/cache/members.js";
 import { ErrorResponses } from "$lib/constants.js";
 import { DiscordREST } from "$lib/discord/utils.js";
-import { ErrorJsonResponse } from "$lib/server/constants.js";
-import { type APIGuildMember } from "discord.js";
+import { type APIGuildMember } from "discord-api-types/v10";
 import { RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
 
 const rest = new DiscordREST();

@@ -1,4 +1,4 @@
-import type { RESTAPIPartialCurrentUserGuild } from "discord.js";
+import type { RESTAPIPartialCurrentUserGuild } from "discord-api-types/v10";
 import NodeCache from "node-cache";
 
 const BASE_CACHE_OPTS: NodeCache.Options = {
