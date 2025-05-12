@@ -59,15 +59,15 @@
     <ul class="relative">
       <li>
         <a href={buildNavHref()} class="nav-btn nav-parent" class:active={isCurrentPage(buildNavHref())}>
-          <span class="w-full px-4 text-center">Home</span>
+          <span class="w-full text-center">Home</span>
           <House class="size-8" />
         </a>
       </li>
       {#each navItems as item}
         <li>
           <a href={item.href} class="nav-btn nav-parent" class:active={item.active} class:subpage-active={isSubPage(item.href)}>
-            <item.icon class="size-8 {item.id === 'premium' ? 'text-yellow-400' : ''}" />1
-            <span class="w-auto px-4" class:text-amber-400={item.id == "premium"}>{item.name}</span>
+            <item.icon class="size-8 {item.id === 'premium' ? 'text-yellow-400' : ''}" />
+            <span class="w-aut" class:text-amber-400={item.id == "premium"}>{item.name}</span>
           </a>
           {#if item.children?.length && page.url.pathname.startsWith(item.href)}
             <ul class="nav-submenu" transition:fade={{ duration: 200 }}>
@@ -76,7 +76,7 @@
                 <li>
                   <a href={child.href} class="nav-btn nav-child" class:active={isCurrentPage(child.href)}>
                     <child.icon class="size-6" />
-                    <span class="w-auto px-4">{child.name}</span>
+                    <span class="w-auto">{child.name}</span>
                   </a>
                 </li>
               {/each}
