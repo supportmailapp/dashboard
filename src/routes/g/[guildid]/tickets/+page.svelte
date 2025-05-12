@@ -16,7 +16,7 @@
   import utc from "dayjs/plugin/utc";
   import equal from "fast-deep-equal/es6";
   import ky, { type KyResponse } from "ky";
-  import type { ITicketConfig } from "supportmail-types";
+  import type { Entity, ITicketConfig } from "supportmail-types";
   import { onMount } from "svelte";
   import { blur, scale } from "svelte/transition";
 
@@ -27,18 +27,28 @@
     pings: ["@" | "@&", string][];
   };
 
+  // Constants
+  const allDurationUnits = [
+    {
+      name: "Minutes",
+      value: "m",
+    },
+    {
+      name: "Hours",
+      value: "h",
+    },
+    {
+      name: "Days",
+      value: "d",
+    },
+  ] as const;
   const guildId = page.params.guildid;
+
+  // State variables
   let config = $state<BasicTicketConfig | null>(null);
   let showRoleSelector = $state(false);
-
-  /**
-   * This is used only for showing that tickets are currently paused.
-   *
-   * has to be set null again when config is modifed.
-   * */
   let isPausedUntil = $state<Date | null>(null);
   let pauseType = $state<"infinite" | "datetime" | "duration">("infinite");
-  let pauseDateInput = $derived<string>(new Date().toISOString());
   let timezone = $state<string>(Intl.DateTimeFormat().resolvedOptions().timeZone);
   let tzSearch = $state({
     value: "",
@@ -48,6 +58,18 @@
       this.show = false;
     },
   });
+  let pauseDurations = $state<{ amount: number; unit: "m" | "h" | "d" }[]>([]);
+  let showSetupModal = $state(false);
+  let setup = $state<{
+    categoryId: string | null;
+    staff: Entity[];
+  }>({
+    categoryId: null,
+    staff: [],
+  });
+
+  // Derived values
+  let pauseDateInput = $derived<string>(new Date().toISOString());
   let filteredTimezones = $derived(
     timezones.filter(
       (tz) =>
@@ -55,7 +77,27 @@
         tz.tzCode.toLowerCase().includes(tzSearch.value.toLowerCase()),
     ),
   );
-
+  let availableUnits = $derived(
+    allDurationUnits.reduce(
+      (acc, unit) => {
+        if (pauseDurations.length === 0) {
+          acc.push({
+            name: unit.name,
+            value: unit.value,
+          });
+          return acc;
+        }
+        if (!pauseDurations.find((duration) => duration.unit === unit.value)) {
+          acc.push({
+            name: unit.name,
+            value: unit.value,
+          });
+        }
+        return acc;
+      },
+      [] as { name: "Minutes" | "Hours" | "Days"; value: "m" | "h" | "d" }[],
+    ),
+  );
   let estimatedResumeDate = $derived.by<dayjs.Dayjs | null>(() => {
     if (pauseType === "infinite") {
       return null;
@@ -68,6 +110,7 @@
     }
   });
 
+  // Effects
   $effect(() => {
     const current = $state.snapshot(config);
     console.debug("Old config", page.data.dataState.oldConfig);
@@ -89,6 +132,43 @@
     }
   });
 
+  // Methods
+  async function loadTicketConfig() {
+    const response = await ky.get(APIRoutes.configTicketsBase(guildId), BASIC_GET_FETCH_INIT);
+
+    if (response.ok) {
+      const jsonData = (await response.json()) as BasicTicketConfig;
+      const data: BasicTicketConfig = {
+        ...jsonData,
+        anonym: {
+          enabled: jsonData.anonym?.enabled ?? false,
+          user: jsonData.anonym?.user ?? false,
+        },
+        pausedUntil: jsonData.pausedUntil?.value
+          ? {
+              value: jsonData.pausedUntil?.value ?? false,
+              // jsonData.pausedUntil?.date is a ISOString because we can't ship Date objects in HTTP requests
+              date: jsonData.pausedUntil?.date ? new Date(jsonData.pausedUntil?.date) : null,
+            }
+          : null,
+      };
+      config = data;
+      console.log("Loaded config", data);
+      page.data.dataState.oldConfig = structuredClone(data);
+      isPausedUntil = data.pausedUntil?.date ?? null;
+      if (isPausedUntil) {
+        pauseType = "datetime";
+      }
+    } else {
+      console.error(`Failed to load ticket config: ${response.status} ${response.statusText}`, [response]);
+    }
+  }
+
+  function toggleSetupModal() {
+    showSetupModal = !showSetupModal;
+  }
+
+  // Page data methods
   page.data.dataState.save = async () => {
     // Prepare data for sending
     const data = $state.snapshot(config);
@@ -139,76 +219,8 @@
     }
   };
 
-  async function loadTicketConfig() {
-    const response = await ky.get(APIRoutes.configTicketsBase(guildId), BASIC_GET_FETCH_INIT);
-
-    if (response.ok) {
-      const jsonData = (await response.json()) as BasicTicketConfig;
-      const data: BasicTicketConfig = {
-        ...jsonData,
-        anonym: {
-          enabled: jsonData.anonym?.enabled ?? false,
-          user: jsonData.anonym?.user ?? false,
-        },
-        pausedUntil: jsonData.pausedUntil?.value
-          ? {
-              value: jsonData.pausedUntil?.value ?? false,
-              // jsonData.pausedUntil?.date is a ISOString because we can't ship Date objects in HTTP requests
-              date: jsonData.pausedUntil?.date ? new Date(jsonData.pausedUntil?.date) : null,
-            }
-          : null,
-      };
-      config = data;
-      console.log("Loaded config", data);
-      page.data.dataState.oldConfig = structuredClone(data);
-      isPausedUntil = data.pausedUntil?.date ?? null;
-      if (isPausedUntil) {
-        pauseType = "datetime";
-      }
-    } else {
-      console.error(`Failed to load ticket config: ${response.status} ${response.statusText}`, [response]);
-    }
-  }
-
+  // Lifecycle
   onMount(loadTicketConfig);
-
-  // Placeholder for pause duration unit
-  let pauseDurations = $state<{ amount: number; unit: "m" | "h" | "d" }[]>([]);
-  const allDurationUnits = [
-    {
-      name: "Minutes",
-      value: "m",
-    },
-    {
-      name: "Hours",
-      value: "h",
-    },
-    {
-      name: "Days",
-      value: "d",
-    },
-  ] as const;
-  let availableUnits = $derived(
-    allDurationUnits.reduce(
-      (acc, unit) => {
-        if (pauseDurations.length === 0) {
-          acc.push({
-            name: unit.name,
-            value: unit.value,
-          });
-          return acc;
-        }
-        if (!pauseDurations.find((duration) => duration.unit === unit.value)) {
-          acc.push({
-            name: unit.name,
-            value: unit.value,
-          });
-        }
-        return acc;
-      },
-      [] as { name: "Minutes" | "Hours" | "Days"; value: "m" | "h" | "d" }[],
-    ),
-  );
 </script>
 
 <SiteHeader>Tickets</SiteHeader>
@@ -221,8 +233,22 @@
       <legend class="dy-fieldset-legend">Enable/Disable</legend>
       <div class="dy-form-control w-fit">
         <label class="dy-label cursor-pointer gap-2">
+          <input
+            type="checkbox"
+            class="dy-toggle dy-toggle-success"
+            checked={config.enabled}
+            onchange={(e) => {
+              if (config) {
+                if (e.currentTarget.checked && !config.forumId) {
+                  alert("You cannot enable the ticket system without a forum configured!");
+                  e.currentTarget.checked = false;
+                  return;
+                }
+                config.enabled = e.currentTarget.checked;
+              }
+            }}
+          />
           <span class="dy-label-text">Enable Ticket System</span>
-          <input type="checkbox" class="dy-toggle dy-toggle-success" bind:checked={config.enabled} />
         </label>
       </div>
     </fieldset>
@@ -236,7 +262,6 @@
       <div class="flex flex-col gap-4">
         <div class="dy-form-control w-fit">
           <label class="dy-label cursor-pointer gap-2">
-            <span class="dy-label-text">Pause Ticket Creation</span>
             <input
               type="checkbox"
               class="dy-toggle dy-toggle-warning"
@@ -252,6 +277,7 @@
                 }
               }}
             />
+            <span class="dy-label-text">Pause Ticket Creation</span>
           </label>
         </div>
 
@@ -469,7 +495,17 @@
           <p class="text-warning">No ticket forum configured</p>
         {/if}
         <div class="dy-card-actions justify-end">
-          <button class="dy-btn dy-btn-primary">Setup / Change Forum</button>
+          {#if config.forumId}
+            <button
+              class="dy-btn dy-btn-error"
+              onclick={() => {
+                if (config) config.forumId = undefined;
+              }}
+            >
+              Remove Forum
+            </button>
+          {/if}
+          <button class="dy-btn dy-btn-primary" onclick={toggleSetupModal}>Setup / Change Forum</button>
         </div>
       </div>
     </div>
@@ -575,6 +611,25 @@
     </a>
   </div>
 </section>
+
+<!-- Setup Tickets Modal -->
+<div class="dy-modal" class:dy-modal-open={showSetupModal} transition:scale={{ duration: 120 }}>
+  <div class="dy-modal-box flex max-w-xl flex-col gap-4">
+    <h1>Configure a new ticket forum</h1>
+    <fieldset class="dy-fieldset bg-base-200 rounded-box p-4">
+      <legend class="dy-fieldset-legend">Select a category</legend>
+      <
+      <ul class="dy-label">
+        <li>You can change the forum later if needed.</li>
+        <li>If you don't select a category, a new one will be created.</li>
+      </ul>
+    </fieldset>
+    <div class="mt-6 flex flex-col items-center gap-2 md:flex-row">
+      <button class="dy-btn w-full max-w-xs grow md:w-auto" onclick={toggleSetupModal}>Close</button>
+      <button class="dy-btn dy-btn-primary w-full max-w-xs grow md:w-auto">Setup</button>
+    </div>
+  </div>
+</div>
 
 <style>
   .nav-grid {
