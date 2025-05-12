@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import { delay } from "$lib";
+  import { delay, discordChannelTypeToBasic } from "$lib";
+  import ChannelSelect from "$lib/components/ChannelSelect.svelte";
   import DiscordChannel from "$lib/components/DiscordChannel.svelte";
   import DiscordMention from "$lib/components/DiscordMention.svelte";
   import LoadingDots from "$lib/components/LoadingDots.svelte";
@@ -60,11 +61,12 @@
   });
   let pauseDurations = $state<{ amount: number; unit: "m" | "h" | "d" }[]>([]);
   let showSetupModal = $state(false);
+  let showChannelSelector = $state(false);
   let setup = $state<{
-    categoryId: string | null;
+    category: BasicChannel | null;
     staff: Entity[];
   }>({
-    categoryId: null,
+    category: null,
     staff: [],
   });
 
@@ -614,15 +616,42 @@
 
 <!-- Setup Tickets Modal -->
 <div class="dy-modal" class:dy-modal-open={showSetupModal} transition:scale={{ duration: 120 }}>
-  <div class="dy-modal-box flex max-w-xl flex-col gap-4">
+  <div class="dy-modal-box flex w-full max-w-xl flex-col gap-4 overflow-visible bg-slate-700">
     <h1>Configure a new ticket forum</h1>
-    <fieldset class="dy-fieldset bg-base-200 rounded-box p-4">
+    <fieldset class="dy-fieldset bg-base-200 rounded-box w-full p-4">
       <legend class="dy-fieldset-legend">Select a category</legend>
-      <
-      <ul class="dy-label">
-        <li>You can change the forum later if needed.</li>
-        <li>If you don't select a category, a new one will be created.</li>
-      </ul>
+      <ChannelSelect
+        class="w-full"
+        onselect={(c) => {
+          setup.category = $state.snapshot(c);
+          showChannelSelector = false;
+        }}
+        show={showChannelSelector}
+        exclude={setup.category ? [setup.category.id] : []}
+      >
+        <div class="flex w-full flex-col gap-2 md:flex-row">
+          <div class="dy-input rounded-box flex w-full cursor-default md:w-auto md:grow">
+            {#key setup.category}
+              {#if setup.category}
+                <DiscordChannel id={setup.category.id} discordType={setup.category.type} />
+              {:else}
+                <div class="text-base-content/60">No channel selected.</div>
+              {/if}
+            {/key}
+          </div>
+
+          <button class="dy-btn dy-btn-secondary" onclick={() => (showChannelSelector = !showChannelSelector)}>
+            Select category
+          </button>
+        </div>
+      </ChannelSelect>
+      <p>
+        You can change the forum later if needed.<br />
+        If you don't select a category, a new one will be created.
+      </p>
+    </fieldset>
+    <fieldset class="dy-fieldset bg-base-200 rounded-box w-full p-4">
+      <legend class="dy-fieldset-legend">Select staff</legend>
     </fieldset>
     <div class="mt-6 flex flex-col items-center gap-2 md:flex-row">
       <button class="dy-btn w-full max-w-xs grow md:w-auto" onclick={toggleSetupModal}>Close</button>
