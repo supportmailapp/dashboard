@@ -3,7 +3,7 @@
 import { discordBotToken } from "$env/static/private";
 import { cacheGuilds, getUserGuilds, overwriteUserGuilds, parseToCacheGuild } from "$lib/cache/guilds";
 import { getMember } from "$lib/cache/members";
-import { getDiscordUser } from "$lib/cache/users";
+import { cacheDiscordUser, cacheDiscordUsers, getDiscordUser } from "$lib/cache/users";
 import { DBGuild } from "$lib/server/db";
 import { canManageBot } from "$lib/utils/permissions";
 import { REST } from "@discordjs/rest";
@@ -56,6 +56,14 @@ export class DiscordREST {
         managed: emoji.managed,
       }));
   }
+
+  public async searchGuildMembers(guildId: string, query: string, limit = 100): Promise<APIGuildMember[]> {
+    const members = await this.rest.get(Routes.guildMembersSearch(guildId), {
+      query: new URLSearchParams({ query, limit: limit.toString() }),
+    });
+    cacheDiscordUsers((members as APIGuildMember[]).map((m) => m.user));
+    return members as APIGuildMember[];
+  }
 }
 
 /**
@@ -65,11 +73,14 @@ export class DiscordREST {
  * If the data is not found in the cache, it fetches the data from the API and caches it for future use.
  *
  * @returns A promise that resolves to the user data.
- * @throws {Response} Will throw an error if the API request fails. Format: `{ status: number, message: string }`
+ * @throws {error} Will throw an SvelteKit error with status 500 if the API request fails
  */
-export async function fetchUserData(userId: string, token: string, useCache = true): Promise<APIUser> {
-  const userData = getDiscordUser(userId);
-  if (useCache && userData) return userData;
+export async function fetchUserData(token: string, userId: string | null, useCache = true): Promise<APIUser> {
+  // Check cache if userId is provided and useCache is true
+  if (userId && useCache) {
+    const userData = getDiscordUser(userId);
+    if (userData) return userData;
+  }
 
   const userRes = await fetch(RouteBases.api + Routes.user(), {
     method: "GET",
@@ -80,10 +91,12 @@ export async function fetchUserData(userId: string, token: string, useCache = tr
   });
 
   if (!userRes.ok) {
-    throw userRes;
+    throw new Error(`Failed to fetch user data: ${userRes.status}`);
   }
 
-  const userResJson = await userRes.json();
+  const userResJson = (await userRes.json()) as APIUser;
+  cacheDiscordUser(userResJson);
+
   return userResJson;
 }
 
