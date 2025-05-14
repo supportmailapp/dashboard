@@ -7,8 +7,8 @@ import type { IDBUser } from "supportmail-types";
 import { DBUser, getUser } from "./db";
 import { getDBUser } from "$lib/cache/users";
 
-export function createSessionToken(userId: string): string {
-  return jwt.sign({ id: userId }, env.JWT_SECRET, {
+export function createSessionToken(userId: string, stayLoggedIn: boolean): string {
+  return jwt.sign({ id: userId, stayLoggedIn: stayLoggedIn }, env.JWT_SECRET, {
     expiresIn: "3d",
     algorithm: "HS256",
     encoding: "utf-8",
@@ -39,19 +39,40 @@ export function decodeDbTokens(token: string): DBTokensResult {
   }
 }
 
+type ValidateSessionTokenResult =
+  | { type: "valid"; id: string; stayLoggedIn: boolean }
+  | { type: "invalid"; id: null; stayLoggedIn: false }
+  | { type: "expired"; id: string; stayLoggedIn: boolean; expired: true };
+
 /**
  * Validate a session and return the JWT payload or null.
+ *
+ * @returns
+ * - `{ id: string; stayLoggedIn: boolean }` if the token is valid (is can be logged in)
+ * - `{ id: null; stayLoggedIn: false }` if the token is invalid
+ * - `{ id: string; stayLoggedIn: boolean; expired: true; }` if the token is expired
  */
-export function verifySessionToken(token: string): { id: string | null } {
+export function verifySessionToken(token: string): ValidateSessionTokenResult {
   try {
-    const _token = jwt.verify(token, env.JWT_SECRET) as jwt.JwtPayload;
-    return { id: _token.id };
-  } catch (e) {
-    return { id: null };
+    const _token = jwt.verify(token, env.JWT_SECRET, {
+      algorithms: ["HS256"],
+      issuer: "supportmail",
+    }) as jwt.JwtPayload;
+    return { type: "valid", id: _token.id, stayLoggedIn: !!_token.stayLoggedIn };
+  } catch (e: any) {
+    if (e instanceof jwt.TokenExpiredError) {
+      const _token2 = jwt.decode(token) as jwt.JwtPayload;
+      return { type: "expired", id: _token2.id, expired: true, stayLoggedIn: !!_token2.stayLoggedIn };
+    }
+    return { type: "invalid", id: null, stayLoggedIn: false };
   }
 }
 
-export async function checkUserGuildAccess(userId: string, aToken: string, guildId: string): Promise<boolean | undefined> {
+export async function checkUserGuildAccess(
+  userId: string,
+  aToken: string,
+  guildId: string,
+): Promise<boolean | undefined> {
   if (userId === env.ownerId) return true;
 
   let guilds: DCGuild[] | null = getUserGuilds(userId);
