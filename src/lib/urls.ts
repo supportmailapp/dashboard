@@ -1,5 +1,5 @@
 import { env } from "$env/dynamic/public";
-import { OAuth2Routes } from "discord.js";
+import { OAuth2Routes } from "discord-api-types/v10";
 
 export interface AuthorizeUrlParams {
   clientId: string;
