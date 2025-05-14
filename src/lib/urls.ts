@@ -1,4 +1,5 @@
 import { env } from "$env/dynamic/public";
+import { OAuth2Routes } from "discord.js";
 
 export interface AuthorizeUrlParams {
   clientId: string;
@@ -29,6 +30,7 @@ export const APIRoutes = {
   },
   guildMember: (guildId: string, memberId: string) => `${API_BASE}/guilds/${guildId}/members/${memberId}` as const,
   guildEmojis: (guildId: string) => `${API_BASE}/guilds/${guildId}/emojis` as const,
+  searchGuildMembers: (guildId: string) => `${API_BASE}/guilds/${guildId}/members/search` as const,
   emojis: (emojiKey: string) => `/emojis/${emojiKey}.svg` as const,
   /**
    * Used for:
@@ -66,7 +68,9 @@ export const APIRoutes = {
   configReports: (guildId: string) => `${API_BASE}/config/${guildId}/report-config` as const,
   configTags: (guildId: string) => `${API_BASE}/config/${guildId}/tags` as const,
   configBlacklist: (guildId: string) => `${API_BASE}/config/${guildId}/blacklist` as const,
-  logout: () => `${API_BASE}/logout` as const,
+  logout: () => `${API_BASE}/auth/discord/logout` as const,
+  refresh: (redirectTo: string) =>
+    `${API_BASE}/auth/discord/refresh?redirect=${encodeURIComponent(redirectTo)}` as const,
   /** @deprecated Not used atm */
   debug: () => `${API_BASE}/debug`,
 } as const;
@@ -83,23 +87,21 @@ export const urls = {
       redirect_uri: env.PUBLIC_discordRedirectUri!,
     });
     if (guildId) params.append("guild_id", guildId);
-    return "https://discord.com/oauth2/authorize?" + params.toString();
+    return OAuth2Routes.authorizationURL + "?" + params.toString();
   },
-  authorize: function ({ clientId, scope, state, redirectUri, prompt = "none" }: AuthorizeUrlParams): string {
-    return (
-      "https://discord.com/oauth2/authorize?" +
-      new URLSearchParams({
-        client_id: clientId,
-        response_type: "code",
-        prompt: prompt,
-        scope: scope,
-        redirect_uri: redirectUri,
-        state: state,
-      }).toString()
-    );
-  },
-  token: () => "https://discord.com/api/oauth2/token",
-  revocation: () => "https://discord.com/api/oauth2/token/revoke",
+  authorize: ({ clientId, scope, state, redirectUri, prompt = "none" }: AuthorizeUrlParams) =>
+    OAuth2Routes.authorizationURL +
+    "?" +
+    new URLSearchParams({
+      client_id: clientId,
+      response_type: "code",
+      prompt: prompt,
+      scope: scope,
+      redirect_uri: redirectUri,
+      state: state,
+    }).toString(),
+  token: () => OAuth2Routes.tokenURL,
+  revocation: () => OAuth2Routes.tokenRevocationURL,
 } as const;
 
 export const ImportantLinks = {
