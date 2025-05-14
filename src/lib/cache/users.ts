@@ -32,6 +32,15 @@ export function cacheDiscordUser(user: APIUser): void {
   discordUserCache.set(user.id, user);
 }
 
+export function cacheDiscordUsers(users: APIUser[]): void {
+  discordUserCache.mset(
+    users.map((user) => ({
+      key: user.id,
+      val: user,
+    })),
+  );
+}
+
 export function getDiscordUser(userId: string): APIUser | null {
   return discordUserCache.get(userId) || null;
 }
