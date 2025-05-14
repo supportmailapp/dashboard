@@ -78,8 +78,8 @@ const baseHandle: Handle = async function ({ event, resolve }) {
   // Always try to fetch user data if token is available
   if (event.locals.userId && event.locals.token) {
     console.log("Fetching user data");
-    const rawUser = await fetchUserData(event.locals.userId, event.locals.token);
-    event.locals.user = anyUserToBasic(rawUser);
+    const rawUser = await fetchUserData(event.locals.token, event.locals.userId).catch(() => null);
+    if (rawUser) event.locals.user = anyUserToBasic(rawUser);
   }
 
   const isAPIProtected = isApiRouteProtected(event.url);
