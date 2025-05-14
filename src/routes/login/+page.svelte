@@ -38,20 +38,21 @@
         use:enhance={() => {
           site.showLoading = true;
           return async ({ update, result }) => {
-            await update({ reset: false, invalidateAll: false });
+            await update({ reset: false });
             site.showLoading = false;
+            console.log(result);
             if (result.type === "success") {
               window.location.assign(result.data?.url as string);
             }
           };
         }}
         method="POST"
-        class="dy-fieldset justify-center space-y-5 {site.showLoading
+        class="dy-fieldset justify-center space-y-4.5 {site.showLoading
           ? 'pointer-events-none cursor-not-allowed opacity-80'
           : ''}"
       >
         <Branding />
-        <div class="flex w-full flex-col items-center gap-2">
+        <div class="flex w-full flex-col items-center gap-3">
           <label class="dy-label">
             <input
               type="checkbox"
