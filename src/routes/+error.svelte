@@ -18,7 +18,7 @@
   }
 </script>
 
-<div class="xy-center flex h-full w-full flex-col gap-y-5">
+<div class="xy-center h-full w-full flex-col gap-y-5">
   <h1>{page.status}: {page.error?.message}</h1>
   <p>{description}</p>
   {#if page.error?.details}
