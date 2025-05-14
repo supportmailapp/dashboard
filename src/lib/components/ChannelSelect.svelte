@@ -42,9 +42,8 @@
     exclude = [],
     basicChannelTypes = ["channel", "thread", "category", "voice"],
     show = $bindable(false),
-    onselect = (channel, toggleShow) => {
+    onselect = (channel) => {
       console.warn("No handler defined!", channel);
-      toggleShow();
     },
     children,
     class: className = "",
