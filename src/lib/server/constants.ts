@@ -12,7 +12,7 @@ export const discord = {
   clientId: env.clientId,
   clientSecret: env.clientSecret,
   redirectUri: publicEnv.PUBLIC_discordRedirectUri,
-  scopes: ["identify", "guilds", "guilds.members.read"],
+  baseScopes: ["identify", "guilds", "guilds.members.read"],
 } as const;
 
 export function ErrorJsonResponse(status: number, statusText: string, message: string) {
