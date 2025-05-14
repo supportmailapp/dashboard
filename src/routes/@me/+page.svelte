@@ -14,7 +14,6 @@
   import type { IDBUser } from "supportmail-types";
   import { onMount } from "svelte";
 
-  let stayLoggedIn = $state<boolean>();
   let config = $state<Pick<IDBUser, "language" | "autoRedirect"> | null>(null);
   let toast = $state<string | null>(null);
 
@@ -28,10 +27,6 @@
       window.location.href = "/";
     }
   }
-
-  $effect(() => {
-    if (typeof stayLoggedIn !== "undefined") window.localStorage.setItem("stayLoggedIn", String(stayLoggedIn));
-  });
 
   $effect(() => {
     if (config !== null) {
@@ -80,7 +75,6 @@
   }
 
   onMount(async () => {
-    stayLoggedIn = window.localStorage.getItem("stayLoggedIn") === "true";
     await loadDbUser();
   });
 </script>
@@ -126,8 +120,8 @@
         </select>
         <div class="dy-alert dy-alert-warning text-xs">
           <p style="width: 100%;">
-            This language will only be used in the DMs between the bot and you. It's also not always used when you are using
-            buttons/etc.<br />
+            This language will only be used in the DMs between the bot and you. It's also not always used when you are
+            using buttons/etc.<br />
             <a
               href="https://docs.supportmail.dev/f/preferences#language-determination-and-usage"
               class="dy-link dy-link-primary"
@@ -148,30 +142,6 @@
           <input type="checkbox" class="dy-toggle dy-toggle-success" bind:checked={config.autoRedirect} />
           Automatically redirect messages to your last active ticket
         </label>
-      </fieldset>
-
-      <fieldset class="dy-fieldset bg-base-200 border-base-300 rounded-box w-full p-4">
-        <legend class="dy-legend p-1">Dashboard Settings</legend>
-        <!-- Stay logged in -->
-        {#if typeof stayLoggedIn !== "undefined"}
-          <label class="dy-label">
-            <input
-              type="checkbox"
-              class="dy-toggle dy-toggle-success"
-              bind:checked={stayLoggedIn}
-              onchange={() => {
-                if (toast) return;
-                toast = "✅ Saved";
-                setTimeout(() => {
-                  toast = null;
-                }, 2000);
-              }}
-            />
-            Stay logged in (remember me)
-          </label>
-        {:else}
-          <LoadingDots />
-        {/if}
       </fieldset>
 
       <!-- Logout Section -->
