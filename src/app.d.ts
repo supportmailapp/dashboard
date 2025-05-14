@@ -42,6 +42,13 @@ declare global {
        * The user's access token. Always given if the user is authenticated.
        */
       token?: string;
+      /**
+       * The user's refresh token. Only given if the user is authenticated and the session is expired.
+       *
+       * This is used to refresh the access token.
+       */
+      refreshToken?: string;
+      stayLoggedIn: boolean;
       bypassCache?: boolean;
     }
 
