@@ -28,7 +28,7 @@
 <div id="bg" style="background-image: url(https://picsum.photos/1920/1080);"></div>
 
 <!-- Servers -->
-<div class="h-screen w-screen flex-col items-center justify-center">
+<div class="h-screen w-screen flex-col items-center justify-center bg-transparent">
   <!-- It's needed to be in the wrapper because otherwise the layout breaks. Dunno why. -->
   <header class="bg-base-200">
     <nav class="dy-navbar mx-auto max-w-[1200px]">
@@ -65,7 +65,11 @@
           tabindex="0"
           class="hover:border-info cursor-pointer rounded-2xl border-2 border-transparent transition-all duration-100 ease-in-out"
         >
-          <img src={cdnUrls.userAvatar(user.id, user.avatar, "64")} alt="User Avatar" class="size-12 rounded-2xl object-cover" />
+          <img
+            src={cdnUrls.userAvatar(user.id, user.avatar, "64")}
+            alt="User Avatar"
+            class="size-12 rounded-2xl object-cover"
+          />
         </a>
       </div>
     </nav>
@@ -178,7 +182,7 @@
     filter: blur(0.75vh);
     -webkit-filter: blur(0.75vh);
     box-shadow: 0 0 200px rgb(0, 0, 0);
-    z-index: -1;
+    z-index: 1;
   }
 
   .fade-bottom {
