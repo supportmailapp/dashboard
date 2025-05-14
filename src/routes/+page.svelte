@@ -8,6 +8,7 @@
   import { cdnUrls } from "$lib/utils/formatting";
   import { CircleArrowRight, Plus } from "@lucide/svelte";
   import { beforeNavigate } from "$app/navigation";
+  import LoadingDots from "$lib/components/LoadingDots.svelte";
 
   let user = $derived(userState.discord as BasicUser);
   let guilds = $derived(guildsState.value as DCGuild[]);
@@ -28,7 +29,7 @@
 <div id="bg" style="background-image: url(https://picsum.photos/1920/1080);"></div>
 
 <!-- Servers -->
-<div class="h-screen w-screen flex-col items-center justify-center bg-transparent">
+<div class="server-container h-screen w-screen flex-col items-center justify-center bg-transparent">
   <!-- It's needed to be in the wrapper because otherwise the layout breaks. Dunno why. -->
   <header class="bg-base-200">
     <nav class="dy-navbar mx-auto max-w-[1200px]">
@@ -66,7 +67,7 @@
           class="hover:border-info cursor-pointer rounded-2xl border-2 border-transparent transition-all duration-100 ease-in-out"
         >
           <img
-            src={cdnUrls.userAvatar(user.id, user.avatar, "64")}
+            src={cdnUrls.userAvatar(user?.id, user.avatar, "64")}
             alt="User Avatar"
             class="size-12 rounded-2xl object-cover"
           />
@@ -78,28 +79,11 @@
   <div class="main-container">
     <div class="bg-base-200 rounded-box w-full grow overflow-hidden p-3 inset-shadow-sm">
       <div class="h-full overflow-y-auto">
-        <div
-          class="flex h-full w-full flex-col items-start justify-start gap-2 text-center"
-          class:fade-bottom={guilds.length == 0 || site.showLoading}
-        >
+        <div class="flex h-full w-full flex-col items-start justify-start gap-2 text-center">
           {#if guilds.length == 0 || site.showLoading}
-            {#each Array(5) as _}
-              <div class="flex w-full flex-row items-center justify-between gap-2">
-                <div class="flex items-center justify-center p-2">
-                  <div class="dy-avatar">
-                    <div class="dy-mask dy-mask-squircle size-12">
-                      <div class="dy-skeleton size-full"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="flex w-3/5 justify-center truncate">
-                  <span class="dy-skeleton block h-[1rem] w-32 rounded"></span>
-                </div>
-                <div class="block min-w-fit items-center justify-center px-2">
-                  <div class="dy-skeleton size-5 rounded-full"></div>
-                </div>
-              </div>
-            {/each}
+            <div class="xy-center flex size-full">
+              <LoadingDots size="2xl" />
+            </div>
           {:else}
             {#each guilds as guild}
               {#if firstNotConfiguredGuild === guild.id}
@@ -167,7 +151,11 @@
     overflow-y: auto;
     font-size: 1rem;
     line-height: 1.5;
-    z-index: 20;
+    z-index: 10;
+
+    * {
+      z-index: inherit;
+    }
   }
 
   #bg {
@@ -183,20 +171,5 @@
     -webkit-filter: blur(0.75vh);
     box-shadow: 0 0 200px rgb(0, 0, 0);
     z-index: 1;
-  }
-
-  .fade-bottom {
-    position: relative;
-  }
-
-  .fade-bottom::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 90%;
-    background: linear-gradient(to bottom, rgb(255, 255, 255, 0) 0%, var(--color-base-200) 100%);
-    pointer-events: none;
   }
 </style>
