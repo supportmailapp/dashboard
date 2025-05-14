@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
   import { page } from "$app/state";
   import Footer from "$lib/components/Footer.svelte";
   import LoadingDots from "$lib/components/LoadingDots.svelte";
@@ -74,6 +75,10 @@
     }
   }
 
+  function logout() {
+    goto(APIRoutes.logout());
+  }
+
   onMount(async () => {
     await loadDbUser();
   });
@@ -145,7 +150,7 @@
       </fieldset>
 
       <!-- Logout Section -->
-      <a href={APIRoutes.logout()} role="button" class="dy-btn dy-btn-error dy-btn-dash w-full border-2">Logout</a>
+      <button onclick={logout} class="dy-btn dy-btn-error dy-btn-dash w-full border-2">Logout</button>
     {:else}
       <div class="flex h-full w-full items-center justify-center">
         <LoadingDots />
