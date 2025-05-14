@@ -2,11 +2,11 @@ import { env } from "$env/dynamic/private";
 import { ErrorResponses } from "$lib/constants";
 import { fetchUserData } from "$lib/discord/utils";
 import { checkUserGuildAccess, decodeDbTokens, fetchDBUser, verifySessionToken } from "$lib/server/auth";
-import { dbConnect } from "$lib/server/db";
+import { dbConnect, updateUser } from "$lib/server/db";
 import { anyUserToBasic } from "$lib/utils/formatting";
 import arcjet, { detectBot, shield, slidingWindow } from "@arcjet/sveltekit";
 import * as Sentry from "@sentry/node";
-import { type Handle, type HandleServerError, type ServerInit } from "@sveltejs/kit";
+import { redirect, type Handle, type HandleServerError, type ServerInit } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
 import dayjs from "dayjs";
 import { inspect } from "util";
@@ -37,16 +37,18 @@ const aj = arcjet({
   ],
 });
 
-const notProtectedRoutes = ["testing", "discord-auth", "logout"];
+const notProtectedRoutes = ["testing", "auth"];
 
 /**
  * Middleware to check if the API route is protected and requires a token.
  */
-const apiIsProtected = (url: URL) =>
+const isApiRouteProtected = (url: URL) =>
   url.pathname.startsWith("/api") && !url.pathname.match(new RegExp(`/api/v\\d+/${notProtectedRoutes.join("|")}`, "i"));
 const isRouteWithGuildId = (url: URL) => url.pathname.toLowerCase().match(/\/api\/v\d+\/(config|guilds)(\/\S*)?/i);
 
 const baseHandle: Handle = async function ({ event, resolve }) {
+  event.locals.stayLoggedIn = event.cookies.get("stay-logged-in") === "true";
+
   let eToken = event.cookies.get("session");
   if (!eToken) {
     const authHeader = event.request.headers.get("Authorization");
@@ -55,16 +57,20 @@ const baseHandle: Handle = async function ({ event, resolve }) {
     }
   }
 
-  console.log("Session token", eToken);
-
   if (eToken) {
-    const { id: userId } = verifySessionToken(eToken);
-    if (userId) {
-      event.locals.userId = userId;
-      const dbUser = await fetchDBUser(userId);
+    const tokenRes = verifySessionToken(eToken);
+    if (tokenRes.type !== "invalid") {
+      event.locals.userId = tokenRes.id;
+      event.locals.stayLoggedIn = tokenRes.stayLoggedIn;
+    }
+    if (event.locals.userId) {
+      const dbUser = await fetchDBUser(event.locals.userId);
       if (dbUser?.tokens) {
-        const { accessToken } = decodeDbTokens(dbUser.tokens);
+        const { accessToken, refreshToken } = decodeDbTokens(dbUser.tokens);
         event.locals.token = accessToken ?? undefined;
+        if (tokenRes.type === "expired") {
+          event.locals.refreshToken = refreshToken ?? undefined;
+        }
       }
     }
   }
@@ -76,9 +82,10 @@ const baseHandle: Handle = async function ({ event, resolve }) {
     event.locals.user = anyUserToBasic(rawUser);
   }
 
+  const isAPIProtected = isApiRouteProtected(event.url);
+
   // Check if API request but no token
-  const isProtected = apiIsProtected(event.url);
-  if (isProtected && (!event.locals.userId || !event.locals.token)) {
+  if (isAPIProtected && (!event.locals.userId || !event.locals.token)) {
     console.log("No user ID or token found");
     return ErrorResponses.unauthorized();
   }
@@ -105,7 +112,7 @@ const rateLimitHandle: Handle = async function ({ event, resolve }) {
 };
 
 const guildAccessHandle: Handle = async ({ event, resolve }) => {
-  if (apiIsProtected(event.url) && isRouteWithGuildId(event.url)) {
+  if (isApiRouteProtected(event.url) && isRouteWithGuildId(event.url)) {
     // These are the route params that are used in the API
     const guildId = event.params.guildid;
 
