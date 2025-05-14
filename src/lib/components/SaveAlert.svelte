@@ -26,7 +26,8 @@
   <div class="save-alert-container" transition:slide={{ duration: 150, axis: "y" }}>
     <savealert
       role="alert"
-      class="dy-alert dy-alert-warning dy-alert-soft sm:dy-alert-horizontal dy-alert-vertical {page.data.dataState.saving
+      class="dy-alert dy-alert-warning dy-alert-soft sm:dy-alert-horizontal dy-alert-vertical {page.data.dataState
+        .saving
         ? 'pointer-events-none cursor-default'
         : ''}"
       transition:slide={{ duration: 150, axis: "y" }}
@@ -41,10 +42,18 @@
         >
           Reset
         </button>
-        <button class="dy-btn-success h-8 w-30" onclick={page.data.dataState.save} disabled={page.data.dataState.saving}>
+        <button
+          class="dy-btn-success h-8 w-30"
+          onclick={page.data.dataState.save}
+          disabled={page.data.dataState.saving}
+        >
           {#if page.data.dataState.saving}
             <div class="relative w-full">
-              <progress class="dy-progress dy-progress-success w-full" value={page.data.dataState.saveProgress} max="100">
+              <progress
+                class="dy-progress dy-progress-success w-full"
+                value={page.data.dataState.saveProgress}
+                max="100"
+              >
               </progress>
             </div>
           {:else}

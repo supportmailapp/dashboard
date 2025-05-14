@@ -117,14 +117,17 @@
         <!-- Default Emojis -->
         {#each Object.entries(getEmojiGroupById(selectedCategory.id)) as emojiData}
           <button class="emoji-btn" onclick={() => onclick({ name: emojiData[0], animated: false })}>
-              <!-- svelte-ignore a11y_missing_attribute -->
-              <img src={`/emojis/${twemoji.convert.toCodePoint(emojiData[1])}.svg`} alt={emojiData[0]} />
+            <!-- svelte-ignore a11y_missing_attribute -->
+            <img src={`/emojis/${twemoji.convert.toCodePoint(emojiData[1])}.svg`} alt={emojiData[0]} />
           </button>
         {/each}
       {:else if selectedCategory.id === 0}
         <!-- Guild Emojis -->
         {#each gg.emojis as emoji}
-          <button class="emoji-btn" onclick={() => onclick({ id: emoji.id, name: emoji.name, animated: !!emoji.animated })}>
+          <button
+            class="emoji-btn"
+            onclick={() => onclick({ id: emoji.id, name: emoji.name, animated: !!emoji.animated })}
+          >
             <img src={cdnUrls.guildEmoji(emoji.id!, 64)} alt="Guild Emoji" />
           </button>
         {/each}
@@ -134,7 +137,10 @@
 
   <div class="bottom">
     {#each categories as category}
-      <button class:active={selectedCategory.id === category.id} onclick={() => selectCategory(category.id, category.name!)}>
+      <button
+        class:active={selectedCategory.id === category.id}
+        onclick={() => selectCategory(category.id, category.name!)}
+      >
         {@html category.svg}
       </button>
     {/each}

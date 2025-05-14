@@ -159,7 +159,9 @@ export class SchemaValidator<T extends Record<string, any>> {
       if (propSchema.properties) {
         // If schemaProperties is a SchemaValidator, validate the data using it
         const validator =
-          propSchema.properties instanceof SchemaValidator ? propSchema.properties : new SchemaValidator(propSchema.properties);
+          propSchema.properties instanceof SchemaValidator
+            ? propSchema.properties
+            : new SchemaValidator(propSchema.properties);
         const result = validator.validate(value);
         if (!result.isValid) {
           errors.push(...result.errors);
@@ -275,7 +277,12 @@ export class SchemaValidator<T extends Record<string, any>> {
   /**
    * Validates a single property against its schema
    */
-  private validateProperty(value: any, propSchema: SchemaProperty<T>, path: string, errors: ValidationError[]): boolean {
+  private validateProperty(
+    value: any,
+    propSchema: SchemaProperty<T>,
+    path: string,
+    errors: ValidationError[],
+  ): boolean {
     if (propSchema.customValidator !== undefined && !propSchema.customValidator(value)) {
       errors.push({
         path,
@@ -370,7 +377,12 @@ export class SchemaValidator<T extends Record<string, any>> {
   /**
    * Validates a string value
    */
-  private validateString(value: string, propSchema: SchemaProperty<T>, path: string, errors: ValidationError[]): boolean {
+  private validateString(
+    value: string,
+    propSchema: SchemaProperty<T>,
+    path: string,
+    errors: ValidationError[],
+  ): boolean {
     let isValid = true;
 
     if (propSchema.minLength !== undefined && value.length < propSchema.minLength) {
@@ -410,7 +422,12 @@ export class SchemaValidator<T extends Record<string, any>> {
   /**
    * Validates a number value
    */
-  private validateNumber(value: number, propSchema: SchemaProperty<T>, path: string, errors: ValidationError[]): boolean {
+  private validateNumber(
+    value: number,
+    propSchema: SchemaProperty<T>,
+    path: string,
+    errors: ValidationError[],
+  ): boolean {
     let isValid = true;
 
     if (propSchema.minimum !== undefined) {
@@ -445,7 +462,12 @@ export class SchemaValidator<T extends Record<string, any>> {
   /**
    * Validates a BigInt value
    */
-  private validateBigInt(value: bigint, propSchema: SchemaProperty<T>, path: string, errors: ValidationError[]): boolean {
+  private validateBigInt(
+    value: bigint,
+    propSchema: SchemaProperty<T>,
+    path: string,
+    errors: ValidationError[],
+  ): boolean {
     let isValid = true;
 
     if (propSchema.minimum !== undefined) {
@@ -478,7 +500,12 @@ export class SchemaValidator<T extends Record<string, any>> {
    *
    * Either a string or number
    */
-  private validateEnum(value: string | number, propSchema: SchemaProperty<T>, path: string, errors: ValidationError[]): boolean {
+  private validateEnum(
+    value: string | number,
+    propSchema: SchemaProperty<T>,
+    path: string,
+    errors: ValidationError[],
+  ): boolean {
     if (propSchema.enum && !propSchema.enum.includes(value)) {
       errors.push({
         path,

@@ -10,4 +10,6 @@ const botVoteSchema = new Schema<IBotVote>({
   removeRoleBy: { type: Date, required: false },
 });
 
-export const BotVote = models.BotVote ? model<IBotVote>("BotVote") : model<IBotVote>("BotVote", botVoteSchema, "botVotes");
+export const BotVote = models.BotVote
+  ? model<IBotVote>("BotVote")
+  : model<IBotVote>("BotVote", botVoteSchema, "botVotes");

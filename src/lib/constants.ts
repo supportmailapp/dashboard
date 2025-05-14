@@ -41,7 +41,11 @@ export const ErrorResponses = {
   forbidden: () => new Response(null, { status: 403, statusText: "Forbidden" }),
   notFound: (text: string | null = null) => new Response(text, { status: 404, statusText: "Not Found" }),
   tooManyRequests: (tryAgainIn: number) =>
-    new Response(null, { status: 429, statusText: "Too Many Requests", headers: { "Retry-After": tryAgainIn.toString() } }),
+    new Response(null, {
+      status: 429,
+      statusText: "Too Many Requests",
+      headers: { "Retry-After": tryAgainIn.toString() },
+    }),
 };
 
 export const LongTooltips = {

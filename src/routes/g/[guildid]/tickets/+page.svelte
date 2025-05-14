@@ -24,7 +24,10 @@
   dayjs.extend(utc);
   dayjs.extend(dayjsTimezone);
 
-  type BasicTicketConfig = Omit<ITicketConfig, "_id" | "creationMessage" | "closeMessage" | "feedback" | "pings" | "tags"> & {
+  type BasicTicketConfig = Omit<
+    ITicketConfig,
+    "_id" | "creationMessage" | "closeMessage" | "feedback" | "pings" | "tags"
+  > & {
     pings: ["@" | "@&", string][];
   };
 
@@ -125,7 +128,9 @@
         console.log("Changes detected");
         page.data.dataState.unsaved = true;
 
-        if (!equal((page.data.dataState.oldConfig as any)?.pausedUntil?.date ?? null, current?.pausedUntil?.date ?? null)) {
+        if (
+          !equal((page.data.dataState.oldConfig as any)?.pausedUntil?.date ?? null, current?.pausedUntil?.date ?? null)
+        ) {
           isPausedUntil = null;
         } else {
           isPausedUntil = current?.pausedUntil?.date ?? null;
@@ -364,7 +369,9 @@
                     >
                       {#each filteredTimezones as tz}
                         <button
-                          class="w-full px-4 py-2 text-left {timezone !== tz.tzCode ? 'hover:bg-neutral/60' : 'bg-neutral/60'}"
+                          class="w-full px-4 py-2 text-left {timezone !== tz.tzCode
+                            ? 'hover:bg-neutral/60'
+                            : 'bg-neutral/60'}"
                           onclick={() => {
                             timezone = tz.tzCode;
                             tzSearch.reset();
@@ -397,7 +404,10 @@
                         {allDurationUnits.find((u) => u.value === duration.unit)?.name}
                       </button>
                       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-                      <ul tabindex="0" class="dy-dropdown-content dy-menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+                      <ul
+                        tabindex="0"
+                        class="dy-dropdown-content dy-menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm"
+                      >
                         {#if availableUnits.length === 0}
                           <li>
                             <button disabled class="dy-btn dy-btn-disabled">No available units</button>

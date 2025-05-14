@@ -17,7 +17,11 @@ export function getUser(userId: string) {
   return DBUser.findOne({ id: userId }, null, { lean: true });
 }
 
-export async function updateUser(userId: string, update: UpdateQuery<IDBUser> | UpdateWithAggregationPipeline, upsert = false) {
+export async function updateUser(
+  userId: string,
+  update: UpdateQuery<IDBUser> | UpdateWithAggregationPipeline,
+  upsert = false,
+) {
   if (upsert) {
     const userExists = await DBUser.exists({ id: userId });
     if (!userExists) {

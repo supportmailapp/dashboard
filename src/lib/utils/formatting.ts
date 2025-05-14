@@ -128,7 +128,9 @@ type FormatNumberOptions =
  * @returns The formatted number as a string.
  */
 export function roundAndFormatNumber(num: number, opts: FormatNumberOptions = {}): string {
-  const options = Object.assign({}, { step: 100, roundUp: false, plus: true, comma: true }, opts) as Required<typeof opts>;
+  const options = Object.assign({}, { step: 100, roundUp: false, plus: true, comma: true }, opts) as Required<
+    typeof opts
+  >;
   // Round down to nearest step
   if (options.roundUp) {
     num = Math.ceil(num / options.step) * options.step;

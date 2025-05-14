@@ -66,19 +66,19 @@ function apiMemberToPartial(member: APIGuildMember): PartialGuildMember {
   };
 }
 
-export async function GET({ params: { guildid, memberid } }) {
-  let member = getMember(guildid, memberid);
+export async function GET({ params: { memberid }, locals: { guildId } }) {
+  let member = getMember(guildId, memberid);
   if (!member) {
-    const decision = await checkRateLimit(guildid, memberid);
+    const decision = await checkRateLimit(guildId, memberid);
     if (!decision.allowed) return ErrorResponses.tooManyRequests(decision.retryAfter || 10);
-    member = await rest.getGuildMember(guildid, memberid);
+    member = await rest.getGuildMember(guildId, memberid);
     if (!member) {
       return new Response(null, {
         status: 404,
         statusText: "Member not found",
       });
     }
-    setMember(guildid, member);
+    setMember(guildId, member);
   }
 
   return Response.json(apiMemberToPartial(member), {

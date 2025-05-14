@@ -50,4 +50,3 @@
 </script>
 
 <SiteHeader breadcrumbs={[{ title: "Tickets", href: buildNavHref("/tickets") }]}>Ticket Categories</SiteHeader>
-
