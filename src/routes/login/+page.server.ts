@@ -16,6 +16,7 @@ export const actions = {
     const res = createOAuth2Login({
       url: new URL(url),
       joinDiscord: data.get("join-discord") === "on",
+      prompt: cookies.get("stay-logged-in") === "true" ? "none" : "true",
     });
 
     cookies.set("discord-oauth2-state", res.state, { path: "/" });
