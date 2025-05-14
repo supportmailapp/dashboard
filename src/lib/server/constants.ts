@@ -12,6 +12,7 @@ export const discord = {
   clientId: env.clientId,
   clientSecret: env.clientSecret,
   redirectUri: publicEnv.PUBLIC_discordRedirectUri,
+  supportServerId: publicEnv.PUBLIC_SupportServer,
   baseScopes: ["identify", "guilds", "guilds.members.read"],
 } as const;
 
