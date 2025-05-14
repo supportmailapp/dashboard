@@ -17,7 +17,7 @@ import { createSessionToken, encodeDbTokens } from "$lib/server/auth";
 import { discord } from "$lib/server/constants";
 import { updateUser } from "$lib/server/db";
 import { urls } from "$lib/urls";
-import { error, redirect, type Cookies, type RequestHandler } from "@sveltejs/kit";
+import { redirect, type Cookies, type RequestHandler } from "@sveltejs/kit";
 import {
   OAuth2Routes,
   RouteBases,
@@ -61,16 +61,14 @@ export const createOAuth2Login = function (opts: OAuth2LoginOpts) {
  * Exchanges a code or refresh token for OAuth2 tokens
  */
 async function exchangeToken(
-  fetch: typeof globalThis.fetch,
   params: Record<string, string>,
 ): Promise<RESTPostOAuth2AccessTokenResult | RESTPostOAuth2RefreshTokenResult> {
-  const response = await fetch(urls.token(), {
-    method: "POST",
-    body: new URLSearchParams({
+  const response = await ky.post(urls.token(), {
+    searchParams: {
       ...params,
       client_id: discord.clientId,
       client_secret: discord.clientSecret,
-    }).toString(),
+    },
     headers: {
       "content-type": "application/x-www-form-urlencoded",
     },
@@ -87,10 +85,11 @@ async function exchangeToken(
  * Adds a user to the support Discord server if they have the guilds.join scope
  */
 async function addUserToSupportServer(accessToken: string, userId: string): Promise<void> {
-  if (!env.PUBLIC_SupportServer) return;
+  console.log("🤘🏻 Adding user to support server:", accessToken, userId, discord.supportServerId);
+  if (!discord.supportServerId) return;
 
   try {
-    const joinRes = await ky.put(`${RouteBases.api}${Routes.guildMember(env.PUBLIC_SupportServer, userId)}`, {
+    const joinRes = await ky.put(`${RouteBases.api}${Routes.guildMember(discord.supportServerId, userId)}`, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bot ${env.botToken}`,
@@ -101,7 +100,7 @@ async function addUserToSupportServer(accessToken: string, userId: string): Prom
     });
 
     if (!joinRes.ok) {
-      console.error("Failed to add user to guild:", await joinRes.text());
+      throw new Error(`Failed to add user to guild: ${await joinRes.text()} (${joinRes.status})`);
     }
   } catch (joinErr) {
     // Log the error but continue with the authentication process
@@ -134,7 +133,7 @@ function setupUserSession(
  * - Set the session cookie
  * - Redirect to server select page
  */
-export const callbackHandler: RequestHandler = async ({ url, fetch, cookies, locals }) => {
+export const callbackHandler: RequestHandler = async ({ url, cookies, locals }) => {
   const code = url.searchParams.get("code");
 
   if (!code || url.searchParams.get("state") !== cookies.get("discord-oauth2-state")) {
@@ -152,7 +151,7 @@ export const callbackHandler: RequestHandler = async ({ url, fetch, cookies, loc
 
   let tokenData: RESTPostOAuth2AccessTokenResult;
   try {
-    tokenData = (await exchangeToken(fetch, tokenParams)) as RESTPostOAuth2AccessTokenResult;
+    tokenData = (await exchangeToken(tokenParams)) as RESTPostOAuth2AccessTokenResult;
   } catch (err) {
     console.error("Failed during OAuth2 callback token exchange:", err);
     // Redirect to login page with error parameter
@@ -203,14 +202,13 @@ export const logoutHandler: RequestHandler = async ({ cookies, fetch, locals }) 
   cookies.delete("session", { path: "/" });
 
   try {
-    await fetch(OAuth2Routes.tokenRevocationURL, {
-      method: "POST",
-      body: new URLSearchParams({
+    await ky.post(OAuth2Routes.tokenRevocationURL, {
+      searchParams: {
         client_id: discord.clientId,
         client_secret: discord.clientSecret,
         token_type_hint: "access_token",
         token: token,
-      }).toString(),
+      },
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
@@ -238,7 +236,7 @@ export const logoutHandler: RequestHandler = async ({ cookies, fetch, locals }) 
  * - Redirect to the original page
  * - If the refresh token is invalid, redirect to the login page
  */
-export const refreshTokenHandler: RequestHandler = async ({ locals, fetch, url, cookies }) => {
+export const refreshTokenHandler: RequestHandler = async ({ locals, url, cookies }) => {
   // User is automatically redirected to this endpoint when the token is expired
   const userId = locals.userId;
   const refreshToken = locals.refreshToken;
@@ -256,7 +254,7 @@ export const refreshTokenHandler: RequestHandler = async ({ locals, fetch, url, 
 
   let tokenData: RESTPostOAuth2RefreshTokenResult;
   try {
-    tokenData = (await exchangeToken(fetch, tokenParams)) as RESTPostOAuth2RefreshTokenResult;
+    tokenData = (await exchangeToken(tokenParams)) as RESTPostOAuth2RefreshTokenResult;
   } catch (err) {
     console.error("Failed to refresh OAuth2 token:", err);
 
