@@ -40,15 +40,15 @@ export const createOAuth2Login = function (opts: OAuth2LoginOpts) {
   // const redirectUrl = opts.url.searchParams.get("redirect") || null;
   const state = crypto.randomUUID();
 
-  const scopes = discord.baseScopes as unknown as string[];
+  let scopes = discord.baseScopes.join(" ");
   if (opts.joinDiscord) {
-    scopes.push("guilds.join");
+    scopes += " guilds.join";
   }
 
   return {
     url: urls.authorize({
       clientId: env.clientId,
-      scope: scopes.join(" "),
+      scope: scopes,
       state: state,
       prompt: opts.prompt ?? "true",
       redirectUri: discord.redirectUri,
@@ -66,8 +66,6 @@ async function exchangeToken(
   const response = await ky.post(urls.token(), {
     searchParams: {
       ...params,
-      client_id: discord.clientId,
-      client_secret: discord.clientSecret,
     },
     headers: {
       "content-type": "application/x-www-form-urlencoded",
@@ -75,7 +73,8 @@ async function exchangeToken(
   });
 
   if (!response.ok) {
-    throw new Error(`Token exchange failed: ${await response.text()} (${response.status})`);
+    console.error("Token exchange failed:", response);
+    throw new Error(`Token exchange failed: (${response.status})`);
   }
 
   return await response.json();
@@ -92,7 +91,7 @@ async function addUserToSupportServer(accessToken: string, userId: string): Prom
     const joinRes = await ky.put(`${RouteBases.api}${Routes.guildMember(discord.supportServerId, userId)}`, {
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bot ${env.botToken}`,
+        // Authorization: `Bearer ${env.botToken}`,
       },
       json: {
         access_token: accessToken,
@@ -137,22 +136,31 @@ export const callbackHandler: RequestHandler = async ({ url, cookies, locals }) 
   const code = url.searchParams.get("code");
 
   if (!code || url.searchParams.get("state") !== cookies.get("discord-oauth2-state")) {
-    redirect(303, "/");
+    redirect(303, `/login?error=${encodeURIComponent("Invalid state or code. Please try again.")}`);
   }
 
   cookies.delete("discord-oauth2-state", { path: "/" });
 
+  const joinDiscord = cookies.get("join-discord") === "true";
+  let scopes = discord.baseScopes.join(" ");
+  if (joinDiscord) {
+    scopes += " guilds.join";
+  }
+
   const tokenParams = {
+    client_id: discord.clientId,
+    client_secret: discord.clientSecret,
     grant_type: "authorization_code",
     redirect_uri: discord.redirectUri,
     code: String(code),
-    scope: discord.baseScopes.join(" "),
+    scope: scopes,
   };
+  console.log("Token Params:", tokenParams);
 
   let tokenData: RESTPostOAuth2AccessTokenResult;
   try {
     tokenData = (await exchangeToken(tokenParams)) as RESTPostOAuth2AccessTokenResult;
-  } catch (err) {
+  } catch (err: any) {
     console.error("Failed during OAuth2 callback token exchange:", err);
     // Redirect to login page with error parameter
     redirect(303, `/login?error=${encodeURIComponent("Token exchange failed. Please try again.")}`);
@@ -248,6 +256,8 @@ export const refreshTokenHandler: RequestHandler = async ({ locals, url, cookies
 
   // Refresh the token
   const tokenParams = {
+    client_id: discord.clientId,
+    client_secret: discord.clientSecret,
     grant_type: "refresh_token",
     refresh_token: refreshToken,
   };
