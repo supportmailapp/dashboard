@@ -19,10 +19,11 @@ export const actions = {
       prompt: cookies.get("stay-logged-in") === "true" ? "none" : "true",
     });
 
-    cookies.set("discord-oauth2-state", res.state, { path: "/" });
     if (data.get("remember") === "on") {
       cookies.set("stay-logged-in", "true", { path: "/" });
     }
+    cookies.set("join-discord", String(data.get("join-discord") === "on"), { path: "/" });
+    cookies.set("discord-oauth2-state", res.state, { path: "/" });
 
     return {
       url: res.url,
