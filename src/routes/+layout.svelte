@@ -13,8 +13,11 @@
 
   onMount(async function () {
     if (!data.user) {
-      console.log("User not found, redirecting to login");
-      goto("/login");
+      console.log("User not found");
+      if (page.url.pathname !== "/login") {
+        console.log("Redirecting to /login");
+        goto("/login");
+      }
       return;
     }
 
