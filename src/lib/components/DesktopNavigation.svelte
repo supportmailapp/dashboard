@@ -71,7 +71,7 @@
           </a>
           {#if item.children?.length && page.url.pathname.startsWith(item.href)}
             <ul class="nav-submenu" transition:fade={{ duration: 200 }}>
-              <div class="bg-neutral w-1 rounded"></div>
+              <div class="bg-base-content/75 w-1 rounded"></div>
               {#each item.children as child}
                 <li>
                   <a href={child.href} class="nav-btn nav-child" class:active={isCurrentPage(child.href)}>

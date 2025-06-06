@@ -22,10 +22,6 @@
      */
     basicChannelTypes?: BasicChannelType[];
     show: boolean;
-    /**
-     * The text to display in the dialog. If not provided, no text will be shown.
-     */
-    text?: string;
     class?: ClassValue;
     /**
      * Callback function to be called when a channel is selected.

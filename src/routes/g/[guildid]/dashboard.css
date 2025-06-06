@@ -140,7 +140,7 @@
 
     .nav-submenu {
       margin-left: 1rem;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.25rem;
       padding-inline: 0;
       display: grid;
       grid-template-columns: auto 1fr;

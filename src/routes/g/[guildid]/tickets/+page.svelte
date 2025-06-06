@@ -637,6 +637,7 @@
           showChannelSelector = false;
         }}
         show={showChannelSelector}
+        basicChannelTypes={["category"]}
         exclude={setup.category ? [setup.category.id] : []}
       >
         <div class="flex w-full flex-col gap-2 md:flex-row">

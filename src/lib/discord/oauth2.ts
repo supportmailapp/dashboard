@@ -64,9 +64,7 @@ async function exchangeToken(
   params: Record<string, string>,
 ): Promise<RESTPostOAuth2AccessTokenResult | RESTPostOAuth2RefreshTokenResult> {
   const response = await ky.post(urls.token(), {
-    searchParams: {
-      ...params,
-    },
+    body: new URLSearchParams(params).toString(), // Send params in the body, not as searchParams
     headers: {
       "content-type": "application/x-www-form-urlencoded",
     },

@@ -117,6 +117,7 @@
     grid-auto-flow: row;
     place-items: center;
     background-color: transparent;
+    z-index: 100;
 
     a {
       @apply dy-link dy-link-hover;

@@ -88,9 +88,8 @@
   <div class="min-h-xl flex w-full grow flex-col items-center gap-5 p-4 pt-8">
     <!-- Back button -->
     <div class="w-full">
-      <button class="dy-btn dy-btn-outline" onclick={goBack} disabled={page.data.dataState.saving || site.showLoading}>
+      <button class="dy-btn dy-btn-outline dy-btn-square" onclick={goBack} disabled={page.data.dataState.saving || site.showLoading}>
         <ArrowLeft />
-        Back
       </button>
     </div>
 
