@@ -1,17 +1,15 @@
 import { env } from "$env/dynamic/private";
 import { JsonErrors } from "$lib/constants.js";
-import { dbConnect, DBUser } from "$lib/server/db";
+import { checkUserGuildAccess, sessionManager } from "$lib/server/auth";
+import { dbConnect, UserToken } from "$lib/server/db";
+import { DiscordBotAPI, DiscordUserAPI } from "$lib/server/discord";
 import arcjet, { detectBot, shield, slidingWindow } from "@arcjet/sveltekit";
 import * as Sentry from "@sentry/node";
-import { redirect, type Handle, type HandleServerError } from "@sveltejs/kit";
+import { type Handle, type HandleServerError } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
 import dayjs from "dayjs";
-import { Session } from "supportmail-types";
 import { inspect } from "util";
 import wildcardMatch from "wildcard-match";
-import jwt from "jsonwebtoken";
-import { DiscordBotAPI, DiscordUserAPI } from "$lib/server/discord";
-import { sessionManager } from "$lib/server/auth";
 
 const inDevMode = env.NODE_ENV === "development";
 
@@ -69,66 +67,51 @@ const authHandler: Handle = async ({ event, resolve }) => {
   event.locals.discordRest = new DiscordBotAPI();
 
   event.locals.getSafeSession = async () => {
-    // Get session token from cookie
-    const sessionToken = event.cookies.get("session_token");
+    // Get session token from cookie or Authorization header
+    const cookieToken = event.cookies.get("session_token");
+    const authHeader = event.request.headers.get("Authorization");
+    const headerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+
+    const sessionToken = cookieToken || headerToken;
     if (!sessionToken) {
-      return { session: null, user: null };
+      return { user: null, token: null, error: "notfound" };
     }
 
     try {
       // Find session in database
-      const sessionData = await sessionManager.getSessionById(sessionToken, true);
+      const tokenResult = await sessionManager.getUserTokenBySession(sessionToken);
 
-      if (!sessionManager.hasSession(sessionData) || !sessionManager.hasTokens(sessionData)) {
-        // Clean up expired cookie
-        event.cookies.delete("session_token", { path: "/" });
-        return { session: null, user: null };
+      if (tokenResult.isExpired()) {
+        return { error: "expired", token: tokenResult.token, user: null };
+      } else if (!tokenResult.isFound()) {
+        return { user: null, token: null, error: "notfound" };
       }
 
-      const { session, tokens } = sessionData;
+      const { token } = tokenResult;
 
       // Find user by session's userId
-      const user = await new DiscordUserAPI(tokens.accessToken).getCurrentUser();
-      if (!user) {
-        // Clean up orphaned session
-        await Session.deleteOne({ _id: session._id });
-        event.cookies.delete("session_token", { path: "/" });
-        return { session: null, user: null };
+      const userRes = await new DiscordUserAPI(token.accessToken).getCurrentUser();
+      if (!userRes.isSuccess()) {
+        return { user: null, token: null, error: "other" };
       }
 
-      // Validate JWT tokens if present
-      if (tokens) {
-        try {
-          const decoded = jwt.verify(user.tokens, env.JWT_SECRET) as { at: string; rt: string };
-          // Token is valid, continue
-        } catch (jwtError: any) {
-          // JWT validation failed - clean up
-          await Session.deleteOne({ _id: sessionData._id });
-          event.cookies.delete("session_token", { path: "/" });
-          return { session: null, user: null };
-        }
-      }
-
-      // Update session last activity
-      await Session.updateOne({ _id: sessionData._id }, { lastActivity: new Date() });
-
-      return { user, session: sessionData };
+      return { user: userRes.data, token: tokenResult.token };
     } catch (error) {
       console.error("Session validation error:", error);
-      return { session: null, user: null };
+      return { user: null, token: null, error: "other" };
     }
   };
 
-  event.locals.isAuthenticated = () => Boolean(event.locals.user && event.locals.session);
+  event.locals.isAuthenticated = () => Boolean(event.locals.user && event.locals.token);
 
   return resolve(event);
 };
 
 type APIRouteConfig = {
   /**
-   * Whether the route requires authentication.
+   * Whether the route allows unauthenticated access.
    */
-  authRequired?: boolean;
+  allowUnauthenticated?: boolean;
   /**
    * Optional list of HTTP methods that the route supports.
    *
@@ -137,7 +120,7 @@ type APIRouteConfig = {
   methods?: string[];
 };
 
-const AUTHED_ROUTES: Record<string, APIRouteConfig> = {};
+const UNAUTHENTICATED_ROUTES: Record<string, APIRouteConfig> = {};
 
 function matchesRoute(pattern: string, pathname: string): boolean {
   if (!pattern.includes("*")) {
@@ -153,6 +136,11 @@ function matchesRoute(pattern: string, pathname: string): boolean {
   return wildcardResult;
 }
 
+/**
+ * The general API Auth Guard.
+ *
+ * @see {@link Handle}
+ */
 const apiAuthGuard: Handle = async ({ event, resolve }) => {
   const pathname = event.url.pathname;
 
@@ -160,20 +148,70 @@ const apiAuthGuard: Handle = async ({ event, resolve }) => {
     return resolve(event); // Skip auth guard for non-API routes
   }
 
-  for (const [pattern, config] of Object.entries(AUTHED_ROUTES)) {
+  // Check if route is in the unauthenticated list
+  for (const [pattern, config] of Object.entries(UNAUTHENTICATED_ROUTES)) {
     if (matchesRoute(pattern, pathname)) {
-      if (config.authRequired && !(event.locals.user && event.locals.session)) {
-        return JsonErrors.unauthorized("Authentication required");
+      if (config.allowUnauthenticated) {
+        return resolve(event); // Allow unauthenticated access
+      }
+      break;
+    }
+  }
+
+  // Default: require authentication for all API routes not in the unauthenticated list
+  if (!event.locals.isAuthenticated()) {
+    return JsonErrors.unauthorized("Authentication required");
+  }
+
+  return resolve(event);
+};
+
+const GUILD_API_ROUTES = ["/api/configs/**", "/api/guilds/**", "/g/**"];
+
+/**
+ * The Auth Guard for guild-specific routes.
+ *
+ * @see {@link Handle}
+ */
+const guildAuthGuard: Handle = async ({ event, resolve }) => {
+  const pathname = event.url.pathname;
+
+  if (!pathname.startsWith("/api/") && !pathname.startsWith("/g/")) {
+    return resolve(event); // Skip auth guard for
+  }
+
+  // Just a typeguard
+  if (!event.locals.token || !event.locals.user) {
+    return JsonErrors.unauthorized();
+  }
+
+  const userRest = new DiscordUserAPI(event.locals.token.accessToken);
+
+  for (const apiWildcard of GUILD_API_ROUTES) {
+    if (matchesRoute(apiWildcard, pathname)) {
+      const guildId = event.params.guildid!; // All routes specified have this param. So we can assert string.
+      const accessResult = await checkUserGuildAccess(event.locals.user.id, guildId, userRest);
+      switch (accessResult) {
+        case 200:
+          break;
+        case 403:
+          return JsonErrors.forbidden();
+        case 404:
+          return JsonErrors.notFound();
+        default:
+          return JsonErrors.serverError();
       }
 
       break;
     }
   }
 
+  event.locals.discordUserRest = userRest;
+
   return resolve(event);
 };
 
-export const handle = sequence(devToolsCheck, apiRateLimitCheck, apiAuthGuard);
+export const handle = sequence(devToolsCheck, authHandler, apiRateLimitCheck, apiAuthGuard);
 
 export const handleError: HandleServerError = async ({ error, event, status, message }) => {
   const errorId =
