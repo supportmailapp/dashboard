@@ -7,7 +7,32 @@ import type {
   APIUser,
 } from "discord-api-types/v10";
 import type { FlattenMaps } from "mongoose";
-import type { IDBUser, ISession } from "supportmail-types";
+import type { IUserToken } from "supportmail-types";
+
+/**
+ * Represents the result of a safe session validation operation.
+ *
+ * This discriminated union type provides three possible outcomes:
+ * - Success: Contains both user data and token when session is valid
+ * - Expired: Contains token but no user when session has expired
+ * - Error: Contains neither user nor token when session is not found or other errors occur
+ *
+ * @example
+ * ```typescript
+ * // Successful session
+ * const success: SafeSessionResult = { user: apiUser, token: userToken };
+ *
+ * // Expired session
+ * const expired: SafeSessionResult = { user: null, token: userToken, error: "expired" };
+ *
+ * // Session not found
+ * const notFound: SafeSessionResult = { user: null, token: null, error: "notfound" };
+ * ```
+ */
+type SafeSessionResult =
+  | { user: APIUser; token: FlatUserToken; error?: never }
+  | { user: null; token: FlatUserToken; error: "expired" }
+  | { user: null; token: null; error: "other" | "notfound" };
 
 // for information about these interfaces
 declare global {
@@ -18,8 +43,16 @@ declare global {
       status?: number;
     }
 
+    /**
+     * @description Provides authentication state, user data, and Discord API access for request handling.
+     * Contains session management utilities, user authentication status, and both bot and user-level
+     * Discord REST API clients for interacting with Discord services.
+     */
     interface Locals {
-      getSafeSession: () => Promise<{ session: FlattenedSession | null; user: User | null }>;
+      getSafeSession: () => Promise<SafeSessionResult>;
+      /**
+       * @returns Whether the user is authenticated.
+       */
       isAuthenticated: () => boolean;
       /**
        * Not used in the current implementation.
@@ -27,18 +60,17 @@ declare global {
        */
       isAdmin?: () => Promise<boolean>;
       user: APIUser | null;
-      session: FlattenedSession | null;
+      token: FlatUserToken | null;
       discordRest: DiscordBotAPI;
       discordUserRest: DiscordUserAPI | null;
     }
 
     interface PageData {
       user: APIUser | null;
-      session: FlattenedSession | null;
     }
   }
 
-  type FlattenedSession = FlattenMaps<ISession>;
+  type FlatUserToken = FlattenMaps<IUserToken>;
 
   /**
    * An API guild channel which is not a thread.
