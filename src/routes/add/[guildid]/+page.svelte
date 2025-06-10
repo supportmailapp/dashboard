@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
-  import { EasterEgg, urls } from "$lib/constants";
+  import { urls } from "$lib/constants";
   import { onMount } from "svelte";
 
   const { data } = $props();
@@ -11,8 +11,4 @@
   });
 </script>
 
-<svelte:head>
-  {#if data.easterEgg}
-    <meta http-equiv="refresh" content="0; url={EasterEgg}" />
-  {/if}
-</svelte:head>
+<p>Just wait a moment</p>
