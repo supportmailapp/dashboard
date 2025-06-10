@@ -3,6 +3,8 @@
   "singleQuote": false,
   "tabWidth": 2,
   "trailingComma": "all",
+  "arrowParens": "always",
+  "bracketSpacing": true,
   "printWidth": 110,
   "plugins": ["prettier-plugin-svelte", "prettier-plugin-tailwindcss"],
   "overrides": [
