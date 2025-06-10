@@ -33,3 +33,18 @@ export const JsonErrors = {
   serverError: (message: string = "") =>
     Response.json({ error: message || "Internal Server Error" }, { status: 500 }),
 } as const;
+
+export const LANGUAGES = [
+  {
+    value: "en",
+    name: "English",
+  },
+  {
+    value: "de",
+    name: "Deutsch",
+  },
+  {
+    value: "fr",
+    name: "Français",
+  },
+] as const;
