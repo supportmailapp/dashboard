@@ -12,7 +12,15 @@ import { DiscordAPIError, REST, HTTPError, RateLimitError } from "discord.js";
 import UserGuildsCache from "$lib/server/caches/userGuilds.js";
 
 type SafeError = DiscordAPIError | HTTPError | RateLimitError | Error | string;
-type DefinitelyHasError<E extends SafeError> = Omit<SafeResponse<null>, "error"> & { error: E };
+type DefinitelyHasError<E extends SafeError> = Omit<SafeResponse<null>, "error" | "data"> & {
+  error: NonNullable<E>;
+  data: null;
+};
+
+type DefinitelyHasData<T> = Omit<SafeResponse<T>, "error" | "data"> & {
+  error: null;
+  data: NonNullable<T>;
+};
 
 class SafeResponse<T = unknown> {
   public readonly data: T | null;
@@ -23,7 +31,7 @@ class SafeResponse<T = unknown> {
     this.error = error;
   }
 
-  isSuccess(): this is SafeResponse<T> & { data: NonNullable<T> } {
+  isSuccess(): this is DefinitelyHasData<T> {
     return this.data !== null && !this.error;
   }
 
