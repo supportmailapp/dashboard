@@ -20,6 +20,9 @@ importers:
       dayjs:
         specifier: ^1.11.13
         version: 1.11.13
+      discord-api-types:
+        specifier: ^0.38.11
+        version: 0.38.11
       discord.js:
         specifier: ^14.19.3
         version: 14.19.3
