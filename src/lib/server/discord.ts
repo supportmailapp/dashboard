@@ -9,6 +9,7 @@ import {
   type RESTAPIPartialCurrentUserGuild,
 } from "discord-api-types/v10";
 import { DiscordAPIError, REST, HTTPError, RateLimitError } from "discord.js";
+import UserGuildsCache from "$lib/server/caches/userGuilds.js";
 
 type SafeError = DiscordAPIError | HTTPError | RateLimitError | Error | string;
 type DefinitelyHasError<E extends SafeError> = Omit<SafeResponse<null>, "error"> & { error: E };
@@ -48,7 +49,7 @@ class SafeResponse<T = unknown> {
 
 /**
  * Abstract base class for Discord API clients.
- * Provides common functionality for making Discord API requests.
+ * Provides common and safe functionality for making Discord API requests.
  */
 abstract class BaseDiscordAPI {
   protected readonly rest: REST;
@@ -61,7 +62,7 @@ abstract class BaseDiscordAPI {
     return this.rest;
   }
 
-  protected async doSafeRequest<T>(request: () => Promise<T>): Promise<SafeResponse<T>> {
+  protected async doSafeRequest<T>(request: () => Promise<any>): Promise<SafeResponse<T>> {
     try {
       const data = await request();
       return new SafeResponse(data);
@@ -100,33 +101,72 @@ export { DiscordBotAPI };
  * This class provides methods to interact with the Discord API using a user access token.
  */
 class DiscordUserAPI extends BaseDiscordAPI {
+  private _userId: string | null = null;
   /**
    * @param at The Discord User Access Token (AT) to authenticate API requests.
    */
-  constructor(at: string) {
+  constructor(at: string, userId?: string) {
     super(at);
+    this._userId = userId ?? null;
   }
 
   /**
-   * Retrieves the current authenticated user's information from Discord API.
+   * Gets the user ID.
+   * @returns The user ID, if available.
    *
-   * @returns A promise that resolves to a SafeResponse containing the current user's Discord API data
+   * This will always be set if the `this.getCurrentUser` was called successfully because the function sets the user ID then.
+   */
+  get userId() {
+    return this._userId;
+  }
+
+  /**
+   * Retrieves the current authenticated user from the Discord API.
+   *
+   * @returns A promise that resolves to a SafeResponse containing the current user's data.
+   *          On success, the user ID is cached internally for future use.
    *
    * @see {@link https://discord.com/developers/docs/resources/user#get-current-user}
    */
   public async getCurrentUser(): Promise<SafeResponse<APIUser>> {
-    return this.doSafeRequest(() => this.rest.get(Routes.user()) as any);
+    const _res = await this.doSafeRequest<APIUser>(() => this.rest.get(Routes.user()));
+    if (_res.isSuccess()) {
+      this._userId = _res.data.id;
+    }
+    return _res;
   }
 
   /**
-   * Retrieves the guilds (servers) that the current authenticated user is a member of.
+   * Retrieves the current user's Discord guilds.
    *
-   * @returns A promise that resolves to a SafeResponse containing an array of partial guild objects
+   * @param userId - The ID of the user whose guilds to retrieve
+   * @param skipCache - Whether to skip cache lookup and force a fresh API request. Defaults to `false`.
+   * @returns A Promise that resolves to a SafeResponse containing an array of partial current user guild objects
+   *
+   * @remarks
+   * This method implements caching for user guilds. When skipCache is false and the user's guilds
+   * are already cached, it returns the cached data. Otherwise, it makes a fresh API request to
+   * Discord's REST API and caches the result for future use.
    *
    * @see {@link https://discord.com/developers/docs/resources/user#get-current-user-guilds}
    */
-  public async getCurrentUserGuilds(): Promise<SafeResponse<RESTAPIPartialCurrentUserGuild[]>> {
-    return this.doSafeRequest(() => this.rest.get(Routes.userGuilds()) as any);
+  public async getCurrentUserGuilds(
+    userId: string,
+    skipCache = false,
+  ): Promise<SafeResponse<RESTAPIPartialCurrentUserGuild[]>> {
+    if (skipCache && UserGuildsCache.hasUser(userId)) {
+      return new SafeResponse(UserGuildsCache.getUserGuilds(userId));
+    }
+
+    const _res = await this.doSafeRequest<RESTAPIPartialCurrentUserGuild[]>(() =>
+      this.rest.get(Routes.userGuilds()),
+    );
+    if (_res.isSuccess()) {
+      const _guilds = _res.data;
+      UserGuildsCache.cacheUserGuilds(userId, _guilds);
+    }
+
+    return _res as any;
   }
 
   /**
