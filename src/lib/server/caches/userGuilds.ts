@@ -12,6 +12,10 @@ function cacheUserGuilds(userId: string, guilds: RESTAPIPartialCurrentUserGuild[
   userGuildsCache.set(userId, guilds);
 }
 
+function hasUser(userId: string): boolean {
+  return userGuildsCache.has(userId);
+}
+
 function getUserGuilds(userId: string): RESTAPIPartialCurrentUserGuild[] | null {
   return userGuildsCache.get(userId) || null;
 }
@@ -26,6 +30,7 @@ function clearUserGuilds(): void {
 
 export default {
   cacheUserGuilds,
+  hasUser,
   getUserGuilds,
   removeUserGuilds,
   clearUserGuilds,
