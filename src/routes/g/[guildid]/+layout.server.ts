@@ -1,8 +1,8 @@
-import { redirect } from "@sveltejs/kit";
+import { redirect } from "$lib";
 
 export async function load({ locals, url }) {
   if (!locals.user) {
-    redirect(303, "/dash/login?next=" + url.pathname);
+    redirect(404, "/dash/login?next=" + url.pathname);
   }
 
   if (url.searchParams.has("next")) {
