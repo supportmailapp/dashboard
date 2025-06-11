@@ -38,8 +38,6 @@ class GetTokensResult {
 }
 
 class SessionManager {
-  constructor() {}
-
   static async createSession(data: CreateSessionOps): Promise<string> {
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
@@ -60,7 +58,7 @@ class SessionManager {
     return sessionToken;
   }
 
-  private decodeToken(_token: string): {
+  static decodeToken(_token: string): {
     valid: boolean;
     id: string | null;
     error: "expired" | "other" | null;
@@ -95,8 +93,8 @@ class SessionManager {
     }
   }
 
-  async getUserTokenBySession(jwtToken: string): Promise<GetTokensResult> {
-    const tokenRes = this.decodeToken(jwtToken);
+  static async getUserTokenBySession(jwtToken: string): Promise<GetTokensResult> {
+    const tokenRes = SessionManager.decodeToken(jwtToken);
     if (!tokenRes.valid || tokenRes.error === "other") {
       return new GetTokensResult(null, false);
     }
@@ -109,17 +107,16 @@ class SessionManager {
     );
   }
 
-  async deleteToken(id: string): Promise<void> {
+  static async deleteToken(id: string): Promise<void> {
     await UserToken.findByIdAndDelete(id);
   }
 
-  async cleanupExpiredTokens(): Promise<void> {
+  static async cleanupExpiredTokens(): Promise<void> {
     await UserToken.deleteMany({ expiresAt: { $lt: new Date() } });
   }
 }
 
-const sessionManager = new SessionManager();
-export { sessionManager, SessionManager, type CreateSessionOps };
+export { SessionManager, type CreateSessionOps };
 
 /**
  * Checks if a user has access to manage a bot in a specific Discord guild.
@@ -152,7 +149,7 @@ async function checkUserGuildAccess(
     let userGuilds = userGuildsCache.getUserGuilds(userId);
 
     if (!userGuilds) {
-      const userGuildsRes = await discordUserApi.getCurrentUserGuilds();
+      const userGuildsRes = await discordUserApi.getCurrentUserGuilds(userId);
       if (userGuildsRes.isSuccess()) {
         userGuilds = userGuildsRes.data;
       } else if (userGuildsRes.hasDiscordAPIError()) {
