@@ -2,11 +2,10 @@
 import { env } from "$env/dynamic/private";
 import { canManageBot } from "$lib/utils/permissions";
 import * as Sentry from "@sentry/node";
-import jwt, { TokenExpiredError } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import userGuildsCache from "./caches/userGuilds";
 import { UserToken } from "./db/models/src/userTokens";
 import { DiscordUserAPI } from "./discord";
-import type { IUserToken } from "supportmail-types";
 
 type CreateSessionOps = {
   userId: string;
@@ -75,7 +74,7 @@ class SessionManager {
         error: null,
       };
     } catch (error: any) {
-      if (error instanceof TokenExpiredError) {
+      if (error instanceof jwt.TokenExpiredError) {
         const decoded = jwt.decode(_token);
         if (decoded) {
           return {
