@@ -3,9 +3,6 @@ node_modules
 
 # Output
 .output
-.vercel
-.netlify
-.wrangler
 /.svelte-kit
 /build
 
@@ -25,3 +22,6 @@ vite.config.ts.timestamp-*
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# PNPM
+.pnpm-store/**
