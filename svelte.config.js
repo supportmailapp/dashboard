@@ -10,6 +10,7 @@ const config = {
       $ui: "src/lib/components/ui",
       $lib: "src/lib",
       $stores: "src/lib/stores",
+      $db: "src/lib/server/db",
     },
   },
 };
