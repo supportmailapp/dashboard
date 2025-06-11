@@ -6,6 +6,7 @@ import jwt, { TokenExpiredError } from "jsonwebtoken";
 import userGuildsCache from "./caches/userGuilds";
 import { UserToken } from "./db/models/src/userTokens";
 import { DiscordUserAPI } from "./discord";
+import type { IUserToken } from "supportmail-types";
 
 type CreateSessionOps = {
   userId: string;
@@ -107,8 +108,10 @@ class SessionManager {
     );
   }
 
-  static async deleteToken(id: string): Promise<void> {
-    await UserToken.findByIdAndDelete(id);
+  static async getAndDeleteToken(id: string): Promise<FlatUserToken | null> {
+    const token = await UserToken.findByIdAndDelete(id);
+    if (!token) return null;
+    return token.toObject({ flattenMaps: true, flattenObjectIds: true });
   }
 
   static async cleanupExpiredTokens(): Promise<void> {
