@@ -47,6 +47,7 @@
     "mongoose": "^8.15.1",
     "node-cache": "^5.1.2",
     "supportmail-types": "github:supportmailapp/global-types",
-    "wildcard-match": "^5.1.4"
+    "wildcard-match": "^5.1.4",
+    "zod-validation-error": "^3.4.1"
   }
 }

@@ -41,6 +41,9 @@ importers:
       wildcard-match:
         specifier: ^5.1.4
         version: 5.1.4
+      zod-validation-error:
+        specifier: ^3.4.1
+        version: 3.4.1(zod@3.25.62)
     devDependencies:
       '@internationalized/date':
         specifier: ^3.8.2
