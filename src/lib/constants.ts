@@ -1,4 +1,6 @@
 // Public constants
+import { RouteBases, Routes } from "discord-api-types/v10";
+import { env as pubEnv } from "$env/dynamic/public";
 
 export const JsonErrors = {
   /**
@@ -48,3 +50,29 @@ export const LANGUAGES = [
     name: "Français",
   },
 ] as const;
+
+export const urls = {
+  discord: {
+    base: "https://discord.com",
+    apiBase: RouteBases.api,
+    /**
+     * Used for
+     * - token exchange
+     * - token refresh
+     */
+    tokenExchange: () => `${RouteBases.api}${Routes.oauth2TokenExchange()}` as const,
+    tokenRevocation: () => `${RouteBases.api}${Routes.oauth2TokenRevocation()}` as const,
+    botAuth: function (state: string, guildId?: string) {
+      const url = new URL(Routes.oauth2Authorization(), this.base);
+      const searchP = new URLSearchParams({
+        client_id: pubEnv.PUBLIC_ClientId,
+        scope: "bot applications.commands identify guilds guilds.members.read",
+        response_type: "code",
+        redirect_uri: pubEnv.PUBLIC_discordRedirectUri,
+        state: state,
+      });
+      if (guildId) searchP.set("guild_id", guildId);
+      return url.toString() + `?${searchP.toString()}`;
+    },
+  },
+};
