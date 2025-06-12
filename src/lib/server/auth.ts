@@ -216,7 +216,7 @@ export async function checkUserGuildAccess(
     }
 
     // 3. Check for at least manager permissions for that guild
-    return canManageBot(BigInt(targetGuild.permissions)) ? 200 : 403;
+    return canManageBot(targetGuild.permissions) ? 200 : 403;
   } catch (error) {
     console.error("Error checking user guild access:", error);
     return 500;
