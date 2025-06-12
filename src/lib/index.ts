@@ -1,3 +1,5 @@
+import { redirect as svRedirect } from "@sveltejs/kit";
+
 /**
  * Redirects the user to a different URL with a specified status code.
  *
@@ -8,7 +10,7 @@
  * @returns A Response object representing the redirect.
  *
  * @remarks
- * This function is a drop-in replacement for the `redirect` function from SvelteKit.
+ * This function uses the `redirect` function from SvelteKit.
  * It accepts not only 3xx status codes but also every other status code.
  * For example, you can use it to redirect with a 404 status code.
  *
@@ -25,6 +27,10 @@
  * - `404` - Not Found (for custom error handling)
  * - `500` - Internal Server Error (for custom error handling)
  */
-export function redirect(status: number, url: string | URL): Response {
-  return Response.redirect(new URL(url), status);
+export function redirectResponse(status: number, url: string | URL): never {
+  return svRedirect(status as any, url);
+}
+
+export function redirectToLoginWithError(errStr: string, status: number = 302): never {
+  return redirectResponse(status, "/login?error=" + encodeURIComponent(errStr));
 }
