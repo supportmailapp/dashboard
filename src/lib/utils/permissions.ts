@@ -24,7 +24,10 @@ export function hasPermission(permissions: PermissionResolvable, permission: Per
  *
  * ### Note: If the user has admin, `true` will be returned regardless of the other permissions.
  */
-export function hasPermissions(permissions: PermissionResolvable, ...permissionFlags: PermissionResolvable[]): boolean {
+export function hasPermissions(
+  permissions: PermissionResolvable,
+  ...permissionFlags: PermissionResolvable[]
+): boolean {
   return permissionFlags.every((permissionFlag) => new PermissionsBitField(permissions).has(permissionFlag));
 }
 
@@ -37,6 +40,10 @@ export function hasPermissions(permissions: PermissionResolvable, ...permissionF
  * @param permissions - The permission bits to check.
  * @returns `true` if the permissions include both "administrator" and "manageGuild", otherwise `false`.
  */
-export function canManageBot(permissions: bigint): boolean {
-  return hasPermissions(permissions, "Administrator", "ManageGuild");
+export function canManageBot(permissions: bigint | string): boolean {
+  return hasPermissions(
+    typeof permissions === "bigint" ? permissions : BigInt(permissions),
+    "Administrator",
+    "ManageGuild",
+  );
 }
