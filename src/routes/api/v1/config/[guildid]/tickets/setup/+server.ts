@@ -70,7 +70,7 @@ export async function POST({ locals, request }) {
     }
 
     const guild = guilds.find((g) => g.id === guildId);
-    if (!guild || !canManageBot(BigInt(guild.permissions))) {
+    if (!guild || !canManageBot(guild.permissions)) {
       return new Response(null, { status: 403, statusText: "Forbidden" });
     }
 
