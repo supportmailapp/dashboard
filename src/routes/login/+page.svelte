@@ -63,7 +63,7 @@
       >
         <Button type="submit" class="w-full max-w-xs" disabled={showLoading}>
           {#if showLoading}
-            <div class="h-5 w-5 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
+            <div class="size-5 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
           {:else}
             <img src="/icons/discord-mark-white.svg" alt="Discord Logo" class="h-8 w-8" />
           {/if}
