@@ -9,11 +9,18 @@ export function getDBGuild(guildId: string) {
   return DBGuild.findOne({ id: guildId }, null, { lean: true });
 }
 
+/**
+ * Updates a guild document in the database by guild ID.
+ *
+ * @param guildId - The unique identifier of the guild to update
+ * @param update - The update query or aggregation pipeline to apply to the guild document
+ * @returns A promise that resolves to the updated guild document, or null if no guild was found
+ */
 export function updateDBGuild(
   guildId: string,
   update: UpdateQuery<IDBGuild> | UpdateWithAggregationPipeline,
 ) {
-  return DBGuild.updateOne({ id: guildId }, update);
+  return DBGuild.findOneAndUpdate({ id: guildId }, update, { new: true });
 }
 
 export function getDBUser(userId: string) {
