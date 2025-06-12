@@ -39,7 +39,7 @@ export async function GET({ url, cookies }) {
         client_secret: discord.clientSecret,
         grant_type: "authorization_code",
         code: code,
-        redirect_uri: discord.redirectUri,
+        redirect_uri: discord.redirectUri(url.origin),
       }).toString(),
     });
 
