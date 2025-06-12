@@ -177,7 +177,7 @@ const apiAuthGuard: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
-const GUILD_API_ROUTES = ["/api/configs/**", "/api/guilds/**", "/g/**"];
+const GUILD_API_ROUTES = ["/api/*/configs/**", "/api/*/guilds/**", "/g/**"];
 
 /**
  * The Auth Guard for guild-specific routes.
@@ -186,10 +186,13 @@ const GUILD_API_ROUTES = ["/api/configs/**", "/api/guilds/**", "/g/**"];
  */
 const guildAuthGuard: Handle = async ({ event, resolve }) => {
   const pathname = event.url.pathname;
+  const guildId = event.params.guildid;
 
-  if (!pathname.startsWith("/api/") && !pathname.startsWith("/g/")) {
-    return resolve(event); // Skip auth guard for
+  if ((!pathname.startsWith("/api/") && !pathname.startsWith("/g")) || !guildId) {
+    return resolve(event); // Skip auth guard for some paths that definitly have no guild param
   }
+
+  event.locals.guildId = guildId;
 
   // Just a typeguard
   if (!event.locals.token || !event.locals.user) {
@@ -200,7 +203,6 @@ const guildAuthGuard: Handle = async ({ event, resolve }) => {
 
   for (const apiWildcard of GUILD_API_ROUTES) {
     if (matchesRoute(apiWildcard, pathname)) {
-      const guildId = event.params.guildid!; // All routes specified have this param. So we can assert string.
       const accessResult = await checkUserGuildAccess(event.locals.user.id, guildId, userRest);
       switch (accessResult) {
         case 200:
