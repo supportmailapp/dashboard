@@ -1,6 +1,3 @@
-import { BasicFetchInit } from "$lib/constants";
-import { APIRoutes } from "$lib/urls";
-
 export class DataManager {
   /**
    * The old data, used to restore the data if the user cancels.
@@ -24,12 +21,6 @@ export class DataManager {
   saving = $derived(this.saveProgress > 0 && this.saveProgress < 100); // Can't be manipulated directly
   #save = () => console.warn("No save function set");
   #reset = () => console.warn("No cancel function set");
-  /**
-   * The filtered guilds that where the user has at least managar permissions.
-   *
-   * @type {BotGuild[]}
-   */
-  guilds = $state([]);
 
   constructor(initialVal = false) {
     this.unsaved = initialVal;
@@ -53,34 +44,23 @@ export class DataManager {
   }
 
   set save(fn) {
-    this.#save = () => {
+    this.#save = async () => {
       this.saveProgress = 1;
-      fn();
+      if (typeof fn === "function") {
+        fn();
+      } else {
+        await fn;
+      }
     };
   }
 
   /**
    * The save function to be called when the user saves the data.
    *
-   * @memberof DataState
+   * @type {() => Promise<void> | (() => void)}
+   * @memberof DataManager
    */
   get save() {
     return this.#save;
-  }
-
-  async loadGuilds() {
-    const guildsRes = await fetch(APIRoutes.userGuilds(true), BasicFetchInit("GET"));
-
-    if (guildsRes.ok) {
-      /** @type {BotGuild[]} */
-      let guildsJson = await guildsRes.json();
-      // Sort guilds by configured or not
-      guildsJson.sort((a, b) => {
-        if (a.isConfigured && !b.isConfigured) return -1;
-        if (!a.isConfigured && b.isConfigured) return 1;
-        return 0;
-      });
-      this.guilds = guildsJson;
-    }
   }
 }
