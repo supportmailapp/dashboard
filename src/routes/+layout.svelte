@@ -7,7 +7,7 @@
 
   let { children, data } = $props();
 
-  let guilds = $derived(page.data.dataManager.guilds);
+  let guilds = $derived(page.data.guildsManager.guilds);
 
   onMount(async function () {
     if (!data.user) {
@@ -20,7 +20,7 @@
     }
 
     if (!guilds.length) {
-      await page.data.dataManager.loadGuilds();
+      await page.data.guildsManager.loadGuilds();
     }
 
     const redirectParam = page.url.searchParams.get("redirect");
