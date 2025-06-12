@@ -1,10 +1,12 @@
 import type { DiscordBotAPI, DiscordUserAPI } from "$lib/server/discord";
+import type { DataManager } from "$lib/stores/DataManager.svelte";
 import type {
   APIChannel,
   APIDMChannel,
   APIGroupDMChannel,
   APIThreadChannel,
   APIUser,
+  RESTAPIPartialCurrentUserGuild,
 } from "discord-api-types/v10";
 import type { FlattenMaps } from "mongoose";
 import type { IUserToken } from "supportmail-types";
@@ -66,6 +68,7 @@ declare global {
     }
 
     interface PageData {
+      dataManager: DataManager;
       user: APIUser | null;
     }
   }
@@ -76,6 +79,25 @@ declare global {
    * An API guild channel which is not a thread.
    */
   type GuildCoreChannel = Exclude<APIChannel, APIDMChannel | APIGroupDMChannel | APIThreadChannel>;
+
+  type RedirectData = {
+    /**
+     * The path to redirect to.
+     *
+     * If the `guildId` is given, then the redirect should happen on the base page. If not, after server selection.
+     */
+    path?: `/${string}`;
+    /**
+     * The guild ID to redirect to.
+     */
+    guildId?: string;
+  };
+
+  type DCGuild = RESTAPIPartialCurrentUserGuild;
+
+  type BotGuild = DCGuild & {
+    isConfigured: boolean;
+  };
 }
 
 export {};
