@@ -46,9 +46,8 @@ class SessionManager {
 
     // Encrpytion happens automatically in the UserToken model
     const exists = await UserToken.exists({ userId: data.userId });
-    let uTokenId: string;
     if (exists) {
-      const uTokenRes = await UserToken.findOneAndUpdate(
+      await UserToken.findOneAndUpdate(
         { userId: data.userId },
         {
           expiresAt: expiresAt,
@@ -57,18 +56,16 @@ class SessionManager {
         },
         { new: true },
       );
-      uTokenId = uTokenRes!._id.toHexString();
     } else {
-      const uTokenRes = await UserToken.create({
+      await UserToken.create({
         userId: data.userId,
         expiresAt: expiresAt,
         accessToken: data.tokens.accessToken,
         refreshToken: data.tokens.refreshToken ?? null,
       });
-      uTokenId = uTokenRes._id.toHexString();
     }
 
-    const sessionToken = jwt.sign({ id: uTokenId }, env.JWT_SECRET, {
+    const sessionToken = jwt.sign({ id: data.userId }, env.JWT_SECRET, {
       algorithm: "HS256",
       issuer: "supportmail",
       expiresIn: "7d",
@@ -116,17 +113,17 @@ class SessionManager {
   static async getUserTokenBySession(jwtToken: string): Promise<GetTokensResult> {
     const tokenRes = SessionManager.decodeToken(jwtToken);
     console.debug("Decoded JWT token:", tokenRes);
-    if (!tokenRes.valid || tokenRes.error === "other") {
+    if (!tokenRes.valid || tokenRes.error === "other" || !tokenRes.id) {
       return new GetTokensResult(null, false);
     }
 
-    const uToken = await UserToken.findById(tokenRes.id!);
+    const uToken = await UserToken.findOne({ userId: tokenRes.id }!);
 
     return new GetTokensResult(uToken?.toJSON() || null, tokenRes.error === "expired");
   }
 
   static async getAndDeleteToken(id: string): Promise<FlatUserToken | null> {
-    const token = await UserToken.findByIdAndDelete(id);
+    const token = await UserToken.findOneAndDelete({ userId: id });
     if (!token) return null;
     return token.toObject({ flattenMaps: true, flattenObjectIds: true });
   }
