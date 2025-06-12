@@ -64,6 +64,10 @@ declare global {
       isAdmin?: () => Promise<boolean>;
       user: APIUser | null;
       token: FlatUserToken | null;
+      /**
+       * Given for every guild-param route.
+       */
+      guildId?: string;
       discordRest: DiscordBotAPI;
       discordUserRest: DiscordUserAPI | null;
     }
@@ -72,6 +76,9 @@ declare global {
       guildsManager: GuildsManager;
       dataManager: DataManager;
       user: APIUser | null;
+      guildId?: string;
+      isCurrentPage: (href: string, partial?: boolean) => boolean;
+      guildHref: (path: string) => string;
     }
   }
 
