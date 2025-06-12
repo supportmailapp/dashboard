@@ -9,7 +9,10 @@ export function getDBGuild(guildId: string) {
   return DBGuild.findOne({ id: guildId }, null, { lean: true });
 }
 
-export function updateDBGuild(guildId: string, update: UpdateQuery<IDBGuild> | UpdateWithAggregationPipeline) {
+export function updateDBGuild(
+  guildId: string,
+  update: UpdateQuery<IDBGuild> | UpdateWithAggregationPipeline,
+) {
   return DBGuild.updateOne({ id: guildId }, update);
 }
 
