@@ -1,7 +1,7 @@
 import { env } from "$env/dynamic/private";
 import { JsonErrors } from "$lib/constants.js";
-import { checkUserGuildAccess, sessionManager } from "$lib/server/auth";
-import { dbConnect, UserToken } from "$lib/server/db";
+import { checkUserGuildAccess, SessionManager } from "$lib/server/auth";
+import { dbConnect } from "$lib/server/db";
 import { DiscordBotAPI, DiscordUserAPI } from "$lib/server/discord";
 import arcjet, { detectBot, shield, slidingWindow } from "@arcjet/sveltekit";
 import * as Sentry from "@sentry/node";
@@ -27,7 +27,7 @@ const aj = arcjet({
     shield({ mode: env.ARCJET_MODE! as any }),
     detectBot({
       mode: env.ARCJET_MODE! as any,
-      allow: ["CATEGORY:SEARCH_ENGINE"],
+      allow: [],
     }),
     slidingWindow({
       mode: env.ARCJET_MODE! as any,
@@ -68,7 +68,7 @@ const authHandler: Handle = async ({ event, resolve }) => {
 
   event.locals.getSafeSession = async () => {
     // Get session token from cookie or Authorization header
-    const cookieToken = event.cookies.get("session_token");
+    const cookieToken = event.cookies.get("session");
     const authHeader = event.request.headers.get("Authorization");
     const headerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
 
@@ -79,7 +79,7 @@ const authHandler: Handle = async ({ event, resolve }) => {
 
     try {
       // Find session in database
-      const tokenResult = await sessionManager.getUserTokenBySession(sessionToken);
+      const tokenResult = await SessionManager.getUserTokenBySession(sessionToken);
 
       if (tokenResult.isExpired()) {
         return { error: "expired", token: tokenResult.token, user: null };
@@ -107,6 +107,15 @@ const authHandler: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
+const mainAuthGuard: Handle = async ({ event, resolve }) => {
+  const sessionData = await event.locals.getSafeSession();
+  console.debug("Session data:", sessionData);
+  event.locals.user = sessionData.user;
+  event.locals.token = sessionData.token;
+
+  return resolve(event);
+};
+
 type APIRouteConfig = {
   /**
    * Whether the route allows unauthenticated access.
@@ -120,7 +129,9 @@ type APIRouteConfig = {
   methods?: string[];
 };
 
-const UNAUTHENTICATED_ROUTES: Record<string, APIRouteConfig> = {};
+const UNAUTHENTICATED_ROUTES: Record<string, APIRouteConfig> = {
+  "/api/*/testing": { allowUnauthenticated: true },
+};
 
 function matchesRoute(pattern: string, pathname: string): boolean {
   if (!pattern.includes("*")) {
@@ -211,7 +222,14 @@ const guildAuthGuard: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
-export const handle = sequence(devToolsCheck, authHandler, apiRateLimitCheck, apiAuthGuard);
+export const handle = sequence(
+  devToolsCheck,
+  authHandler,
+  mainAuthGuard,
+  apiRateLimitCheck,
+  apiAuthGuard,
+  guildAuthGuard,
+);
 
 export const handleError: HandleServerError = async ({ error, event, status, message }) => {
   const errorId =
@@ -225,6 +243,6 @@ export const handleError: HandleServerError = async ({ error, event, status, mes
 
   return {
     message: message || "Internal server error",
-    errorId: errorId,
+    id: errorId,
   };
 };
