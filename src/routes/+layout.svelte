@@ -3,7 +3,8 @@
   import { onMount } from "svelte";
   import { afterNavigate, beforeNavigate, goto } from "$app/navigation";
   import { page } from "$app/state";
-  import { site } from "$lib/stores/site.svelte";
+  import { site } from "$stores/site.svelte";
+  import { ModeWatcher } from "mode-watcher";
 
   let { children, data } = $props();
 
@@ -65,4 +66,16 @@
   });
 </script>
 
-{@render children()}
+<svelte:head>
+  <!-- SEO... -->
+  <title>Dashboard | SupportMail</title>
+  <meta property="og:title" content="Dashboard | SupportMail" />
+  <meta property="og:description" content="Manage your Discord server's support mail system with ease" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={page.url.href} />
+  <meta property="og:site_name" content="SupportMail" />
+</svelte:head>
+
+<ModeWatcher />
+
+{@render children?.()}
