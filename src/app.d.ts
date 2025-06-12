@@ -74,7 +74,7 @@ declare global {
 
     interface PageData {
       guildsManager: GuildsManager;
-      dataManager: DataManager;
+      manager: DataManager;
       user: APIUser | null;
       guildId?: string;
       isCurrentPage: (href: string, partial?: boolean) => boolean;
