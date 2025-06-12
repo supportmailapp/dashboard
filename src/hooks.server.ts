@@ -124,7 +124,8 @@ type APIRouteConfig = {
   /**
    * Optional list of HTTP methods that the route supports.
    *
-   * If not specified, the route applies to all methods.
+   * - If not specified, the all methods are allowed.
+   * - If specified, only the listed methods are allowed.
    */
   methods?: string[];
 };
@@ -177,7 +178,7 @@ const apiAuthGuard: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
-const GUILD_API_ROUTES = ["/api/*/configs/**", "/api/*/guilds/**", "/g/**"];
+const GUILD_ROUTES = ["/api/*/guilds/**", "/g/**"];
 
 /**
  * The Auth Guard for guild-specific routes.
@@ -201,7 +202,7 @@ const guildAuthGuard: Handle = async ({ event, resolve }) => {
 
   const userRest = new DiscordUserAPI(event.locals.token.accessToken);
 
-  for (const apiWildcard of GUILD_API_ROUTES) {
+  for (const apiWildcard of GUILD_ROUTES) {
     if (matchesRoute(apiWildcard, pathname)) {
       const accessResult = await checkUserGuildAccess(event.locals.user.id, guildId, userRest);
       switch (accessResult) {
