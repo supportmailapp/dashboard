@@ -10,6 +10,7 @@
   import * as Table from "$ui/table/index.js";
   import ArrowBigRight from "@lucide/svelte/icons/arrow-big-right";
   import Plus from "@lucide/svelte/icons/plus";
+  import { onMount } from "svelte";
   import { slide } from "svelte/transition";
 
   let guildManager = $derived(page.data.guildsManager);
@@ -31,6 +32,12 @@
     complete.finally(() => {
       loading = false;
     });
+  });
+
+  onMount(async () => {
+    if (!page.data.guildsManager.guilds.length) {
+      await page.data.guildsManager.loadGuilds();
+    }
   });
 </script>
 
