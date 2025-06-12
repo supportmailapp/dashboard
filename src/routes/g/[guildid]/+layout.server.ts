@@ -1,4 +1,5 @@
 import { redirectResponse } from "$lib";
+import { isCurrentPage as _isCurrentPage, guildHref as _guildHref } from "$lib";
 
 export async function load({ locals, url }) {
   if (!locals.isAuthenticated()) {
