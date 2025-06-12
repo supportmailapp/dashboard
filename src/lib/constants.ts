@@ -1,6 +1,4 @@
 // Public constants
-import { RouteBases, Routes } from "discord-api-types/v10";
-import { env as pubEnv } from "$env/dynamic/public";
 
 export const JsonErrors = {
   /**
@@ -51,47 +49,11 @@ export const LANGUAGES = [
   },
 ] as const;
 
-export const urls = {
-  discord: {
-    base: "https://discord.com",
-    apiBase: RouteBases.api,
-    /**
-     * Used for
-     * - token exchange
-     * - token refresh
-     */
-    tokenExchange: () => `${RouteBases.api}${Routes.oauth2TokenExchange()}` as const,
-    tokenRevocation: () => `${RouteBases.api}${Routes.oauth2TokenRevocation()}` as const,
-    botAuth: function ({ guildId, state, addBot }: { guildId?: string; state: string; addBot?: boolean }) {
-      const url = new URL(Routes.oauth2Authorization(), this.base);
-      const searchP = new URLSearchParams({
-        client_id: pubEnv.PUBLIC_ClientId,
-        scope: "bot applications.commands identify guilds guilds.members.read",
-        response_type: "code",
-        redirect_uri: pubEnv.PUBLIC_discordRedirectUri,
-        prompt: "true",
-      });
-      if (state) searchP.set("state", state);
-      if (guildId) searchP.set("guild_id", guildId);
-      if (addBot) {
-        searchP.set("permissions", "1635040881911");
-        searchP.set("integration_type", "0");
-      }
-      return url.toString() + `?${searchP.toString()}`;
+export const BasicFetchInit = (m: "GET" | "POST" | "PATCH" | "PUT" | "DELETE") => {
+  return {
+    method: m,
+    headers: {
+      "Content-Type": "application/json",
     },
-    botAdd: function ({ guildId, state }: { guildId?: string; state?: string } = {}) {
-      if (state) {
-        return this.botAuth({ state, guildId, addBot: true });
-      }
-      const url = new URL(Routes.oauth2Authorization(), this.base);
-      const searchP = new URLSearchParams({
-        client_id: pubEnv.PUBLIC_ClientId,
-        scope: "bot applications.commands",
-        permission: "1635040881911",
-        integration_type: "0",
-      });
-      if (guildId) searchP.set("guild_id", guildId);
-      return url.toString() + `?${searchP.toString()}`;
-    },
-  },
+  };
 };
