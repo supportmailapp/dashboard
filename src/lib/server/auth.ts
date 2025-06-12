@@ -4,8 +4,11 @@ import { canManageBot } from "$lib/utils/permissions";
 import * as Sentry from "@sentry/node";
 import jwt from "jsonwebtoken";
 import userGuildsCache from "./caches/userGuilds";
+import { discord } from "./constants";
 import { UserToken } from "./db/models/src/userTokens";
 import { DiscordUserAPI } from "./discord";
+import { discordUrls } from "$lib/urls";
+import type { RESTPostOAuth2AccessTokenResult } from "discord-api-types/v10";
 
 type CreateSessionOps = {
   userId: string;
@@ -42,19 +45,36 @@ class SessionManager {
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
     // Encrpytion happens automatically in the UserToken model
-    const uToken = await UserToken.create({
-      userId: data.userId,
-      expiresAt: expiresAt,
-      accessToken: data.tokens.accessToken,
-      refreshToken: data.tokens.refreshToken,
-    });
+    const exists = await UserToken.exists({ userId: data.userId });
+    let uTokenId: string;
+    if (exists) {
+      const uTokenRes = await UserToken.findOneAndUpdate(
+        { userId: data.userId },
+        {
+          expiresAt: expiresAt,
+          accessToken: data.tokens.accessToken,
+          refreshToken: data.tokens.refreshToken ?? null,
+        },
+        { new: true },
+      );
+      uTokenId = uTokenRes!._id.toHexString();
+    } else {
+      const uTokenRes = await UserToken.create({
+        userId: data.userId,
+        expiresAt: expiresAt,
+        accessToken: data.tokens.accessToken,
+        refreshToken: data.tokens.refreshToken ?? null,
+      });
+      uTokenId = uTokenRes._id.toHexString();
+    }
 
-    const sessionToken = jwt.sign({ id: uToken._id.toString() }, env.JWT_SECRET, {
+    const sessionToken = jwt.sign({ id: uTokenId }, env.JWT_SECRET, {
       algorithm: "HS256",
       issuer: "supportmail",
       expiresIn: "7d",
       encoding: "utf-8",
     });
+
     return sessionToken;
   }
 
@@ -95,16 +115,14 @@ class SessionManager {
 
   static async getUserTokenBySession(jwtToken: string): Promise<GetTokensResult> {
     const tokenRes = SessionManager.decodeToken(jwtToken);
+    console.debug("Decoded JWT token:", tokenRes);
     if (!tokenRes.valid || tokenRes.error === "other") {
       return new GetTokensResult(null, false);
     }
 
     const uToken = await UserToken.findById(tokenRes.id!);
 
-    return new GetTokensResult(
-      uToken?.toJSON({ flattenObjectIds: true }) || null,
-      tokenRes.error === "expired",
-    );
+    return new GetTokensResult(uToken?.toJSON() || null, tokenRes.error === "expired");
   }
 
   static async getAndDeleteToken(id: string): Promise<FlatUserToken | null> {
@@ -115,6 +133,21 @@ class SessionManager {
 
   static async cleanupExpiredTokens(): Promise<void> {
     await UserToken.deleteMany({ expiresAt: { $lt: new Date() } });
+  }
+
+  static async revokeToken(token: string, type: "access" | "refresh") {
+    await fetch(discordUrls.tokenRevocation(), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        client_id: discord.clientId,
+        client_secret: discord.clientSecret,
+        token: token,
+        token_type_hint: type + "_token",
+      }).toString(),
+    }).catch(() => {});
   }
 }
 
@@ -141,7 +174,7 @@ export { SessionManager, type CreateSessionOps };
  * to fetching from the Discord API if not cached. It then validates guild
  * membership and checks for manager-level permissions using the `canManageBot` function.
  */
-async function checkUserGuildAccess(
+export async function checkUserGuildAccess(
   userId: string,
   guildId: string,
   discordUserApi: DiscordUserAPI,
@@ -189,5 +222,3 @@ async function checkUserGuildAccess(
     return 500;
   }
 }
-
-export { checkUserGuildAccess };
