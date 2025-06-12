@@ -1,4 +1,4 @@
-import { ChannelType } from "discord-api-types/v10";
+import { ChannelType, type APIUser } from "discord-api-types/v10";
 
 /**
  * Sorts an array of items by their position property in ascending order.
@@ -84,4 +84,8 @@ export function roundAndFormatNumber(num: number, opts: FormatNumberOptions = {}
     formattedNumber = formattedNumber.replace(/,/g, "");
   }
   return formattedNumber + (options.plus ? "+" : "");
+}
+
+export function userDisplayName(user?: APIUser | null): string {
+  return !!user ? user.global_name || user.username : "Unknown User";
 }
