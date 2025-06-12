@@ -1,5 +1,6 @@
 import type { DiscordBotAPI, DiscordUserAPI } from "$lib/server/discord";
 import type { DataManager } from "$lib/stores/DataManager.svelte";
+import type { GuildsManager } from "$lib/stores/GuildsManager.svelte";
 import type {
   APIChannel,
   APIDMChannel,
@@ -68,6 +69,7 @@ declare global {
     }
 
     interface PageData {
+      guildsManager: GuildsManager;
       dataManager: DataManager;
       user: APIUser | null;
     }
