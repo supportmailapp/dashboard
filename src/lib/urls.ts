@@ -77,4 +77,8 @@ const LegalLinks = {
   imprint: "https://legal.supportmail.dev/imprint",
 } as const;
 
-export { DISCORD_CDN_BASE, discordUrls, cdnUrls, APIRoutes, LegalLinks };
+const DocsLinks = {
+  LanguageDeterminationInGuild: "https://docs.supportmail.dev/f/preferences#language-determination-and-usage"
+};
+
+export { DISCORD_CDN_BASE, discordUrls, cdnUrls, APIRoutes, LegalLinks, DocsLinks };
