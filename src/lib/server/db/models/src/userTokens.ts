@@ -2,7 +2,38 @@ import { model, Schema } from "mongoose";
 import pkg from "mongoose";
 const { models } = pkg;
 import type { IUserToken } from "supportmail-types";
-import encryptor from "../../encryptor";
+import { DB_ENCRYPTION_KEY, DB_ENCRYPTION_IV } from "$env/static/private";
+import { createCipheriv, createDecipheriv } from "crypto";
+
+const algorithm = "aes-256-cbc";
+const encKey = Buffer.from(DB_ENCRYPTION_KEY, "utf-8");
+const encIV = Buffer.from(DB_ENCRYPTION_IV, "utf-8");
+
+export function encrypt(text: string): string {
+  try {
+    const cipher = createCipheriv(algorithm, encKey, encIV);
+    let encrypted = cipher.update(text, "utf-8", "hex");
+    encrypted += cipher.final("hex");
+    console.log("Encrypted:", encrypted);
+    return encrypted;
+  } catch (error) {
+    console.error("Encryption error:", error);
+    throw new Error("Failed to encrypt token");
+  }
+}
+
+export function decrypt(encryptedText: string): string {
+  try {
+    const decipher = createDecipheriv(algorithm, encKey, encIV);
+    let decrypted = decipher.update(encryptedText, "hex", "utf-8");
+    decrypted += decipher.final("utf-8");
+    console.log("Decrypted:", decrypted);
+    return decrypted;
+  } catch (error) {
+    console.error("Decryption error:", error);
+    throw new Error("Failed to decrypt token");
+  }
+}
 
 const userTokenSchema = new Schema<IUserToken>(
   {
@@ -11,20 +42,24 @@ const userTokenSchema = new Schema<IUserToken>(
       type: String,
       required: true,
       set: (v: string) => {
-        return encryptor.encrypt(v);
+        if (!v) return v;
+        return encrypt(v);
       },
       get: (v: string) => {
-        return encryptor.decrypt(v);
+        if (!v) return v;
+        return decrypt(v);
       },
     },
     refreshToken: {
       type: String,
-      required: false,
-      set: (v: string) => {
-        return encryptor.encrypt(v);
+      default: null,
+      set: (v: string | null) => {
+        if (!v) return null;
+        return encrypt(v);
       },
-      get: (v: string) => {
-        return encryptor.decrypt(v);
+      get: (v: string | null) => {
+        if (!v) return null;
+        return decrypt(v);
       },
     },
     expiresAt: { type: Date, required: true },
@@ -35,25 +70,11 @@ const userTokenSchema = new Schema<IUserToken>(
       flattenMaps: true,
       flattenObjectIds: true,
       getters: true,
-      virtuals: true,
-      transform: (doc, ret) => {
-        // Remove the _id and __v fields from the output
-        delete ret._id;
-        delete ret.__v;
-        return ret;
-      },
     },
     toObject: {
       flattenMaps: true,
       flattenObjectIds: true,
       getters: true,
-      virtuals: true,
-      transform: (doc, ret) => {
-        // Remove the _id and __v fields from the output
-        delete ret._id;
-        delete ret.__v;
-        return ret;
-      },
     },
   },
 );
