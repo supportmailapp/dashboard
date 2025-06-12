@@ -128,10 +128,10 @@
                   <Collapsible.Trigger
                     class={cn(
                       buttonVariants({
-                        variant: "secondary",
+                        variant: "ghost",
                       }),
-                      "w-full justify-start",
-                      item.current() ? "bg-muted" : "bg-transparent",
+                      "w-full animate-none justify-start",
+                      item.current() ? "bg-muted" : "",
                     )}
                   >
                     <div class="flex items-center">
@@ -140,7 +140,7 @@
                     </div>
                     <ChevronRight
                       class={cn(
-                        "ml-auto size-5 transform duration-80",
+                        "ml-auto size-5 rotate-0 transform duration-80",
                         openCollapsibles.has(item.name) && "rotate-90",
                       )}
                     />
@@ -149,18 +149,13 @@
                     <ul class="mt-1 space-y-1 pl-6">
                       {#each item.subItems as subItem}
                         <li>
-                          <a
+                          <Button
                             href={subItem.href}
-                            class={cn(
-                              buttonVariants({
-                                variant: "secondary",
-                              }),
-                              "w-full justify-start",
-                              isCurrentPage(subItem.href) ? "bg-secondary" : "bg-transparent",
-                            )}
+                            variant="ghost"
+                            class={cn("w-full justify-start", item.current() ? "bg-muted" : "")}
                           >
                             {subItem.name}
-                          </a>
+                          </Button>
                         </li>
                       {/each}
                     </ul>
@@ -169,13 +164,8 @@
               {:else}
                 <Button
                   href={item.href}
-                  class={cn(
-                    buttonVariants({
-                      variant: "secondary",
-                    }),
-                    "w-full justify-start",
-                    item.current() ? "bg-secondary" : "bg-transparent",
-                  )}
+                  variant="ghost"
+                  class={cn("w-full justify-start", item.current() ? "bg-muted" : "")}
                 >
                   <item.icon class="size-4" />
                   {item.name}
@@ -255,7 +245,7 @@
                       target="_self"
                       class={cn(
                         "inline-flex h-full w-full items-center gap-2 px-2 py-1.5",
-                        currentGuild?.id === guild.id && "bg-primary rounded",
+                        currentGuild?.id === guild.id && "bg-primary/60 rounded",
                       )}
                     >
                       <Avatar class="size-6">
@@ -325,10 +315,7 @@
                       >
                         <Collapsible.Trigger
                           class={cn(
-                            buttonVariants({
-                              variant: "secondary",
-                            }),
-                            "w-full justify-start",
+                            "sidebar-button w-full justify-start",
                             item.current() ? "bg-muted" : "bg-transparent",
                           )}
                         >
@@ -350,11 +337,8 @@
                                 <a
                                   href={subItem.href}
                                   class={cn(
-                                    buttonVariants({
-                                      variant: "secondary",
-                                    }),
-                                    "w-full justify-start",
-                                    isCurrentPage(subItem.href) ? "bg-secondary" : "bg-transparent",
+                                    "sidebar-button w-full justify-start",
+                                    isCurrentPage(subItem.href) ? "bg-muted" : "",
                                   )}
                                 >
                                   {subItem.name}
@@ -367,13 +351,7 @@
                     {:else}
                       <Button
                         href={item.href}
-                        class={cn(
-                          buttonVariants({
-                            variant: "secondary",
-                          }),
-                          "w-full justify-start",
-                          item.current() ? "bg-secondary" : "bg-transparent",
-                        )}
+                        class={cn("sidebar-button w-full justify-start", item.current() ? "bg-muted" : "")}
                       >
                         <item.icon class="size-4" />
                         {item.name}
@@ -455,6 +433,30 @@
       gap: 1rem;
       overflow-x: auto;
       overflow-y: scroll;
+    }
+  }
+
+  .sidebar-button {
+    --active-bg-color: var(--color-muted/10);
+    --hover-bg-color: var(--color-muted/5);
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: flex-start;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    transition: all 150ms ease-in-out;
+    background-color: transparent;
+    cursor: pointer;
+    font-weight: bolder;
+
+    &:hover {
+      background-color: var(--hover-bg-color);
+    }
+
+    &.active {
+      background-color: var(--active-bg-color);
     }
   }
 </style>
