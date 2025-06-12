@@ -152,7 +152,7 @@
                           <Button
                             href={subItem.href}
                             variant="ghost"
-                            class={cn("w-full justify-start", item.current() ? "bg-muted" : "")}
+                            class={cn("w-full justify-start", isCurrentPage(subItem.href) ? "bg-muted" : "")}
                           >
                             {subItem.name}
                           </Button>
@@ -197,7 +197,7 @@
   <!-- Main Content -->
   <div class="main-container">
     <!-- Header -->
-    <header class="flex h-14 items-center border-b px-4 md:px-6">
+    <header class="flex h-14 items-center border-b px-4 md:px-5">
       <Popover.Root bind:open={guildsSelectOpen}>
         <Popover.Trigger
           disabled={!currentGuild}
@@ -315,8 +315,11 @@
                       >
                         <Collapsible.Trigger
                           class={cn(
-                            "sidebar-button w-full justify-start",
-                            item.current() ? "bg-muted" : "bg-transparent",
+                            buttonVariants({
+                              variant: "ghost",
+                            }),
+                            "w-full animate-none justify-start",
+                            item.current() ? "bg-muted" : "",
                           )}
                         >
                           <div class="flex items-center">
@@ -325,7 +328,7 @@
                           </div>
                           <ChevronRight
                             class={cn(
-                              "ml-auto size-5 transform duration-80",
+                              "ml-auto size-5 rotate-0 transform duration-80",
                               openCollapsibles.has(item.name) && "rotate-90",
                             )}
                           />
@@ -334,15 +337,16 @@
                           <ul class="mt-1 space-y-1 pl-6">
                             {#each item.subItems as subItem}
                               <li>
-                                <a
+                                <Button
                                   href={subItem.href}
+                                  variant="ghost"
                                   class={cn(
-                                    "sidebar-button w-full justify-start",
+                                    "w-full justify-start",
                                     isCurrentPage(subItem.href) ? "bg-muted" : "",
                                   )}
                                 >
                                   {subItem.name}
-                                </a>
+                                </Button>
                               </li>
                             {/each}
                           </ul>
@@ -351,7 +355,8 @@
                     {:else}
                       <Button
                         href={item.href}
-                        class={cn("sidebar-button w-full justify-start", item.current() ? "bg-muted" : "")}
+                        variant="ghost"
+                        class={cn("w-full justify-start", item.current() ? "bg-muted" : "")}
                       >
                         <item.icon class="size-4" />
                         {item.name}
@@ -386,7 +391,7 @@
     {#if switchingPage}
       <main transition:fade={{ duration: 200 }}>
         <div class="flex h-full items-center justify-center">
-          <LoadingSpinner />
+          <LoadingSpinner class="size-20" />
         </div>
       </main>
     {:else}
