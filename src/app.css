@@ -9,19 +9,19 @@
   --card-foreground: hsl(199, 5%, 90%);
   --popover: hsl(216, 26%, 15%);
   --popover-foreground: hsl(199, 5%, 90%);
-  --primary: hsl(199, 100%, 63%);
+  --primary: hsl(199, 100%, 60%);
   --primary-foreground: hsl(214, 57%, 7%);
-  --secondary: hsl(123, 100%, 77%);
+  --secondary: hsl(123, 100%, 70%);
   --secondary-foreground: hsl(0, 0%, 100%);
   --muted: hsl(210, 39%, 45%);
   --muted-foreground: hsl(199, 5%, 60%);
   --accent: hsl(165, 47%, 29%);
   --accent-foreground: hsl(199, 5%, 90%);
-  --destructive: hsl(0, 59%, 38%);
+  --destructive: hsl(0, 100%, 70%);
   --destructive-foreground: hsl(199, 5%, 90%);
   --border: hsl(199, 30%, 18%);
   --input: hsl(199, 30%, 18%);
-  --ring: hsl(199, 100%, 63%);
+  --ring: hsl(199, 100%, 60%);
   --radius: 0.5rem;
 }
 
@@ -69,5 +69,9 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  button {
+    cursor: pointer;
   }
 }
