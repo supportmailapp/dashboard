@@ -7,8 +7,6 @@
 
   let { children, data } = $props();
 
-  let guilds = $derived(page.data.guildsManager.guilds);
-
   onMount(async function () {
     if (!data.user) {
       console.log("User not found");
@@ -19,7 +17,7 @@
       return;
     }
 
-    if (!guilds.length) {
+    if (!page.data.guildsManager.guilds.length) {
       await page.data.guildsManager.loadGuilds();
     }
 
