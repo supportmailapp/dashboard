@@ -18,10 +18,6 @@
       return;
     }
 
-    if (!page.data.guildsManager.guilds.length) {
-      await page.data.guildsManager.loadGuilds();
-    }
-
     const redirectParam = page.url.searchParams.get("redirect");
     if (redirectParam) {
       if (redirectParam.startsWith("/g/")) {
