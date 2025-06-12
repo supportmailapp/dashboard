@@ -187,7 +187,7 @@
 
       <!-- User Profile Link (Desktop) -->
       <div class="inline-flex items-center gap-1 border-t p-3">
-        <Button href="/@me" size="lg" variant="outline" class={cn("flex-1 justify-between gap-3 py-5")}>
+        <Button href="/@me" size="lg" variant="outline" class={cn("flex-1 justify-between gap-2")}>
           <Avatar class="size-8">
             <AvatarFallback>{userDisplayName(page.data.user).slice(0, 2)}</AvatarFallback>
             <AvatarImage
@@ -300,7 +300,7 @@
               </a>
             </div>
 
-            <!-- Navigation Items (Desktop) -->
+            <!-- Navigation Items (Mobile) -->
             <nav class="flex-1 overflow-auto p-4">
               <ul class="space-y-2">
                 {#each navItems as item (item.name)}
@@ -375,7 +375,7 @@
 
             <!-- User Profile Link (Mobile) -->
             <div class="inline-flex items-center gap-1 border-t p-3">
-              <Button href="/@me" size="lg" variant="outline" class={cn("w-full justify-between gap-3 py-5")}>
+              <Button href="/@me" size="lg" variant="outline" class={cn("flex-1 justify-between gap-2")}>
                 <Avatar class="size-8">
                   <AvatarFallback>{userDisplayName(page.data.user).slice(0, 2)}</AvatarFallback>
                   <AvatarImage
