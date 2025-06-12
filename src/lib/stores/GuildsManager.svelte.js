@@ -8,6 +8,7 @@ export class GuildsManager {
    * @type {BotGuild[]}
    */
   guilds = $state([]);
+  loaded = $state(false);
 
   constructor() {}
 
@@ -17,13 +18,17 @@ export class GuildsManager {
     if (guildsRes.ok) {
       /** @type {BotGuild[]} */
       let guildsJson = await guildsRes.json();
+      console.log("guildsJson", guildsJson);
       // Sort guilds by configured or not
-      guildsJson.sort((a, b) => {
+      guildsJson?.sort((a, b) => {
         if (a.isConfigured && !b.isConfigured) return -1;
         if (!a.isConfigured && b.isConfigured) return 1;
         return 0;
       });
       this.guilds = guildsJson;
+      this.loaded = true;
+    } else {
+      this.loaded = false;
     }
   }
 }
