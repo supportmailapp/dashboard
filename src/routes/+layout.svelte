@@ -5,6 +5,7 @@
   import { page } from "$app/state";
   import { site } from "$stores/site.svelte";
   import { ModeWatcher } from "mode-watcher";
+  import { Toaster } from "$ui/sonner/index.js";
 
   let { children, data } = $props();
 
@@ -24,26 +25,23 @@
         // Guild-specific redirect
         const guildId = redirectParam.split("/")[2];
         const path = redirectParam.replace("/g/" + guildId, "");
-        window.localStorage.setItem("redirect", JSON.stringify({ path: path, guildId: guildId }));
-        console.log("Set redirect (1)", JSON.parse(window.localStorage.getItem("redirect")!));
+        localStorage.setItem("redirect", JSON.stringify({ path: path, guildId: guildId }));
+        console.log("Set redirect (1)", JSON.parse(localStorage.getItem("redirect")!));
       } else if (redirectParam.startsWith("/")) {
         // Redirect after selecting the guild
-        window.localStorage.setItem(
-          "redirect",
-          JSON.stringify({ path: page.url.searchParams.get("redirect") }),
-        );
-        console.log("Set redirect (2)", JSON.parse(window.localStorage.getItem("redirect")!));
+        localStorage.setItem("redirect", JSON.stringify({ path: page.url.searchParams.get("redirect") }));
+        console.log("Set redirect (2)", JSON.parse(localStorage.getItem("redirect")!));
       }
       goto(window.location.pathname, { replaceState: true });
     }
 
-    const redirect = JSON.parse(window.localStorage.getItem("redirect") || "{}") as RedirectData;
+    const redirect = JSON.parse(localStorage.getItem("redirect") || "{}") as RedirectData;
     if (window.location.pathname == "/" && redirect.guildId) {
-      window.localStorage.removeItem("redirect");
+      localStorage.removeItem("redirect");
       console.log("Redirecting to", "/g/" + redirect.guildId + redirect.path);
       goto("/g/" + redirect.guildId + redirect.path, { replaceState: true });
     } else if (window.location.pathname.match(/^\/g\/\d+(\/\w+)?/i) && redirect.path) {
-      window.localStorage.removeItem("redirect");
+      localStorage.removeItem("redirect");
       console.log("Redirecting to", redirect.path);
       goto(redirect.path, { replaceState: true });
     }
@@ -75,3 +73,5 @@
 <ModeWatcher />
 
 {@render children?.()}
+
+<Toaster />
