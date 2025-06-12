@@ -7,6 +7,7 @@
   import Menu from "@lucide/svelte/icons/menu";
   import Ticket from "@lucide/svelte/icons/ticket";
   import ShieldUser from "@lucide/svelte/icons/shield-user";
+  import XIcon from "@lucide/svelte/icons/x";
 
   import { afterNavigate, beforeNavigate } from "$app/navigation";
   import { cn } from "$lib/utils";
@@ -101,9 +102,9 @@
   {#if (innerWidth.current || 800) > 767}
     <div class="desktop-sidebar bg-card h-full border-r" in:slide={{ duration: 200, axis: "x" }}>
       <!-- Branding (Desktop) -->
-      <div class="flex h-14 w-full items-center gap-2 border-b p-4">
+      <div class="flex h-14 w-full items-center justify-center gap-2 border-b p-4">
         <!-- Branding -->
-        <a href="/" class="flex flex-1 items-center gap-2 transition-opacity duration-150 hover:opacity-70">
+        <a href="/" class="flex items-center gap-2 transition-opacity duration-150 hover:opacity-70">
           <Avatar class="aspect-square size-8">
             <AvatarImage src="/logo.png" alt="Logo" />
             <AvatarFallback>SM</AvatarFallback>
@@ -208,30 +209,32 @@
     <!-- Header -->
     <header class="flex h-14 items-center border-b px-4 md:px-6">
       <Popover.Root bind:open={guildsSelectOpen}>
-        <Popover.Trigger disabled={!currentGuild}>
-          <Button
-            variant="outline"
-            size="lg"
-            class="w-64 justify-between"
-            role="combobox"
-            aria-expanded={guildsSelectOpen}
-          >
-            {#if currentGuild}
-              <Avatar class="size-8">
-                <AvatarFallback>{currentGuild?.name.slice(0, 2)}</AvatarFallback>
-                <AvatarImage
-                  src={cdnUrls.guildIcon(currentGuild?.id, currentGuild?.icon, 128)}
-                  alt={currentGuild?.name}
-                />
-              </Avatar>
-              <span class="flex-1 truncate text-start">{currentGuild?.name}</span>
-              <ChevronsUpDownIcon class="ml-2 opacity-50" />
-            {:else}
-              <Skeleton class="size-8 rounded-full" />
-              <Skeleton class="h-4 w-40" />
-              <ChevronsUpDownIcon class="ml-2 opacity-50" />
-            {/if}
-          </Button>
+        <Popover.Trigger
+          disabled={!currentGuild}
+          class={cn(
+            buttonVariants({
+              variant: "outline",
+              size: "lg",
+            }),
+            "w-64 justify-between",
+            !currentGuild && "cursor-not-allowed opacity-50",
+          )}
+        >
+          {#if currentGuild}
+            <Avatar class="size-8">
+              <AvatarFallback>{currentGuild?.name.slice(0, 2)}</AvatarFallback>
+              <AvatarImage
+                src={cdnUrls.guildIcon(currentGuild?.id, currentGuild?.icon, 128)}
+                alt={currentGuild?.name}
+              />
+            </Avatar>
+            <span class="flex-1 truncate text-start">{currentGuild?.name}</span>
+            <ChevronsUpDownIcon class="ml-2 opacity-50" />
+          {:else}
+            <Skeleton class="size-8 rounded-full" />
+            <Skeleton class="h-4 w-40" />
+            <ChevronsUpDownIcon class="ml-2 opacity-50" />
+          {/if}
         </Popover.Trigger>
         <Popover.Content class="w-full max-w-72 p-0 *:w-full">
           <Command.Root>
@@ -282,22 +285,30 @@
         <Sheet.Content side="right" class="w-64 p-0">
           <div
             class="bg-card flex h-full flex-col border-r"
-            in:slide={{ duration: 200, axis: "x" }}
-            out:slide={{ duration: 200, axis: "y" }}
+            in:slide={{ duration: 150, axis: "x" }}
+            out:slide={{ duration: 150, axis: "x" }}
           >
-            <!-- Branding (Desktop) -->
-            <div class="flex h-14 w-full items-center gap-2 border-b p-4">
+            <!-- Branding (Mobile) -->
+            <div class="flex h-14 w-full items-center justify-start gap-2 border-b px-2">
               <!-- Branding -->
-              <a
-                href="/"
-                class="flex flex-1 items-center gap-2 transition-opacity duration-150 hover:opacity-70"
-              >
+              <a href="/" class="flex items-center gap-2 transition-opacity duration-150 hover:opacity-70">
                 <Avatar class="aspect-square size-8">
                   <AvatarImage src="/logo.png" alt="Logo" />
                   <AvatarFallback>SM</AvatarFallback>
                 </Avatar>
                 <span class="text-lg font-bold">SupportMail</span>
               </a>
+              <Sheet.Close
+                class={buttonVariants({
+                  variant: "outline",
+                  size: "icon",
+                  class: "ml-auto",
+                })}
+                aria-label="Close Sidebar"
+              >
+                <XIcon class="size-5" />
+                <span class="sr-only">Close</span>
+              </Sheet.Close>
             </div>
 
             <!-- Navigation Items (Mobile) -->
