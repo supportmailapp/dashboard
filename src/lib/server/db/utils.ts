@@ -5,19 +5,19 @@ import { DBGuild, DBUser } from "./models";
 import { TicketCategory } from "./models/src/ticketCategory";
 import { LANGUAGES } from "$lib/constants";
 
-export function getGuild(guildId: string) {
+export function getDBGuild(guildId: string) {
   return DBGuild.findOne({ id: guildId }, null, { lean: true });
 }
 
-export function updateGuild(guildId: string, update: UpdateQuery<IDBGuild> | UpdateWithAggregationPipeline) {
+export function updateDBGuild(guildId: string, update: UpdateQuery<IDBGuild> | UpdateWithAggregationPipeline) {
   return DBGuild.updateOne({ id: guildId }, update);
 }
 
-export function getUser(userId: string) {
+export function getDBUser(userId: string) {
   return DBUser.findOne({ id: userId }, null, { lean: true });
 }
 
-export async function updateUser(
+export async function updateDBUser(
   userId: string,
   update: UpdateQuery<IDBUser> | UpdateWithAggregationPipeline,
   upsert = false,
