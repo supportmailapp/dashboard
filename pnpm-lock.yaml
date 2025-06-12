@@ -38,6 +38,9 @@ importers:
       node-cache:
         specifier: ^5.1.2
         version: 5.1.2
+      rate-limiter-flexible:
+        specifier: ^7.1.1
+        version: 7.1.1
       supportmail-types:
         specifier: github:supportmailapp/global-types
         version: https://codeload.github.com/supportmailapp/global-types/tar.gz/55fb03e6936810f3f015ffbe338e452db8ffbcc7
@@ -1468,6 +1471,9 @@ packages:
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
+
+  rate-limiter-flexible@7.1.1:
+    resolution: {integrity: sha512-lsYRcqRSJrKBNt6pMzBJTiCJP5KnwsGWdObMZxd19JFUJRntM+yuHs4/2bs6NZweSLgpsDcykvzyQaumoslWQg==}
 
   readdirp@4.1.2:
     resolution: {integrity: sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==}
@@ -2972,6 +2978,8 @@ snapshots:
   prettier@3.5.3: {}
 
   punycode@2.3.1: {}
+
+  rate-limiter-flexible@7.1.1: {}
 
   readdirp@4.1.2: {}
 
