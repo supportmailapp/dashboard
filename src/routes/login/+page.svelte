@@ -7,6 +7,7 @@
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
+  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
 
   let showLoading = $state(false);
   let error = $state<string | null>(null);
@@ -63,9 +64,9 @@
       >
         <Button type="submit" class="w-full max-w-xs" disabled={showLoading}>
           {#if showLoading}
-            <div class="size-5 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
+            <LoadingSpinner size="8" />
           {:else}
-            <img src="/icons/discord-mark-white.svg" alt="Discord Logo" class="h-8 w-8" />
+            <img src="/icons/discord-mark-white.svg" alt="Discord Logo" class="size-8" />
           {/if}
 
           <span class="text-lg text-white">{showLoading ? "Logging in..." : "Login with Discord"}</span>
