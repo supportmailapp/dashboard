@@ -1,11 +1,12 @@
 import { JsonErrors } from "$lib/constants";
-import { DBUser } from "$lib/server/db/index.js";
-import { verifyLanguage } from "$lib/server/db/utils.js";
+import { DBUser, getDBUser, verifyLanguage } from "$lib/server/db/index.js";
 
 export async function GET({ locals }) {
-  if (!(locals.user?.id && locals.token)) return JsonErrors.unauthorized();
+  if (!locals.user?.id || !locals.token) {
+    return JsonErrors.unauthorized();
+  }
 
-  const user = await fetchDBUser(locals.user.id);
+  const user = await getDBUser(locals.user.id);
   const sanitizedUser: { language: string; autoRedirect: boolean } = {
     language: user?.language || "en",
     autoRedirect: Boolean(user?.autoRedirect),
@@ -26,7 +27,7 @@ export async function PUT({ locals, request }) {
 
   await DBUser.updateOne(
     {
-      id: locals.userId,
+      id: locals.user.id,
     },
     {
       language: language,
