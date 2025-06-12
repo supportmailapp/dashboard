@@ -1,27 +1,26 @@
 <script lang="ts">
-  import "../app.css";
   import { page } from "$app/state";
   import {
-    Menu,
-    ChevronDown,
-    ChevronRight,
-    Home,
-    Ticket,
-    Users,
     Bot,
-    ChevronsUpDownIcon,
     CheckIcon,
+    ChevronRight,
+    ChevronsUpDownIcon,
+    Home,
+    Menu,
+    Ticket,
+    Users
   } from "@lucide/svelte";
+  import "../app.css";
 
-  import { Button, buttonVariants } from "$lib/components/ui/button";
-  import { Avatar, AvatarImage, AvatarFallback } from "$lib/components/ui/avatar";
-  import * as Sheet from "$lib/components/ui/sheet";
-  import * as Collapsible from "$lib/components/ui/collapsible";
-  import { slide } from "svelte/transition";
-  import * as Popover from "$lib/components/ui/popover";
-  import * as Command from "$lib/components/ui/command";
   import { afterNavigate, beforeNavigate } from "$app/navigation";
   import { cn } from "$lib/utils";
+  import { Avatar, AvatarFallback, AvatarImage } from "$ui/avatar";
+  import { Button, buttonVariants } from "$ui/button";
+  import * as Collapsible from "$ui/collapsible";
+  import * as Command from "$ui/command";
+  import * as Popover from "$ui/popover";
+  import * as Sheet from "$ui/sheet";
+  import { slide } from "svelte/transition";
 
   let { children } = $props();
   let isMobile = $state(false);
