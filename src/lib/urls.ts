@@ -14,15 +14,15 @@ const discordUrls = {
    */
   tokenExchange: () => `${RouteBases.api}${Routes.oauth2TokenExchange()}` as const,
   tokenRevocation: () => `${RouteBases.api}${Routes.oauth2TokenRevocation()}` as const,
-  botAuth: function ({
-    guildId,
-    state,
-    addBot,
-  }: { guildId?: string; state?: string; addBot?: boolean } = {}) {
+  botAuth: function (
+    origin: string,
+    { guildId, state, addBot }: { guildId?: string; state?: string; addBot?: boolean } = {},
+  ) {
     const url = new URL(Routes.oauth2Authorization(), this.base);
     const searchP = new URLSearchParams({
       client_id: pubEnv.PUBLIC_ClientId,
     });
+
     if (addBot) {
       searchP.set("scope", "bot applications.commands");
       searchP.set("permissions", "1635040881911");
@@ -30,7 +30,7 @@ const discordUrls = {
     } else {
       searchP.set("scope", "identify guilds guilds.members.read");
       searchP.set("response_type", "code");
-      searchP.set("redirect_uri", pubEnv.PUBLIC_discordRedirectUri);
+      searchP.set("redirect_uri", origin + "/login/callback");
       searchP.set("prompt", "true");
     }
     if (state) searchP.set("state", state);
@@ -70,4 +70,11 @@ const APIRoutes = {
   guildConfig: (guildId: string) => `${API_BASE}/guilds/${guildId}/config` as const,
 };
 
-export { DISCORD_CDN_BASE, discordUrls, cdnUrls, APIRoutes };
+const LegalLinks = {
+  terms: "https://legal.supportmail.dev/terms",
+  privacy: "https://legal.supportmail.dev/privacy",
+  withdrawal: "https://legal.supportmail.dev/right-of-withdrawal",
+  imprint: "https://legal.supportmail.dev/imprint",
+} as const;
+
+export { DISCORD_CDN_BASE, discordUrls, cdnUrls, APIRoutes, LegalLinks };
