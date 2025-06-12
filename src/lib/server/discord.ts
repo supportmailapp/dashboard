@@ -8,7 +8,7 @@ import {
   type APIUser,
   type RESTAPIPartialCurrentUserGuild,
 } from "discord-api-types/v10";
-import { DiscordAPIError, REST, HTTPError, RateLimitError } from "discord.js";
+import { DiscordAPIError, REST, HTTPError, RateLimitError, type RESTOptions } from "discord.js";
 import UserGuildsCache from "$lib/server/caches/userGuilds.js";
 
 type SafeError = DiscordAPIError | HTTPError | RateLimitError | Error | string;
@@ -62,8 +62,8 @@ class SafeResponse<T = unknown> {
 abstract class BaseDiscordAPI {
   protected readonly rest: REST;
 
-  constructor(token: string) {
-    this.rest = new REST({ version: "10" }).setToken(token);
+  constructor(token: string, authPrefix: RESTOptions["authPrefix"]) {
+    this.rest = new REST({ version: "10", authPrefix }).setToken(token);
   }
 
   public get instance(): REST {
@@ -86,7 +86,7 @@ abstract class BaseDiscordAPI {
  */
 class DiscordBotAPI extends BaseDiscordAPI {
   constructor() {
-    super(discordBotToken);
+    super(discordBotToken, "Bot");
   }
 
   public async getGuildChannels(guildId: string): Promise<SafeResponse<GuildCoreChannel[]>> {
@@ -114,7 +114,7 @@ class DiscordUserAPI extends BaseDiscordAPI {
    * @param at The Discord User Access Token (AT) to authenticate API requests.
    */
   constructor(at: string, userId?: string) {
-    super(at);
+    super(at, "Bearer");
     this._userId = userId ?? null;
   }
 
