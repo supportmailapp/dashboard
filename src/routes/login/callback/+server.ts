@@ -1,28 +1,35 @@
-import { urls } from "$lib/constants";
+import { redirectToLoginWithError } from "$lib";
 import { SessionManager } from "$lib/server/auth";
 import { discord } from "$lib/server/constants";
 import { DiscordUserAPI } from "$lib/server/discord";
-import { redirect } from "$lib";
-import { redirect as svRedirect } from "@sveltejs/kit";
-import type { RESTPostOAuth2AccessTokenResult } from "discord.js";
+import { discordUrls } from "$lib/urls";
 import * as Sentry from "@sentry/node";
-
-function redirectWithError(errStr: string) {
-  return redirect(302, "/login?error=" + encodeURIComponent(errStr));
-}
+import { redirect } from "@sveltejs/kit";
+import type { RESTPostOAuth2AccessTokenResult } from "discord.js";
 
 export async function GET({ url, cookies }) {
   const code = url.searchParams.get("code");
   const error = url.searchParams.get("error");
+  const urlState = url.searchParams.get("state");
+  const cookieState = cookies.get("state");
+  const stayLoggedIn = cookies.get("keep-refresh-token");
 
   if (error || !code) {
-    return redirectWithError(error || "Missing authorization code. Try again from here...");
+    return redirectToLoginWithError(error || "Missing authorization code. Try again from here...");
   }
+
+  if (!urlState || !cookieState) {
+    return redirectToLoginWithError("Missing state. Try again.");
+  } else if (urlState !== cookieState) {
+    return redirectToLoginWithError("State parameter invalid. Try again.");
+  }
+
+  cookies.delete("state", { path: "/" });
 
   let tokenData: RESTPostOAuth2AccessTokenResult;
   try {
     // Exchange authorization code for access token
-    const tokenResponse = await fetch(urls.discord.tokenExchange(), {
+    const tokenResponse = await fetch(discordUrls.tokenExchange(), {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -42,7 +49,7 @@ export async function GET({ url, cookies }) {
     tokenData = (await tokenResponse.json()) as RESTPostOAuth2AccessTokenResult;
   } catch (err: any) {
     Sentry.captureException(err, { mechanism: { handled: true } });
-    return redirectWithError("Token Exchange Failed");
+    return redirectToLoginWithError("Token Exchange Failed");
   }
 
   const { access_token, refresh_token, expires_in } = tokenData as RESTPostOAuth2AccessTokenResult;
@@ -58,7 +65,7 @@ export async function GET({ url, cookies }) {
       errMsg = `HTTPError: ${userRes.error.message}`;
     }
     Sentry.captureException(userRes.error, { mechanism: { handled: true, source: "DiscordUserAPI" } });
-    return redirectWithError(errMsg);
+    return redirectToLoginWithError(errMsg);
   }
 
   const user = userRes.data!;
@@ -81,5 +88,5 @@ export async function GET({ url, cookies }) {
   });
 
   // Redirect to dashboard
-  svRedirect(302, "/");
+  redirect(302, "/");
 }
