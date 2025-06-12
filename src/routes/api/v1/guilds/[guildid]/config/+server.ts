@@ -1,20 +1,14 @@
 import { JsonErrors, LANGUAGES } from "$lib/constants.js";
 import { getDBGuild, updateDBGuild } from "$lib/server/db";
-import type { IDBGuild } from "supportmail-types";
 
 export async function GET({ locals }) {
-  let config: IDBGuild | any | null = null;
   if (locals.guildId && locals.token) {
-    if (!config) {
-      const guild = await getDBGuild(locals.guildId);
-      if (!guild) {
-        return Response.json("Not Found", { status: 404, statusText: "Not Found" });
-      }
-
-      config = guild;
+    const guild = await getDBGuild(locals.guildId);
+    if (!guild) {
+      return Response.json("Not Found", { status: 404, statusText: "Not Found" });
     }
 
-    return Response.json(config, { status: 200, statusText: "OK" });
+    return Response.json(guild, { status: 200, statusText: "OK" });
   }
 
   return Response.json("Bad Request", { status: 400, statusText: "Bad Request" });
@@ -36,7 +30,7 @@ export async function PATCH({ request, locals }) {
     return JsonErrors.notFound();
   }
   const { language } = body as Record<string, any>;
-  if (!LANGUAGES.includes(language)) {
+  if (!LANGUAGES.some((lang) => lang.value === language)) {
     return JsonErrors.badRequest("Invalid language");
   }
 
