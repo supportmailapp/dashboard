@@ -1,6 +1,6 @@
-import { urls } from "$lib/constants.js";
+import { discordUrls } from "$lib/urls";
 import { redirect } from "@sveltejs/kit";
 
 export async function GET() {
-  return redirect(302, urls.discord.botAdd());
+  return redirect(302, discordUrls.botAuth({ addBot: true }));
 }
