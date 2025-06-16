@@ -26,12 +26,18 @@ export class DataManager {
     this.unsaved = initialVal;
   }
 
-  set revert(fn) {
+  /**
+   *
+   * @param {() => void | Promise<void>} fn
+   * @returns {ThisType<DataManager>}
+   */
+  setRevert(fn) {
     this.#reset = () => {
       fn();
       this.unsaved = false;
       this.saveProgress = 0;
     };
+    return this;
   }
 
   /**
@@ -43,15 +49,17 @@ export class DataManager {
     return this.#reset;
   }
 
-  set save(fn) {
+  /**
+   *
+   * @param {() => void | Promise<void>} fn
+   * @returns {ThisType<DataManager>}
+   */
+  setSave(fn) {
     this.#save = async () => {
       this.saveProgress = 1;
-      if (typeof fn === "function") {
-        fn();
-      } else {
-        await fn;
-      }
+      await fn();
     };
+    return this;
   }
 
   /**
