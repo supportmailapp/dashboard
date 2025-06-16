@@ -8,6 +8,7 @@
   import Ticket from "@lucide/svelte/icons/ticket";
   import ShieldUser from "@lucide/svelte/icons/shield-user";
   import XIcon from "@lucide/svelte/icons/x";
+  import FolderOpen from "@lucide/svelte/icons/folder-open";
 
   import { afterNavigate, beforeNavigate } from "$app/navigation";
   import { cn } from "$lib/utils";
@@ -34,9 +35,8 @@
   let guildsManager = $derived(page.data.guildsManager);
   let currentGuild = $derived(guildsManager.currentGuild ?? null);
 
-  //@ts-ignore
-  $effect(async () => {
-    if (!guildsManager.loaded) await guildsManager.loadGuilds();
+  $effect(() => {
+    if (!guildsManager.loaded) guildsManager.loadGuilds();
   });
 
   const navItems = [
@@ -44,37 +44,28 @@
       name: "Home",
       href: guildHref("/home"),
       icon: Home,
-      current: function () {
-        return isCurrentPage(this.href);
-      },
     },
     {
-      name: "Tickets",
+      name: "Tickets-Settings",
       href: guildHref("/tickets"),
       icon: Ticket,
-      current: function () {
-        return isCurrentPage(this.href);
-      },
-      subItems: [
-        { name: "General", href: guildHref("/tickets") },
-        {
-          name: "Categories",
-          href: guildHref("/tickets/categories"),
-        },
-        { name: "Feedback", href: guildHref("/tickets/feedback") },
-      ],
+    },
+    {
+      name: "Ticket Categories",
+      href: guildHref("/ticket-categories"),
+      icon: FolderOpen,
+    },
+    {
+      name: "Feedback",
+      href: guildHref("/tickets-feedback"),
+      icon: FolderOpen,
     },
     {
       name: "Blacklist",
       href: guildHref("/blacklist"),
       icon: ShieldUser,
-      current: function () {
-        return isCurrentPage(this.href);
-      },
     },
   ];
-
-  let openCollapsibles = new SvelteSet();
 
   let switchingPage = $state(true);
 
@@ -118,59 +109,14 @@
         <ul class="space-y-2">
           {#each navItems as item (item.name)}
             <li>
-              {#if item.subItems}
-                <Collapsible.Root
-                  onOpenChange={(newOpen) => {
-                    if (newOpen) openCollapsibles.add(item.name);
-                    else openCollapsibles.delete(item.name);
-                  }}
-                >
-                  <Collapsible.Trigger
-                    class={cn(
-                      buttonVariants({
-                        variant: "ghost",
-                      }),
-                      "w-full animate-none justify-start",
-                      item.current() ? "bg-muted" : "",
-                    )}
-                  >
-                    <div class="flex items-center">
-                      <item.icon class="mr-2 size-4" />
-                      {item.name}
-                    </div>
-                    <ChevronRight
-                      class={cn(
-                        "ml-auto size-5 rotate-0 transform duration-80",
-                        openCollapsibles.has(item.name) && "rotate-90",
-                      )}
-                    />
-                  </Collapsible.Trigger>
-                  <Collapsible.Content>
-                    <ul class="mt-1 space-y-1 pl-6">
-                      {#each item.subItems as subItem}
-                        <li>
-                          <Button
-                            href={subItem.href}
-                            variant="ghost"
-                            class={cn("w-full justify-start", isCurrentPage(subItem.href) ? "bg-muted" : "")}
-                          >
-                            {subItem.name}
-                          </Button>
-                        </li>
-                      {/each}
-                    </ul>
-                  </Collapsible.Content>
-                </Collapsible.Root>
-              {:else}
-                <Button
-                  href={item.href}
-                  variant="ghost"
-                  class={cn("w-full justify-start", item.current() ? "bg-muted" : "")}
-                >
-                  <item.icon class="size-4" />
-                  {item.name}
-                </Button>
-              {/if}
+              <Button
+                href={item.href}
+                variant="ghost"
+                class={cn("w-full justify-start", isCurrentPage(item.href) ? "bg-muted" : "")}
+              >
+                <item.icon class="size-4" />
+                {item.name}
+              </Button>
             </li>
           {/each}
         </ul>
@@ -306,62 +252,14 @@
               <ul class="space-y-2">
                 {#each navItems as item (item.name)}
                   <li>
-                    {#if item.subItems}
-                      <Collapsible.Root
-                        onOpenChange={(newOpen) => {
-                          if (newOpen) openCollapsibles.add(item.name);
-                          else openCollapsibles.delete(item.name);
-                        }}
-                      >
-                        <Collapsible.Trigger
-                          class={cn(
-                            buttonVariants({
-                              variant: "ghost",
-                            }),
-                            "w-full animate-none justify-start",
-                            item.current() ? "bg-muted" : "",
-                          )}
-                        >
-                          <div class="flex items-center">
-                            <item.icon class="mr-2 size-4" />
-                            {item.name}
-                          </div>
-                          <ChevronRight
-                            class={cn(
-                              "ml-auto size-5 rotate-0 transform duration-80",
-                              openCollapsibles.has(item.name) && "rotate-90",
-                            )}
-                          />
-                        </Collapsible.Trigger>
-                        <Collapsible.Content>
-                          <ul class="mt-1 space-y-1 pl-6">
-                            {#each item.subItems as subItem}
-                              <li>
-                                <Button
-                                  href={subItem.href}
-                                  variant="ghost"
-                                  class={cn(
-                                    "w-full justify-start",
-                                    isCurrentPage(subItem.href) ? "bg-muted" : "",
-                                  )}
-                                >
-                                  {subItem.name}
-                                </Button>
-                              </li>
-                            {/each}
-                          </ul>
-                        </Collapsible.Content>
-                      </Collapsible.Root>
-                    {:else}
-                      <Button
-                        href={item.href}
-                        variant="ghost"
-                        class={cn("w-full justify-start", item.current() ? "bg-muted" : "")}
-                      >
-                        <item.icon class="size-4" />
-                        {item.name}
-                      </Button>
-                    {/if}
+                    <Button
+                      href={item.href}
+                      variant="ghost"
+                      class={cn("w-full justify-start", isCurrentPage(item.href) ? "bg-muted" : "")}
+                    >
+                      <item.icon class="size-4" />
+                      {item.name}
+                    </Button>
                   </li>
                 {/each}
               </ul>
