@@ -8,7 +8,11 @@
 <div role="status">
   <svg
     aria-hidden="true"
-    class={cn("fill-primary text-muted min-h-10 animate-spin", size ? `size-${size}` : "", classValue ?? "")}
+    class={cn(
+      "fill-primary text-muted min-h-10 animate-spin",
+      size ? `size-${size}` : "size-20",
+      classValue ?? "",
+    )}
     viewBox="0 0 100 101"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
