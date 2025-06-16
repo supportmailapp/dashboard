@@ -9,19 +9,15 @@
   import * as Card from "$ui/card/index.js";
   import { toast } from "svelte-sonner";
   import { cn } from "$lib/utils";
-  import { onMount } from "svelte";
   import ky from "ky";
   import type { IDBGuild } from "supportmail-types";
   import { Button } from "$ui/button";
-  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import { Skeleton } from "$ui/skeleton";
 
   const dataManager = new DataManager();
-  let currentLanguage = $state<(typeof LANGUAGES)[number]["value"] | null>(null);
+  let currentLanguage = $state<string | null>(null);
 
-  $effect(() => {
-    console.log("Current language:", $state.snapshot(currentLanguage));
-  });
+  $inspect(currentLanguage);
 
   dataManager.save = async function () {
     dataManager.saveProgress = 20;
@@ -46,16 +42,24 @@
     }
   };
 
-  onMount(async () => {
-    const res = await fetch(APIRoutes.guildConfig(page.data.guildId!));
-    if (!res.ok) {
-      toast.error("Failed to load guild configuration.", {
-        description: "Please try again later.",
+  $effect(() => {
+    fetch(APIRoutes.guildConfig(page.data.guildId!))
+      .then((res) => {
+        if (!res.ok) {
+          toast.error("Failed to load guild configuration.", {
+            description: "Please try again later.",
+          });
+          return;
+        }
+        res.json().then((data: IDBGuild) => {
+          currentLanguage = (data.lang || null) as any;
+        });
+      })
+      .catch((err) => {
+        toast.error("Failed to load guild configuration.", {
+          description: err.message,
+        });
       });
-      return;
-    }
-    const jsonRes = (await res.json()) as IDBGuild;
-    currentLanguage = jsonRes.lang as any;
   });
 </script>
 
