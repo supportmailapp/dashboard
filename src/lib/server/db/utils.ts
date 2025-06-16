@@ -1,12 +1,46 @@
-import { V2ComponentsValidator, type IDBGuild, type IDBUser } from "supportmail-types";
+import { V2ComponentsValidator, type IDBGuild, type IDBUser, type ITicketConfig } from "supportmail-types";
 import type { UpdateQuery, UpdateWithAggregationPipeline } from "mongoose";
 import { ValidationError } from "zod-validation-error";
 import { DBGuild, DBUser } from "./models";
 import { TicketCategory } from "./models/src/ticketCategory";
 import { LANGUAGES } from "$lib/constants";
 
-export function getDBGuild(guildId: string) {
-  return DBGuild.findOne({ id: guildId }, null, { lean: true });
+type DBGuildProjection = "full" | "generalTicketSettings" | "language";
+
+export interface DBGuildProjectionReturns {
+  full: IDBGuild;
+  generalTicketSettings: Pick<
+    ITicketConfig,
+    "enabled" | "pausedUntil" | "forumId" | "anonym" | "autoForwarding" | "allowedBots"
+  >;
+  language: string;
+}
+
+// Typed functions
+export async function getDBGuild<T extends DBGuildProjection>(
+  guildId: string,
+  projection: T,
+): Promise<DBGuildProjectionReturns[T] | null> {
+  const _config = await DBGuild.findOne({ id: guildId }, null, { lean: true });
+  if (!_config || !projection || projection === "full") {
+    return _config as DBGuildProjectionReturns[T] | null;
+  }
+
+  switch (projection) {
+    case "generalTicketSettings":
+      return {
+        enabled: _config.ticketConfig.enabled,
+        pausedUntil: _config.ticketConfig.pausedUntil,
+        forumId: _config.ticketConfig.forumId,
+        anonym: _config.ticketConfig.anonym,
+        autoForwarding: _config.ticketConfig.autoForwarding,
+        allowedBots: _config.ticketConfig.allowedBots,
+      } as DBGuildProjectionReturns[T];
+    case "language":
+      return _config.lang as DBGuildProjectionReturns[T];
+    default:
+      throw new Error(`Unsupported projection: ${projection}`);
+  }
 }
 
 /**
