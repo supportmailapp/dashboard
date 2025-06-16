@@ -21,6 +21,7 @@
   import { cn, type WithElementRef } from "$lib/utils.js";
   import type { HTMLAttributes } from "svelte/elements";
   import CircleAlertIcon from "@lucide/svelte/icons/circle-alert";
+  import { scale } from "svelte/transition";
 
   let {
     ref = $bindable(null),
@@ -39,6 +40,7 @@
   class={cn(saveAlertVariants({ variant }), className)}
   {...restProps}
   role="alert"
+  transition:scale={{ duration: 150 }}
 >
   <CircleAlertIcon class="hidden size-4 md:block" />
   {@render children?.()}
