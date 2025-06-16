@@ -68,6 +68,10 @@ const APIRoutes = {
    * @param guildId The ID of the guild.
    */
   guildConfig: (guildId: string) => `${API_BASE}/guilds/${guildId}/config` as const,
+  /**
+   * Returns the URL for a specific guild's tickets configuration.
+   */
+  ticketsConfig: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/tickets` as const,
 };
 
 const LegalLinks = {
@@ -78,7 +82,7 @@ const LegalLinks = {
 } as const;
 
 const DocsLinks = {
-  LanguageDeterminationInGuild: "https://docs.supportmail.dev/f/preferences#language-determination-and-usage"
+  LanguageDeterminationInGuild: "https://docs.supportmail.dev/f/preferences#language-determination-and-usage",
 };
 
 export { DISCORD_CDN_BASE, discordUrls, cdnUrls, APIRoutes, LegalLinks, DocsLinks };
