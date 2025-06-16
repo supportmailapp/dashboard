@@ -56,12 +56,12 @@
         return isCurrentPage(this.href);
       },
       subItems: [
-        { name: "All Tickets", href: guildHref("/tickets") },
+        { name: "General", href: guildHref("/tickets") },
         {
           name: "Categories",
           href: guildHref("/tickets/categories"),
         },
-        { name: "Archive", href: guildHref("/tickets/archive") },
+        { name: "Feedback", href: guildHref("/tickets/feedback") },
       ],
     },
     {
