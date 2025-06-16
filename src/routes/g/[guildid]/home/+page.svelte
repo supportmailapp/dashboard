@@ -13,14 +13,15 @@
   import type { IDBGuild } from "supportmail-types";
   import { Button } from "$ui/button";
   import { Skeleton } from "$ui/skeleton";
+  import SiteHeading from "$lib/components/SiteHeading.svelte";
 
   const dataManager = new DataManager();
   let currentLanguage = $state<string | null>(null);
 
   $inspect(currentLanguage);
 
-  dataManager.save = async function () {
-    dataManager.saveProgress = 20;
+  dataManager.setSave(async function () {
+    dataManager.saveProgress = 30;
     try {
       const res = await ky.patch(APIRoutes.guildConfig(page.data.guildId!), {
         json: { language: currentLanguage },
@@ -40,7 +41,7 @@
     } finally {
       dataManager.saveProgress = 100;
     }
-  };
+  });
 
   $effect(() => {
     fetch(APIRoutes.guildConfig(page.data.guildId!))
@@ -51,8 +52,8 @@
           });
           return;
         }
-        res.json().then((data: IDBGuild) => {
-          currentLanguage = (data.lang || null) as any;
+        res.json().then((data: string) => {
+          currentLanguage = (data || null) as any;
         });
       })
       .catch((err) => {
@@ -64,17 +65,17 @@
 </script>
 
 <!-- This page holds the home view for a specific guild; language setting can be changed here -->
-<section class="w-full max-w-2xl space-y-3 text-balance">
-  <h1 class="text-3xl font-bold">
+<SiteHeading>
+  {#snippet title()}
     Welcome <span class="from-primary to-secondary mx-0.5 bg-gradient-to-br bg-clip-text text-transparent">
       {userDisplayName(page.data.user)}
     </span>!
-  </h1>
+  {/snippet}
   <p class="text-muted-foreground text-xl">
     Welcome to your SupportMail dashboard! Here you can manage your Discord server's support ticket system and
     configure settings.
   </p>
-</section>
+</SiteHeading>
 
 <section class="mt-6">
   <Card.Root class="w-full max-w-xl">
