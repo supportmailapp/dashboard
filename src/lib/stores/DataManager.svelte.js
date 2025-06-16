@@ -27,8 +27,8 @@ export class DataManager {
   }
 
   /**
-   *
-   * @param {() => void | Promise<void>} fn
+   * Unsaved is set to false and the save progress is set to 0 automatically **after the reset function is called**.
+   * @param {() => void} fn
    * @returns {ThisType<DataManager>}
    */
   setRevert(fn) {
