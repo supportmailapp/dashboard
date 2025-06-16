@@ -3,7 +3,7 @@ import { getDBGuild, updateDBGuild } from "$lib/server/db";
 
 export async function GET({ locals }) {
   if (locals.guildId && locals.token) {
-    const guild = await getDBGuild(locals.guildId);
+    const guild = await getDBGuild(locals.guildId, "language");
     if (!guild) {
       return Response.json("Not Found", { status: 404, statusText: "Not Found" });
     }
@@ -25,7 +25,7 @@ export async function PATCH({ request, locals }) {
   if (!body || typeof body !== "object" || Object.keys(body).length === 0) {
     return JsonErrors.badRequest();
   }
-  const guild = await getDBGuild(locals.guildId);
+  const guild = await getDBGuild(locals.guildId, "full");
   if (!guild) {
     return JsonErrors.notFound();
   }
