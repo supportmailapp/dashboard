@@ -57,3 +57,10 @@ export const BasicFetchInit = (m: "GET" | "POST" | "PATCH" | "PUT" | "DELETE") =
     },
   };
 };
+
+export const pausePresets = [
+  { value: 1, label: "Tomorrow" },
+  { value: 7, label: "In a week" },
+  { value: 14, label: "In two weeks" },
+  { value: 30, label: "In a month" },
+];
