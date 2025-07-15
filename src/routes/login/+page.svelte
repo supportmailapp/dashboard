@@ -49,16 +49,19 @@
     <Card.Content>
       <form
         class="grid place-items-center gap-6"
+        action="?/login"
         method="POST"
         use:enhance={() => {
           showLoading = true;
-          return ({ result }) => {
-            console.log("Login result:", result);
-            if (result.type === "success") {
-              open((result.data?.url as string) || "/", "_self");
+          return async ({ update, result }) => {
+            console.log("Form submitted", result);
+            await update();
+            if (result.type === "success" && result.data) {
+              open(result.data.url as string, "_self");
             } else {
-              showLoading = false;
+              console.error("Error during login");
             }
+            showLoading = false;
           };
         }}
       >
