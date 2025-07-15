@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
+  import ConfigCard from "$lib/components/ConfigCard.svelte";
   import DateTimePicker from "$lib/components/DateTimePicker.svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
@@ -10,6 +11,7 @@
   import { APIRoutes } from "$lib/urls";
   import { Button } from "$ui/button";
   import * as Card from "$ui/card/index.js";
+  import { Switch } from "$ui/switch";
   import * as Tabs from "$ui/tabs";
   import dayjs from "dayjs";
   import equal from "fast-deep-equal/es6";
@@ -66,8 +68,8 @@
   }
 
   async function savePause() {
-    if (!equal(pauseState.snap(), pauseState.backup)) {
-      console.log("No changes detected");
+    if (equal(pauseState.snap(), pauseState.backup)) {
+      toast.info("No changes to save.");
       return;
     }
 
@@ -133,28 +135,34 @@
 
 <SiteHeading title="Ticket Configuration"></SiteHeading>
 
-<section class="mt-6 w-full max-w-2xl">
-  {#if pauseState.isConfigured()}
-    <Card.Root>
-      <Card.Header>
-        <Card.Title>Tickets Status</Card.Title>
-        <Card.Description>Disabling tickets won't reset any settings.</Card.Description>
-      </Card.Header>
-      <Card.Content>
+<section class="mt-6 w-full max-w-2xl space-y-2">
+  {#if generalTicketsConf.isConfigured()}
+    <!-- TODO: Find out if the enabled switch is even needed -->
+    <div class="flex items-center space-x-2">
+      <Label for="tickets-status">
+        <Switch id="tickets-status" />
+        {generalTicketsConf.config.enabled ? "Enabled" : "Disabled"}
+      </Label>
+    </div>
+    {#if pauseState.isConfigured()}
+      <ConfigCard title="Pausing Status" description="Pausing won't reset any settings." saveFn={savePause}>
         <!-- Tabs control 'isActive' -->
         <Tabs.Root
-          value={pauseState.config.isActive ? "enabled" : "disabled"}
+          value={pauseState.config.isActive ? "paused" : "active"}
           onValueChange={(val) =>
             setPauseState({
-              isActive: val !== "enabled", // It's active, when it's disabled
+              isActive: val === "paused",
             })}
         >
           <Tabs.List>
-            <Tabs.Trigger value="enabled">Enabled</Tabs.Trigger>
-            <Tabs.Trigger value="disabled">Disabled</Tabs.Trigger>
+            <Tabs.Trigger value="active">Active</Tabs.Trigger>
+            <Tabs.Trigger value="paused">Paused</Tabs.Trigger>
           </Tabs.List>
-          <Tabs.Content value="enabled" class="space-y-4">
-            <p>Tickets are <strong>enabled</strong>, users can create tickets.</p>
+          <Tabs.Content value="active" class="space-y-4">
+            <p>Tickets are <strong>active</strong>, users can create tickets.</p>
+          </Tabs.Content>
+          <Tabs.Content value="paused" class="space-y-4">
+            <p>Tickets are <strong>paused</strong>, users <strong>cannot</strong> create new tickets.</p>
             <!-- Radio group controls 'pauseType' -->
             <RadioGroup.Root
               value={pauseState.config?.pauseType}
@@ -191,15 +199,9 @@
               </div>
             {/if}
           </Tabs.Content>
-          <Tabs.Content value="disabled" class="space-y-2">
-            <p>Tickets are <strong>disabled</strong>, users <strong>cannot</strong> create new tickets.</p>
-          </Tabs.Content>
         </Tabs.Root>
-      </Card.Content>
-      <Card.Footer class="justify-end">
-        <Button variant="success" disabled={pauseState.saving} onclick={savePause}>Save</Button>
-      </Card.Footer>
-    </Card.Root>
+      </ConfigCard>
+    {/if}
   {:else}
     <div class="grid place-items-center">
       <LoadingSpinner />
