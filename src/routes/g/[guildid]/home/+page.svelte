@@ -1,36 +1,39 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import CheckIcon from "@lucide/svelte/icons/check";
+  import SiteHeading from "$lib/components/SiteHeading.svelte";
   import * as Command from "$lib/components/ui/command/index.js";
   import { LANGUAGES } from "$lib/constants";
-  import { DataManager } from "$stores/DataManager.svelte";
+  import { ConfigState } from "$lib/stores/ConfigState.svelte";
   import { APIRoutes, DocsLinks } from "$lib/urls";
-  import { userDisplayName } from "$lib/utils/formatting";
-  import * as Card from "$ui/card/index.js";
-  import { toast } from "svelte-sonner";
   import { cn } from "$lib/utils";
-  import ky from "ky";
-  import type { IDBGuild } from "supportmail-types";
+  import { userDisplayName } from "$lib/utils/formatting";
   import { Button } from "$ui/button";
+  import * as Card from "$ui/card/index.js";
   import { Skeleton } from "$ui/skeleton";
-  import SiteHeading from "$lib/components/SiteHeading.svelte";
+  import CheckIcon from "@lucide/svelte/icons/check";
+  import ky from "ky";
+  import { toast } from "svelte-sonner";
 
-  const dataManager = new DataManager();
-  let currentLanguage = $state<string | null>(null);
+  const languageConf = new ConfigState<string>(null);
 
-  $inspect(currentLanguage);
-
-  dataManager.setSave(async function () {
-    dataManager.saveProgress = 30;
+  async function saveLanguage() {
+    languageConf.saving = true;
+    const lang = $state.snapshot(languageConf.config);
     try {
+      if (!lang) {
+        throw new Error("The language is not set. What da hell?");
+      }
+
       const res = await ky.patch(APIRoutes.guildConfig(page.data.guildId!), {
-        json: { language: currentLanguage },
+        json: { language: lang },
       });
+
       if (!res.ok) {
         const errJson = await res.json<any>();
         const errText = errJson?.message || "Unknown Error";
         throw new Error(errText);
       }
+
       toast.success("Guild configuration saved successfully!", {
         description: "The language has been updated.",
       });
@@ -39,9 +42,9 @@
         description: err.message,
       });
     } finally {
-      dataManager.saveProgress = 100;
+      languageConf.saving = false;
     }
-  });
+  }
 
   $effect(() => {
     fetch(APIRoutes.guildConfig(page.data.guildId!))
@@ -53,7 +56,7 @@
           return;
         }
         res.json().then((data: string) => {
-          currentLanguage = (data || null) as any;
+          languageConf.setConfig(data);
         });
       })
       .catch((err) => {
@@ -101,7 +104,7 @@
         </ul>
       </Card.Description>
     </Card.Header>
-    {#if !!currentLanguage}
+    {#if !!languageConf}
       <Card.Content>
         <Command.Root>
           <Command.Input placeholder="Search language..." />
@@ -112,10 +115,10 @@
                 <Command.Item
                   value={lang.name}
                   onSelect={() => {
-                    currentLanguage = lang.value;
+                    languageConf.setConfig(lang.value);
                   }}
                 >
-                  <CheckIcon class={cn(currentLanguage !== lang.value && "text-transparent")} />
+                  <CheckIcon class={cn(languageConf.config !== lang.value && "text-transparent")} />
                   {lang.name}
                 </Command.Item>
               {/each}
@@ -125,9 +128,9 @@
       </Card.Content>
       <Card.Footer class="flex-col gap-2">
         <Button
-          onclick={dataManager.save}
-          disabled={dataManager.saving}
-          showLoading={dataManager.saving}
+          onclick={saveLanguage}
+          disabled={languageConf.loading}
+          showLoading={languageConf.saving}
           class="w-2xs"
         >
           Save
