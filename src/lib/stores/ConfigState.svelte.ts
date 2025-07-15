@@ -1,3 +1,5 @@
+import equal from "fast-deep-equal";
+
 export type PossibleConfig = string | number | bigint | Date | boolean | Array<any> | Record<string, any>;
 
 /**
@@ -76,6 +78,23 @@ export class ConfigState<T extends PossibleConfig> {
 
   public get backup(): T | null {
     return this._backup;
+  }
+
+  /**
+   * Take a snapshot of the current config.
+   * @returns A snapshot of the current config
+   */
+  public configSnapshot(): $state.Snapshot<T> | null {
+    return $state.snapshot(this._config);
+  }
+
+  /**
+   * Determines whether the current configuration state has unsaved changes.
+   * Compares the current configuration snapshot with the backup to check for differences.
+   * Updates the `unsaved` property to reflect the result.
+   */
+  public evalUnsaved(): void {
+    this.unsaved = !equal(this.configSnapshot(), this._backup);
   }
 
   /**
