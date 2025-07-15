@@ -1,5 +1,11 @@
 import { JsonErrors, LANGUAGES } from "$lib/constants.js";
-import { getDBGuild, updateDBGuild } from "$lib/server/db";
+import { FlattenDocToJSON, getDBGuild, updateDBGuild } from "$lib/server/db";
+import { MyValidator } from "$lib/server/validators/index.js";
+import z from "zod";
+
+const patchSchema = z.object({
+  language: z.union(LANGUAGES.map((l) => z.literal(l.value))),
+});
 
 export async function GET({ locals }) {
   if (locals.guildId && locals.token) {
@@ -22,9 +28,17 @@ export async function PATCH({ request, locals }) {
   }
 
   const body = await request.json();
-  if (!body || typeof body !== "object" || Object.keys(body).length === 0) {
-    return JsonErrors.badRequest();
+  if (!body) {
+    return JsonErrors.badRequest("Missing body?");
   }
+
+  // Validation
+  const validationRes = new MyValidator(patchSchema).validate(body);
+
+  if (!validationRes.success) {
+    return JsonErrors.badRequest(validationRes.error.message);
+  }
+
   const guild = await getDBGuild(locals.guildId, "full");
   if (!guild) {
     return JsonErrors.notFound();
@@ -41,7 +55,10 @@ export async function PATCH({ request, locals }) {
     if (!newGuild) {
       return JsonErrors.serverError();
     }
-    return Response.json(newGuild.toJSON({ flattenObjectIds: true }));
+
+    return Response.json({
+      language: FlattenDocToJSON(newGuild).lang,
+    });
   } catch (err: any) {
     console.error("Error updating guild config:", err);
     return JsonErrors.serverError();
