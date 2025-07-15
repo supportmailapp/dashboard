@@ -1,5 +1,7 @@
-import { JsonErrors } from "$lib/constants";
-import { DBUser, getDBUser, verifyLanguage } from "$lib/server/db/index.js";
+import { JsonErrors, zodLanguage } from "$lib/constants";
+import { DBUser, getDBUser } from "$lib/server/db/index.js";
+import { MyValidator } from "$lib/server/validators/index.js";
+import z from "zod";
 
 export async function GET({ locals }) {
   if (!locals.user?.id || !locals.token) {
@@ -14,32 +16,37 @@ export async function GET({ locals }) {
   return Response.json(sanitizedUser, { status: 200, statusText: "OK" });
 }
 
+const putSchema = z.object({
+  language: zodLanguage,
+  autoRedirect: z.boolean(),
+});
+
 export async function PUT({ locals, request }) {
   if (!locals.user?.id) return JsonErrors.unauthorized();
 
-  const { language, autoRedirect } = await request.json();
-  if (!verifyLanguage(language)) {
-    return JsonErrors.badRequest("Invalid language");
-  }
-  if (typeof autoRedirect !== "boolean") {
-    return JsonErrors.badRequest("Invalid autoRedirect");
+  const body = await request.json();
+
+  const valRes = new MyValidator(putSchema).validate(body);
+
+  if (!valRes.success) {
+    return JsonErrors.badRequest(valRes.error.message);
   }
 
-  await DBUser.updateOne(
+  const user = await DBUser.findOneAndUpdate(
     {
       id: locals.user.id,
     },
-    {
-      language: language,
-      autoRedirect: autoRedirect,
-    },
+    valRes.data,
     {
       upsert: true,
+      new: true,
     },
   );
 
-  return new Response(null, {
-    status: 204,
-    statusText: "No Content",
-  });
+  const sanitizedUser: { language: string; autoRedirect: boolean } = {
+    language: user.language,
+    autoRedirect: user.autoRedirect,
+  };
+
+  return Response.json(sanitizedUser);
 }
