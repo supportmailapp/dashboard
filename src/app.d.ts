@@ -11,6 +11,7 @@ import type {
 } from "discord-api-types/v10";
 import type { FlattenMaps } from "mongoose";
 import type { IUserToken } from "supportmail-types";
+import type { PUTPausingObject } from "./routes/api/v1/guilds/[guildid]/config/pausing/[modul]/+server";
 
 /**
  * Represents the result of a safe session validation operation.
@@ -108,7 +109,7 @@ declare global {
     isConfigured: boolean;
   };
 
-  type APIPausedUntil = {
+  type APIPausedUntil = PUTPausingObject & {
     /**
      * Whether something is paused.
      */
