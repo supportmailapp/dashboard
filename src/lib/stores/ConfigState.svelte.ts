@@ -84,7 +84,7 @@ export class ConfigState<T extends PossibleConfig> {
    * Take a snapshot of the current config.
    * @returns A snapshot of the current config
    */
-  public configSnapshot(): $state.Snapshot<T> | null {
+  public snap(): $state.Snapshot<T> | null {
     return $state.snapshot(this._config);
   }
 
@@ -94,7 +94,7 @@ export class ConfigState<T extends PossibleConfig> {
    * Updates the `unsaved` property to reflect the result.
    */
   public evalUnsaved(): void {
-    this.unsaved = !equal(this.configSnapshot(), this._backup);
+    this.unsaved = !equal(this.snap(), this._backup);
   }
 
   /**
