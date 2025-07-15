@@ -51,6 +51,7 @@
     "dayjs": "^1.11.13",
     "discord-api-types": "^0.38.11",
     "discord.js": "^14.19.3",
+    "fast-deep-equal": "^3.1.3",
     "jsonwebtoken": "^9.0.2",
     "ky": "^1.8.1",
     "mongoose": "^8.15.1",
@@ -58,6 +59,7 @@
     "rate-limiter-flexible": "^7.1.1",
     "supportmail-types": "github:supportmailapp/global-types",
     "wildcard-match": "^5.1.4",
-    "zod-validation-error": "^3.4.1"
+    "zod": "^4.0.5",
+    "zod-validation-error": "^3.5.3"
   }
 }
