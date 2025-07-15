@@ -1,19 +1,108 @@
 <script lang="ts">
   import { page } from "$app/state";
+  import DateTimePicker from "$lib/components/DateTimePicker.svelte";
+  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
+  import { Label } from "$lib/components/ui/label/index.js";
+  import * as RadioGroup from "$lib/components/ui/radio-group/index.js";
   import type { DBGuildProjectionReturns } from "$lib/server/db";
+  import { ConfigState } from "$lib/stores/ConfigState.svelte";
   import { APIRoutes } from "$lib/urls";
+  import { Button } from "$ui/button";
+  import * as Card from "$ui/card/index.js";
+  import * as Tabs from "$ui/tabs";
+  import dayjs from "dayjs";
+  import equal from "fast-deep-equal/es6";
   import ky from "ky";
   import { toast } from "svelte-sonner";
-  import * as Card from "$ui/card/index.js";
-  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
-  import * as Tabs from "$ui/tabs";
-  import { Button } from "$ui/button";
-  import { ConfigState } from "$lib/stores/ConfigState.svelte";
+
+  interface PauseState {
+    /**
+     * If `true`, then tickets are paused.
+     */
+    isActive: boolean;
+    pauseType: "indefinite" | "timed";
+    /**
+     * ISO 8601 string
+     *
+     * If null, paused indefinitly
+     */
+    endDate: string | null;
+  }
 
   const generalTicketsConf = new ConfigState<DBGuildProjectionReturns["generalTicketSettings"]>();
+  const pauseState = new ConfigState<PauseState>();
 
-  $inspect(generalTicketsConf);
+  // $inspect("unsaved", pauseState.unsaved);
+  // $inspect("loading", pauseState.loading);
+  // $inspect("saving", pauseState.saving);
+  $inspect("config", pauseState.config);
+
+  const toPausedUntil = (state: PauseState | null): APIPausedUntil => ({
+    value: state?.isActive ?? false, // 'isActive == true' means paused
+    date: state?.isActive && state.pauseType === "timed" ? state.endDate : null,
+  });
+
+  const toPauseState = (pausedUntil?: APIPausedUntil): PauseState => ({
+    isActive: !!pausedUntil?.value,
+    pauseType: pausedUntil?.value && pausedUntil?.date ? "timed" : "indefinite",
+    endDate: pausedUntil?.date ?? null,
+  });
+
+  function setPauseState(newState: Partial<PauseState>) {
+    if (!generalTicketsConf.isConfigured()) return;
+    const snap = pauseState.snap();
+    pauseState.setConfig({
+      isActive: newState.isActive ?? snap?.isActive ?? false,
+      pauseType: newState.pauseType ?? snap?.pauseType ?? "indefinite",
+      endDate: newState.endDate ?? snap?.endDate ?? null,
+    });
+    const conf = generalTicketsConf.snap()!;
+    generalTicketsConf.setConfig({
+      ...conf,
+      pausedUntil: toPausedUntil(snap),
+    });
+    pauseState.evalUnsaved();
+  }
+
+  async function savePause() {
+    if (!equal(pauseState.snap(), pauseState.backup)) {
+      console.log("No changes detected");
+      return;
+    }
+
+    pauseState.saving = true;
+
+    const generalSnap = generalTicketsConf.snap();
+    const pauseSnap = pauseState.snap();
+
+    try {
+      if (!generalSnap || !pauseSnap)
+        throw new Error("Neither generalSnap nor pauseSnap is set? Something feels wrong...");
+      const res = await ky.put(APIRoutes.pausing(page.data.guildId!, "tickets"), {
+        json: toPausedUntil(pauseState.snap()),
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json<any>();
+        const errText = errJson?.message || "Unknown Error";
+        throw new Error(errText);
+      }
+
+      const jsonRes = await res.json<APIPausedUntil>();
+
+      generalTicketsConf.saveConfig({
+        ...generalTicketsConf.snap()!,
+        pausedUntil: jsonRes,
+      });
+      pauseState.saveConfig(toPauseState(jsonRes));
+    } catch (err: any) {
+      toast.error("Failed to save guild configuration.", {
+        description: err.message,
+      });
+      pauseState.saving = false;
+    }
+  }
 
   $effect(() => {
     fetch(APIRoutes.ticketsConfig(page.data.guildId!))
@@ -25,6 +114,7 @@
           return;
         }
         res.json().then((data: DBGuildProjectionReturns["generalTicketSettings"]) => {
+          pauseState.saveConfig(toPauseState(data.pausedUntil));
           generalTicketsConf.saveConfig(data);
         });
       })
@@ -37,7 +127,6 @@
     return () => {
       console.log("Cleaning up ticket configuration state");
       generalTicketsConf.clear();
-      generalTicketsConf.config;
     };
   });
 </script>
@@ -45,31 +134,72 @@
 <SiteHeading title="Ticket Configuration"></SiteHeading>
 
 <section class="mt-6 w-full max-w-2xl">
-  {#if generalTicketsConf.isConfigured()}
-    <Card.Root class="">
+  {#if pauseState.isConfigured()}
+    <Card.Root>
       <Card.Header>
         <Card.Title>Tickets Status</Card.Title>
-        {#if generalTicketsConf.config.enabled}
-          <Card.Description>Disabling ticket won't reset any settings.</Card.Description>
-        {/if}
+        <Card.Description>Disabling tickets won't reset any settings.</Card.Description>
       </Card.Header>
       <Card.Content>
-        <Tabs.Root value={String(generalTicketsConf.config.enabled)}>
+        <!-- Tabs control 'isActive' -->
+        <Tabs.Root
+          value={pauseState.config.isActive ? "enabled" : "disabled"}
+          onValueChange={(val) =>
+            setPauseState({
+              isActive: val !== "enabled", // It's active, when it's disabled
+            })}
+        >
           <Tabs.List>
-            <Tabs.Trigger value="true">Enabled</Tabs.Trigger>
-            <Tabs.Trigger value="false">Disabled</Tabs.Trigger>
+            <Tabs.Trigger value="enabled">Enabled</Tabs.Trigger>
+            <Tabs.Trigger value="disabled">Disabled</Tabs.Trigger>
           </Tabs.List>
-          <Tabs.Content value="true">
+          <Tabs.Content value="enabled" class="space-y-4">
             <p>Tickets are <strong>enabled</strong>, users can create tickets.</p>
+            <!-- Radio group controls 'pauseType' -->
+            <RadioGroup.Root
+              value={pauseState.config?.pauseType}
+              onValueChange={(val) =>
+                setPauseState({
+                  pauseType: val as "indefinite" | "timed",
+                })}
+            >
+              <div class="flex items-center space-x-2">
+                <RadioGroup.Item value="indefinite" id="indefinite" />
+                <Label for="indefinite">Indefinitly</Label>
+              </div>
+              <div class="flex items-center space-x-2">
+                <RadioGroup.Item value="timed" id="timed" />
+                <Label for="timed">Until Date/Time</Label>
+              </div>
+            </RadioGroup.Root>
+            {#if pauseState.config?.pauseType === "timed"}
+              <div class="flex flex-col gap-1">
+                <Label>Until when?</Label>
+                <DateTimePicker
+                  onChange={(val: string) => {
+                    const djs = dayjs(val);
+                    console.log("djs", djs);
+                    if (djs.isValid() && pauseState.config) {
+                      setPauseState({
+                        endDate: val,
+                      });
+                    } else if (!pauseState) {
+                      console.warn("Pause State not initialized???");
+                    }
+                  }}
+                />
+              </div>
+            {/if}
           </Tabs.Content>
-          <Tabs.Content value="false">
+          <Tabs.Content value="disabled" class="space-y-2">
             <p>Tickets are <strong>disabled</strong>, users <strong>cannot</strong> create new tickets.</p>
           </Tabs.Content>
         </Tabs.Root>
       </Card.Content>
+      <Card.Footer class="justify-end">
+        <Button variant="success" disabled={pauseState.saving} onclick={savePause}>Save</Button>
+      </Card.Footer>
     </Card.Root>
-
-    <Button onclick={generalTicketsConf.setUnsaved}>Test</Button>
   {:else}
     <div class="grid place-items-center">
       <LoadingSpinner />
