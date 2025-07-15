@@ -120,6 +120,10 @@ declare global {
      */
     date: string | null;
   };
+
+  type APIError = {
+    message: string;
+  };
 }
 
 export {};
