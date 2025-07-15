@@ -21,7 +21,7 @@ export class ConfigState<T extends PossibleConfig> {
    * @default
    * false
    */
-  public _saving = $state<boolean>(false);
+  private _saving = $state<boolean>(false);
 
   /**
    * State indicating whether the configuration is currently loading.
@@ -115,8 +115,8 @@ export class ConfigState<T extends PossibleConfig> {
    * creates a backup of the new configuration using `structuredClone`,
    * and resets the `unsaved` and `saving` flags to `false`.
    *
-   * @template T - The type of the configuration object.
-   * @param newConf - The new configuration object to save.
+   * @template T The type of the configuration object.
+   * @param newConf The new configuration object to save.
    * @returns The cloned backup of the new configuration.
    */
   public saveConfig(newConf: T): T {
