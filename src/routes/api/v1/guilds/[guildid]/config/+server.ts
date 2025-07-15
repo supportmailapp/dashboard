@@ -11,13 +11,13 @@ export async function GET({ locals }) {
   if (locals.guildId && locals.token) {
     const guild = await getDBGuild(locals.guildId, "language");
     if (!guild) {
-      return Response.json("Not Found", { status: 404, statusText: "Not Found" });
+      return JsonErrors.notFound();
     }
 
     return Response.json(guild, { status: 200, statusText: "OK" });
   }
 
-  return Response.json("Bad Request", { status: 400, statusText: "Bad Request" });
+  return JsonErrors.badRequest();
 }
 
 // Currently, this endpoint only supports updating the language setting,
