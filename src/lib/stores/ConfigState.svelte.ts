@@ -92,9 +92,12 @@ export class ConfigState<T extends PossibleConfig> {
    * Determines whether the current configuration state has unsaved changes.
    * Compares the current configuration snapshot with the backup to check for differences.
    * Updates the `unsaved` property to reflect the result.
+   *
+   * @returns Snapshot of `this.unsaved`.
    */
-  public evalUnsaved(): void {
+  public evalUnsaved(): boolean {
     this.unsaved = !equal(this.snap(), this._backup);
+    return $state.snapshot(this.unsaved);
   }
 
   /**
