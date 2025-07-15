@@ -1,5 +1,5 @@
-import { RouteBases, Routes } from "discord-api-types/v10";
 import { env as pubEnv } from "$env/dynamic/public";
+import { RouteBases, Routes } from "discord-api-types/v10";
 
 const DISCORD_CDN_BASE = RouteBases.cdn;
 const API_BASE = "/api/v1" as const;
@@ -12,7 +12,7 @@ const discordUrls = {
    * - token exchange
    * - token refresh
    */
-  tokenExchange: () => `${RouteBases.api}${Routes.oauth2TokenExchange()}` as const,
+  token: () => `${RouteBases.api}${Routes.oauth2TokenExchange()}` as const,
   tokenRevocation: () => `${RouteBases.api}${Routes.oauth2TokenRevocation()}` as const,
   botAuth: function (
     origin: string,
@@ -25,7 +25,7 @@ const discordUrls = {
 
     if (addBot) {
       searchP.set("scope", "bot applications.commands");
-      searchP.set("permissions", "1635040881911");
+      searchP.set("permissions", pubEnv.PUBLIC_botPermissions);
       searchP.set("integration_type", "0");
     } else {
       searchP.set("scope", "identify guilds guilds.members.read");
@@ -85,4 +85,4 @@ const DocsLinks = {
   LanguageDeterminationInGuild: "https://docs.supportmail.dev/f/preferences#language-determination-and-usage",
 };
 
-export { DISCORD_CDN_BASE, discordUrls, cdnUrls, APIRoutes, LegalLinks, DocsLinks };
+export { APIRoutes, cdnUrls, DISCORD_CDN_BASE, discordUrls, DocsLinks, LegalLinks };
