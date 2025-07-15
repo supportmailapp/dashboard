@@ -18,7 +18,7 @@ export async function GET({ locals, cookies }) {
     return redirectToLoginWithError("Token expired. Please log in again.", 401);
   }
 
-  const res = await fetch(discordUrls.tokenExchange(), {
+  const res = await fetch(discordUrls.token(), {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
