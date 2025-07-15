@@ -1,10 +1,10 @@
-import { JsonErrors, LANGUAGES } from "$lib/constants.js";
+import { JsonErrors, LANGUAGES, zodLanguage } from "$lib/constants.js";
 import { FlattenDocToJSON, getDBGuild, updateDBGuild } from "$lib/server/db";
 import { MyValidator } from "$lib/server/validators/index.js";
 import z from "zod";
 
 const patchSchema = z.object({
-  language: z.union(LANGUAGES.map((l) => z.literal(l.value))),
+  language: zodLanguage,
 });
 
 export async function GET({ locals }) {
