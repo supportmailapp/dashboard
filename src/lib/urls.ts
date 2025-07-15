@@ -72,6 +72,8 @@ const APIRoutes = {
    * Returns the URL for a specific guild's tickets configuration.
    */
   ticketsConfig: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/tickets` as const,
+  pausing: (guildId: string, modul: "tickets" | "reports") =>
+    `${API_BASE}/guilds/${guildId}/config/pausing/${modul}` as const,
 };
 
 const LegalLinks = {
