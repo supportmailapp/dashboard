@@ -43,6 +43,7 @@ export async function PUT({ locals, params, request }) {
   }
 
   const flat = FlattenDocToJSON(newDBGuild)[configKey]["pausedUntil"];
+  console.log("flat", flat);
 
   return Response.json({
     value: flat?.value,
