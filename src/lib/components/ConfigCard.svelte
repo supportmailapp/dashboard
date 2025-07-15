@@ -2,14 +2,17 @@
   import type { Snippet } from "svelte";
   import * as Card from "$ui/card/index.js";
   import { Button } from "$ui/button";
+  import type { ClassValue } from "clsx";
+  import { cn } from "$lib/utils";
 
   type Props = {
     title: string;
     description?: string;
+    class?: ClassValue;
     saveFn: () => void | Promise<void>;
     children?: Snippet;
   };
-  let { children, saveFn, title, description }: Props = $props();
+  let { children, saveFn, title, description, class: className }: Props = $props();
 </script>
 
 <Card.Root>
@@ -19,7 +22,7 @@
       <Card.Description>{description}</Card.Description>
     {/if}
   </Card.Header>
-  <Card.Content>
+  <Card.Content class={cn(className)}>
     {@render children?.()}
   </Card.Content>
   <Card.Footer class="justify-end">
