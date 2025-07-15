@@ -59,9 +59,6 @@ export function guildHref(guildId: string, nextPath?: string) {
   return `/g/${guildId}${nextPath ? nextPath : ""}`;
 }
 
-/**
- *
- */
 export function getNextPathFromGuildPath(pathname: string) {
   const match = pathname.match(/^\/g\/\d+(\/\w+)?$/i);
   if (match) {
