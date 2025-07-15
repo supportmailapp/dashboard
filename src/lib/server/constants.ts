@@ -9,8 +9,8 @@ export const authData = {
 } as const;
 
 export const discord = {
-  clientId: env.clientId,
-  clientSecret: env.clientSecret,
+  clientId: env.CLIENT_ID,
+  clientSecret: env.CLIENT_SECRET,
   redirectUri: (origin: string) => origin + "/login/callback",
   supportServerId: publicEnv.PUBLIC_SupportServer,
   baseScopes: ["identify", "guilds", "guilds.members.read"],
