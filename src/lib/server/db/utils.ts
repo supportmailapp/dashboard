@@ -1,23 +1,30 @@
+import { Document, Types, type UpdateQuery, type UpdateWithAggregationPipeline } from "mongoose";
 import {
-  Document,
-  Types,
-  type UpdateQuery,
-  type UpdateWithAggregationPipeline,
-} from "mongoose";
-import { V2ComponentsValidator, type IDBGuild, type IDBUser, type ITicketConfig } from "supportmail-types";
+  V2ComponentsValidator,
+  type IDBGuild,
+  type IDBUser,
+  type ITicketConfig,
+  type PausedUntil,
+} from "supportmail-types";
 import { ValidationError } from "zod-validation-error";
 import { DBGuild, DBUser } from "./models";
 import { TicketCategory } from "./models/src/ticketCategory";
 
-type DBGuildProjection = "full" | "generalTicketSettings" | "language";
+type DBGuildProjection = "full" | "generalTicketSettings" | "language" | "pausing";
 
 export interface DBGuildProjectionReturns {
   full: IDBGuild;
   generalTicketSettings: Pick<
     ITicketConfig,
-    "enabled" | "pausedUntil" | "forumId" | "anonym" | "autoForwarding" | "allowedBots"
-  >;
+    "enabled" | "forumId" | "anonym" | "autoForwarding" | "allowedBots"
+  > & {
+    pausedUntil: APIPausedUntil;
+  };
   language: string;
+  pausing: {
+    tickets: PausedUntil;
+    reports: PausedUntil;
+  };
 }
 
 // Typed functions
@@ -25,23 +32,34 @@ export async function getDBGuild<T extends DBGuildProjection>(
   guildId: string,
   projection: T,
 ): Promise<DBGuildProjectionReturns[T] | null> {
-  const _config = await DBGuild.findOne({ id: guildId }, null, { lean: true });
+  const _config = await DBGuild.findOne({ id: guildId });
   if (!_config || !projection || projection === "full") {
-    return _config as DBGuildProjectionReturns[T] | null;
+    return (_config ? FlattenDocToJSON(_config) : null) as DBGuildProjectionReturns[T] | null;
   }
+
+  const jsonConfig = FlattenDocToJSON(_config);
 
   switch (projection) {
     case "generalTicketSettings":
       return {
-        enabled: _config.ticketConfig.enabled,
-        pausedUntil: _config.ticketConfig.pausedUntil,
-        forumId: _config.ticketConfig.forumId,
-        anonym: _config.ticketConfig.anonym,
-        autoForwarding: _config.ticketConfig.autoForwarding,
-        allowedBots: _config.ticketConfig.allowedBots,
+        enabled: jsonConfig.ticketConfig.enabled,
+        pausedUntil: jsonConfig.ticketConfig.pausedUntil,
+        forumId: jsonConfig.ticketConfig.forumId,
+        anonym: jsonConfig.ticketConfig.anonym,
+        autoForwarding: jsonConfig.ticketConfig.autoForwarding,
+        allowedBots: jsonConfig.ticketConfig.allowedBots,
       } as DBGuildProjectionReturns[T];
     case "language":
-      return _config.lang as DBGuildProjectionReturns[T];
+      return jsonConfig.lang as DBGuildProjectionReturns[T];
+    case "pausing":
+      const defaultP = {
+        value: false,
+        date: null,
+      };
+      return {
+        tickets: jsonConfig.ticketConfig.pausedUntil ?? defaultP,
+        reports: jsonConfig.reportConfig.pausedUntil ?? defaultP,
+      } as DBGuildProjectionReturns[T];
     default:
       throw new Error(`Unsupported projection: ${projection}`);
   }
