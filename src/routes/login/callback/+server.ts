@@ -11,7 +11,7 @@ export async function GET({ url, cookies }) {
   const code = url.searchParams.get("code");
   const error = url.searchParams.get("error");
   const urlState = url.searchParams.get("state");
-  const cookieState = cookies.get("state");
+  const cookieState = cookies.get("oauth_state");
   const stayLoggedIn = cookies.get("keep-refresh-token");
 
   if (error || !code) {
@@ -29,7 +29,7 @@ export async function GET({ url, cookies }) {
   let tokenData: RESTPostOAuth2AccessTokenResult;
   try {
     // Exchange authorization code for access token
-    const tokenResponse = await fetch(discordUrls.tokenExchange(), {
+    const tokenResponse = await fetch(discordUrls.token(), {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -44,7 +44,8 @@ export async function GET({ url, cookies }) {
     });
 
     if (!tokenResponse.ok) {
-      throw new Error("Failed to exchange code for token");
+      const errorText = await tokenResponse.text();
+      return redirectToLoginWithError(`Token Exchange Failed: ${errorText}`);
     }
     tokenData = (await tokenResponse.json()) as RESTPostOAuth2AccessTokenResult;
   } catch (err: any) {
