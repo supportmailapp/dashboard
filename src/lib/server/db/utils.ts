@@ -1,9 +1,13 @@
+import {
+  Document,
+  Types,
+  type UpdateQuery,
+  type UpdateWithAggregationPipeline,
+} from "mongoose";
 import { V2ComponentsValidator, type IDBGuild, type IDBUser, type ITicketConfig } from "supportmail-types";
-import type { UpdateQuery, UpdateWithAggregationPipeline } from "mongoose";
 import { ValidationError } from "zod-validation-error";
 import { DBGuild, DBUser } from "./models";
 import { TicketCategory } from "./models/src/ticketCategory";
-import { LANGUAGES } from "$lib/constants";
 
 type DBGuildProjection = "full" | "generalTicketSettings" | "language";
 
@@ -77,7 +81,7 @@ export async function updateDBUser(
 }
 
 export function getTicketCategories(guildId: string) {
-  return TicketCategory.find({ guildId: guildId }, null, { lean: true });
+  return TicketCategory.find({ guildId: guildId });
 }
 
 export async function verifyComponentsV2Payload(components: any[]) {
@@ -101,9 +105,67 @@ export async function verifyComponentsV2Payload(components: any[]) {
   }
 }
 
+type FlattenDocResult<T, IncludeId extends boolean> = IncludeId extends true
+  ? Omit<T, "__v" | "_id"> & { _id: string }
+  : Omit<T, "__v" | "_id">;
+
+export function FlattenDocToJSON<T>(
+  val: Document<unknown, {}, T, {}> &
+    T & {
+      _id: Types.ObjectId;
+    } & {
+      __v?: number;
+    },
+  with_Id?: false,
+): FlattenDocResult<T, false>;
+export function FlattenDocToJSON<T>(
+  val: Document<unknown, {}, T, {}> &
+    T & {
+      _id: Types.ObjectId;
+    } & {
+      __v?: number;
+    },
+  with_Id: true,
+): FlattenDocResult<T, true>;
+
 /**
- * Verifies if the provided language is supported.
+ * Converts a Mongoose Document or FlattenMaps object to a plain JSON object.
+ *
+ * @template T - The type of the document/object being converted
+ * @param val - The Mongoose Document or FlattenMaps object to convert
+ * @param with_Id - Whether to include the MongoDB `_id` field in the result. Defaults to false
+ * @returns A plain JSON object of type T with optional `_id` field based on the `with_Id` parameter
+ *
+ * @example
+ * ```typescript
+ * const user = await User.findById(id);
+ * const userJson = DocumentToJSON(user); // Without _id
+ * const userJsonWithId = DocumentToJSON(user, true); // With _id
+ * ```
+ *
+ * @remarks
+ * This is an extended implementation of `Document.toJSON()` - one can pass basically anything and
+ * option handling is easier.
  */
-export const verifyLanguage = (language: string) => {
-  return LANGUAGES.some((lang) => lang.value === language);
-};
+export function FlattenDocToJSON<T>(
+  val: Document<unknown, {}, T, {}> &
+    T & {
+      _id: Types.ObjectId;
+    } & {
+      __v?: number;
+    },
+  with_Id: boolean = false,
+): FlattenDocResult<T, typeof with_Id> {
+  return val.toJSON({
+    flattenMaps: true,
+    flattenObjectIds: true,
+    versionKey: false,
+    transform: (_, ret) => {
+      delete ret.__v;
+      if (!with_Id) {
+        delete ret._id;
+      }
+      return ret;
+    },
+  }) as FlattenDocResult<T, typeof with_Id>;
+}
