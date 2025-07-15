@@ -33,6 +33,7 @@
   let guildsSelectOpen = $state(false);
   let guildsManager = $derived(page.data.guildsManager);
   let currentGuild = $derived(guildsManager.currentGuild ?? null);
+  let atMeHref = $derived(`/@me?back=${page.url.pathname}`);
 
   $effect(() => {
     if (!guildsManager.loaded) guildsManager.loadGuilds();
@@ -123,7 +124,7 @@
 
       <!-- User Profile Link (Desktop) -->
       <div class="inline-flex items-center gap-1 border-t p-3">
-        <Button href="/@me" size="lg" variant="outline" class={cn("flex-1 justify-between gap-2")}>
+        <Button href={atMeHref} size="lg" variant="outline" class={cn("flex-1 justify-between gap-2")}>
           <Avatar class="size-8">
             <AvatarFallback>{userDisplayName(page.data.user).slice(0, 2)}</AvatarFallback>
             <AvatarImage
@@ -266,7 +267,7 @@
 
             <!-- User Profile Link (Mobile) -->
             <div class="inline-flex items-center gap-1 border-t p-3">
-              <Button href="/@me" size="lg" variant="outline" class={cn("flex-1 justify-between gap-2")}>
+              <Button href={atMeHref} size="lg" variant="outline" class={cn("flex-1 justify-between gap-2")}>
                 <Avatar class="size-8">
                   <AvatarFallback>{userDisplayName(page.data.user).slice(0, 2)}</AvatarFallback>
                   <AvatarImage
