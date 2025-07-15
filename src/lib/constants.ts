@@ -1,5 +1,7 @@
 // Public constants
 
+import z from "zod";
+
 export const JsonErrors = {
   /**
    * 400 Bad Request
@@ -48,6 +50,8 @@ export const LANGUAGES = [
     name: "Français",
   },
 ] as const;
+
+export const zodLanguage = z.union(LANGUAGES.map((l) => z.literal(l.value)));
 
 export const BasicFetchInit = (m: "GET" | "POST" | "PATCH" | "PUT" | "DELETE") => {
   return {
