@@ -14,11 +14,10 @@
   import { cn } from "$lib/utils";
   import { Avatar, AvatarFallback, AvatarImage } from "$ui/avatar";
   import { Button, buttonVariants } from "$ui/button";
-  import * as Collapsible from "$ui/collapsible";
   import * as Command from "$ui/command";
   import * as Popover from "$ui/popover";
   import * as Sheet from "$ui/sheet";
-  import { fade, slide } from "svelte/transition";
+  import { fade, scale, slide } from "svelte/transition";
   import { getNextPathFromGuildPath } from "$lib";
   import { cdnUrls } from "$lib/urls";
   import { userDisplayName } from "$lib/utils/formatting";
