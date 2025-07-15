@@ -107,6 +107,18 @@ declare global {
   type BotGuild = DCGuild & {
     isConfigured: boolean;
   };
+
+  type APIPausedUntil = {
+    /**
+     * Whether something is paused.
+     */
+    value: boolean;
+    /**
+     * ISO 8601 string of the date, until something is paused.
+     * If `null` -> indefinitly paused.
+     */
+    date: string | null;
+  };
 }
 
 export {};
