@@ -18,7 +18,8 @@
 
   async function saveLanguage() {
     languageConf.saving = true;
-    const lang = $state.snapshot(languageConf.config);
+    const lang = languageConf.snap();
+    console.log("lang", lang);
     try {
       if (!lang) {
         throw new Error("The language is not set. What da hell?");
@@ -34,6 +35,7 @@
         throw new Error(errText);
       }
 
+      languageConf.saveConfig(lang);
       toast.success("Guild configuration saved successfully!", {
         description: "The language has been updated.",
       });
@@ -57,6 +59,7 @@
         }
         res.json().then((data: string) => {
           languageConf.setConfig(data);
+          languageConf.loading = false;
         });
       })
       .catch((err) => {
@@ -116,6 +119,7 @@
                   value={lang.name}
                   onSelect={() => {
                     languageConf.setConfig(lang.value);
+                    languageConf.evalUnsaved();
                   }}
                 >
                   <CheckIcon class={cn(languageConf.config !== lang.value && "text-transparent")} />
@@ -129,8 +133,8 @@
       <Card.Footer class="flex-col gap-2">
         <Button
           onclick={saveLanguage}
-          disabled={languageConf.loading}
-          showLoading={languageConf.saving}
+          disabled={languageConf.saving || !languageConf.unsaved}
+          showLoading={languageConf.loading}
           class="w-2xs"
         >
           Save
