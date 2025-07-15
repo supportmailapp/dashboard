@@ -52,6 +52,7 @@ const cdnUrls = {
 };
 
 const APIRoutes = {
+  me: () => `${API_BASE}/@me` as const,
   /**
    * Returns the URL for the current user's guilds.
    * @param manageBotOnly If true, only returns guilds where the bot has manage permissions.
