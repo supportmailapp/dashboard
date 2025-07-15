@@ -1,3 +1,4 @@
+import { env } from "$env/dynamic/private";
 import { redirectResponse } from "$lib";
 import { discordUrls } from "$lib/urls";
 
@@ -9,16 +10,20 @@ export async function load({ parent }) {
 }
 
 export const actions = {
-  default: async function ({ cookies, request, url }) {
-    const formData = await request.formData();
-    const stayLoggedIn = formData.get("stayLoggedIn") === "on"; // Currently unused
+  login: async ({ cookies, url }) => {
     const state = crypto.randomUUID();
-    cookies.set("state", state, { path: "/" });
-    cookies.set("keep-refresh-token", String(stayLoggedIn), { path: "/" });
-    console.log("State set in cookie:", state);
+
+    const loginUrl = discordUrls.botAuth(url.origin, { state });
+
+    cookies.set("oauth_state", state, {
+      httpOnly: true,
+      path: "/login/callback",
+      sameSite: "lax",
+    });
+
     return {
       success: true,
-      url: discordUrls.botAuth(url.origin, { state }),
+      url: loginUrl,
     };
   },
 };
