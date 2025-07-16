@@ -3,7 +3,7 @@ import { SessionManager } from "$lib/server/auth.js";
 import { discord } from "$lib/server/constants";
 import { DiscordUserAPI } from "$lib/server/discord.js";
 import { discordUrls } from "$lib/urls";
-import * as Sentry from "@sentry/node";
+import * as Sentry from "@sentry/sveltekit";
 import { redirect } from "@sveltejs/kit";
 import type { RESTPostOAuth2AccessTokenResult } from "discord-api-types/v10";
 
