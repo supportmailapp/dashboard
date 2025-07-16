@@ -1,5 +1,4 @@
 <script lang="ts">
-  import "../error.css";
   import { page } from "$app/state";
   import { Button, buttonVariants } from "$ui/button";
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
@@ -56,3 +55,19 @@
     Go Back
   </Button>
 </div>
+
+<style>
+  .error-container {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    margin: auto;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem 1rem;
+    max-width: fit-content;
+    width: auto;
+    min-height: 100vh;
+  }
+</style>
