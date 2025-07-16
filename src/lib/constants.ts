@@ -1,5 +1,6 @@
 // Public constants
 
+import { dev } from "$app/environment";
 import z from "zod";
 
 export const JsonErrors = {
@@ -68,3 +69,5 @@ export const pausePresets = [
   { value: 14, label: "In two weeks" },
   { value: 30, label: "In a month" },
 ];
+
+export const ORIGIN = dev ? "http://localhost:5050" : "https://dash.supportmail.dev";
