@@ -1,14 +1,13 @@
 // Helper functions for session management
 import { env } from "$env/dynamic/private";
+import { discordUrls } from "$lib/urls";
 import { canManageBot } from "$lib/utils/permissions";
-import * as Sentry from "@sentry/node";
+import * as Sentry from "@sentry/sveltekit";
 import jwt from "jsonwebtoken";
 import userGuildsCache from "./caches/userGuilds";
 import { discord } from "./constants";
 import { UserToken } from "./db/models/src/userTokens";
 import { DiscordUserAPI } from "./discord";
-import { discordUrls } from "$lib/urls";
-import type { RESTPostOAuth2AccessTokenResult } from "discord-api-types/v10";
 
 type CreateSessionOps = {
   userId: string;
