@@ -235,12 +235,9 @@ export const handle = sequence(
 );
 
 export const handleError: HandleServerError = async ({ error, event, status, message }) => {
-  const errorId =
-    env.NODE_ENV != "development"
-      ? Sentry.captureException(error, {
-          extra: { event, status },
-        })
-      : crypto.randomUUID();
+  const errorId = Sentry.captureException(error, {
+    extra: { event, status },
+  });
 
   console.error(event.url.toString(), inspect(error));
 
