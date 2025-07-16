@@ -1,5 +1,6 @@
-import { z } from "zod";
-import { fromError, type ValidationError } from "zod-validation-error";
+import { z, ZodError } from "zod";
+import { type ValidationError } from "zod-validation-error";
+import { fromZodError } from "zod-validation-error/v4";
 
 type ValidationRes<V extends z.ZodType> =
   | { success: true; data: z.core.output<V> }
@@ -19,7 +20,8 @@ export class MyValidator<V extends z.ZodType> {
     } catch (err) {
       return {
         success: false,
-        error: fromError(err),
+        // ? as of 2025-07-16 the fromError function isn't working and has a critical bug.
+        error: fromZodError(err as ZodError) as ValidationError,
       };
     }
   }
