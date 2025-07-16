@@ -47,7 +47,7 @@
     "@fuxui/social": "^0.2.3",
     "@fuxui/text": "^0.2.5",
     "@fuxui/visual": "^0.2.4",
-    "@sentry/node": "^9.27.0",
+    "@sentry/sveltekit": "^9.39.0",
     "dayjs": "^1.11.13",
     "discord-api-types": "^0.38.11",
     "discord.js": "^14.19.3",
