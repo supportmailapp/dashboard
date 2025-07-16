@@ -1,17 +1,23 @@
 import { env } from "$env/dynamic/private";
+import { PUBLIC_SENTRY_DSN } from "$env/static/public";
 import { JsonErrors } from "$lib/constants.js";
 import { checkUserGuildAccess, SessionManager } from "$lib/server/auth";
 import { dbConnect } from "$lib/server/db";
 import { DiscordBotAPI, DiscordUserAPI } from "$lib/server/discord";
 import arcjet, { detectBot, shield, slidingWindow } from "@arcjet/sveltekit";
-import * as Sentry from "@sentry/node";
-import { type Handle, type HandleServerError } from "@sveltejs/kit";
+import * as Sentry from "@sentry/sveltekit";
+import { error, type Handle, type HandleServerError } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
 import dayjs from "dayjs";
 import { inspect } from "util";
 import wildcardMatch from "wildcard-match";
 
 const inDevMode = env.NODE_ENV === "development";
+
+Sentry.init({
+  dsn: PUBLIC_SENTRY_DSN,
+  tracesSampleRate: 1.0,
+});
 
 export async function init() {
   await dbConnect();
@@ -172,7 +178,7 @@ const apiAuthGuard: Handle = async ({ event, resolve }) => {
 
   // Default: require authentication for all API routes not in the unauthenticated list
   if (!event.locals.isAuthenticated()) {
-    return JsonErrors.unauthorized("Authentication required");
+    error(401, { message: "Authentication required", status: 401 });
   }
 
   return resolve(event);
@@ -202,21 +208,12 @@ const guildAuthGuard: Handle = async ({ event, resolve }) => {
 
   const userRest = new DiscordUserAPI(event.locals.token.accessToken);
 
-  for (const apiWildcard of GUILD_ROUTES) {
-    if (matchesRoute(apiWildcard, pathname)) {
+  for (const wildcard of GUILD_ROUTES) {
+    if (matchesRoute(wildcard, pathname)) {
       const accessResult = await checkUserGuildAccess(event.locals.user.id, guildId, userRest);
-      switch (accessResult) {
-        case 200:
-          break;
-        case 403:
-          return JsonErrors.forbidden();
-        case 404:
-          return JsonErrors.notFound();
-        default:
-          return JsonErrors.serverError();
+      if (accessResult !== 200) {
+        error(401);
       }
-
-      break;
     }
   }
 
@@ -235,14 +232,16 @@ export const handle = sequence(
 );
 
 export const handleError: HandleServerError = async ({ error, event, status, message }) => {
-  const errorId = Sentry.captureException(error, {
-    extra: { event, status },
-  });
-
-  console.error(event.url.toString(), inspect(error));
+  const errorId =
+    status !== 404
+      ? Sentry.captureException(error, {
+          extra: { event, status },
+        })
+      : undefined;
 
   return {
     message: message || "Internal server error",
     id: errorId,
+    status: status,
   };
 };
