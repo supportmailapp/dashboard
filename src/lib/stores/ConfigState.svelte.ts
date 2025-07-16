@@ -3,6 +3,58 @@ import equal from "fast-deep-equal";
 export type PossibleConfig = string | number | bigint | Date | boolean | Array<any> | Record<string, any>;
 
 /**
+ * Custom deep clone function that handles objects that cannot be structured cloned.
+ * Properly handles primitives, Dates, Arrays, and POJOs.
+ */
+function deepClone<T>(obj: T): T {
+  // Handle null and undefined
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  // Handle primitives (string, number, boolean, bigint)
+  if (typeof obj !== "object") {
+    return obj;
+  }
+
+  // Handle Date objects
+  if (obj instanceof Date) {
+    return new Date(obj.getTime()) as T;
+  }
+
+  // Handle Arrays
+  if (Array.isArray(obj)) {
+    return obj.map((item) => deepClone(item)) as T;
+  }
+
+  // Try structuredClone first for complex objects
+  try {
+    return structuredClone(obj);
+  } catch (error) {
+    // Fallback for objects that can't be structured cloned
+    try {
+      // Handle plain objects with JSON serialization
+      if (obj.constructor === Object || obj.constructor === undefined) {
+        return JSON.parse(JSON.stringify(obj));
+      }
+
+      // For other object types, try to create a new object and copy properties
+      const cloned = {} as T;
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          (cloned as any)[key] = deepClone((obj as any)[key]);
+        }
+      }
+      return cloned;
+    } catch (jsonError) {
+      // If all else fails, return the original object
+      console.warn("Failed to clone object, returning original:", jsonError);
+      return obj;
+    }
+  }
+}
+
+/**
  * A generic class to manage configuration state with optional loading state.
  *
  * @template T - The type of the configuration. Defaults to `PossibleConfig`, which can be literally anything.
@@ -47,7 +99,7 @@ export class ConfigState<T extends PossibleConfig> {
    * @param initLoading - Initial loading state. Defaults to `true`.
    */
   public constructor(initConfig: T | null | undefined = undefined, initLoading: boolean = true) {
-    this._backup = !!initConfig ? structuredClone(initConfig) : null;
+    this._backup = !!initConfig ? deepClone(initConfig) : null;
     this._config = initConfig ?? null;
     this.loading = initLoading;
   }
@@ -124,7 +176,7 @@ export class ConfigState<T extends PossibleConfig> {
    */
   public saveConfig(newConf: T): T {
     this._config = newConf;
-    this._backup = structuredClone(newConf);
+    this._backup = deepClone(newConf);
     this.unsaved = false;
     this.saving = false;
     return this._backup;
