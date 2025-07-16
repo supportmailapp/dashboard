@@ -9,10 +9,20 @@
     title: string;
     description?: string;
     class?: ClassValue;
+    saveBtnDisabled?: boolean;
+    saveBtnLoading?: boolean;
     saveFn: () => void | Promise<void>;
     children?: Snippet;
   };
-  let { children, saveFn, title, description, class: className }: Props = $props();
+  let {
+    children,
+    saveFn,
+    title,
+    description,
+    class: className,
+    saveBtnDisabled,
+    saveBtnLoading,
+  }: Props = $props();
 </script>
 
 <Card.Root>
@@ -26,6 +36,12 @@
     {@render children?.()}
   </Card.Content>
   <Card.Footer class="justify-end">
-    <Button variant="default" onclick={saveFn}>Save</Button>
+    <Button
+      variant="default"
+      disabled={saveBtnDisabled}
+      showLoading={saveBtnLoading}
+      class="w-2xs"
+      onclick={saveFn}>Save</Button
+    >
   </Card.Footer>
 </Card.Root>
