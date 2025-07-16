@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Error %sveltekit.status%</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .error-container {
+        text-align: center;
+        padding: 2rem;
+        max-width: 600px;
+        width: 90%;
+      }
+
+      .error-container h1 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+      }
+
+      .error-details {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        backdrop-filter: blur(10px);
+      }
+
+      .error-status {
+        display: none; /* Hide the status code by default */
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 2rem;
+        background: rgba(239, 68, 68, 0.9);
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        border: none;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 200ms;
+      }
+
+      .btn:hover {
+        background: rgba(239, 68, 68, 1);
+      }
+    </style>
+  </head>
+  <body>
+    <input type="hidden" id="error-status" value="%sveltekit.status%" />
+    <div class="error-container">
+      <h1>You found an error!</h1>
+      <p id="error-description">An unexpected error occurred. The developer has been notified.</p>
+
+      <div class="error-details">
+        <p>%sveltekit.error.message%</p>
+      </div>
+
+      <button class="btn" onclick="history.back()">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-arrow-left-icon lucide-arrow-left"
+        >
+          <path d="m12 19-7-7 7-7" />
+          <path d="M19 12H5" />
+        </svg>
+        Go Back
+      </button>
+    </div>
+
+    <script>
+      function getErrorDescription(status) {
+        switch (parseInt(status)) {
+          case 404:
+            return "The page you're looking for doesn't exist or has been moved.";
+          case 403:
+            return "You don't have permission to access this resource.";
+          case 401:
+            return "You need to be logged in to access this resource.";
+          case 410:
+            return "The resource you are looking for has been permanently removed.";
+          case 500:
+            return "Something went wrong on our end. We're working to fix it.";
+          case 502:
+          case 503:
+            return "The service is temporarily unavailable. Please try again later.";
+          default:
+            return "An unexpected error occurred. The developer has been notified.";
+        }
+      }
+
+      // Update error description based on status
+      const statusCode = /** @type {HTMLInputElement} */ (document.getElementById("error-status")).value;
+      if (statusCode) {
+        document.getElementById("error-description").textContent = getErrorDescription(statusCode);
+      }
+    </script>
+  </body>
+</html>
