@@ -44,7 +44,7 @@ declare global {
     interface Error {
       message: string;
       id?: string;
-      status?: number;
+      status: number;
     }
 
     /**
