@@ -10,30 +10,42 @@
   import TimePicker from "./TimePicker.svelte";
   import dayjs from "dayjs";
 
+  type Props = {
+    value?: CalendarDate;
+    /**
+     * The function to run when the date or time changes.
+     *
+     * @param selectedDate ISO 8601 timestamp
+     */
+    onChange?: (selectedDate: string) => void;
+    /**
+     * The classes to apply to the popover content.
+     */
+    showError?: boolean;
+  };
+
+  let { onChange, value = $bindable<CalendarDate>(today(getLocalTimeZone())), showError }: Props = $props();
+
   const djs = dayjs();
   const df = new DateFormatter(navigator.language, {
     dateStyle: "long",
   });
 
-  let value = $state<CalendarDate>(today(getLocalTimeZone()));
   /**
    * Time-string in the format of `hh:mm`.
    */
   let time = $state<string>(djs.hour() + ":" + djs.minute());
   const valueString = $derived(value ? df.format(value.toDate(getLocalTimeZone())) : "");
 
-  type Props = {
-    /**
-     *
-     * @param selectedDate ISO 8601 timestamp
-     */
-    onChange: (selectedDate: string) => void;
-  };
-
-  let { onChange }: Props = $props();
+  $inspect("DateTiemPicker[valueString]", valueString);
 
   function changeFn(val: string) {
-    onChange(val);
+    onChange?.(val);
+  }
+
+  function mergeDateAndTime(_date: CalendarDate, _time: string) {
+    const [h, m] = _time.split(":");
+    return dayjs(_date.toDate(getLocalTimeZone()).setHours(Number(h), Number(m)));
   }
 </script>
 
@@ -45,12 +57,13 @@
         class: "w-[280px] justify-start text-left font-normal",
       }),
       !value && "text-muted-foreground",
+      showError && "text-destructive hover:text-destructive",
     )}
   >
     <CalendarIcon class="mr-2 size-4" />
     {value ? df.format(value.toDate(getLocalTimeZone())) : "Pick a date"}
   </Popover.Trigger>
-  <Popover.Content class="flex w-auto flex-col space-y-2 p-2">
+  <Popover.Content class={cn("flex w-auto flex-col space-y-2 p-2", showError && "border-destructive")}>
     <Select.Root
       type="single"
       bind:value={
@@ -58,6 +71,7 @@
         (v) => {
           if (!v) return;
           value = today(getLocalTimeZone()).add({ days: Number.parseInt(v) });
+          changeFn(mergeDateAndTime(value, time).toISOString());
         }
       }
     >
@@ -77,11 +91,19 @@
         minValue={today(getLocalTimeZone())}
         maxValue={today(getLocalTimeZone()).add({ days: 30 })}
         onValueChange={(val) => {
-          changeFn(val ? val.toDate(getLocalTimeZone()).toISOString() : "");
+          changeFn(val ? mergeDateAndTime(val as CalendarDate, time).toISOString() : "");
         }}
       />
     </div>
 
-    <TimePicker bind:time />
+    <TimePicker
+      bind:time={
+        () => time,
+        (v) => {
+          time = v;
+          changeFn(mergeDateAndTime(value, v).toISOString());
+        }
+      }
+    />
   </Popover.Content>
 </Popover.Root>
