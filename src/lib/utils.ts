@@ -1,5 +1,9 @@
 import { clsx, type ClassValue } from "clsx";
+import dayjs from "dayjs";
 import { twMerge } from "tailwind-merge";
+import relativeTime from "dayjs/plugin/relativeTime";
+
+dayjs.extend(relativeTime);
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -62,4 +66,8 @@ export function parseIconToURL(
 
   const suffix = icon_hash.startsWith("a_") ? "gif" : "webp";
   return "https://cdn.discordapp.com/" + Routes[endpoint] + `${id}/${icon_hash}.${suffix}?size=${size}`;
+}
+
+export function relativeDatetime(djs: dayjs.ConfigType): string {
+  return dayjs(djs).fromNow();
 }
