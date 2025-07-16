@@ -113,7 +113,6 @@
         }
       }
 
-      // Update error description based on status
       const statusCode = /** @type {HTMLInputElement} */ (document.getElementById("error-status")).value;
       if (statusCode) {
         document.getElementById("error-description").textContent = getErrorDescription(statusCode);
