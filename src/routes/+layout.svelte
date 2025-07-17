@@ -74,4 +74,4 @@
 
 {@render children?.()}
 
-<Toaster />
+<Toaster position={"top-center"} richColors visibleToasts={4} closeButton />
