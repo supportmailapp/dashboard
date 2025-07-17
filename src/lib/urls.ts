@@ -64,6 +64,8 @@ const APIRoutes = {
     if (manageBotOnly) sParams.set("manageBot", "true");
     return `${API_BASE}/@me/guilds` + (sParams.toString() ? `?${sParams.toString()}` : "");
   },
+  guildChannels: (guildId: string) => `${API_BASE}/guilds/${guildId}/channels` as const,
+  guildRoles: (guildId: string) => `${API_BASE}/guilds/${guildId}/roles` as const,
   /**
    * Returns the URL for a specific guild's configuration.
    * @param guildId The ID of the guild.
