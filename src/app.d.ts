@@ -37,7 +37,7 @@ import type { PUTPausingObject } from "./routes/api/v1/guilds/[guildid]/config/p
 type SafeSessionResult =
   | { user: APIUser; token: FlatUserToken; error?: never }
   | { user: null; token: FlatUserToken; error: "expired" }
-  | { user: null; token: null; error: "other" | "notfound" };
+  | { user: null; token: null; error: "other" | "notfound" | "network" };
 
 // for information about these interfaces
 declare global {
