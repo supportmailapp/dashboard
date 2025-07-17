@@ -2,7 +2,7 @@ import { JsonErrors } from "$lib/constants";
 import { getGuildChannels, setGuildCache } from "$lib/server/caches/guilds.js";
 
 export async function GET({ locals, url, setHeaders }) {
-  if (!locals.token || !locals.guildId) return JsonErrors.badRequest();
+  if (!locals.guildId) return JsonErrors.badRequest();
 
   const bypassCache = url.searchParams.get("cache") === "false";
 

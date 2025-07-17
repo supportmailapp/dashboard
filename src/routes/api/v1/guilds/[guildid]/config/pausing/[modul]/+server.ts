@@ -12,8 +12,6 @@ const putSchema = z.object({
 export type PUTPausingObject = z.infer<typeof putSchema>;
 
 export async function PUT({ locals, params, request }) {
-  if (!locals.token || !locals.user) return JsonErrors.badRequest();
-
   if (params.modul !== "tickets" && params.modul !== "reports") {
     return JsonErrors.badRequest('Invalid module supplied. Must be "tickets" or "reports".');
   }
