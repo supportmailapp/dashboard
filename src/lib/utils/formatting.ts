@@ -1,4 +1,4 @@
-import { ChannelType, type APIUser } from "discord-api-types/v10";
+import { ChannelType, type APIGuildCategoryChannel, type APIUser } from "discord-api-types/v10";
 
 /**
  * Sorts an array of items by their position property in ascending order.
@@ -17,25 +17,59 @@ export function sortByPositionAndId<T extends { id: string; position: number }>(
   });
 }
 
+export function sortChannels<T extends GuildCoreChannel>(channels: T[], preserveCategoryGroups?: false): T[];
+export function sortChannels<T extends GuildCoreChannel>(
+  channels: T[],
+  preserveCategoryGroups: true,
+): {
+  uncategorized: Exclude<T, APIGuildCategoryChannel>[];
+  categories: { cat: APIGuildCategoryChannel; channels: Exclude<T, APIGuildCategoryChannel>[] }[];
+};
 /**
- * Sorts an array of channels by:
- * ???
+ * Sorts an array of channels by position and groups them by category if preserveCategoryGroups is true.
+ * When preserveCategoryGroups is false, returns a flat array with categories and their channels in order.
+ * When preserveCategoryGroups is true, returns grouped objects with category and its channels.
  */
-export function sortChannels<T extends GuildCoreChannel>(channels: T[]): T[] {
+export function sortChannels<T extends GuildCoreChannel>(
+  channels: T[],
+  preserveCategoryGroups: boolean = false,
+): any {
   const sorted = sortByPositionAndId(channels);
-  const grouped: T[] = [];
-  // First all uncategorized channels
-  for (const channel of sorted) {
-    if (channel.parent_id === null && channel.type !== ChannelType.GuildCategory) {
-      grouped.push(channel);
+
+  if (!preserveCategoryGroups) {
+    const grouped: T[] = [];
+    // First all uncategorized channels
+    for (const channel of sorted) {
+      if (channel.parent_id === null && channel.type !== ChannelType.GuildCategory) {
+        grouped.push(channel);
+      }
     }
+
+    const categories = sorted.filter((c) => c.type === ChannelType.GuildCategory);
+    for (const cat of categories) {
+      grouped.push(cat, ...channels.filter((c) => c.parent_id === cat.id));
+    }
+    return grouped;
   }
 
-  const categories = sorted.filter((c) => c.type === ChannelType.GuildCategory);
-  for (const cat of categories) {
-    grouped.push(cat, ...channels.filter((c) => c.parent_id === cat.id));
-  }
-  return grouped;
+  // Group channels by category
+  const categories = sorted.filter((c) => c.type === ChannelType.GuildCategory) as APIGuildCategoryChannel[];
+  const result: {
+    uncategorized: T[];
+    categories: { cat: APIGuildCategoryChannel; channels: Exclude<T, APIGuildCategoryChannel>[] }[];
+  } = {
+    uncategorized: sorted.filter((c) => c.parent_id === null && c.type !== ChannelType.GuildCategory) as T[],
+    categories: categories.map((cat) => ({
+      cat,
+      channels: sorted.filter(
+        (c) => c.parent_id === cat.id && c.type !== ChannelType.GuildCategory,
+      ) as Exclude<T, APIGuildCategoryChannel>[],
+    })),
+  };
+
+  console.log("Sorted channels:", result);
+
+  return result;
 }
 
 export function numberToHex(number: number): string {
