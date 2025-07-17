@@ -168,12 +168,13 @@
         <div class="grid gap-1.5 font-normal">
           <p class="text-sm leading-none font-medium">Automatic Redirect</p>
           <p class="text-muted-foreground text-sm">
-            If enabled, the bot doesn't ask for confirmation and sends any DM message to your last ticket.
+            When enabled, the bot will automatically send DM messages to your most recent ticket without
+            asking for confirmation.
           </p>
           <p class="text-muted-foreground text-sm">
-            To have multiple open tickets in multiple servers, you need to use <span class="font-mono"
+            When managing multiple open tickets across different servers, use the <span class="font-mono"
               >/ticket-create</span
-            > to create new tickets.
+            > command to create new tickets.
           </p>
         </div>
       </Label>
