@@ -65,7 +65,7 @@
 {/snippet}
 
 <Command.Root class="w-full rounded-lg border shadow-md">
-  <Command.Input placeholder="Type a command or search..." />
+  <Command.Input placeholder="Search channels..." />
   <Command.List>
     <Command.Empty>No channels found.</Command.Empty>
     {#if !page.data.guildsManager.channelsLoaded}
