@@ -11,7 +11,6 @@
   import * as Tabs from "$ui/tabs";
   import dayjs from "dayjs";
   import equal from "fast-deep-equal/es6";
-  import ky from "ky";
   import { toast } from "svelte-sonner";
   import { relativeDatetime } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
@@ -85,6 +84,11 @@
 
       pauseState.saveConfig(toPauseState(jsonRes));
       fetchedState = jsonRes;
+      toast.success(
+        !jsonRes.value
+          ? "Tickets resumed (unpaused)."
+          : `Tickets paused${jsonRes.date ? " temporarily" : " indefinitly"}.`,
+      );
     } catch (err: any) {
       toast.error("Failed to save guild configuration.", {
         description: err.message,
@@ -102,7 +106,7 @@
 
 {#if fetchedState?.value}
   {@const pausedDate = fetchedState.date ? new Date(fetchedState.date) : null}
-  <Alert.Root variant="destructive">
+  <Alert.Root variant="warning">
     <CircleAlertIcon class="size-4" />
     <Alert.Title>Tickets are paused.</Alert.Title>
     <Alert.Description class="inline-flex">
@@ -123,7 +127,12 @@
 {/if}
 
 {#if pauseState.isConfigured()}
+  {@const activeTabs = [
+    { value: "active", label: "Active" },
+    { value: "paused", label: "Paused" },
+  ]}
   <ConfigCard
+    class="flex flex-col gap-4"
     title="Pausing Status"
     description="Pausing won't reset any settings."
     {saveFn}
@@ -131,20 +140,27 @@
     saveBtnLoading={pauseState.loading}
   >
     <!-- Tabs control 'isActive' -->
-    <Tabs.Root
+    <RadioGroup.Root
+      orientation="horizontal"
+      class="flex flex-row gap-8 py-2"
       bind:value={
         () => (pauseState.config.pausedUntil.value ? "paused" : "active"),
         (val) => (pauseState.config.pausedUntil.value = val === "paused")
       }
     >
-      <Tabs.List>
-        <Tabs.Trigger value="active">Active</Tabs.Trigger>
-        <Tabs.Trigger value="paused">Paused</Tabs.Trigger>
-      </Tabs.List>
-      <Tabs.Content value="active" class="space-y-4">
+      {#each activeTabs as tab}
+        <div class="inline-flex *:cursor-pointer cursor-pointer items-center gap-2 py-1">
+          <RadioGroup.Item value={tab.value} id={tab.value} />
+          <Label for={tab.value}>{tab.label}</Label>
+        </div>
+      {/each}
+    </RadioGroup.Root>
+    {#if !pauseState.config.pausedUntil.value}
+      <div class="flex-1 space-y-4 outline-none">
         <p>Tickets are <strong>active</strong>, users can create tickets.</p>
-      </Tabs.Content>
-      <Tabs.Content value="paused" class="space-y-4">
+      </div>
+    {:else}
+      <div class="flex-1 space-y-4 outline-none">
         <p>Tickets are <strong>paused</strong>, users <strong>cannot</strong> create new tickets.</p>
         <!-- Radio group controls 'pauseType' -->
         <RadioGroup.Root
@@ -184,7 +200,7 @@
             />
           </div>
         {/if}
-      </Tabs.Content>
-    </Tabs.Root>
+      </div>
+    {/if}
   </ConfigCard>
 {/if}
