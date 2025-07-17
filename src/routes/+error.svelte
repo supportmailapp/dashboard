@@ -3,6 +3,7 @@
   import { Button, buttonVariants } from "$ui/button";
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import ArrowLeft from "@lucide/svelte/icons/arrow-left";
+  import RotateCcw from "@lucide/svelte/icons/rotate-ccw";
 
   let errorDescription = $derived(getErrorDescription(page.error?.status));
 
@@ -38,7 +39,14 @@
     {#if page.error?.id}
       <Tooltip.Provider>
         <Tooltip.Root>
-          <Tooltip.Trigger class={buttonVariants({ variant: "ghost", class: "h-fit p-1" })}>
+          <Tooltip.Trigger
+            class={buttonVariants({ variant: "ghost", class: "h-fit p-1" })}
+            onclick={() => {
+              navigator.clipboard
+                .writeText(page.error!.id!)
+                .then(() => alert("✅ Error ID copied to clipboard!"));
+            }}
+          >
             ID: {page.error.id}
           </Tooltip.Trigger>
           <Tooltip.Content>
@@ -50,10 +58,16 @@
     {/if}
   </div>
 
-  <Button onclick={() => history.back()} class="btn btn-error btn-wide">
-    <ArrowLeft />
-    Go Back
-  </Button>
+  <div class="flex flex-row gap-2">
+    <Button onclick={() => history.back()} class="btn btn-error btn-wide">
+      <ArrowLeft />
+      Go Back
+    </Button>
+    <Button variant="secondary" onclick={() => location.reload()} class="btn btn-primary btn-wide">
+      <RotateCcw />
+      Reload Page
+    </Button>
+  </div>
 </div>
 
 <style>
