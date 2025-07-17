@@ -56,8 +56,6 @@
 
   async function saveFn() {
     const payload = buildPausedUntil();
-    console.log("payload", payload);
-    console.log("backup", pauseState.backup?.pausedUntil);
     if (equal(payload, pauseState.backup?.pausedUntil)) {
       toast.info("No changes to save.");
       return;
@@ -100,7 +98,7 @@
   }
 
   $effect(() => {
-    if (typeof fetchedState === "undefined") fetchedState = pausedUntil;
+    if (typeof fetchedState === "undefined") fetchedState = $state.snapshot(pausedUntil);
   });
 </script>
 
