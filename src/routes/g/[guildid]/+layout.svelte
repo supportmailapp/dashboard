@@ -76,6 +76,11 @@
 
   let switchingPage = $state(true);
 
+  function reloadGuildData() {
+    page.data.guildsManager.loadChannels();
+    page.data.guildsManager.loadRoles();
+  }
+
   beforeNavigate((nav) => {
     if (nav.from?.url.pathname === nav.to?.url.pathname) {
       nav.cancel();
@@ -117,16 +122,7 @@
       <nav class="flex-1 space-y-2 overflow-auto p-4">
         <!-- Reload Button for Channels & Roles -->
         <div class="flex flex-row gap-2">
-          <Button
-            size="sm"
-            class="w-full"
-            variant="secondary"
-            onclick={async () => {
-              page.data.guildsManager.clearCurrentGuild();
-              await page.data.guildsManager.loadChannels();
-              await page.data.guildsManager.loadRoles();
-            }}
-          >
+          <Button size="sm" class="w-full" variant="secondary" onclick={reloadGuildData}>
             <RotateCcw />
             Reload Channels & Roles
           </Button>
@@ -273,7 +269,14 @@
             </div>
 
             <!-- Navigation Items (Mobile) -->
-            <nav class="flex-1 overflow-auto p-4">
+            <nav class="flex-1 space-y-2 overflow-auto p-4">
+              <!-- Reload Button for Channels & Roles -->
+              <div class="flex flex-row gap-2">
+                <Button size="sm" class="w-full" variant="secondary" onclick={reloadGuildData}>
+                  <RotateCcw />
+                  Reload Channels & Roles
+                </Button>
+              </div>
               <ul class="space-y-2">
                 {#each navItems as item (item.name)}
                   <li>
