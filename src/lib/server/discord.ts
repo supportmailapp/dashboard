@@ -15,11 +15,13 @@ type SafeError = DiscordAPIError | HTTPError | RateLimitError | Error | string;
 type DefinitelyHasError<E extends SafeError> = Omit<SafeResponse<null>, "error" | "data"> & {
   error: NonNullable<E>;
   data: null;
+  status: number | null;
 };
 
 type DefinitelyHasData<T> = Omit<SafeResponse<T>, "error" | "data"> & {
   error: null;
   data: NonNullable<T>;
+  status: number | null;
 };
 
 class SafeResponse<T = unknown> {
