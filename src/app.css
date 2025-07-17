@@ -40,9 +40,9 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.21 0.006 285.885);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(57.818% 0.23084 262.699);
+  --primary: oklch(57% 0.23084 262.699);
   --primary-foreground: oklch(95% 0.02038 264.516);
-  --secondary: oklch(31.449% 0.11764 307.988);
+  --secondary: oklch(57% 0.19187 307.311);
   --secondary-foreground: oklch(80% 0.08651 311.005);
   --muted: oklch(0.274 0.006 286.033);
   --muted-foreground: oklch(0.705 0.015 286.067);
@@ -125,7 +125,13 @@
     cursor: pointer;
   }
 
-  button:not(.animate-none) {
+  button:not(.animate-none):not([data-slot]):not([data-slot=""]) {
+    &:active {
+      transform: translateY(1px);
+    }
+  }
+
+  button:not(.animate-none)[data-slot="button"] {
     &:active {
       transform: translateY(1px);
     }
