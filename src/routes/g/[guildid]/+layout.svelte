@@ -9,6 +9,7 @@
   import ShieldUser from "@lucide/svelte/icons/shield-user";
   import XIcon from "@lucide/svelte/icons/x";
   import FolderOpen from "@lucide/svelte/icons/folder-open";
+  import RotateCcw from "@lucide/svelte/icons/rotate-ccw";
 
   import { afterNavigate, beforeNavigate } from "$app/navigation";
   import { cn } from "$lib/utils";
@@ -17,15 +18,15 @@
   import * as Command from "$ui/command";
   import * as Popover from "$ui/popover";
   import * as Sheet from "$ui/sheet";
-  import { fade, scale, slide } from "svelte/transition";
+  import { fade, slide } from "svelte/transition";
   import { getNextPathFromGuildPath } from "$lib";
   import { cdnUrls } from "$lib/urls";
   import { userDisplayName } from "$lib/utils/formatting";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
-  import { SvelteSet } from "svelte/reactivity";
   import { onDestroy } from "svelte";
   import { Skeleton } from "$ui/skeleton";
   import ToggleModeBtn from "$lib/components/ToggleModeBtn.svelte";
+  import Mounter from "./Mounter.svelte";
 
   let { children } = $props();
   let { isCurrentPage, guildHref } = page.data;
@@ -37,6 +38,12 @@
 
   $effect(() => {
     if (!guildsManager.loaded) guildsManager.loadGuilds();
+
+    return () => {
+      console.log("Clearing current guild...");
+      guildsSelectOpen = false;
+      sidebarOpen = false;
+    };
   });
 
   const navItems = [
@@ -88,6 +95,8 @@
   });
 </script>
 
+<Mounter />
+
 <div class="page-container">
   <!-- Desktop Sidebar -->
   {#if (innerWidth.current || 800) > 767}
@@ -105,9 +114,25 @@
       </div>
 
       <!-- Navigation Items (Desktop) -->
-      <nav class="flex-1 overflow-auto p-4">
+      <nav class="flex-1 space-y-2 overflow-auto p-4">
+        <!-- Reload Button for Channels & Roles -->
+        <div class="flex flex-row gap-2">
+          <Button
+            size="sm"
+            class="w-full"
+            variant="secondary"
+            onclick={async () => {
+              page.data.guildsManager.clearCurrentGuild();
+              await page.data.guildsManager.loadChannels();
+              await page.data.guildsManager.loadRoles();
+            }}
+          >
+            <RotateCcw />
+            Reload Channels & Roles
+          </Button>
+        </div>
         <ul class="space-y-2">
-          {#each navItems as item (item.name)}
+          {#each navItems as item (item.href)}
             <li>
               <Button
                 href={item.href}
