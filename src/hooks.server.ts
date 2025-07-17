@@ -98,6 +98,10 @@ const authHandler: Handle = async ({ event, resolve }) => {
       // Find user by session's userId
       const userRes = await new DiscordUserAPI(token.accessToken).getCurrentUser();
       if (!userRes.isSuccess()) {
+        console.log(userRes);
+        if (userRes.status === null && (userRes.error as any).code === "ENOTFOUND") {
+          return { user: null, token: null, error: "network" };
+        }
         return { user: null, token: null, error: "other" };
       }
 
