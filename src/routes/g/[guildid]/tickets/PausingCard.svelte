@@ -142,16 +142,16 @@
     <!-- Tabs control 'isActive' -->
     <RadioGroup.Root
       orientation="horizontal"
-      class="flex flex-row gap-8 py-2"
+      class="flex flex-row gap-8"
       bind:value={
         () => (pauseState.config.pausedUntil.value ? "paused" : "active"),
         (val) => (pauseState.config.pausedUntil.value = val === "paused")
       }
     >
       {#each activeTabs as tab}
-        <div class="inline-flex *:cursor-pointer cursor-pointer items-center gap-2 py-1">
-          <RadioGroup.Item value={tab.value} id={tab.value} />
-          <Label for={tab.value}>{tab.label}</Label>
+        <div class="inline-flex cursor-pointer items-center gap-2 py-1 *:cursor-pointer">
+          <RadioGroup.Item value={tab.value} id={tab.value} class="size-5" />
+          <Label for={tab.value} class="text-lg">{tab.label}</Label>
         </div>
       {/each}
     </RadioGroup.Root>
