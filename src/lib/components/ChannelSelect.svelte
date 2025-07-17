@@ -1,4 +1,6 @@
 <script lang="ts">
+  import ChannelIcon from "./discord/ChannelIcon.svelte";
+
   import { page } from "$app/state";
   import * as Command from "$lib/components/ui/command/index.js";
   import { sortChannels } from "$lib/utils/formatting";
@@ -51,25 +53,13 @@
   $inspect("ChannelSelect[grouped]", groupedChannels);
 </script>
 
-{#snippet channelIcon(cType: GuildCoreChannelType)}
-  {#if cType === ChannelType.GuildCategory}
-    <Logs />
-  {:else if cType === ChannelType.GuildStageVoice || cType === ChannelType.GuildVoice}
-    <Volume2 />
-  {:else if cType === ChannelType.GuildForum}
-    <DiscordForumIcon />
-  {:else}
-    <Hash />
-  {/if}
-{/snippet}
-
 {#snippet channelItem(channel: GuildCoreChannel)}
   <Command.Item
     value="{channel.id}:{channel.name}"
     class="cursor-pointer active:translate-y-[1px]"
     onclick={channelClick(channel.id)}
   >
-    {@render channelIcon(channel.type)}
+    <ChannelIcon type={channel.type} />
     {channel.name}
   </Command.Item>
 {/snippet}
