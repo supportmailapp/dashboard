@@ -1,7 +1,6 @@
 import { JsonErrors } from "$lib/constants";
 import { FlattenDocToJSON, updateDBGuild } from "$lib/server/db/utils.js";
 import { MyValidator } from "$lib/server/validators/index.js";
-import type { HydratedDocument } from "mongoose";
 import z from "zod";
 
 const putSchema = z.object({
@@ -15,7 +14,7 @@ const putSchema = z.object({
 });
 
 export async function PUT({ locals, params, request }) {
-  if (!locals.token && !locals.user) return JsonErrors.badRequest();
+  if (!locals.token || !locals.user) return JsonErrors.badRequest();
 
   if (params.modul !== "tickets" && params.modul !== "reports") {
     return JsonErrors.badRequest('Invalid module supplied. Must be "tickets" or "reports".');
