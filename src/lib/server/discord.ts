@@ -25,10 +25,21 @@ type DefinitelyHasData<T> = Omit<SafeResponse<T>, "error" | "data"> & {
 class SafeResponse<T = unknown> {
   public readonly data: T | null;
   public readonly error: SafeError | null;
+  public readonly status: number | null;
 
-  constructor(data: typeof this.data = null, error: typeof this.error = null) {
+  constructor(
+    data: typeof this.data = null,
+    status: typeof this.status = null,
+    error: typeof this.error = null,
+  ) {
     this.data = data;
     this.error = error;
+    this.status =
+      error instanceof DiscordAPIError || error instanceof HTTPError
+        ? error.status
+        : error instanceof RateLimitError
+          ? 429 // HTTP 429 Too Many Requests
+          : status;
   }
 
   isSuccess(): this is DefinitelyHasData<T> {
@@ -73,9 +84,9 @@ abstract class BaseDiscordAPI {
   protected async doSafeRequest<T>(request: () => Promise<any>): Promise<SafeResponse<T>> {
     try {
       const data = await request();
-      return new SafeResponse(data);
+      return new SafeResponse(data, data?.status ?? 204);
     } catch (error) {
-      return new SafeResponse<T>(null, error as DiscordAPIError | HTTPError | RateLimitError | Error);
+      return new SafeResponse<T>(null, null, error as DiscordAPIError | HTTPError | RateLimitError | Error);
     }
   }
 }
