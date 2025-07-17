@@ -2,7 +2,7 @@ import { JsonErrors } from "$lib/constants";
 import { DBGuild } from "$lib/server/db";
 import { DiscordUserAPI } from "$lib/server/discord";
 import { canManageBot } from "$lib/utils/permissions";
-import { type RequestHandler } from "@sveltejs/kit";
+import { error, type RequestHandler } from "@sveltejs/kit";
 
 export const GET: RequestHandler = async ({ locals, url }) => {
   if (!(locals.user?.id && locals.token)) return JsonErrors.unauthorized();
@@ -11,9 +11,7 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 
   const guildsRes = await rest.getCurrentUserGuilds(locals.user.id);
   if (!guildsRes.isSuccess()) {
-    let errorText = "Server Error";
-    if (guildsRes.hasDiscordAPIError()) {
-    }
+    return error(guildsRes.status ?? 500);
   }
 
   const rawGuilds = guildsRes.data!;
