@@ -212,7 +212,7 @@ const guildAuthGuard: Handle = async ({ event, resolve }) => {
     if (matchesRoute(wildcard, pathname)) {
       const accessResult = await checkUserGuildAccess(event.locals.user.id, guildId, userRest);
       if (accessResult !== 200) {
-        error(401);
+        error(accessResult);
       }
     }
   }
