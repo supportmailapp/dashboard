@@ -79,10 +79,16 @@
       <Command.Item disabled>
         <Skeleton class="h-4 w-[30%]" />
       </Command.Item>
-    {:else if page.data.guildsManager.channelsLoaded && selectCategories}
+    {:else if page.data.guildsManager.channelsLoaded && selectCategories && channelTypes.includes(ChannelType.GuildCategory)}
+      <!-- The logic for selecting everything BUT categories -->
       {@const joinedChannels = filteredChannels}
       {#each joinedChannels as channel}
         {@render channelItem(channel)}
+      {/each}
+    {:else if page.data.guildsManager.channelsLoaded && selectCategories && channelTypes.includes(ChannelType.GuildCategory)}
+      <!-- The logic for selecting ONLY categories -->
+      {#each groupedChannels.categories as { cat, channels }}
+        {@render channelItem(cat)}
       {/each}
     {:else}
       {#each groupedChannels.uncategorized as channel}
