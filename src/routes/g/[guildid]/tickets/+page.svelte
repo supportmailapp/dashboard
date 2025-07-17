@@ -9,6 +9,7 @@
   import { Switch } from "$ui/switch";
   import { toast } from "svelte-sonner";
   import PausingCard from "./PausingCard.svelte";
+  import TicketForumCard from "./TicketForumCard.svelte";
 
   const generalTicketsConf = new ConfigState<DBGuildProjectionReturns["generalTicketSettings"]>();
 
@@ -40,9 +41,10 @@
 
 <SiteHeading title="Ticket Configuration"></SiteHeading>
 
-<section class="mt-6 w-full max-w-2xl space-y-2">
+<section class="mt-6 w-full max-w-2xl space-y-4">
   {#if generalTicketsConf.isConfigured()}
     <PausingCard bind:pausedUntil={generalTicketsConf.config.pausedUntil} />
+    <TicketForumCard forumId={generalTicketsConf.config.forumId ?? null} />
   {:else}
     <div class="grid place-items-center">
       <LoadingSpinner />
