@@ -5,6 +5,7 @@ import type {
   APIChannel,
   APIDMChannel,
   APIGroupDMChannel,
+  APIRole,
   APIThreadChannel,
   APIUser,
   RESTAPIPartialCurrentUserGuild,
@@ -89,6 +90,18 @@ declare global {
    * An API guild channel which is not a thread.
    */
   type GuildCoreChannel = Exclude<APIChannel, APIDMChannel | APIGroupDMChannel | APIThreadChannel>;
+
+  type GuildCoreChannelType = GuildCoreChannel["type"];
+
+  type GuildRole = APIRole;
+
+  type GroupedChannels = {
+    uncategorized: Exclude<GuildCoreChannel, APIGuildCategoryChannel>[];
+    categories: {
+      cat: APIGuildCategoryChannel;
+      channels: Exclude<GuildCoreChannel, APIGuildCategoryChannel>[];
+    }[];
+  };
 
   type RedirectData = {
     /**
