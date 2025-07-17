@@ -8,6 +8,7 @@
   import * as Alert from "$lib/components/ui/alert/index.js";
   import Channel from "$lib/components/discord/Channel.svelte";
   import { Skeleton } from "$ui/skeleton";
+  import { ChannelType } from "discord-api-types/v10";
 
   let { forumId }: { forumId: string | null } = $props();
 
@@ -46,7 +47,7 @@
         >
         <Popover.Content class="w-80">
           <Label class="mb-2">Choose a forum channel</Label>
-          <ChannelSelect />
+          <ChannelSelect channelTypes={[ChannelType.GuildCategory]} selectCategories />
           <Popover.Close class={buttonVariants({ variant: "secondary", className: "mt-2 w-full" })}>
             Save
           </Popover.Close>
