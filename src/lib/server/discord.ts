@@ -180,7 +180,7 @@ class DiscordUserAPI extends BaseDiscordAPI {
     }
 
     const _res = await this.doSafeRequest<RESTAPIPartialCurrentUserGuild[]>(() =>
-      this.rest.get(Routes.userGuilds()),
+      this.rest.get(`${Routes.userGuilds()}?with_counts=true`),
     );
     if (_res.isSuccess()) {
       const _guilds = _res.data;
