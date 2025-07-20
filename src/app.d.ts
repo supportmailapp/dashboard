@@ -71,6 +71,9 @@ declare global {
        */
       guildId?: string;
       discordRest: DiscordBotAPI;
+      /**
+       * User API Client. Given always, if `locals.user` and `locals.token` is set.
+       */
       discordUserRest: DiscordUserAPI | null;
     }
 
