@@ -131,13 +131,13 @@
 
   button:not(.animate-none):not([data-slot]):not([data-slot=""]) {
     &:active {
-      transform: translateY(1px);
+      transform: scale(98.5%);
     }
   }
 
   button:not(.animate-none)[data-slot="button"] {
     &:active {
-      transform: translateY(1px);
+      transform: scale(98.5%);
     }
   }
 
