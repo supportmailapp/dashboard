@@ -203,25 +203,18 @@
                   {@const _guildHref = guild.isConfigured
                     ? `/g/${guild.id + getNextPathFromGuildPath(page.url.pathname)}`
                     : `/add/${guild.id}`}
-                  <Command.Item
+                  <!-- TODO: Implement new LinkItem stuff -->
+                  <Command.LinkItem
+                    href={_guildHref}
                     value={guild.name}
-                    class={cn("p-0", !guild.isConfigured ? "opacity-50 hover:opacity-100" : "")}
+                    class={cn(!guild.isConfigured && "opacity-50 hover:opacity-100")}
                   >
-                    <a
-                      href={_guildHref}
-                      target="_self"
-                      class={cn(
-                        "inline-flex h-full w-full items-center gap-2 px-2 py-1.5",
-                        currentGuild?.id === guild.id && "bg-primary/60 rounded",
-                      )}
-                    >
-                      <Avatar class="size-6">
-                        <AvatarFallback>{guild.name.slice(0, 2)}</AvatarFallback>
-                        <AvatarImage src={cdnUrls.guildIcon(guild.id, guild.icon, 128)} alt={guild.name} />
-                      </Avatar>
-                      {guild.name}
-                    </a>
-                  </Command.Item>
+                    <Avatar class="size-6">
+                      <AvatarFallback>{guild.name.slice(0, 2)}</AvatarFallback>
+                      <AvatarImage src={cdnUrls.guildIcon(guild.id, guild.icon, 128)} alt={guild.name} />
+                    </Avatar>
+                    {guild.name}
+                  </Command.LinkItem>
                 {/each}
               </Command.Group>
             </Command.List>
