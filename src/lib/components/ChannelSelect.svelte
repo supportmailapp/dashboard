@@ -67,9 +67,10 @@
     value="{channel.id}:{channel.name}"
     class={cn(
       "cursor-pointer transition duration-80 active:scale-[99%]",
-      selected?.id === channel.id && "bg-accent-foreground text-accent",
+      selected?.id === channel.id && "bg-accent-foreground text-accent transform-none",
     )}
     onSelect={channelClick(channel.id)}
+    disabled={selected?.id === channel.id}
   >
     <ChannelIcon type={channel.type} />
     {channel.name}
