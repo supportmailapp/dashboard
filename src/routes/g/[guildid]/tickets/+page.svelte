@@ -2,11 +2,9 @@
   import { page } from "$app/state";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
-  import { Label } from "$lib/components/ui/label/index.js";
   import type { DBGuildProjectionReturns } from "$lib/server/db";
   import { ConfigState } from "$lib/stores/ConfigState.svelte";
   import { APIRoutes } from "$lib/urls";
-  import { Switch } from "$ui/switch";
   import { toast } from "svelte-sonner";
   import PausingCard from "./PausingCard.svelte";
   import TicketForumCard from "./TicketForumCard.svelte";
