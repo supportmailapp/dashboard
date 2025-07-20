@@ -28,6 +28,12 @@
      * - `r` - role
      */
     fallback?: "u" | "c" | "r";
+    /**
+     * Which actions to enable.
+     *
+     * @default "all"
+     */
+    buttons?: "delete" | "copy" | "all" | "none";
   };
 
   let {
@@ -37,6 +43,7 @@
     class: className,
     onDelete = () => !!toast.error("This function is not set, please report this bug."),
     fallback = role ? "r" : channel ? "c" : "u",
+    buttons = "all",
   }: Props = $props();
   const id = $derived<string | undefined>(role?.id ?? channel?.id ?? user?.id);
   let hovered = $state(false);
@@ -64,6 +71,6 @@
   {/if}
 
   {#if role || channel || user}
-    <MentionActions bind:hovered {id} {onDelete} />
+    <MentionActions bind:hovered {id} {onDelete} {buttons} />
   {/if}
 </div>

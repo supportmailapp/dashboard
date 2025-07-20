@@ -4,9 +4,14 @@
   import Trash from "@lucide/svelte/icons/trash";
   import { toast } from "svelte-sonner";
 
-  type Props = { id?: string; hovered: boolean; onDelete?: (id: string) => boolean | Promise<boolean> };
+  type Props = {
+    id?: string;
+    hovered: boolean;
+    onDelete?: (id: string) => boolean | Promise<boolean>;
+    buttons?: "delete" | "copy" | "all" | "none";
+  };
 
-  let { hovered = $bindable(false), id, onDelete }: Props = $props();
+  let { hovered = $bindable(false), id, buttons = "all", onDelete }: Props = $props();
 
   function copyId() {
     if (!id) return;
@@ -27,17 +32,21 @@
 </script>
 
 <div class={cn("actions-container", "rounded-md")}>
-  <button
-    class="text-destructive bg-destructive-foreground"
-    class:visible={hovered}
-    onclick={async () => {
-      if (!id) return;
-      await onDelete?.(id);
-    }}
-  >
-    <Trash class="w-4" />
-  </button>
-  <button class="text-primary bg-primary-foreground" class:visible={hovered} onclick={copyId}>
-    <Files class="w-4" />
-  </button>
+  {#if buttons === "all" || buttons === "delete"}
+    <button
+      class="text-destructive bg-destructive-foreground"
+      class:visible={hovered}
+      onclick={async () => {
+        if (!id) return;
+        await onDelete?.(id);
+      }}
+    >
+      <Trash class="w-4" />
+    </button>
+  {/if}
+  {#if buttons === "all" || buttons === "copy"}
+    <button class="text-primary bg-primary-foreground" class:visible={hovered} onclick={copyId}>
+      <Files class="w-4" />
+    </button>
+  {/if}
 </div>
