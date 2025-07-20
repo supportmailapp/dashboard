@@ -1,19 +1,16 @@
 <script lang="ts">
-  import ChannelIcon from "./discord/ChannelIcon.svelte";
-
   import { page } from "$app/state";
+  import Hash from "@lucide/svelte/icons/hash";
+  import { ChannelType } from "discord-api-types/v10";
+
+  import ChannelIcon from "./discord/ChannelIcon.svelte";
   import * as Command from "$lib/components/ui/command/index.js";
   import { sortChannels } from "$lib/utils/formatting";
   import { Skeleton } from "$ui/skeleton";
-  import Hash from "@lucide/svelte/icons/hash";
-  import Volume2 from "@lucide/svelte/icons/volume-2";
-  import Logs from "@lucide/svelte/icons/logs";
-  import { ChannelType } from "discord-api-types/v10";
-  import DiscordForumIcon from "$lib/assets/DiscordForumIcon.svelte";
-  import type { Component } from "svelte";
-  import { SvelteMap } from "svelte/reactivity";
 
   type Props = {
+    selected?: GuildCoreChannel;
+    excludedChannelIds?: string[];
     /**
      * The channel types to filter by.
      *
@@ -29,12 +26,22 @@
     onSelect?: (channel: GuildCoreChannel) => void;
   };
 
-  let { channelTypes = [], selectCategories = false, onSelect }: Props = $props();
+  let {
+    selected = $bindable(),
+    channelTypes = [],
+    excludedChannelIds,
+    selectCategories = false,
+    onSelect,
+  }: Props = $props();
   let allowAllChannels = $derived(channelTypes.length === 0);
+
+  function isChannelExcluded(channel: GuildCoreChannel): boolean {
+    return excludedChannelIds !== undefined && excludedChannelIds.includes(channel.id);
+  }
 
   let filteredChannels = $derived<GuildCoreChannel[]>(
     page.data.guildsManager.channels?.filter(
-      (channel) => allowAllChannels || channelTypes.includes(channel.type),
+      (channel) => (allowAllChannels || channelTypes.includes(channel.type)) && !isChannelExcluded(channel),
     ) ?? [],
   );
 
@@ -53,11 +60,12 @@
   $inspect("ChannelSelect[grouped]", groupedChannels);
 </script>
 
+<!-- TODO: Find a way to display the current selected channel differently -->
 {#snippet channelItem(channel: GuildCoreChannel)}
   <Command.Item
     value="{channel.id}:{channel.name}"
     class="cursor-pointer active:translate-y-[1px]"
-    onclick={channelClick(channel.id)}
+    onSelect={channelClick(channel.id)}
   >
     <ChannelIcon type={channel.type} />
     {channel.name}
@@ -69,16 +77,12 @@
   <Command.List>
     <Command.Empty>No channels found.</Command.Empty>
     {#if !page.data.guildsManager.channelsLoaded}
-      <Command.Item disabled>
-        <Hash />
-        <Skeleton class="h-4 w-full" />
-      </Command.Item>
-      <Command.Item disabled>
-        <Skeleton class="h-4 w-[75%]" />
-      </Command.Item>
-      <Command.Item disabled>
-        <Skeleton class="h-4 w-[30%]" />
-      </Command.Item>
+      {#each new Array(3) as _}
+        <Command.Item disabled>
+          <Hash />
+          <Skeleton class="h-4 w-full" />
+        </Command.Item>
+      {/each}
     {:else if page.data.guildsManager.channelsLoaded && selectCategories && channelTypes.includes(ChannelType.GuildCategory)}
       <!-- The logic for selecting everything BUT categories -->
       {@const joinedChannels = filteredChannels}
