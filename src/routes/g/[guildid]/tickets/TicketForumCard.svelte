@@ -1,7 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
   import ConfigCard from "$lib/components/ConfigCard.svelte";
-  import { Label } from "$ui/label";
   import ChannelSelect from "$lib/components/ChannelSelect.svelte";
   import * as Alert from "$lib/components/ui/alert/index.js";
   import { Skeleton } from "$ui/skeleton";
@@ -10,8 +9,16 @@
   import { Button, buttonVariants } from "$ui/button/index.js";
   import { ConfigState } from "$lib/stores/ConfigState.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
+  import { APIRoutes } from "$lib/urls";
+  import apiClient from "$lib/utils/apiClient";
+  import { toast } from "svelte-sonner";
+  import type { DBGuildProjectionReturns } from "$lib/server/db";
 
-  let { forumId: fetchedForumId }: { forumId: string | null } = $props();
+  let {
+    forumId: fetchedForumId,
+    wholeConfig,
+  }: { forumId: string | null; wholeConfig: ConfigState<DBGuildProjectionReturns["generalTicketSettings"]> } =
+    $props();
 
   const forum = new ConfigState<GuildCoreChannel>(null);
   let channelsLoaded = $derived(page.data.guildsManager.channelsLoaded);
@@ -22,7 +29,34 @@
   );
   let categorySelectOpen = $state(false);
 
-  async function setupFn() {}
+  async function setupFn() {
+    try {
+      const res = await apiClient.post(APIRoutes.ticketSetup(page.data.guildId!), {
+        json: {
+          categoryId: newCategoryId,
+        },
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json<any>();
+        const errText = errJson?.message || "Unknown Error";
+        throw new Error(errText);
+      }
+
+      toast.info("Setup in progress", { description: "This may take a few seconds" });
+
+      const json = await res.json<DBGuildProjectionReturns["generalTicketSettings"]>();
+
+      wholeConfig.saveConfig(json);
+      fetchedForumId = json.forumId!;
+
+      toast.success("Config updated, refresh needed");
+    } catch (err: any) {
+      toast.error("Setup failed.", {
+        description: String(err.message ?? err),
+      });
+    }
+  }
 
   $effect(() => {
     if (channelsLoaded) {
