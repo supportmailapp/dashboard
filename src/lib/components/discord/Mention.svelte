@@ -9,8 +9,7 @@
   import { toast } from "svelte-sonner";
 
   // Component wrapper for colors and copy & delete button
-
-  type BaseProps<T> = {
+  type Props = {
     class?: ClassValue;
     /**
      * The function to call when the delete action is triggered.
@@ -19,23 +18,11 @@
      * indicating whether the deletion was successful or not.
      */
     onDelete?: (id: string) => boolean | Promise<boolean>;
-  } & T;
-  type Props =
-    | BaseProps<{
-        role: GuildRole;
-        channel?: never;
-        user?: never;
-      }>
-    | BaseProps<{
-        channel: GuildCoreChannel;
-        role?: never;
-        user?: never;
-      }>
-    | BaseProps<{
-        user: (Omit<APIUser, "id" | "username"> & Required<Pick<APIUser, "id" | "username">>) | null;
-        role?: never;
-        channel?: never;
-      }>;
+    channel?: GuildCoreChannel;
+    user?: (Omit<APIUser, "id" | "username"> & Required<Pick<APIUser, "id" | "username">>) | null;
+    role?: GuildRole;
+    fallback?: "user" | "channel" | "role";
+  };
 
   let {
     role,
@@ -43,6 +30,7 @@
     user,
     class: className,
     onDelete = () => !!toast.error("This function is not set, please report this bug."),
+    fallback = role ? "role" : channel ? "channel" : "user",
   }: Props = $props();
   const id = $derived<string | undefined>(role?.id ?? channel?.id ?? user?.id);
   let hovered = $state(false);
@@ -61,13 +49,15 @@
   onfocus={setHovered(true)}
   onblur={setHovered(false)}
 >
-  {#if role}
+  {#if role || fallback === "role"}
     <Role {role} class={className} />
-  {:else if channel}
+  {:else if channel || fallback === "channel"}
     <Channel {channel} class={className} />
-  {:else if user}
-    <User {user} class={className} />
+  {:else if user || fallback === "user"}
+    <User user={user ?? undefined} class={className} />
   {/if}
 
-  <MentionActions bind:hovered {id} {onDelete} />
+  {#if role || channel || user}
+    <MentionActions bind:hovered {id} {onDelete} />
+  {/if}
 </div>
