@@ -21,7 +21,13 @@
     channel?: GuildCoreChannel;
     user?: (Omit<APIUser, "id" | "username"> & Required<Pick<APIUser, "id" | "username">>) | null;
     role?: GuildRole;
-    fallback?: "user" | "channel" | "role";
+    /**
+     * The fallback type to use when no specific mention type is provided.
+     * - `u` - user
+     * - `c` - channel
+     * - `r` - role
+     */
+    fallback?: "u" | "c" | "r";
   };
 
   let {
@@ -30,7 +36,7 @@
     user,
     class: className,
     onDelete = () => !!toast.error("This function is not set, please report this bug."),
-    fallback = role ? "role" : channel ? "channel" : "user",
+    fallback = role ? "r" : channel ? "c" : "u",
   }: Props = $props();
   const id = $derived<string | undefined>(role?.id ?? channel?.id ?? user?.id);
   let hovered = $state(false);
@@ -49,11 +55,11 @@
   onfocus={setHovered(true)}
   onblur={setHovered(false)}
 >
-  {#if role || fallback === "role"}
+  {#if role || fallback === "r"}
     <Role {role} class={className} />
-  {:else if channel || fallback === "channel"}
+  {:else if channel || fallback === "c"}
     <Channel {channel} class={className} />
-  {:else if user || fallback === "user"}
+  {:else if user || fallback === "u"}
     <User user={user ?? undefined} class={className} />
   {/if}
 
