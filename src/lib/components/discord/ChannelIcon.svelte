@@ -11,9 +11,7 @@
   let { type: cType, class: className }: { type?: GuildCoreChannelType; class?: ClassValue } = $props();
 </script>
 
-{#if cType === undefined}
-  <Skeleton class={cn(className)} />
-{:else if cType === ChannelType.GuildCategory}
+{#if cType === ChannelType.GuildCategory}
   <Logs class={cn(className)} />
 {:else if cType === ChannelType.GuildStageVoice || cType === ChannelType.GuildVoice}
   <Volume2 class={cn(className)} />
