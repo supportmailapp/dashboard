@@ -1,232 +1,102 @@
-// import { env } from "$env/dynamic/private";
-// import { cacheGuilds } from "$lib/cache/guilds.js";
-// import { baseForumTagEmojis } from "$lib/constants.js";
-// import { DiscordREST, fetchUserGuilds } from "$lib/discord/utils";
-// import { getGuild, updateGuild } from "$lib/server/db/utils.js";
-// import { canManageBot } from "$lib/utils/permissions.js";
-// import {
-//   ChannelType,
-//   ForumLayoutType,
-//   OverwriteType,
-//   RESTJSONErrorCodes,
-//   Routes,
-//   type APIGuildCategoryChannel,
-//   type APIGuildForumChannel,
-//   type RESTPostAPIGuildChannelJSONBody,
-// } from "discord-api-types/v10";
-// import { DiscordAPIError, PermissionsBitField } from "discord.js";
+import { JsonErrors } from "$lib/constants";
+import { getGuildChannels, getGuildRoles } from "$lib/server/caches/guilds.js";
+import userGuilds from "$lib/server/caches/userGuilds.js";
+import { ClientApiRoutes } from "$lib/server/constants";
+import { getDBGuild } from "$lib/server/db/utils.js";
+import clientApi from "$lib/server/utils/clientApi.js";
+import { MyValidator } from "$lib/server/validators/index.js";
+import { canManageBot } from "$lib/utils/permissions.js";
+import z from "zod";
 
-// type SupportedLangs = "en" | "de" | "fr";
+const routePredicate = z.object({
+  categoryId: z
+    .string()
+    .regex(new RegExp("^\\d+$", "i"), { error: "Malformed categoryId snowflake" })
+    .optional(),
+});
 
-// const Translations = {
-//   forumName: {
-//     en: "tickets",
-//     de: "tickets",
-//     fr: "tickets",
-//   },
-//   tags: {
-//     open: {
-//       en: "Open",
-//       de: "Offen",
-//       fr: "Ouvert",
-//     },
-//     closed: {
-//       en: "closed",
-//       de: "Geschlossen",
-//       fr: "Fermé",
-//     },
-//     unanswered: {
-//       en: "Unanswered",
-//       de: "Unbeantwortet",
-//       fr: "Sans réponse",
-//     },
-//     closeRequested: {
-//       en: "Close Requested",
-//       de: "Schließung angefragt",
-//       fr: "Fermeture demandée",
-//     },
-//     userResponded: {
-//       en: "User Responded",
-//       de: "Nutzer hat geantwortet",
-//       fr: "L'utilisateur a répondu",
-//     },
-//     awaitingResponse: {
-//       en: "Awaiting Response",
-//       de: "Wartet auf Antwort",
-//       fr: "En attente de réponse",
-//     },
-//   },
-// };
+export async function POST({ locals, request }) {
+  if (!locals.token || !locals.user) return JsonErrors.unauthorized();
 
-// export async function POST({ locals, request }) {
-//   const guildId = locals.guildId!;
-//   const user = locals.user!;
-//   try {
-//     let guilds = await fetchUserGuilds(user.id, locals.token!, { bypassCache: true });
-//     if (!guilds) {
-//       return new Response(null, { status: 401, statusText: "Unauthorized" });
-//     } else {
-//       cacheGuilds(...guilds);
-//     }
+  const guildId = locals.guildId!;
 
-//     const guild = guilds.find((g) => g.id === guildId);
-//     if (!guild || !canManageBot(guild.permissions)) {
-//       return new Response(null, { status: 403, statusText: "Forbidden" });
-//     }
+  const _guild = userGuilds.getUserGuilds(locals.user.id)?.find((g) => g.id === guildId);
+  let hasPerms = false;
+  if (_guild) {
+    hasPerms = canManageBot(_guild.permissions);
+  } else {
+    const memberRes = await locals.discordUserRest!.getCurrentUserGuildMember(guildId);
+    if (memberRes.isSuccess()) {
+      let guildRoles = getGuildRoles(guildId) ?? null;
 
-//     // * Start setup * //
+      if (guildRoles === null) {
+        const rolesRes = await locals.discordRest.getGuildRoles(guildId);
+        if (rolesRes.isSuccess()) {
+          guildRoles = rolesRes.data;
+        }
+      }
 
-//     const rest = new DiscordREST();
-//     const body = await request.json();
-//     let { categoryId = null } = body as { categoryId?: string };
-//     const guildConfig = (await getGuild(guildId))!;
+      if (!guildRoles) {
+        return JsonErrors.serverError("Could not determine channels");
+      }
 
-//     // Permission checks are a nightmare if we can't get general user permissions for a channel or the guild
+      hasPerms = memberRes.data.roles.some((roleId) => {
+        const role = guildRoles.find((r) => r.id === roleId);
+        return role && canManageBot(role.permissions);
+      });
+    }
+  }
 
-//     try {
-//       const category = (await rest.instance.post(Routes.guildChannels(guildId), {
-//         body: {
-//           name: Translations.forumName[guildConfig.lang as SupportedLangs],
-//           type: ChannelType.GuildCategory,
-//           position: 0,
-//           permissionOverwrites: [
-//             {
-//               id: guildId,
-//               type: OverwriteType.Role,
-//               allow: [PermissionsBitField.Flags.SendMessages],
-//               deny: [
-//                 PermissionsBitField.Flags.ViewChannel,
-//                 PermissionsBitField.Flags.ManageChannels,
-//                 PermissionsBitField.Flags.ManageThreads,
-//                 PermissionsBitField.Flags.ManageMessages,
-//                 PermissionsBitField.Flags.CreatePublicThreads,
-//                 PermissionsBitField.Flags.UseExternalEmojis,
-//               ],
-//             },
-//             {
-//               id: env.clientId,
-//               type: OverwriteType.Member,
-//               allow: [
-//                 PermissionsBitField.Flags.ViewChannel,
-//                 PermissionsBitField.Flags.ManageChannels,
-//                 PermissionsBitField.Flags.ManageThreads,
-//                 PermissionsBitField.Flags.ManageMessages,
-//                 PermissionsBitField.Flags.SendMessages,
-//                 PermissionsBitField.Flags.CreatePublicThreads,
-//                 PermissionsBitField.Flags.EmbedLinks,
-//                 PermissionsBitField.Flags.UseExternalEmojis,
-//                 PermissionsBitField.Flags.ReadMessageHistory,
-//               ],
-//             },
-//             {
-//               id: user.id,
-//               type: OverwriteType.Member,
-//               allow: [
-//                 PermissionsBitField.Flags.ViewChannel,
-//                 PermissionsBitField.Flags.SendMessages,
-//                 PermissionsBitField.Flags.EmbedLinks,
-//                 PermissionsBitField.Flags.UseExternalEmojis,
-//                 PermissionsBitField.Flags.ReadMessageHistory,
-//               ],
-//             },
-//           ],
-//         } as RESTPostAPIGuildChannelJSONBody,
-//       })) as APIGuildCategoryChannel;
+  if (!hasPerms) {
+    return JsonErrors.forbidden("Insufficient Permissions");
+  }
 
-//       categoryId = category.id;
-//     } catch (err: any) {
-//       if (err instanceof DiscordAPIError) {
-//         if (err.code === RESTJSONErrorCodes.MissingPermissions) {
-//           return Response.json(
-//             {
-//               error: "MissingPermissions",
-//               message: "The bot is missing permissions to create a category.",
-//             },
-//             { status: 403, statusText: "Forbidden" },
-//           );
-//         }
-//         return Response.json(
-//           {
-//             error: "DiscordAPIError",
-//             message: "An error occurred while creating the category.",
-//             code: err.code,
-//           },
-//           { status: 500, statusText: "Internal Server Error" },
-//         );
-//       }
+  const _body = await request.json().catch(() => null);
 
-//       throw err;
-//     }
-//     // Category created
+  const valRes = new MyValidator(routePredicate).validate(_body);
 
-//     let forum: APIGuildForumChannel;
-//     try {
-//       forum = (await rest.instance.post(Routes.guildChannels(guildId), {
-//         body: {
-//           name: Translations.forumName[guildConfig.lang as SupportedLangs],
-//           type: ChannelType.GuildForum,
-//           parent_id: categoryId,
-//           available_tags: Object.values(Translations.tags).map((value) => ({
-//             name: value[guildConfig.lang as SupportedLangs],
-//             moderated: true,
-//           })),
-//           topic: "SupportMail Tickets",
-//           default_forum_layout: ForumLayoutType.ListView,
-//           rate_limit_per_user: 2,
-//           default_thread_rate_limit_per_user: 2,
-//         } as RESTPostAPIGuildChannelJSONBody,
-//         reason: `Tickets Setup by @${locals.user?.username} (${user})`,
-//       })) as APIGuildForumChannel;
-//     } catch (err: any) {
-//       if (err instanceof DiscordAPIError) {
-//         if (err.code === RESTJSONErrorCodes.MissingPermissions) {
-//           return Response.json(
-//             {
-//               error: "MissingPermissions",
-//               message: "The bot is missing permissions to create a category.",
-//             },
-//             { status: 403, statusText: "Forbidden" },
-//           );
-//         }
-//         return Response.json(
-//           {
-//             error: "DiscordAPIError",
-//             message: "An error occurred while creating the category.",
-//             code: err.code,
-//           },
-//           { status: 500, statusText: "Internal Server Error" },
-//         );
-//       }
+  if (!valRes.success) {
+    return JsonErrors.badRequest(String(valRes.error.message ?? valRes.error));
+  }
 
-//       throw err;
-//     }
+  const { categoryId } = valRes.data;
 
-//     const tags = forum.available_tags || [];
-//     function findTagId(emojiName: string) {
-//       return tags.find((t) => t?.emoji_name === emojiName)?.id || null;
-//     }
+  // Validate category presence
+  if (categoryId) {
+    let guildChannels = getGuildChannels(guildId);
+    if (guildChannels === undefined) {
+      const channelsRes = await locals.discordRest.getGuildChannels(guildId);
+      if (channelsRes.isSuccess()) {
+        guildChannels = channelsRes.data;
+      }
 
-//     // update database
-//     await updateGuild(guildId, {
-//       $set: {
-//         "ticketConfig.enabled": true,
-//         "ticketConfig.forumId": forum.id,
-//         "ticketConfig.tags": tags
-//           ? {
-//               open: findTagId(baseForumTagEmojis.open),
-//               closed: findTagId(baseForumTagEmojis.closed),
-//               unanswered: findTagId(baseForumTagEmojis.unanswered),
-//               pendingQR: findTagId(baseForumTagEmojis.pendingQR),
-//               uResponded: findTagId(baseForumTagEmojis.uResponded),
-//               awaitingRes: findTagId(baseForumTagEmojis.awaitingRes),
-//             }
-//           : null,
-//       },
-//     });
+      if (!guildChannels) {
+        return JsonErrors.serverError("Could not determine roles");
+      }
+    }
 
-//     return new Response(null, { status: 201, statusText: "Created" });
-//   } catch (err: any) {
-//     console.error(err);
-//     return Response.json(err, { status: 500, statusText: "Internal Server Error" });
-//   }
-// }
+    if (!guildChannels.some((c) => c.id === categoryId)) {
+      return JsonErrors.notFound("Category not found in guild");
+    }
+  }
+
+  const res = await clientApi.post(ClientApiRoutes.setupTickets(), {
+    json: {
+      categoryId: categoryId,
+    },
+  });
+
+  if (!res.ok) {
+    return new Response(null, { status: res.status, statusText: res.statusText });
+  }
+
+  // This can't be null, because then res.status above wouldn't be OK, but 404
+  const dbGuild = await getDBGuild(guildId, "generalTicketSettings");
+
+  // Return the completely new general guild config
+  if (!dbGuild) {
+    return JsonErrors.serverError("Could not retrieve guild configuration");
+  }
+
+  return Response.json(dbGuild);
+}
