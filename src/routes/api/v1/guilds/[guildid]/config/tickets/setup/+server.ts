@@ -100,3 +100,5 @@ export async function POST({ locals, request }) {
 
   return Response.json(dbGuild);
 }
+
+// TODO: Add client API Endpoint for this setup thing
