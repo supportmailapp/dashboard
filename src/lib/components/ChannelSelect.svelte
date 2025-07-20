@@ -7,6 +7,7 @@
   import * as Command from "$lib/components/ui/command/index.js";
   import { sortChannels } from "$lib/utils/formatting";
   import { Skeleton } from "$ui/skeleton";
+  import { cn } from "$lib/utils";
 
   type Props = {
     selected?: GuildCoreChannel;
@@ -64,7 +65,10 @@
 {#snippet channelItem(channel: GuildCoreChannel)}
   <Command.Item
     value="{channel.id}:{channel.name}"
-    class="cursor-pointer active:translate-y-[1px]"
+    class={cn(
+      "cursor-pointer transition duration-80 active:scale-[99%]",
+      selected?.id === channel.id && "bg-accent-foreground text-accent",
+    )}
     onSelect={channelClick(channel.id)}
   >
     <ChannelIcon type={channel.type} />
