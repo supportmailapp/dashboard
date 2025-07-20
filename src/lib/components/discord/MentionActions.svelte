@@ -28,7 +28,7 @@
 
 <div class={cn("actions-container", "rounded-md")}>
   <button
-    class="action-delete"
+    class="text-destructive bg-destructive-foreground"
     class:visible={hovered}
     onclick={async () => {
       if (!id) return;
@@ -37,7 +37,7 @@
   >
     <Trash class="w-4" />
   </button>
-  <button class="action-copy" class:visible={hovered} onclick={copyId}>
+  <button class="text-primary bg-primary-foreground" class:visible={hovered} onclick={copyId}>
     <Files class="w-4" />
   </button>
 </div>
