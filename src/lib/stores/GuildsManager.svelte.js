@@ -1,6 +1,7 @@
 import { page } from "$app/state";
 import { BasicFetchInit } from "$lib/constants";
 import { APIRoutes } from "$lib/urls";
+import { sortByPositionAndId } from "$lib/utils/formatting";
 
 export class GuildsManager {
   /**
@@ -72,7 +73,7 @@ export class GuildsManager {
     if (channelsRes.ok) {
       /** @type {GuildCoreChannel[]} */
       let channelsJson = await channelsRes.json();
-      this.channels = channelsJson;
+      this.channels = sortByPositionAndId(channelsJson);
       this.channelsLoaded = true;
     } else {
       console.error("Failed to load channels for guild:", this.currentGuild.id);
@@ -93,7 +94,7 @@ export class GuildsManager {
     if (rolesRes.ok) {
       /** @type {GuildRole[]} */
       let rolesJson = await rolesRes.json();
-      this.roles = rolesJson;
+      this.roles = sortByPositionAndId(rolesJson);
       this.rolesLoaded = true;
     } else {
       console.error("Failed to load roles for guild:", this.currentGuild.id);
