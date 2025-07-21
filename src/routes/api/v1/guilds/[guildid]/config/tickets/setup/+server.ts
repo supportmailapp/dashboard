@@ -1,7 +1,7 @@
 import { JsonErrors } from "$lib/constants";
 import { getGuildChannels, getGuildRoles } from "$lib/server/caches/guilds.js";
 import userGuilds from "$lib/server/caches/userGuilds.js";
-import { ClientApiRoutes } from "$lib/server/constants";
+import { ClientApiRoutes, SMErrorCodes } from "$lib/server/constants";
 import { getDBGuild } from "$lib/server/db/utils.js";
 import clientApi from "$lib/server/utils/clientApi.js";
 import { ZodValidator } from "$lib/server/validators/index.js";
@@ -80,7 +80,7 @@ export async function POST({ locals, request }) {
     }
   }
 
-  const res = await clientApi.post(ClientApiRoutes.ticketSetup(), {
+  const res = await clientApi.post<ClientAPI.POSTTicketSetupJSONResult>(ClientApiRoutes.ticketSetup(), {
     json: {
       userId: locals.user.id,
       guildId: locals.guildId,
@@ -90,6 +90,25 @@ export async function POST({ locals, request }) {
 
   if (!res.ok) {
     return new Response(null, { status: res.status, statusText: res.statusText });
+  }
+
+  const json = await res.json();
+
+  if (!json.success) {
+    switch (json.error.code) {
+      case SMErrorCodes.MissingPermissions:
+        return JsonErrors.forbidden("Bot missing required permissions");
+      case SMErrorCodes.CategoryNotFound:
+        return JsonErrors.notFound("Category not found");
+      case SMErrorCodes.CategoryCreationFailed:
+        return JsonErrors.serverError("Failed to create category");
+      case SMErrorCodes.ForumCreationFailed:
+        return JsonErrors.serverError("Failed to create forum channel");
+      case SMErrorCodes.CommunityRequired:
+        return JsonErrors.badRequest("Server must be a community server");
+      default:
+        return JsonErrors.serverError("Setup failed");
+    }
   }
 
   // This can't be null, because then res.status above wouldn't be OK, but 404
