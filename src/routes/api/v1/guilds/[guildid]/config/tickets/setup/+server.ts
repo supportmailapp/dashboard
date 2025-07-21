@@ -80,8 +80,10 @@ export async function POST({ locals, request }) {
     }
   }
 
-  const res = await clientApi.post(ClientApiRoutes.setupTickets(), {
+  const res = await clientApi.post(ClientApiRoutes.ticketSetup(), {
     json: {
+      userId: locals.user.id,
+      guildId: locals.guildId,
       categoryId: categoryId,
     },
   });
@@ -100,5 +102,3 @@ export async function POST({ locals, request }) {
 
   return Response.json(dbGuild);
 }
-
-// TODO: Add client API Endpoint for this setup thing
