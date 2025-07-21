@@ -29,5 +29,5 @@ export function ErrorJsonResponse(status: number, statusText: string, message: s
 }
 
 export const ClientApiRoutes = {
-  setupTickets: () => `/setup/tickets` as const,
+  setupTickets: () => `/ticket-setup` as const,
 };
