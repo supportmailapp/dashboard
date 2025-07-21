@@ -4,7 +4,7 @@ import userGuilds from "$lib/server/caches/userGuilds.js";
 import { ClientApiRoutes } from "$lib/server/constants";
 import { getDBGuild } from "$lib/server/db/utils.js";
 import clientApi from "$lib/server/utils/clientApi.js";
-import { MyValidator } from "$lib/server/validators/index.js";
+import { ZodValidator } from "$lib/server/validators/index.js";
 import { canManageBot } from "$lib/utils/permissions.js";
 import z from "zod";
 
@@ -53,7 +53,7 @@ export async function POST({ locals, request }) {
 
   const _body = await request.json().catch(() => null);
 
-  const valRes = new MyValidator(routePredicate).validate(_body);
+  const valRes = new ZodValidator(routePredicate).validate(_body);
 
   if (!valRes.success) {
     return JsonErrors.badRequest(String(valRes.error.message ?? valRes.error));

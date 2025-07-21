@@ -1,6 +1,6 @@
 import { JsonErrors } from "$lib/constants";
 import { FlattenDocToJSON, updateDBGuild } from "$lib/server/db/utils.js";
-import { MyValidator } from "$lib/server/validators/index.js";
+import { ZodValidator } from "$lib/server/validators/index.js";
 import dayjs from "dayjs";
 import z from "zod";
 
@@ -22,7 +22,7 @@ export async function PUT({ locals, params, request }) {
     return JsonErrors.badRequest("Missing body?");
   }
 
-  const valRes = new MyValidator(putSchema).validate(body);
+  const valRes = new ZodValidator(putSchema).validate(body);
   console.log("valRes", valRes);
   if (!valRes.success) {
     console.log("no success", valRes.error);
@@ -55,12 +55,12 @@ export async function PUT({ locals, params, request }) {
   const flat = FlattenDocToJSON(newDBGuild)[configKey]["pausedUntil"];
   console.log("flat", flat);
 
-  console.log("1", new MyValidator(putSchema).validate({}));
-  console.log("2", new MyValidator(putSchema).validate("asasd"));
-  console.log("3", new MyValidator(putSchema).validate(false));
+  console.log("1", new ZodValidator(putSchema).validate({}));
+  console.log("2", new ZodValidator(putSchema).validate("asasd"));
+  console.log("3", new ZodValidator(putSchema).validate(false));
   console.log(
     "4",
-    new MyValidator(putSchema).validate({
+    new ZodValidator(putSchema).validate({
       value: false,
       date: null,
     }),

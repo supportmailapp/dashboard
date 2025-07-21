@@ -1,6 +1,6 @@
 import { JsonErrors, zodLanguage } from "$lib/constants";
 import { DBUser, getDBUser } from "$lib/server/db/index.js";
-import { MyValidator } from "$lib/server/validators/index.js";
+import { ZodValidator } from "$lib/server/validators/index.js";
 import z from "zod";
 
 export async function GET({ locals }) {
@@ -26,7 +26,7 @@ export async function PUT({ locals, request }) {
 
   const body = await request.json();
 
-  const valRes = new MyValidator(putSchema).validate(body);
+  const valRes = new ZodValidator(putSchema).validate(body);
 
   if (!valRes.success) {
     return JsonErrors.badRequest(valRes.error.message);

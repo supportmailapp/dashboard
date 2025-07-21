@@ -1,6 +1,6 @@
 import { JsonErrors, LANGUAGES, zodLanguage } from "$lib/constants.js";
 import { FlattenDocToJSON, getDBGuild, updateDBGuild } from "$lib/server/db";
-import { MyValidator } from "$lib/server/validators/index.js";
+import { ZodValidator } from "$lib/server/validators/index.js";
 import z from "zod";
 
 const patchSchema = z.object({
@@ -33,7 +33,7 @@ export async function PATCH({ request, locals }) {
   }
 
   // Validation
-  const validationRes = new MyValidator(patchSchema).validate(body);
+  const validationRes = new ZodValidator(patchSchema).validate(body);
 
   if (!validationRes.success) {
     return JsonErrors.badRequest(validationRes.error.message);

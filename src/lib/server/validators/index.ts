@@ -6,7 +6,7 @@ type ValidationRes<V extends z.ZodType> =
   | { success: true; data: z.core.output<V> }
   | { success: false; error: ValidationError };
 
-export class MyValidator<V extends z.ZodType> {
+export class ZodValidator<V extends z.ZodType> {
   constructor(private validator: V) {}
 
   public validate(value: unknown): ValidationRes<V> {
