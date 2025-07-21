@@ -13,6 +13,7 @@ import type {
 import type { FlattenMaps } from "mongoose";
 import type { IUserToken } from "supportmail-types";
 import type { PUTPausingObject } from "./routes/api/v1/guilds/[guildid]/config/pausing/[modul]/+server";
+import type { SMErrorCodes } from "$lib/server/constants";
 
 /**
  * Represents the result of a safe session validation operation.
@@ -140,6 +141,61 @@ declare global {
   type APIError = {
     message: string;
   };
+
+  namespace ClientAPI {
+    interface TicketSetupUpdate {
+      step: "checkingPermissions" | "creatingChannels" | "updatingDatabase" | "success";
+      payload: {
+        embeds: Array<{
+          title: string;
+          description: string;
+          color: number;
+          image?: {
+            url: string;
+          };
+        }>;
+        components?: any[];
+      };
+    }
+
+    interface POSTTicketSetupJSONResultError {
+      success: false;
+      error: {
+        code:
+          | SMErrorCodes.CategoryCreationFailed
+          | SMErrorCodes.ForumCreationFailed
+          | SMErrorCodes.CommunityRequired
+          | SMErrorCodes.MissingPermissions
+          | SMErrorCodes.CategoryNotFound;
+        message: string;
+        permissionsMissing?: string[];
+      };
+    }
+
+    interface POSTTicketSetupJSONResultSuccess {
+      success: true;
+      data?: {
+        categoryId: string;
+        forumId: string;
+        forumName: string;
+        tags: {
+          open?: string;
+          closed?: string;
+          unanswered?: string;
+          pendingQR?: string;
+          uResponded?: string;
+          awaitingRes?: string;
+        } | null;
+      };
+    }
+
+    type POSTTicketSetupJSONResult = {
+      updates?: Array<{
+        step: string;
+        payload: any;
+      }>;
+    } & (POSTTicketSetupJSONResultSuccess | POSTTicketSetupJSONResultError);
+  }
 }
 
 export {};
