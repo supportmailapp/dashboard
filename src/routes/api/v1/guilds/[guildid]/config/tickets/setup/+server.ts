@@ -6,6 +6,7 @@ import { getDBGuild } from "$lib/server/db/utils.js";
 import clientApi from "$lib/server/utils/clientApi.js";
 import { ZodValidator } from "$lib/server/validators/index.js";
 import { canManageBot } from "$lib/utils/permissions.js";
+import type { KyResponse } from "ky";
 import z from "zod";
 
 const routePredicate = z.object({
@@ -80,13 +81,22 @@ export async function POST({ locals, request }) {
     }
   }
 
-  const res = await clientApi.post<ClientAPI.POSTTicketSetupJSONResult>(ClientApiRoutes.ticketSetup(), {
-    json: {
-      userId: locals.user.id,
-      guildId: locals.guildId,
-      categoryId: categoryId,
-    },
-  });
+  const res = await clientApi
+    .post<ClientAPI.POSTTicketSetupJSONResult>(ClientApiRoutes.ticketSetup(), {
+      json: {
+        userId: locals.user.id,
+        guildId: locals.guildId,
+        categoryId: categoryId,
+      },
+    })
+    .catch(
+      () =>
+        ({
+          ok: false,
+          status: 500,
+          statusText: "Internal Error",
+        }) as KyResponse,
+    );
 
   if (!res.ok) {
     return new Response(null, { status: res.status, statusText: res.statusText });
