@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { browser } from "$app/environment";
   import { beforeNavigate, goto } from "$app/navigation";
   import { page } from "$app/state";
   import Branding from "$lib/assets/Branding.svelte";
@@ -15,9 +16,8 @@
 
   let guildManager = $derived(page.data.guildsManager);
   let loading = $state(false);
-  let nextPath = $state(
-    page.url.searchParams.get("next")?.startsWith("/") ? page.url.searchParams.get("next") : "/home",
-  );
+  let hrefAfterLogin = $state<string | null>(null);
+  let hrefAfterSelection = $state<string>("/home");
 
   $effect(() => {
     if (guildManager.loaded) {
@@ -25,6 +25,37 @@
     } else {
       loading = true;
     }
+  });
+
+  $effect(() => {
+    if (!browser) return;
+
+    loading = true;
+    const nextUrl = page.url.searchParams.get("next");
+    if (nextUrl?.startsWith("/g/")) {
+      goto(nextUrl);
+    } else if (nextUrl?.startsWith("/")) {
+      hrefAfterSelection = nextUrl;
+    }
+
+    const lsHrefAfterLogin = localStorage.getItem("urlAfterLogin") ?? null;
+    const lshrefAfterSelection = localStorage.getItem("urlAfterSelection") ?? null;
+    if (lsHrefAfterLogin) {
+      hrefAfterLogin = lsHrefAfterLogin;
+      localStorage.removeItem("urlAfterLogin");
+    }
+    if (lshrefAfterSelection && hrefAfterSelection !== "/home") {
+      hrefAfterSelection = lshrefAfterSelection;
+      localStorage.removeItem("urlAfterSelection");
+    }
+
+    if (hrefAfterLogin !== null) {
+      goto(hrefAfterLogin);
+    }
+
+    loading = false;
+
+    return;
   });
 
   beforeNavigate(({ complete }) => {
@@ -81,7 +112,7 @@
                 {#each guildManager.guilds as guild (guild.id)}
                   <Table.Row
                     class={!guild.isConfigured ? "opacity-50 hover:opacity-100" : ""}
-                    onclick={() => goto(`/g/${guild.id}${nextPath}`)}
+                    onclick={() => goto(`/g/${guild.id}${hrefAfterSelection}`)}
                   >
                     <!-- Icon, Name, either a PLUS icon or a "login" icon -->
                     <Table.Cell>
