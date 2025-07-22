@@ -6,6 +6,7 @@
   import { Skeleton } from "$ui/skeleton";
   import { ChannelType } from "discord-api-types/v10";
   import * as Popover from "$lib/components/ui/popover/index.js";
+  import * as Dialog from "$lib/components/ui/dialog/index.js";
   import { Button, buttonVariants } from "$ui/button/index.js";
   import { ConfigState } from "$lib/stores/ConfigState.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
@@ -28,9 +29,13 @@
     newCategoryId ? (channels.find((c) => c.id === newCategoryId) ?? undefined) : undefined,
   );
   let categorySelectOpen = $state(false);
+  let setupBtnLoading = $state(false);
+
+  $inspect("fetchedForumId", fetchedForumId);
 
   async function setupFn() {
     try {
+      setupBtnLoading = true;
       const res = await apiClient.post(APIRoutes.ticketSetup(page.data.guildId!), {
         json: {
           categoryId: newCategoryId,
@@ -55,6 +60,8 @@
       toast.error("Setup failed.", {
         description: String(err.message ?? err),
       });
+    } finally {
+      setupBtnLoading = false;
     }
   }
 
@@ -72,47 +79,47 @@
   });
 </script>
 
-<ConfigCard title="Ticket Forum" description="Configure the forum where tickets will be created.">
+<ConfigCard
+  title="Ticket Forum"
+  description="Configure the forum where tickets will be created."
+  saveBtnDisabled={!forum.config}
+>
   <div class="flex flex-col gap-2">
-    {#if channelsLoaded && forum.isConfigured()}
+    {#if channelsLoaded}
       <div class="flex w-full items-center justify-between">
         <Mention channel={forum.config ?? undefined} fallback="c" buttons="copy" />
-        <Button
-          variant="destructive"
-          onclick={() => {
-            // TODO: This is jsut a placeholder, implement actual deletion logic
-            fetchedForumId = null;
-            forum.setConfig(null);
-          }}
-        >
-          Reset
-        </Button>
-      </div>
-    {:else if !channelsLoaded}
-      <Skeleton class="h-8 w-full" />
-    {:else}
-      <div class="flex w-full flex-col">
-        <Alert.Root variant="warning" class="w-full">
-          <Alert.Title>No forum set.</Alert.Title>
-          <Alert.Description>Click the button below to start the setup.</Alert.Description>
-        </Alert.Root>
-
-        <div class="mt-4 grid grid-cols-1 place-items-start gap-5 p-3 md:grid-cols-[auto_1fr]">
-          <div class="flex w-fit max-w-3xs flex-col items-center gap-2">
-            {#if newCategoryId}
-              <Mention
-                channel={newCategory}
-                fallback="c"
-                onDelete={() => {
+        <Dialog.Root>
+          <Dialog.Trigger class={buttonVariants({ variant: "outline" })}>Setup New Forum</Dialog.Trigger>
+          <Dialog.Content class="sm:max-w-[525px]">
+            <Dialog.Header>
+              <Dialog.Title>Setup Ticket Forum</Dialog.Title>
+              <Dialog.Description>
+                The bot needs to setup the ticket forum by itself to avoid issues.
+                <br />
+                You can select a category where the forum will be created, but you can also leave it empty to let
+                the bot create one for you.
+              </Dialog.Description>
+            </Dialog.Header>
+            <div class="grid grid-cols-[1fr_auto] gap-2">
+              {#if newCategoryId}
+                {@const deleteHandler = () => {
                   newCategoryId = null;
                   return true;
                 }}
-              />
-            {:else}
-              <span class="text-muted-foreground bg-muted rounded px-2 py-1 text-sm">
-                No category selected
-              </span>
-            {/if}
+                <Mention channel={newCategory} fallback="c" onDelete={deleteHandler} />
+                <Button
+                  variant="destructive"
+                  class={buttonVariants({ variant: "destructive" })}
+                  onclick={deleteHandler}
+                >
+                  Clear
+                </Button>
+              {:else}
+                <span class="text-muted-foreground bg-muted col-span-2 rounded-lg px-3 py-2 text-sm">
+                  No category selected
+                </span>
+              {/if}
+            </div>
             <Popover.Root bind:open={categorySelectOpen}>
               <Popover.Trigger class={buttonVariants({ variant: "outline" })}>
                 Choose a category
@@ -129,15 +136,16 @@
                 />
               </Popover.Content>
             </Popover.Root>
-          </div>
-          <p class="text-sm">
-            The bot needs to setup the ticket forum by itself to avoid issues.<br />
-            You can select a category where the forum will be created, but you can also leave it empty to let the
-            bot create one for you.
-          </p>
-        </div>
-        <Button onclick={setupFn}>Setup</Button>
+
+            <Dialog.Footer>
+              <Button showLoading={setupBtnLoading} disabled={setupBtnLoading} onclick={setupFn}>Setup</Button
+              >
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Root>
       </div>
+    {:else}
+      <Skeleton class="h-8 w-full" />
     {/if}
   </div>
 </ConfigCard>
