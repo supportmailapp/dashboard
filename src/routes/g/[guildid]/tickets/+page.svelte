@@ -42,7 +42,7 @@
 <section class="mt-6 w-full max-w-2xl space-y-4">
   {#if generalTicketsConf.isConfigured()}
     <PausingCard bind:pausedUntil={generalTicketsConf.config.pausedUntil} />
-    <TicketForumCard forumId={generalTicketsConf.config.forumId ?? null} />
+    <TicketForumCard forumId={generalTicketsConf.config.forumId ?? null} wholeConfig={generalTicketsConf} />
   {:else}
     <div class="grid place-items-center">
       <LoadingSpinner />
