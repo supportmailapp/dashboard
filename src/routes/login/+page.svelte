@@ -52,7 +52,15 @@
         action="?/login"
         method="POST"
         use:enhance={() => {
+          const nextHref = page.url.searchParams.get("next");
+          if (nextHref?.startsWith("/g/")) {
+            localStorage.setItem("urlAfterLogin", nextHref);
+          } else if (nextHref?.startsWith("/")) {
+            localStorage.setItem("urlAfterServerSelection", nextHref);
+          }
+
           showLoading = true;
+
           return async ({ update, result }) => {
             console.log("Form submitted", result);
             await update();
