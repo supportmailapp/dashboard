@@ -122,7 +122,7 @@
       <nav class="flex-1 space-y-2 overflow-auto p-4">
         <!-- Reload Button for Channels & Roles -->
         <div class="flex flex-row gap-2">
-          <Button size="sm" class="w-full" variant="secondary" onclick={reloadGuildData}>
+          <Button size="xs" class="w-full" variant="outline" onclick={reloadGuildData}>
             <RotateCcw />
             Reload Channels & Roles
           </Button>
@@ -265,7 +265,7 @@
             <nav class="flex-1 space-y-2 overflow-auto p-4">
               <!-- Reload Button for Channels & Roles -->
               <div class="flex flex-row gap-2">
-                <Button size="sm" class="w-full" variant="secondary" onclick={reloadGuildData}>
+                <Button size="sm" class="w-full" variant="outline" onclick={reloadGuildData}>
                   <RotateCcw />
                   Reload Channels & Roles
                 </Button>
@@ -357,30 +357,6 @@
       gap: 1rem;
       overflow-x: auto;
       overflow-y: scroll;
-    }
-  }
-
-  .sidebar-button {
-    --active-bg-color: var(--color-muted/10);
-    --hover-bg-color: var(--color-muted/5);
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    justify-content: flex-start;
-    padding: 0.5rem 1rem;
-    border-radius: 0.375rem;
-    transition: all 150ms ease-in-out;
-    background-color: transparent;
-    cursor: pointer;
-    font-weight: bolder;
-
-    &:hover {
-      background-color: var(--hover-bg-color);
-    }
-
-    &.active {
-      background-color: var(--active-bg-color);
     }
   }
 </style>
