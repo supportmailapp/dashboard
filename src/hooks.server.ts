@@ -1,3 +1,4 @@
+import { dev } from "$app/environment";
 import { env } from "$env/dynamic/private";
 import { PUBLIC_SENTRY_DSN } from "$env/static/public";
 import { JsonErrors } from "$lib/constants.js";
@@ -6,11 +7,12 @@ import { dbConnect } from "$lib/server/db";
 import { DiscordBotAPI, DiscordUserAPI } from "$lib/server/discord";
 import arcjet, { detectBot, shield, slidingWindow } from "@arcjet/sveltekit";
 import * as Sentry from "@sentry/sveltekit";
-import { error, type Handle, type HandleServerError } from "@sveltejs/kit";
+import { error, redirect, type Handle, type HandleServerError } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
 import dayjs from "dayjs";
-import { inspect } from "util";
 import wildcardMatch from "wildcard-match";
+import sessionCache from "$lib/server/caches/sessions.js";
+import guildAccessCache from "$lib/server/caches/guildAccess.js";
 
 const inDevMode = env.NODE_ENV === "development";
 
@@ -46,7 +48,7 @@ const aj = arcjet({
 const devToolsCheck: Handle = async ({ event, resolve }) => {
   if (event.url.pathname.startsWith("/.well-known/appspecific/com.chrome.devtools")) {
     console.debug("Serving empty DevTools response");
-    return new Response(null, { status: 204 }); // Return empty response with 204 No Content
+    return new Response(null, { status: 404 }); // Return empty response with 404 Not Found
   }
   return resolve(event);
 };
@@ -83,12 +85,20 @@ const authHandler: Handle = async ({ event, resolve }) => {
       return { user: null, token: null, error: "notfound" };
     }
 
+    // Check cache first
+    const cached = sessionCache.get(sessionToken);
+    if (cached) {
+      return cached;
+    }
+
     try {
       // Find session in database
       const tokenResult = await SessionManager.getUserTokenBySession(sessionToken);
 
       if (tokenResult.isExpired()) {
-        return { error: "expired", token: tokenResult.token, user: null };
+        const result: SafeSessionResult = { error: "expired", token: tokenResult.token, user: null };
+        sessionCache.set(sessionToken, result);
+        return result;
       } else if (!tokenResult.isFound()) {
         return { user: null, token: null, error: "notfound" };
       }
@@ -105,7 +115,10 @@ const authHandler: Handle = async ({ event, resolve }) => {
         return { user: null, token: null, error: "other" };
       }
 
-      return { user: userRes.data, token: tokenResult.token };
+      const result: SafeSessionResult = { user: userRes.data, token: tokenResult.token };
+      // Cache successful results
+      sessionCache.set(sessionToken, result);
+      return result;
     } catch (error) {
       console.error("Session validation error:", error);
       return { user: null, token: null, error: "other" };
@@ -114,21 +127,21 @@ const authHandler: Handle = async ({ event, resolve }) => {
 
   event.locals.isAuthenticated = () => Boolean(event.locals.user && event.locals.token);
 
-  return resolve(event);
-};
-
-const mainAuthGuard: Handle = async ({ event, resolve }) => {
+  // Consolidate: Get session data immediately instead of in separate handler
   const sessionData = await event.locals.getSafeSession();
-  console.debug("Session data:", sessionData);
   event.locals.user = sessionData.user;
   event.locals.token = sessionData.token;
 
   return resolve(event);
 };
 
+// Remove mainAuthGuard - functionality moved to authHandler
+
 type APIRouteConfig = {
   /**
    * Whether the route allows unauthenticated access.
+   *
+   * @default false
    */
   allowUnauthenticated?: boolean;
   /**
@@ -144,18 +157,20 @@ const UNAUTHENTICATED_ROUTES: Record<string, APIRouteConfig> = {
   "/api/*/testing": { allowUnauthenticated: true },
 };
 
-function matchesRoute(pattern: string, pathname: string): boolean {
-  if (!pattern.includes("*")) {
-    const exactMatch = pathname === pattern;
-    return exactMatch;
+// Optimize route matching with compiled patterns
+const compiledUnauthRoutes = Object.entries(UNAUTHENTICATED_ROUTES).map(([pattern, config]) => ({
+  matcher: pattern.includes("*") ? wildcardMatch(pattern, { flags: "i" }) : null,
+  exactPath: pattern.includes("*") ? null : pattern,
+  config,
+}));
+
+function isUnauthenticatedRoute(pathname: string): boolean {
+  for (const { matcher, exactPath, config } of compiledUnauthRoutes) {
+    if (exactPath ? pathname === exactPath : matcher?.(pathname)) {
+      return typeof config.allowUnauthenticated === "undefined" ? false : config.allowUnauthenticated;
+    }
   }
-
-  const isMatch = wildcardMatch(pattern, {
-    flags: "i",
-  });
-
-  const wildcardResult = isMatch(pathname);
-  return wildcardResult;
+  return false;
 }
 
 /**
@@ -166,21 +181,17 @@ function matchesRoute(pattern: string, pathname: string): boolean {
 const apiAuthGuard: Handle = async ({ event, resolve }) => {
   const pathname = event.url.pathname;
 
+  // Early return for non-API routes
   if (!pathname.startsWith("/api/")) {
-    return resolve(event); // Skip auth guard for non-API routes
+    return resolve(event);
   }
 
-  // Check if route is in the unauthenticated list
-  for (const [pattern, config] of Object.entries(UNAUTHENTICATED_ROUTES)) {
-    if (matchesRoute(pattern, pathname)) {
-      if (config.allowUnauthenticated) {
-        return resolve(event); // Allow unauthenticated access
-      }
-      break;
-    }
+  // Check if route allows unauthenticated access
+  if (isUnauthenticatedRoute(pathname)) {
+    return resolve(event);
   }
 
-  // Default: require authentication for all API routes not in the unauthenticated list
+  // Require authentication for all other API routes
   if (!event.locals.isAuthenticated()) {
     error(401, { message: "Authentication required", status: 401 });
   }
@@ -190,46 +201,62 @@ const apiAuthGuard: Handle = async ({ event, resolve }) => {
 
 const GUILD_ROUTES = ["/api/*/guilds/**", "/g/**"];
 
-/**
- * The Auth Guard for guild-specific routes.
- *
- * @see {@link Handle}
- */
+// Compile guild route patterns once
+const compiledGuildRoutes = GUILD_ROUTES.map((pattern) =>
+  pattern.includes("*") ? wildcardMatch(pattern, { flags: "i" }) : null,
+);
+
 const guildAuthGuard: Handle = async ({ event, resolve }) => {
   const pathname = event.url.pathname;
   const guildId = event.params.guildid;
 
-  if ((!pathname.startsWith("/api/") && !pathname.startsWith("/g")) || !guildId) {
-    return resolve(event); // Skip auth guard for some paths that definitly have no guild param
+  // Early returns for non-guild routes
+  if (!guildId || (!pathname.startsWith("/api/") && !pathname.startsWith("/g"))) {
+    return resolve(event);
   }
 
   event.locals.guildId = guildId;
 
-  // Just a typeguard
+  // Authentication check
   if (!event.locals.token || !event.locals.user) {
+    if (pathname.startsWith("/g")) {
+      redirect(303, `/login` + (pathname.length > 1 ? `?next=${pathname}` : ""));
+    }
     return JsonErrors.unauthorized();
   }
 
   const userRest = new DiscordUserAPI(event.locals.token.accessToken);
+  event.locals.discordUserRest = userRest;
 
-  for (const wildcard of GUILD_ROUTES) {
-    if (matchesRoute(wildcard, pathname)) {
+  // Check if this is a guild route using compiled patterns
+  const isGuildRoute = compiledGuildRoutes.some((matcher) =>
+    matcher ? matcher(pathname) : GUILD_ROUTES.includes(pathname),
+  );
+
+  if (isGuildRoute) {
+    const cacheKey = `${event.locals.user.id}:${guildId}`;
+    const cached = guildAccessCache.get(cacheKey);
+
+    console.log("cached", cached);
+    if (cached && cached.value !== 200) {
+      error(403);
+    } else if (!cached) {
       const accessResult = await checkUserGuildAccess(event.locals.user.id, guildId, userRest);
+
       if (accessResult !== 200) {
         error(accessResult);
       }
+
+      guildAccessCache.set(cacheKey, { value: accessResult });
     }
   }
-
-  event.locals.discordUserRest = userRest;
 
   return resolve(event);
 };
 
 export const handle = sequence(
   devToolsCheck,
-  authHandler,
-  mainAuthGuard,
+  authHandler, // Now includes mainAuthGuard functionality
   apiRateLimitCheck,
   apiAuthGuard,
   guildAuthGuard,
@@ -237,11 +264,16 @@ export const handle = sequence(
 
 export const handleError: HandleServerError = async ({ error, event, status, message }) => {
   const errorId =
-    status !== 404
+    status !== 404 && !dev
       ? Sentry.captureException(error, {
           extra: { event, status },
         })
       : undefined;
+
+  if (dev) {
+    console.error("❌ Something has errored");
+    console.error(error);
+  }
 
   return {
     message: message || "Internal server error",
