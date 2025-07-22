@@ -11,6 +11,8 @@
 
   const generalTicketsConf = new ConfigState<DBGuildProjectionReturns["generalTicketSettings"]>();
 
+  $inspect("generalTicketsConf", generalTicketsConf);
+
   $effect(() => {
     fetch(APIRoutes.ticketsConfig(page.data.guildId!))
       .then((res) => {
