@@ -1,8 +1,7 @@
-import { model, Schema } from "mongoose";
-import pkg from "mongoose";
-const { models } = pkg;
+import pkg, { model, Schema } from "mongoose";
 import type { ITicketCategory } from "supportmail-types";
-import { customModalFieldSchema, entitySchema, partialEmojiSchema } from "./utilSchemas";
+import { customModalFieldSchema, EntitySchema, partialEmojiSchema } from "./utilSchemas";
+const { models } = pkg;
 
 const ticketCategorySchema = new Schema<ITicketCategory>({
   guildId: { type: String, required: true },
@@ -15,7 +14,7 @@ const ticketCategorySchema = new Schema<ITicketCategory>({
     required: false,
   },
   pings: {
-    type: [entitySchema],
+    type: [EntitySchema],
     required: false,
   },
   fields: {

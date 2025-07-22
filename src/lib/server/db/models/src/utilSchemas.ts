@@ -4,7 +4,7 @@
  */
 
 import { Schema } from "mongoose";
-import type { IPartialEmoji, Entity, ICustomModalField } from "supportmail-types";
+import type { AnyEntity, ICustomModalField, IPartialEmoji } from "supportmail-types";
 
 const partialEmojiSchema = new Schema<IPartialEmoji>(
   {
@@ -15,13 +15,14 @@ const partialEmojiSchema = new Schema<IPartialEmoji>(
   { _id: false },
 );
 
-const entitySchema = new Schema<Entity>(
+const EntitySchema = new Schema<AnyEntity>(
   {
     typ: { type: Number, required: true },
     id: { type: String, required: true },
   },
   {
     _id: false,
+    versionKey: false,
   },
 );
 
@@ -40,4 +41,4 @@ const customModalFieldSchema = new Schema<ICustomModalField>(
   },
 );
 
-export { partialEmojiSchema, entitySchema, customModalFieldSchema };
+export { customModalFieldSchema, EntitySchema, partialEmojiSchema };

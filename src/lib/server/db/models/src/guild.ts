@@ -1,19 +1,18 @@
-import { model, Schema } from "mongoose";
-import pkg from "mongoose";
-const { models } = pkg;
+import pkg, { model, Schema } from "mongoose";
 import {
-  NotificationLevel,
   type ICustomModalField,
+  type IDBGuild,
   type IFeedbackConfig,
   type IFeedbackTags,
+  type IGuildFlags,
+  type IReportConfig,
   type IStatusTags,
   type ITicketConfig,
-  type ReportLimitsConfig,
-  type IReportConfig,
-  type IGuildFlags,
-  type IDBGuild,
   type PausedUntil,
+  type ReportLimitsConfig,
 } from "supportmail-types";
+import { EntitySchema } from "./utilSchemas";
+const { models } = pkg;
 
 const CustomModalFieldSchema = new Schema<ICustomModalField>(
   {
@@ -85,6 +84,7 @@ const ticketConfigSchema = new Schema<ITicketConfig>({
   autoForwarding: { type: Boolean, default: true },
   allowedBots: { type: [String], required: false },
   feedback: { type: FeedbackConfigSchema, required: false },
+  webhookDocId: { type: String, required: false },
 });
 
 const reportLimitsSchema = new Schema<ReportLimitsConfig>(
@@ -105,9 +105,9 @@ const reportConfigSchema = new Schema<IReportConfig>({
     setting: { type: String, enum: ["IN", "EX"], default: "EX" },
     ids: { type: [{ t: Number, id: String }], default: [] },
   },
-  pings: { type: [[String, String]], required: false }, // [ [ "prefix", "id" ] ]
-  immune: { type: [[String, String]], required: false }, // [ [ "prefix", "id" ] ]
-  mods: { type: [[String, String]], required: false }, // [ [ "prefix", "id" ] ]
+  pings: { type: [EntitySchema], required: false },
+  immune: { type: [EntitySchema], required: false },
+  mods: { type: [EntitySchema], required: false },
   limits: {
     type: reportLimitsSchema,
     default: {
@@ -116,7 +116,7 @@ const reportConfigSchema = new Schema<IReportConfig>({
       opens: 20,
     },
   },
-  notificationLevel: { type: Number, default: NotificationLevel.OnlyReport },
+  notifications: { type: Number, default: [] },
 });
 
 const GuildFlagsSchema = new Schema<IGuildFlags>(
