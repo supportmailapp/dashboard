@@ -15,31 +15,6 @@ import type { IUserToken } from "supportmail-types";
 import type { PUTPausingObject } from "./routes/api/v1/guilds/[guildid]/config/pausing/[modul]/+server";
 import type { SMErrorCodes } from "$lib/server/constants";
 
-/**
- * Represents the result of a safe session validation operation.
- *
- * This discriminated union type provides three possible outcomes:
- * - Success: Contains both user data and token when session is valid
- * - Expired: Contains token but no user when session has expired
- * - Error: Contains neither user nor token when session is not found or other errors occur
- *
- * @example
- * ```typescript
- * // Successful session
- * const success: SafeSessionResult = { user: apiUser, token: userToken };
- *
- * // Expired session
- * const expired: SafeSessionResult = { user: null, token: userToken, error: "expired" };
- *
- * // Session not found
- * const notFound: SafeSessionResult = { user: null, token: null, error: "notfound" };
- * ```
- */
-type SafeSessionResult =
-  | { user: APIUser; token: FlatUserToken; error?: never }
-  | { user: null; token: FlatUserToken; error: "expired" }
-  | { user: null; token: null; error: "other" | "notfound" | "network" };
-
 // for information about these interfaces
 declare global {
   namespace App {
@@ -89,6 +64,31 @@ declare global {
   }
 
   type FlatUserToken = FlattenMaps<IUserToken>;
+
+  /**
+   * Represents the result of a safe session validation operation.
+   *
+   * This discriminated union type provides three possible outcomes:
+   * - Success: Contains both user data and token when session is valid
+   * - Expired: Contains token but no user when session has expired
+   * - Error: Contains neither user nor token when session is not found or other errors occur
+   *
+   * @example
+   * ```typescript
+   * // Successful session
+   * const success: SafeSessionResult = { user: apiUser, token: userToken };
+   *
+   * // Expired session
+   * const expired: SafeSessionResult = { user: null, token: userToken, error: "expired" };
+   *
+   * // Session not found
+   * const notFound: SafeSessionResult = { user: null, token: null, error: "notfound" };
+   * ```
+   */
+  type SafeSessionResult =
+    | { user: APIUser; token: FlatUserToken; error?: never }
+    | { user: null; token: FlatUserToken; error: "expired" }
+    | { user: null; token: null; error: "other" | "notfound" | "network" };
 
   /**
    * An API guild channel which is not a thread.
