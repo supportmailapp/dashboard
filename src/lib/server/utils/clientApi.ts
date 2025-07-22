@@ -2,8 +2,8 @@ import ky, { type Options } from "ky";
 import { env } from "$env/dynamic/private";
 
 const clientApiBaseUrl = env.clientAPIOrigin as
-  | "https://client-api.supportmail.dev/dashboard"
-  | "http://localhost:3000/dashboard";
+  | "https://client-api.supportmail.dev/dash"
+  | "http://localhost:3000/dash";
 
 interface RequestOptions extends Partial<Options> {
   baseURL?: string;
