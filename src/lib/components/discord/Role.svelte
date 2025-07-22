@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { ClassValue } from "clsx";
   import { cn } from "$lib/utils";
+  import type { APIRole } from "discord-api-types/v10";
 
   type Props = {
     role?: GuildRole;
@@ -8,7 +9,9 @@
   };
 
   let { role, class: className }: Props = $props();
-  const color = $derived(role?.color ? `#${role?.color.toString(16).padStart(6, "0")}` : null);
+  const color = $derived(
+    role?.colors?.primary_color ? `#${role?.color.toString(16).padStart(6, "0")}` : null,
+  );
 </script>
 
 <div data-slot="mention-container" class={cn(className)} data-id={role?.id}>
