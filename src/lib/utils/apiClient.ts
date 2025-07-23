@@ -23,24 +23,24 @@ class ApiClient {
     return value;
   }
 
-  async get<T = any>(url: string, options?: RequestOptions) {
+  async get<T>(url: string, options?: RequestOptions) {
     return this.client.get<T>(this.removeleadingSlash(url.trim()), options);
   }
 
-  async post<T = any>(url: string, options?: RequestOptions) {
+  async post<T>(url: string, options?: RequestOptions) {
     return this.client.post<T>(this.removeleadingSlash(url.trim()), { ...options });
   }
 
-  async put<T = any>(url: string, options?: RequestOptions) {
+  async put<T>(url: string, options?: RequestOptions) {
     return this.client.put<T>(this.removeleadingSlash(url.trim()), { ...options });
   }
 
-  async delete<T = any>(url: string, options?: RequestOptions) {
+  async delete<T>(url: string, options?: RequestOptions) {
     return this.client.delete<T>(this.removeleadingSlash(url.trim()), options).json();
   }
 
-  async patch<T = any>(url: string, options?: RequestOptions) {
-    return this.client.patch(this.removeleadingSlash(url.trim()), { ...options }).json<T>();
+  async patch<T>(url: string, options?: RequestOptions) {
+    return this.client.patch<T>(this.removeleadingSlash(url.trim()), { ...options });
   }
 }
 
