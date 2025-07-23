@@ -129,7 +129,7 @@
     cursor: pointer;
   }
 
-  button:not(.animate-none):not([data-slot]):not([data-slot=""]) {
+  button:not(.animate-none)[data-slot="button"] {
     &:active {
       transform: scale(98.5%);
     }
