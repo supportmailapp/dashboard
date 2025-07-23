@@ -51,6 +51,14 @@ const cdnUrls = {
     `${DISCORD_CDN_BASE}/emojis/${emojiId}.webp?size=${size}` as const,
 };
 
+const addFilterParam = (filter?: "bot") => {
+  switch (filter) {
+    case "bot":
+      return "&filter=bot";
+  }
+  return "";
+};
+
 const APIRoutes = {
   me: () => `${API_BASE}/@me` as const,
   /**
@@ -78,6 +86,8 @@ const APIRoutes = {
   ticketSetup: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/tickets/setup` as const,
   pausing: (guildId: string, modul: "tickets" | "reports") =>
     `${API_BASE}/guilds/${guildId}/config/pausing/${modul}` as const,
+  memberSearch: (guildId: string, query: string, filter?: "bot") =>
+    `${API_BASE}/guilds/${guildId}/member-search?q=${encodeURIComponent(query)}${addFilterParam(filter)}` as const,
 };
 
 const LegalLinks = {
