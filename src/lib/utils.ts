@@ -71,3 +71,7 @@ export function parseIconToURL(
 export function relativeDatetime(djs: dayjs.ConfigType): string {
   return dayjs(djs).fromNow();
 }
+
+export function isNotUndefined<T>(val: T): val is Exclude<T, undefined> {
+  return typeof val !== "undefined";
+}
