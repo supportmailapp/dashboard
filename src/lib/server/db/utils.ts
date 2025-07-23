@@ -14,11 +14,9 @@ type DBGuildProjection = "full" | "generalTicketSettings" | "language" | "pausin
 
 export interface DBGuildProjectionReturns {
   full: IDBGuild;
-  generalTicketSettings: Pick<
-    ITicketConfig,
-    "enabled" | "forumId" | "anonym" | "autoForwarding" | "allowedBots"
-  > & {
+  generalTicketSettings: Pick<ITicketConfig, "enabled" | "forumId" | "anonym" | "autoForwarding"> & {
     pausedUntil: APIPausedUntil;
+    allowedBots: string[];
   };
   language: string;
   pausing: {
