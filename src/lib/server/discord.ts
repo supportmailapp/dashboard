@@ -113,6 +113,18 @@ class DiscordBotAPI extends BaseDiscordAPI {
   public async getGuildMember(guildId: string, memberId: string): Promise<SafeResponse<APIGuildMember>> {
     return this.doSafeRequest(() => this.rest.get(Routes.guildMember(guildId, memberId)) as any);
   }
+
+  public async searchServerMembers(
+    guildId: string,
+    query: string,
+    limit = 1,
+  ): Promise<SafeResponse<APIGuildMember[]>> {
+    return this.doSafeRequest(() =>
+      this.rest.get(
+        `${Routes.guildMembersSearch(guildId)}?query=${encodeURIComponent(query)}&limit=${limit}`,
+      ),
+    );
+  }
 }
 
 export { DiscordBotAPI };
