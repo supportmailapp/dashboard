@@ -4,8 +4,10 @@ import { ZodValidator } from "$lib/server/validators/index.js";
 import z from "zod";
 
 const patchSchema = z.object({
-  language: zodLanguage,
+  language: zodLanguage.optional(),
 });
+
+export type PatchFields = z.infer<typeof patchSchema>;
 
 export async function GET({ locals }) {
   if (locals.guildId && locals.token) {
@@ -43,7 +45,7 @@ export async function PATCH({ request, locals }) {
   if (!guild) {
     return JsonErrors.notFound();
   }
-  const { language } = body as Record<string, any>;
+  const { language } = body as PatchFields;
   if (!LANGUAGES.some((lang) => lang.value === language)) {
     return JsonErrors.badRequest("Invalid language");
   }
