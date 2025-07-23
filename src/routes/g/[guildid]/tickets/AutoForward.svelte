@@ -17,7 +17,7 @@
 <ConfigCard
   class="flex flex-col gap-4"
   title="Automatic Forwading"
-  description="PauThis setting indicates whether messages in ticket posts are always forwarded to the user or not."
+  description="This setting indicates whether messages in ticket posts are always forwarded to the user or not."
   saveFn={async () =>
     await saveAllFn(
       (v: boolean) => (loading = v),
@@ -25,7 +25,7 @@
         oldConfig = data.autoForwarding;
       },
     )}
-  saveBtnDisabled={loading || equal(oldConfig, $state.snapshot(autoForward))}
+  saveBtnDisabled={loading}
   saveBtnLoading={loading}
 >
   <Label>
