@@ -3,7 +3,6 @@
   import type { DBGuildProjectionReturns } from "$lib/server/db";
   import { Label } from "$ui/label";
   import { Switch } from "$ui/switch";
-  import equal from "fast-deep-equal/es6";
 
   let { autoForward = $bindable(), saveAllFn }: { autoForward: boolean; saveAllFn: SaveFunction } = $props();
 
