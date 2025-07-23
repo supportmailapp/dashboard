@@ -142,6 +142,15 @@ declare global {
     message: string;
   };
 
+  /**
+   * A function type that handles saving operations with loading state management.
+   *
+   * @param setLoading - A callback function to update the loading state during the save operation
+   * @param callback - An optional callback function that receives the saved data upon successful completion
+   * @returns A Promise that resolves when the save operation is complete
+   */
+  type SaveFunction = (setLoading: (v: boolean) => void, callback?: (data: any) => void) => Promise<void>;
+
   namespace ClientAPI {
     interface TicketSetupUpdate {
       step: "checkingPermissions" | "creatingChannels" | "updatingDatabase" | "success";
