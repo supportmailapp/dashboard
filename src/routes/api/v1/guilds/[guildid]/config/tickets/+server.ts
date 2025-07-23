@@ -19,7 +19,14 @@ export async function GET({ locals: { guildId } }) {
       return JsonErrors.notFound();
     }
 
-    return Response.json(config);
+    return Response.json({
+      ...config,
+      allowedBots: config.allowedBots ?? [],
+      pausedUntil: config.pausedUntil ?? {
+        value: false,
+        date: null,
+      },
+    } as DBGuildProjectionReturns["generalTicketSettings"]);
   } catch (err: any) {
     console.error("Error fetching guild ticket config:", err);
     return JsonErrors.serverError();
