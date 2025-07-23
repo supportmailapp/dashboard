@@ -26,3 +26,5 @@ export class ZodValidator<V extends z.ZodType> {
     }
   }
 }
+
+export const SnowflakePredicate = z.string().regex(/^\d{15,25}$/i);
