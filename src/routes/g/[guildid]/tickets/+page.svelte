@@ -11,6 +11,7 @@
   import apiClient from "$lib/utils/apiClient";
   import AutoForward from "./AutoForward.svelte";
   import type { PatchFields } from "../../../api/v1/guilds/[guildid]/config/+server";
+  import AllowedBots from "./AllowedBots.svelte";
 
   const generalTicketsConf = new ConfigState<DBGuildProjectionReturns["generalTicketSettings"]>();
 
@@ -90,6 +91,7 @@
     <PausingCard bind:pausedUntil={generalTicketsConf.config.pausedUntil} />
     <TicketForumCard forumId={generalTicketsConf.config.forumId ?? null} wholeConfig={generalTicketsConf} />
     <AutoForward bind:autoForward={generalTicketsConf.config.autoForwarding} saveAllFn={saveAll} />
+    <AllowedBots bind:allowedBots={generalTicketsConf.config.allowedBots} saveAllFn={saveAll} />
   {:else}
     <div class="grid place-items-center">
       <LoadingSpinner />
