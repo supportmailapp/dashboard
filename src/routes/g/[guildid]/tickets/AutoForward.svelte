@@ -1,31 +1,35 @@
 <script lang="ts">
   import ConfigCard from "$lib/components/ConfigCard.svelte";
+  import type { DBGuildProjectionReturns } from "$lib/server/db";
   import { Label } from "$ui/label";
   import { Switch } from "$ui/switch";
   import equal from "fast-deep-equal/es6";
-  import { toast } from "svelte-sonner";
 
-  let { autoForward = $bindable() }: { autoForward: boolean } = $props();
+  let { autoForward = $bindable(), saveAllFn }: { autoForward: boolean; saveAllFn: SaveFunction } = $props();
 
-  const oldConfig = $state.snapshot(autoForward);
+  let oldConfig = $state($state.snapshot(autoForward));
+  let loading = $state(false);
 
-  async function saveFn() {
-    const currentSetting = $state.snapshot(autoForward);
-    if (equal(oldConfig, currentSetting)) {
-      toast.info("Nothing to save.");
-      return;
-    }
-  }
+  $inspect("oldConfig", oldConfig);
+  $inspect("current autoforward", autoForward);
 </script>
 
 <ConfigCard
   class="flex flex-col gap-4"
-  title="Pausing Status"
-  description="Pausing won't reset any settings."
-  {saveFn}
-  saveBtnDisabled={equal(oldConfig, $state.snapshot(autoForward))}
+  title="Automatic Forwading"
+  description="PauThis setting indicates whether messages in ticket posts are always forwarded to the user or not."
+  saveFn={async () =>
+    await saveAllFn(
+      (v: boolean) => (loading = v),
+      (data: DBGuildProjectionReturns["generalTicketSettings"]) => {
+        oldConfig = data.autoForwarding;
+      },
+    )}
+  saveBtnDisabled={loading || equal(oldConfig, $state.snapshot(autoForward))}
+  saveBtnLoading={loading}
 >
   <Label>
     <Switch bind:checked={autoForward} />
+    Automatic Forwarding
   </Label>
 </ConfigCard>
