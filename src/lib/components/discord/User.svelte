@@ -5,7 +5,7 @@
   import type { APIUser } from "discord-api-types/v10";
 
   type Props = {
-    user?: Omit<APIUser, "id" | "username"> & Required<Pick<APIUser, "id" | "username">>;
+    user?: Partial<APIUser> & { id: string };
     class?: ClassValue;
   };
 

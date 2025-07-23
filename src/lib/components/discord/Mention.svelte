@@ -19,7 +19,7 @@
      */
     onDelete?: (id: string) => boolean | Promise<boolean>;
     channel?: GuildCoreChannel;
-    user?: (Omit<APIUser, "id" | "username"> & Required<Pick<APIUser, "id" | "username">>) | null;
+    user?: (Partial<APIUser> & { id: string }) | null;
     role?: GuildRole;
     /**
      * The fallback type to use when no specific mention type is provided.
