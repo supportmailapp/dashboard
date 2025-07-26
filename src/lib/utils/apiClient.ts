@@ -36,7 +36,7 @@ class ApiClient {
   }
 
   async delete<T>(url: string, options?: RequestOptions) {
-    return this.client.delete<T>(this.removeleadingSlash(url.trim()), options).json();
+    return this.client.delete<T>(this.removeleadingSlash(url.trim()), options);
   }
 
   async patch<T>(url: string, options?: RequestOptions) {
