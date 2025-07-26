@@ -19,16 +19,16 @@
     onDelete?: (id: string) => boolean | Promise<boolean>;
     channel?: GuildCoreChannel;
     userId?: string;
-    role?: GuildRole;
+    roleId?: string;
     /**
-     * The fallback type to use when no specific mention type is provided.
-     * - `c` - channel
-     * - `r` - role
+     * Whether to display a fallback.
+     *
+     * This happens automatically, if the Mention is a role or user.
      *
      * **Important:**
      * Since the mention automatically handles fetching users from the websocket, there is no need for a fallback, because the fallback is automatically applied, as long as the user isn't fetched.
      */
-    fallback?: "c" | "r";
+    fallback?: boolean;
     /**
      * Which actions to enable.
      *
@@ -38,12 +38,12 @@
   };
 
   let {
-    role,
+    roleId,
     channel,
     userId,
     class: className,
     onDelete = () => !!toast.error("This function is not set, please report this bug."),
-    fallback = role ? "r" : channel ? "c" : undefined,
+    fallback = false,
     buttons = "all",
   }: Props = $props();
   let hovered = $state(false);
@@ -62,15 +62,15 @@
   onfocus={setHovered(true)}
   onblur={setHovered(false)}
 >
-  {#if role || fallback === "r"}
-    <Role {role} class={className} />
-  {:else if channel || fallback === "c"}
-    <Channel {channel} class={className} />
+  {#if roleId}
+    <Role {roleId} class={className} />
   {:else if userId}
     <User {userId} class={className} />
+  {:else if channel || fallback}
+    <Channel {channel} class={className} />
   {/if}
 
-  {#if role || channel || userId}
-    <MentionActions bind:hovered id={role?.id ?? channel?.id ?? userId} {onDelete} {buttons} />
+  {#if roleId || channel || userId}
+    <MentionActions bind:hovered id={roleId ?? channel?.id ?? userId} {onDelete} {buttons} />
   {/if}
 </div>
