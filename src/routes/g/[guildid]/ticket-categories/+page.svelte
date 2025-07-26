@@ -3,7 +3,6 @@
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import { ConfigState } from "$lib/stores/ConfigState.svelte";
   import type { ITicketCategory } from "supportmail-types";
-  import TicketCategoryPopup from "./TicketCategoryPopup.svelte";
   import { toast } from "svelte-sonner";
   import apiClient from "$lib/utils/apiClient";
   import { APIRoutes } from "$lib/urls";
@@ -14,8 +13,11 @@
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
   import { cn } from "$lib/utils";
+  import ChevronRight from "@lucide/svelte/icons/chevron-right";
 
-  const categories = new ConfigState<DocumentWithId<ITicketCategory>[]>();
+  let { data } = $props();
+
+  const categories = new ConfigState(data.categories);
 
   class NewCategory {
     open = $state(false);
@@ -30,65 +32,6 @@
     }
   }
   const newCategory = new NewCategory();
-
-  async function saveCategory(categoryId: string) {
-    if (!categories.evalUnsaved()) {
-      toast.info("Nothing to save.");
-      return;
-    }
-
-    const category = categories.snap()?.find((c) => c._id === categoryId);
-    if (!category) {
-      toast.error("Category not found.");
-      categories.loading = false;
-      return;
-    }
-
-    categories.loading = true;
-
-    try {
-      const res = await apiClient.put(APIRoutes.ticketCategory(page.data.guildId!, categoryId), {
-        json: category,
-      });
-
-      if (!res.ok) {
-        const error = await res.json<any>();
-        throw new Error(error.message || "Failed to save ticket category.");
-      }
-
-      const json = await res.json<DocumentWithId<ITicketCategory>>();
-      const newCats = (categories.snap() ?? []).map((cat) =>
-        cat._id === json._id ? { ...cat, ...json } : cat,
-      );
-      categories.saveConfig(newCats);
-      toast.success("Ticket category saved successfully.");
-    } catch (error: any) {
-      toast.error(`Failed to save ticket category: ${error.message}`);
-      return;
-    } finally {
-      categories.loading = false;
-    }
-  }
-
-  async function deleteCategory(categoryId: string) {
-    categories.loading = true;
-
-    try {
-      const res = await apiClient.delete(APIRoutes.ticketCategory(page.data.guildId!, categoryId));
-
-      if (!res.ok) {
-        const error = await res.json<any>();
-        throw new Error(error.message || "Failed to delete ticket category.");
-      }
-
-      categories.saveConfig(categories.config?.filter((cat) => cat._id !== categoryId) ?? []);
-      toast.success("Ticket category deleted successfully.");
-    } catch (error: any) {
-      toast.error(`Failed to delete ticket category: ${error.message}`);
-    } finally {
-      categories.loading = false;
-    }
-  }
 
   async function createCategory() {
     if (!newCategory.isValid) {
@@ -165,12 +108,11 @@
 
 {#if categories.isConfigured()}
   <div class="flex w-full max-w-3xl flex-col justify-start gap-1.5">
-    {#each categories.config as _, index}
-      <TicketCategoryPopup
-        bind:category={categories.config[index]}
-        onSave={saveCategory}
-        onDelete={deleteCategory}
-      />
+    {#each categories.config as cat}
+      <Button variant="outline" href={page.data.guildHref(`/ticket-categories/${cat._id}`)}>
+        {cat.label}
+        <ChevronRight class="ml-auto" />
+      </Button>
     {/each}
     {#if categories.config.length < 10}
       <Dialog.Root bind:open={newCategory.open}>
