@@ -88,6 +88,9 @@ const APIRoutes = {
     `${API_BASE}/guilds/${guildId}/config/pausing/${modul}` as const,
   memberSearch: (guildId: string, query: string, filter?: "bot") =>
     `${API_BASE}/guilds/${guildId}/member-search?q=${encodeURIComponent(query)}${addFilterParam(filter)}` as const,
+  ticketCategories: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/tickets/categories` as const,
+  ticketCategory: (guildId: string, categoryId: string) =>
+    `${API_BASE}/guilds/${guildId}/config/tickets/categories/${categoryId}` as const,
 };
 
 const LegalLinks = {
