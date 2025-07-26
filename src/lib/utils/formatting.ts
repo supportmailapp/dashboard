@@ -11,9 +11,9 @@ import { ChannelType, type APIGuildCategoryChannel, type APIUser } from "discord
 export function sortByPositionAndId<T extends { id: string; position: number }>(items: T[]): T[] {
   return items.slice().sort((a, b) => {
     if (a.position === b.position) {
-      return a.id.localeCompare(b.id);
+      return b.id.localeCompare(a.id);
     }
-    return a.position - b.position;
+    return b.position - a.position;
   });
 }
 
