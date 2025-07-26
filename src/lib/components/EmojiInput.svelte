@@ -6,6 +6,7 @@
   import { Label } from "$ui/label";
   import * as Popover from "$ui/popover/index.js";
   import * as RadioGroup from "$ui/radio-group";
+  import { Skeleton } from "$ui/skeleton";
   import type { IPartialEmoji } from "supportmail-types";
 
   type Props = {
@@ -68,11 +69,15 @@
         {#if emojiMode === "custom"}
           <div class="grid grid-cols-3 items-center gap-4">
             <Label for="emoji-input-id">ID</Label>
-            <Input
-              id="emoji-input-id"
-              bind:value={() => emoji.id, (v) => (emoji.id = v?.replace(/\D/g, "") ?? "")}
-              class="col-span-2 h-8"
-            />
+            {#if emoji}
+              <Input
+                id="emoji-input-id"
+                bind:value={() => emoji.id ?? "", (v) => (emoji.id = v?.replace(/\D/g, "") ?? "")}
+                class="col-span-2 h-8"
+              />
+            {:else}
+              <Skeleton class="h-8 w-40" />
+            {/if}
           </div>
           <div class="grid grid-cols-3 items-center gap-4">
             <Label for="emoji-input-name">Name</Label>
