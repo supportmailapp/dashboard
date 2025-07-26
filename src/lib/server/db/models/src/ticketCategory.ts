@@ -8,7 +8,7 @@ const ticketCategorySchema = new Schema<ITicketCategory>({
   label: { type: String, required: true },
   enabled: { type: Boolean, default: true },
   index: { type: Number, default: 1 },
-  tag: { type: String, required: true },
+  tag: { type: String, required: false },
   emoji: {
     type: partialEmojiSchema,
     required: false,
