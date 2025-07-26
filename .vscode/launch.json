@@ -9,7 +9,7 @@
       "request": "launch",
       "name": "Run App (Dev)",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": [ "dev" ]
+      "runtimeArgs": ["dev"]
     }
   ]
 }

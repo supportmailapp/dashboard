@@ -8,5 +8,4 @@ Sentry.init({
   tracesSampleRate: 1.0,
 });
 
-
 export const handleError = !dev ? handleErrorWithSentry() : () => {};
