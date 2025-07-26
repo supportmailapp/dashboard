@@ -1,4 +1,5 @@
 .mention-wrapper {
+  min-width: 35px;
   width: fit-content;
   cursor: pointer;
   display: inline-flex;
