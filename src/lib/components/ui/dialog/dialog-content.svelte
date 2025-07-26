@@ -9,10 +9,12 @@
     ref = $bindable(null),
     class: className,
     portalProps,
+    withX = true,
     children,
     ...restProps
   }: WithoutChildrenOrChild<DialogPrimitive.ContentProps> & {
     portalProps?: DialogPrimitive.PortalProps;
+    withX?: boolean;
     children: Snippet;
   } = $props();
 </script>
