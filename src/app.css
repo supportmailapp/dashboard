@@ -51,7 +51,7 @@
   --destructive: oklch(43.631% 0.14598 25.642);
   --destructive-foreground: oklch(80% 0.09405 17.576);
   --success: oklch(24.9% 0.05126 143.852);
-  --success-foreground: oklch(80% 0.12286 146.124);
+  --success-foreground: oklch(88.711% 0.22825 144.526);
   --warning: oklch(24.9% 0.07117 101.611);
   --warning-foreground: oklch(80% 0.11088 101.632);
   --border: oklch(1 0 0 / 10%);
@@ -127,6 +127,12 @@
   button,
   a {
     cursor: pointer;
+  }
+
+  button[data-slot="button"] {
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
   }
 
   button:not(.animate-none)[data-slot="button"] {
