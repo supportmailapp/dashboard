@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
+  import { goto, invalidate } from "$app/navigation";
   import { page } from "$app/state";
   import Mention from "$lib/components/discord/Mention.svelte";
   import EmojiInput from "$lib/components/EmojiInput.svelte";
@@ -26,12 +26,15 @@
 
   let { data } = $props();
 
-  const category = new ConfigState($state.snapshot(data.category), !data.category);
+  const category = new ConfigState(
+    data.category ? { ...data.category, emoji: data.category.emoji ?? { name: "" } } : null,
+    !data.category,
+  );
 
   $inspect("cat loading", category.loading);
 
   const labelIsValid = $derived(
-    category.config && category.config.label.length >= 3 && category.config.label.length <= 45,
+    category.config && category.config.label!.length >= 3 && category.config.label!.length <= 45,
   );
   const pingUsers = $derived(
     category.config?.pings?.filter((e) => e.typ === EntityType.user).map((e) => e.id) ?? [],
@@ -66,6 +69,7 @@
       const json = await res.json<any>();
       category.saveConfig(json);
       toast.success("Ticket category saved successfully.");
+      invalidate("ticket-category-" + page.params.categoryid);
     } catch (error: any) {
       toast.error(`Failed to save ticket category: ${error.message}`);
     } finally {
@@ -134,7 +138,7 @@
     </Button>
   </div>
 
-  <SiteHeading title="Edit Ticket Category" subtitle={category.config?.label ?? "Unknown Category"} />
+  <SiteHeading title="Edit Ticket Category" subtitle={data.category?.label ?? "Unknown Category"} />
 
   {#if !category.isConfigured()}
     <Card.Root>
@@ -153,7 +157,7 @@
           <Card.Title>Basic Settings</Card.Title>
           <Card.Description>Configure the basic properties of your ticket category.</Card.Description>
         </Card.Header>
-        <Card.Content class="space-y-4">
+        <Card.Content class="space-y-5">
           <div class="flex items-center justify-between">
             <div class="space-y-0.5">
               <Label for="cat-enabled">Enable Category</Label>
@@ -167,7 +171,7 @@
             <Input
               bind:value={category.config.label}
               class={cn(
-                !labelIsValid && category.config.label.length > 0
+                !labelIsValid && category.config.label!.length > 0
                   ? "border-destructive focus:ring-destructive"
                   : "",
               )}
@@ -180,9 +184,12 @@
               aria-invalid={!labelIsValid}
               disabled={category.loading}
             />
-            {#if !labelIsValid && category.config.label.length > 0}
+            {#if !labelIsValid && category.config.label!.length > 0}
               <p class="text-destructive text-sm">Name must be between 3 and 45 characters</p>
             {/if}
+          </div>
+          <div class="flex items-center justify-between">
+            <EmojiInput bind:emoji={category.config.emoji} />
           </div>
         </Card.Content>
       </Card.Root>
@@ -287,7 +294,7 @@
 
           <Button
             onclick={() => saveCategory(category.config._id)}
-            disabled={category.loading || !category.evalUnsaved() || !labelIsValid}
+            disabled={category.loading || !labelIsValid}
             class="sm:w-auto"
           >
             {#if category.loading}
