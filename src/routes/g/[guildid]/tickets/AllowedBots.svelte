@@ -71,7 +71,7 @@
   saveBtnDisabled={loading.saving}
   saveBtnLoading={loading.saving}
 >
-  <div class="bg-accent rounded-md p-2">
+  <div class="bg-accent flex flex-row rounded-md p-2 gap-1">
     {#each allowedBots as botId}
       <Mention
         userId={botId}
