@@ -66,7 +66,7 @@ export const MentionableEntityPredicate = z.union([UserEntityPredicate, RoleEnti
 export const CustomModalFieldPredicate = z.object({
   position: z.number().int().min(1).max(5),
   label: z.string().min(1).max(100),
-  placeholder: z.string().min(1).max(100).optional(),
+  placeholder: z.string().min(0).max(100).optional(),
   _required: z.boolean().default(false),
   style: z.enum(TextInputStyle).default(TextInputStyle.Short),
   minL: z.int().min(0).max(4000).optional(),
