@@ -237,7 +237,6 @@ const guildAuthGuard: Handle = async ({ event, resolve }) => {
     const cacheKey = `${event.locals.user.id}:${guildId}`;
     const cached = guildAccessCache.get(cacheKey);
 
-    console.log("cached", cached);
     if (cached && cached.value !== 200) {
       error(403);
     } else if (!cached) {
