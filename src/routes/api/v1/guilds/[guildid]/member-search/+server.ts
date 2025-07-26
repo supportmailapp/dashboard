@@ -1,8 +1,8 @@
 import { JsonErrors } from "$lib/constants.js";
-import memberCache from "$lib/server/caches/members.js";
+import userCache from "$lib/server/caches/users.js";
 import { SnowflakePredicate } from "$lib/server/validators/index.js";
 import * as Sentry from "@sentry/sveltekit";
-import type { APIGuildMember } from "discord-api-types/v10";
+import type { APIGuildMember, APIUser } from "discord-api-types/v10";
 
 export async function GET({ url, locals }) {
   const guildId = locals.guildId;
@@ -22,31 +22,29 @@ export async function GET({ url, locals }) {
     });
   };
 
-  let members: APIGuildMember[] = [];
+  let users: APIUser[] = [];
 
   // Check cache first
   const isSnowflake = SnowflakePredicate.safeParse(searchQuery).success;
-  const cached = isSnowflake
-    ? memberCache.get(guildId, searchQuery)
-    : memberCache.getSearchResult(guildId, searchQuery);
+  const cached = userCache.get(guildId, searchQuery);
 
   if (cached) {
-    members = Array.isArray(cached) ? cached : [cached];
+    users = Array.isArray(cached) ? cached : [cached];
   } else {
     // Fetch from Discord API
     if (isSnowflake) {
       const res = await locals.discordRest.getGuildMember(guildId, searchQuery);
       if (res.isSuccess()) {
-        members = [res.data];
-        memberCache.set(guildId, res.data.user.id, res.data);
+        users = [res.data.user];
+        userCache.set(guildId, res.data.user.id, users);
       } else {
         handleDiscordError(res.error);
       }
     } else {
       const res = await locals.discordRest.searchServerMembers(guildId, searchQuery, 10);
       if (res.isSuccess()) {
-        members = res.data;
-        memberCache.setSearchResult(guildId, searchQuery, res.data);
+        users = res.data.map((member: APIGuildMember) => member.user);
+        userCache.set(guildId, searchQuery, users);
       } else {
         handleDiscordError(res.error);
       }
@@ -54,13 +52,13 @@ export async function GET({ url, locals }) {
   }
 
   // Apply filter if specified and members exist
-  if (filter && members.length > 0) {
+  if (filter && users.length > 0) {
     switch (filter) {
       case "bot":
-        members = members.filter((member) => !!member.user.bot);
+        users = users.filter((user) => !!user.bot);
         break;
     }
   }
 
-  return Response.json(members);
+  return Response.json(users);
 }
