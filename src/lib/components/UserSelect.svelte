@@ -2,6 +2,7 @@
   import { page } from "$app/state";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import * as Avatar from "$lib/components/ui/avatar/index.js";
+  import { users } from "$lib/stores/users.svelte";
   import { APIRoutes } from "$lib/urls";
   import { cn, parseIconToURL } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
@@ -27,6 +28,13 @@
     if (!userSearchInput) {
       toast.info("Search input empty!");
       return;
+    }
+
+    if (/^\d+$/.test(userSearchInput)) {
+      const cached = users.get(userSearchInput);
+      if (cached) {
+        fetchedUsers.unshift(cached);
+      }
     }
 
     loading.fetching = true;

@@ -12,16 +12,6 @@
      */
     defaultTab?: "users" | "roles";
     /**
-     * Whether to show the roles tab.
-     * @default true
-     */
-    showRoles?: boolean;
-    /**
-     * Whether to show the users tab.
-     * @default true
-     */
-    showUsers?: boolean;
-    /**
      * Whether to only search for bots when searching users.
      * @default false
      */
@@ -50,8 +40,6 @@
 
   let {
     defaultTab = "roles",
-    showRoles = true,
-    showUsers = true,
     botsOnly = false,
     excludedRoleIds,
     excludedUserIds,
