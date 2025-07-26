@@ -71,16 +71,15 @@
 </script>
 
 <!-- This page holds the home view for a specific guild; language setting can be changed here -->
-<SiteHeading>
-  {#snippet title()}
+<SiteHeading
+  title="Home"
+  subtitle="Welcome to your SupportMail dashboard! Here you can manage your Discord server's support ticket system and configure settings."
+>
+  {#snippet realTitle()}
     Welcome <span class="from-primary to-secondary mx-0.5 bg-gradient-to-br bg-clip-text text-transparent">
       {userDisplayName(page.data.user)}
     </span>!
   {/snippet}
-  <p class="text-muted-foreground text-xl">
-    Welcome to your SupportMail dashboard! Here you can manage your Discord server's support ticket system and
-    configure settings.
-  </p>
 </SiteHeading>
 
 <section class="mt-6">
