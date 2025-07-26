@@ -173,13 +173,18 @@
     @apply gap-1 rounded-md px-2 py-1 transition;
     height: 28px;
     width: fit-content;
+    min-width: 35px;
     background-color: color-mix(in oklab, var(--blurple) 60%, transparent);
     display: grid;
-    grid-template-columns: 14px auto;
+    grid-template-columns: auto;
     place-items: center;
     align-items: center;
     animation-duration: 100ms;
     cursor: pointer;
+
+    &:has(:nth-child(2)) {
+      grid-template-columns: 14px auto;
+    }
 
     &:hover {
       background-color: color-mix(in oklab, var(--blurple) 80%, transparent);
