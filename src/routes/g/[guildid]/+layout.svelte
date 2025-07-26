@@ -77,8 +77,12 @@
   let switchingPage = $state(true);
 
   function reloadGuildData() {
-    page.data.guildsManager.loadChannels();
-    page.data.guildsManager.loadRoles();
+    if (!page.data.guildsManager.channelsLoaded) {
+      page.data.guildsManager.loadChannels();
+    }
+    if (!page.data.guildsManager.rolesLoaded) {
+      page.data.guildsManager.loadRoles();
+    }
   }
 
   beforeNavigate((nav) => {
