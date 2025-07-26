@@ -16,7 +16,7 @@ const putSchema = z.object({
   emoji: PartialEmojiPredicate.optional(),
   enabled: z.boolean().default(true),
   tag: SnowflakePredicate.optional(),
-  pings: MentionableEntityPredicate.array(),
+  pings: MentionableEntityPredicate.array().optional(),
   fields: CustomModalFieldPredicate.array().min(0).max(5).optional(),
   customMessageId: z.string().optional(),
 });
