@@ -1,6 +1,5 @@
 <script lang="ts">
-  import * as Tabs from "$lib/components/ui/tabs/index.js";
-  import { cn } from "$lib/utils";
+  import { cdnUrls } from "$lib/urls";
   import { buttonVariants } from "$ui/button";
   import { Checkbox } from "$ui/checkbox";
   import { Input } from "$ui/input";
@@ -10,79 +9,85 @@
   import type { IPartialEmoji } from "supportmail-types";
 
   type Props = {
-    emoji?: IPartialEmoji;
-    /**
-     * Callback when a user is selected.
-     */
-    onSelect?: (emoji: IPartialEmoji) => void;
+    emoji: IPartialEmoji;
     /**
      * Custom class for the container.
      */
     class?: string;
   };
 
-  let { emoji = $bindable({ name: "" }), onSelect, class: className }: Props = $props();
+  let { emoji = $bindable(), class: className }: Props = $props();
 
-  let customEmoji = $state(false);
+  let emojiMode = $state<"standard" | "custom">("standard");
+
+  // Ensure emoji.animated is always a boolean | Svelte keeps crashing out over this, i dunno why
+  $effect(() => {
+    if (emoji.animated === undefined) {
+      emoji.animated = false;
+    }
+  });
 
   function changeMode(mode: string) {
-    customEmoji = mode === "custom";
-    if (!customEmoji) {
-      emoji = { ...emoji, id: undefined, animated: undefined };
+    emojiMode = mode as any;
+    if (emojiMode === "standard") {
+      emoji = { ...$state.snapshot(emoji), id: undefined, animated: undefined };
     }
   }
 </script>
 
 <Popover.Root>
-  <Popover.Trigger class={buttonVariants({ variant: "outline" })}>
-    {#if emoji.name === ""}
-      Select Emoji
+  <Popover.Trigger class={buttonVariants({ variant: "outline", class: emoji.id ? "size-14 p-2" : "" })}>
+    {#if emoji.id}
+      <img src={cdnUrls.guildEmoji(emoji.id, 64)} alt="Emoji" class="size-10" />
     {:else}
-      ...
+      Enter Emoji Data
     {/if}
   </Popover.Trigger>
-  <Popover.Content class="h-full w-full max-w-[80px]">
-    <div>
-      <RadioGroup.Root
-        orientation="horizontal"
-        class="flex flex-row gap-8"
-        value={customEmoji ? "custom" : "standard"}
-        onValueChange={changeMode}
-      >
-        <div class="inline-flex cursor-pointer items-center gap-2 py-1 *:cursor-pointer">
-          <RadioGroup.Item value="standard" id="standard" class="size-5" />
-          <Label for="standard" class="text-lg">Standard</Label>
-        </div>
-        <div class="inline-flex cursor-pointer items-center gap-2 py-1 *:cursor-pointer">
-          <RadioGroup.Item value="custom" id="custom" class="size-5" />
-          <Label for="custom" class="text-lg">Custom</Label>
-        </div>
-      </RadioGroup.Root>
-      <div class="grid gap-4">
-        <div class="space-y-2">
-          <h4 class="leading-none font-medium">{customEmoji ? "Custom Emoji" : "Standard Emoji"}</h4>
-        </div>
-        <div class="grid gap-2">
-          {#if customEmoji}
-            <div class="grid grid-cols-3 items-center gap-4">
-              <Label for="emoji-input-id">ID</Label>
-              <Input id="emoji-input-id" bind:value={emoji.id} class="col-span-2 h-8" />
-            </div>
-            <div class="grid grid-cols-3 items-center gap-4">
-              <Label for="emoji-input-name">Name</Label>
-              <Input id="emoji-input-name" bind:value={emoji.name} class="col-span-2 h-8" />
-            </div>
-            <div class="grid grid-cols-3 items-center gap-4">
-              <Label for="emoji-input-animated">Animated?</Label>
-              <Checkbox id="emoji-input-animated" bind:checked={emoji.animated} class="col-span-2 h-8" />
-            </div>
-          {:else}
-            <div class="grid grid-cols-3 items-center gap-4">
-              <Label for="emoji-input-name">Emoji</Label>
-              <Input id="emoji-input-name" bind:value={emoji.name} class="col-span-2 h-8" />
-            </div>
-          {/if}
-        </div>
+  <Popover.Content class="h-full w-full max-w-[280px] space-y-4">
+    <RadioGroup.Root
+      orientation="horizontal"
+      class="flex flex-row gap-8"
+      value={emojiMode}
+      onValueChange={changeMode}
+    >
+      <div class="inline-flex cursor-pointer items-center gap-2 py-1 *:cursor-pointer">
+        <RadioGroup.Item value="standard" id="standard" />
+        <Label for="standard">Standard</Label>
+      </div>
+      <div class="inline-flex cursor-pointer items-center gap-2 py-1 *:cursor-pointer">
+        <RadioGroup.Item value="custom" id="custom" />
+        <Label for="custom">Custom</Label>
+      </div>
+    </RadioGroup.Root>
+
+    <div class="grid gap-4">
+      <div class="space-y-2">
+        <h4 class="leading-none font-medium">{emojiMode ? "Custom Emoji" : "Standard Emoji"}</h4>
+      </div>
+      <div class="grid gap-2">
+        {#if emojiMode === "custom"}
+          <div class="grid grid-cols-3 items-center gap-4">
+            <Label for="emoji-input-id">ID</Label>
+            <Input
+              id="emoji-input-id"
+              bind:value={() => emoji.id, (v) => (emoji.id = v?.replace(/\D/g, "") ?? "")}
+              class="col-span-2 h-8"
+            />
+          </div>
+          <div class="grid grid-cols-3 items-center gap-4">
+            <Label for="emoji-input-name">Name</Label>
+            <Input id="emoji-input-name" bind:value={emoji.name} class="col-span-2 h-8" />
+          </div>
+          <div class="grid grid-cols-3 items-center gap-4">
+            <Label for="emoji-input-animated">Animated?</Label>
+            <Checkbox id="emoji-input-animated" bind:checked={emoji.animated} class="size-6 rounded-full" />
+          </div>
+        {:else}
+          <div class="grid grid-cols-3 items-center gap-4">
+            <Label for="emoji-input-name">Emoji</Label>
+            <Input id="emoji-input-name" bind:value={emoji.name} class="col-span-2" />
+          </div>
+        {/if}
       </div>
     </div>
   </Popover.Content>
