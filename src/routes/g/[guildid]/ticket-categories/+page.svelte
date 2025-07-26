@@ -109,7 +109,7 @@
 {#if categories.isConfigured()}
   <div class="flex w-full max-w-3xl flex-col justify-start gap-1.5">
     {#each categories.config as cat}
-      <Button variant="outline" href={page.data.guildHref(`/ticket-categories/${cat._id}`)}>
+      <Button variant="outline" href={page.data.guildHref(`/ticket-categories/${cat._id}`)} size="xl">
         {cat.label}
         <ChevronRight class="ml-auto" />
       </Button>
