@@ -1,6 +1,7 @@
 import { FlattenDocToJSON, TicketCategory } from "$lib/server/db/index.js";
 
-export async function load({ parent, params, locals }) {
+export async function load({ parent, params, locals, depends }) {
+  depends("ticket-category-" + params.categoryid);
   await parent();
 
   const category = await TicketCategory.findOne({ guildId: locals.guildId!, _id: params.categoryid });
