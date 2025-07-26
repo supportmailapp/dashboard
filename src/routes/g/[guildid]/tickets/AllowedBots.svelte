@@ -6,7 +6,7 @@
   import { Button, buttonVariants } from "$ui/button";
   import Plus from "@lucide/svelte/icons/plus";
   import Input from "$ui/input/input.svelte";
-  import type { APIGuildMember } from "discord-api-types/v10";
+  import type { APIGuildMember, APIUser } from "discord-api-types/v10";
   import * as Avatar from "$lib/components/ui/avatar/index.js";
   import { cn, parseIconToURL } from "$lib/utils";
   import Search from "@lucide/svelte/icons/search";
@@ -23,7 +23,7 @@
     saving: false,
     fetching: false,
   });
-  let fetchedMembers = $state<APIGuildMember[]>([]);
+  let fetchedUsers = $state<APIUser[]>([]);
   let userSearchInput = $state("");
 
   async function fetchUsers() {
@@ -35,11 +35,11 @@
     loading.fetching = true;
 
     try {
-      const res = await apiClient.get<APIGuildMember[]>(
+      const res = await apiClient.get<APIUser[]>(
         APIRoutes.memberSearch(page.params.guildid, userSearchInput, "bot"),
       );
 
-      fetchedMembers = await res.json();
+      fetchedUsers = await res.json();
     } catch (err: any) {
       console.error(err);
     } finally {
@@ -72,10 +72,22 @@
   saveBtnLoading={loading.saving}
 >
   <div class="bg-accent rounded-md p-2">
-    {#each allowedBots as bot}
-      <Mention user={{ id: bot }} fallback="u" />
+    {#each allowedBots as botId}
+      <Mention
+        userId={botId}
+        onDelete={(bid) => {
+          allowedBots = allowedBots.filter((id) => id !== bid);
+          return true;
+        }}
+      />
     {/each}
-    <Popover.Root>
+    <Popover.Root
+      onOpenChange={(isOpening) => {
+        if (!isOpening) {
+          fetchedUsers = [];
+        }
+      }}
+    >
       <Popover.Trigger
         class={buttonVariants({ variant: "outline", size: "icon", class: "aspect-square size-7" })}
       >
@@ -98,28 +110,28 @@
             </Button>
           </form>
           <div class="flex max-h-[300px] min-h-10 w-full flex-col gap-1 overflow-y-auto">
-            {#if !fetchedMembers.length && !loading.fetching}
+            {#if !fetchedUsers.length && !loading.fetching}
               <p class="bg-muted text-muted-foreground rounded-md p-2 text-sm">No users found.</p>
             {:else if loading.fetching}
               <LoadingSpinner class="size-6" />
             {:else}
-              {#each fetchedMembers as member}
+              {#each fetchedUsers as user}
                 <Button
-                  class="w-ful justify-start gap-1 p-1"
+                  class="w-full items-center justify-start"
                   size="default"
                   variant="ghost"
-                  onclick={addBot(member.user.id)}
+                  onclick={addBot(user.id)}
                 >
                   <Avatar.Root>
                     <Avatar.Image
-                      src={parseIconToURL(member.user.avatar, member.user.id, "user", 128)}
+                      src={parseIconToURL(user.avatar, user.id, "user", 128)}
                       alt="User Avatar"
-                      class="size-7.5 rounded-full"
+                      class="rounded-full"
                     />
-                    <Avatar.Fallback>{member.user.username.toUpperCase()}</Avatar.Fallback>
+                    <Avatar.Fallback>{user.username.toUpperCase()}</Avatar.Fallback>
                   </Avatar.Root>
                   <p class="truncate">
-                    {member.nick ?? member.user.global_name ?? member.user.username}
+                    {user.global_name ?? user.username}
                   </p>
                 </Button>
               {/each}
