@@ -14,6 +14,8 @@ import type { FlattenMaps } from "mongoose";
 import type { IUserToken } from "supportmail-types";
 import type { PUTPausingObject } from "./routes/api/v1/guilds/[guildid]/config/pausing/[modul]/+server";
 import type { SMErrorCodes } from "$lib/server/constants";
+import type { Socket } from "socket.io-client";
+import type { EventsMap } from "$lib/utils/websocket";
 
 // for information about these interfaces
 declare global {
@@ -54,6 +56,8 @@ declare global {
     }
 
     interface PageData {
+      wsToken?: string;
+      ws?: Socket<EventsMap>;
       guildsManager: GuildsManager;
       manager: DataManager;
       user: APIUser | null;
@@ -141,6 +145,8 @@ declare global {
   type APIError = {
     message: string;
   };
+
+  type MentionUser = Pick<APIUser, "id" | "username" | "global_name" | "avatar">;
 
   /**
    * A function type that handles saving operations with loading state management.
