@@ -15,8 +15,6 @@
 
   const generalTicketsConf = new ConfigState<DBGuildProjectionReturns["generalTicketSettings"]>();
 
-  $inspect("generalTicketsConf", generalTicketsConf);
-
   const saveAll: SaveFunction = async function (setLoading, callback) {
     if (!generalTicketsConf.evalUnsaved()) {
       toast.info("Nothing to save.");
