@@ -5,23 +5,28 @@
   import EmojiInput from "$lib/components/EmojiInput.svelte";
   import MentionableSelect from "$lib/components/MentionableSelect.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
+  import * as Table from "$lib/components/ui/table/index.js";
   import { ConfigState } from "$lib/stores/ConfigState.svelte";
   import { APIRoutes } from "$lib/urls.js";
   import { cn } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient.js";
+  import * as AlertDialog from "$ui/alert-dialog/index.js";
   import { Button, buttonVariants } from "$ui/button";
   import * as Card from "$ui/card/index.js";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
+  import { Checkbox } from "$ui/checkbox/index.js";
+  import * as Dialog from "$ui/dialog/index.js";
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
   import * as Popover from "$ui/popover/index.js";
+  import * as RadioGroup from "$ui/radio-group/index.js";
   import { Switch } from "$ui/switch";
   import ArrowLeft from "@lucide/svelte/icons/arrow-left";
+  import Pencil from "@lucide/svelte/icons/pencil";
   import Plus from "@lucide/svelte/icons/plus";
   import Save from "@lucide/svelte/icons/save";
   import Trash from "@lucide/svelte/icons/trash";
   import equal from "fast-deep-equal/es6";
-  import { EntityType } from "supportmail-types";
+  import { EntityType, type ICustomModalField, type ITicketCategory } from "supportmail-types";
   import { toast } from "svelte-sonner";
 
   let { data } = $props();
@@ -30,6 +35,35 @@
     data.category ? { ...data.category, emoji: data.category.emoji ?? { name: "" } } : null,
     !data.category,
   );
+  const dialogState = $state({
+    new: false,
+    edit: false,
+  });
+  let highestPos = $derived(
+    category.config
+      ? category.config.fields.reduce((acc, cur) => {
+          if (cur.position > acc) return cur.position;
+          return acc;
+        }, 0) + 1
+      : 1,
+  );
+
+  const newField = new ConfigState<Required<ICustomModalField>>({
+    label: "",
+    placeholder: "",
+    minL: 0,
+    maxL: 100,
+    position: 1,
+    style: 1,
+    _required: false,
+  });
+  const editField = new ConfigState<ICustomModalField>();
+
+  $effect(() => {
+    if (highestPos !== newField.config!.position) {
+      newField.config!.position = highestPos;
+    }
+  });
 
   $inspect("cat loading", category.loading);
 
@@ -56,9 +90,14 @@
 
     category.loading = true;
 
+    const payload = category.snap() as DocumentWithId<ITicketCategory>;
+    if (payload && payload.emoji?.name === "") {
+      payload.emoji = undefined;
+    }
+
     try {
       const res = await apiClient.put(APIRoutes.ticketCategory(page.data.guildId!, categoryId), {
-        json: category.config,
+        json: payload,
       });
 
       if (!res.ok) {
@@ -69,10 +108,10 @@
       const json = await res.json<any>();
       category.saveConfig(json);
       toast.success("Ticket category saved successfully.");
+      category.loading = false;
       invalidate("ticket-category-" + page.params.categoryid);
     } catch (error: any) {
       toast.error(`Failed to save ticket category: ${error.message}`);
-    } finally {
       category.loading = false;
     }
   }
@@ -126,6 +165,22 @@
       } else {
         category.config.pings = [...category.config.pings, { typ: EntityType.user, id: user.id }];
       }
+    }
+  }
+
+  // Field stuff
+  function saveField(whichOne: "new" | "edit") {
+    if (whichOne === "new") {
+      category.config?.fields.push(newField.snap()!);
+      dialogState.new = false;
+      newField.setConfig(newField.backup);
+    } else {
+      // Find and update the existing field by position
+      const fieldIndex = category.config?.fields.findIndex((f) => f.position === editField.config?.position);
+      if (fieldIndex !== undefined && fieldIndex !== -1 && category.config) {
+        category.config.fields[fieldIndex] = editField.snap()!;
+      }
+      dialogState.edit = false;
     }
   }
 </script>
@@ -251,6 +306,254 @@
         </Card.Content>
       </Card.Root>
     </div>
+
+    <Card.Root>
+      <Card.Header>
+        <Card.Title>Custom Modal Fields</Card.Title>
+        <Card.Description>
+          Have up to 5 questions, the user is asked before creating a ticket.
+        </Card.Description>
+      </Card.Header>
+      <Card.Content>
+        {#if category.config.fields.length > 0}
+          <Table.Root>
+            <Table.Header>
+              <Table.Row>
+                <Table.Head class="w-[100px]">Position</Table.Head>
+                <Table.Head>Label</Table.Head>
+                <Table.Head></Table.Head>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {#each category.config.fields as field, index}
+                <Table.Row>
+                  <Table.Cell class="font-medium">#{field.position}</Table.Cell>
+                  <Table.Cell>{field.label}</Table.Cell>
+                  <Table.Cell>
+                    <Button
+                      onclick={() => {
+                        editField.setConfig($state.snapshot(category.config.fields[index]));
+                        dialogState.edit = true;
+                      }}
+                    >
+                      <Pencil />
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onclick={() => {
+                        if (confirm("Do you really want to delete this field?")) {
+                          category.config!.fields = category
+                            .snap()!
+                            .fields.filter((f) => f.position !== field.position);
+                        }
+                      }}
+                    >
+                      <Trash />
+                    </Button>
+                  </Table.Cell>
+                </Table.Row>
+              {/each}
+            </Table.Body>
+          </Table.Root>
+        {:else}
+          <p class="text-muted-foreground mb-3 text-sm">No fields added.</p>
+        {/if}
+
+        {#if category.config.fields.length < 5}
+          <Dialog.Root
+            bind:open={dialogState.new}
+            onOpenChangeComplete={(opn) => {
+              if (!opn) {
+                newField.saveConfig({
+                  ...newField.backup!,
+                });
+              }
+            }}
+          >
+            <Dialog.Trigger class={buttonVariants({ variant: "outline" })}>
+              <Plus />
+              Add Field
+            </Dialog.Trigger>
+            <Dialog.Content class="gap-6">
+              <Dialog.Header>
+                <Dialog.Title>Add new field</Dialog.Title>
+              </Dialog.Header>
+
+              <form
+                class="flex flex-col gap-6"
+                onsubmit={(e) => {
+                  e.preventDefault();
+                  saveField("new");
+                }}
+              >
+                <div class="flex w-full max-w-sm flex-col gap-1.5">
+                  <Label for="new-label">Label</Label>
+                  <Input
+                    required
+                    type="text"
+                    id="new-label"
+                    bind:value={newField.config!.label}
+                    placeholder="The question to ask"
+                    minlength={3}
+                    maxlength={45}
+                  />
+                </div>
+
+                <div class="flex w-full max-w-sm flex-col gap-1.5">
+                  <Label for="new-ph">Placeholder</Label>
+                  <Input
+                    type="text"
+                    id="new-ph"
+                    bind:value={newField.config!.placeholder}
+                    placeholder="The placeholder to show"
+                    minlength={0}
+                    maxlength={100}
+                  />
+                </div>
+
+                <div class="flex w-full max-w-sm flex-col gap-1.5">
+                  <Label for="new-style">Style</Label>
+                  <RadioGroup.Root
+                    bind:value={
+                      () => (newField.config!.style === 1 ? "short" : "long"),
+                      (v: "short" | "long") => (newField.config!.style = v === "short" ? 1 : 2)
+                    }
+                  >
+                    <div class="flex items-center space-x-2">
+                      <RadioGroup.Item value="short" id="new-style-short" />
+                      <Label for="new-style-short">Short (One Line)</Label>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                      <RadioGroup.Item value="long" id="new-style-long" />
+                      <Label for="new-style-long">Paragraph (Multiline)</Label>
+                    </div>
+                  </RadioGroup.Root>
+                </div>
+
+                <div class="flex w-full max-w-sm flex-col gap-1.5">
+                  <div class="flex w-full max-w-sm flex-col gap-1">
+                    <Label>Minimum Input Length</Label>
+                    <Input type="number" min={0} max={4000} bind:value={newField.config!.minL} />
+                  </div>
+                  <div class="flex w-full max-w-sm flex-col gap-1">
+                    <Label>Maximum Input Length</Label>
+                    <Input type="number" min={1} max={4000} bind:value={newField.config!.maxL} />
+                  </div>
+                </div>
+
+                <div class="flex w-full max-w-sm flex-col gap-1.5">
+                  <Label for="new-required">
+                    <Checkbox bind:checked={newField.config!._required} id="new-required" />
+                    Required
+                  </Label>
+                  <p class="text-muted-foreground text-sm">
+                    When enabled, users must fill out this field before they can submit their ticket. Required
+                    fields cannot be left empty.
+                  </p>
+                </div>
+                <Dialog.Footer>
+                  <Button type="submit">Save</Button>
+                </Dialog.Footer>
+              </form>
+            </Dialog.Content>
+          </Dialog.Root>
+        {/if}
+      </Card.Content>
+    </Card.Root>
+
+    <Dialog.Root
+      bind:open={dialogState.edit}
+      onOpenChangeComplete={(opn) => {
+        if (!opn) {
+          editField.clear();
+        }
+      }}
+    >
+      <Dialog.Content class="gap-6">
+        <Dialog.Header>
+          <Dialog.Title>Edit field</Dialog.Title>
+        </Dialog.Header>
+
+        {#if editField.config}
+          <form
+            class="flex flex-col gap-6"
+            onsubmit={(e) => {
+              e.preventDefault();
+              saveField("edit");
+            }}
+          >
+            <div class="flex w-full max-w-sm flex-col gap-1.5">
+              <Label for="edit-label">Label</Label>
+              <Input
+                required
+                type="text"
+                id="edit-label"
+                bind:value={editField.config.label}
+                placeholder="The question to ask"
+                minlength={3}
+                maxlength={45}
+              />
+            </div>
+
+            <div class="flex w-full max-w-sm flex-col gap-1.5">
+              <Label for="edit-ph">Placeholder</Label>
+              <Input
+                type="text"
+                id="edit-ph"
+                bind:value={editField.config.placeholder}
+                placeholder="The placeholder to show"
+                minlength={0}
+                maxlength={100}
+              />
+            </div>
+
+            <div class="flex w-full max-w-sm flex-col gap-1.5">
+              <Label for="edit-style">Style</Label>
+              <RadioGroup.Root
+                bind:value={
+                  () => (editField.config!.style === 1 ? "short" : "long"),
+                  (v: "short" | "long") => (editField.config!.style = v === "short" ? 1 : 2)
+                }
+              >
+                <div class="flex items-center space-x-2">
+                  <RadioGroup.Item value="short" id="edit-style-short" />
+                  <Label for="edit-style-short">Short (One Line)</Label>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <RadioGroup.Item value="long" id="edit-style-long" />
+                  <Label for="edit-style-long">Paragraph (Multiline)</Label>
+                </div>
+              </RadioGroup.Root>
+            </div>
+
+            <div class="flex w-full max-w-sm flex-col gap-1.5">
+              <div class="flex w-full max-w-sm flex-col gap-1">
+                <Label>Minimum Input Length</Label>
+                <Input type="number" min={0} max={4000} bind:value={editField.config.minL} />
+              </div>
+              <div class="flex w-full max-w-sm flex-col gap-1">
+                <Label>Maximum Input Length</Label>
+                <Input type="number" min={1} max={4000} bind:value={editField.config.maxL} />
+              </div>
+            </div>
+
+            <div class="flex w-full max-w-sm flex-col gap-1.5">
+              <Label for="edit-required">
+                <Checkbox bind:checked={editField.config._required} id="edit-required" />
+                Required
+              </Label>
+              <p class="text-muted-foreground text-sm">
+                When enabled, users must fill out this field before they can submit their ticket. Required
+                fields cannot be left empty.
+              </p>
+            </div>
+            <Dialog.Footer>
+              <Button type="submit">Save</Button>
+            </Dialog.Footer>
+          </form>
+        {/if}
+      </Dialog.Content>
+    </Dialog.Root>
 
     <!-- Action Buttons -->
     <Card.Root>
