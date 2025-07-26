@@ -157,6 +157,10 @@ declare global {
    */
   type SaveFunction = (setLoading: (v: boolean) => void, callback?: (data: any) => void) => Promise<void>;
 
+  type DocumentWithId<T> = T & {
+    _id: string;
+  };
+
   namespace ClientAPI {
     interface TicketSetupUpdate {
       step: "checkingPermissions" | "creatingChannels" | "updatingDatabase" | "success";
