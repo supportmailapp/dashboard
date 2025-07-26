@@ -125,7 +125,7 @@ export async function verifyComponentsV2Payload(components: any[]) {
 }
 
 export type FlattenDocResult<T, IncludeId extends boolean> = IncludeId extends true
-  ? Omit<T, "__v" | "_id"> & { _id: string }
+  ? DocumentWithId<Omit<T, "__v" | "_id">>
   : Omit<T, "__v" | "_id">;
 
 export function FlattenDocToJSON<T>(
