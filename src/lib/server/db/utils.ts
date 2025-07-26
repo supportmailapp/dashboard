@@ -96,7 +96,10 @@ export async function updateDBUser(
   return await DBUser.updateOne({ id: userId }, update);
 }
 
-export function getTicketCategories(guildId: string) {
+export function getTicketCategories(guildId: string, label?: string) {
+  if (label) {
+    return TicketCategory.find({ guildId: guildId, label });
+  }
   return TicketCategory.find({ guildId: guildId });
 }
 
@@ -121,7 +124,7 @@ export async function verifyComponentsV2Payload(components: any[]) {
   }
 }
 
-type FlattenDocResult<T, IncludeId extends boolean> = IncludeId extends true
+export type FlattenDocResult<T, IncludeId extends boolean> = IncludeId extends true
   ? Omit<T, "__v" | "_id"> & { _id: string }
   : Omit<T, "__v" | "_id">;
 
