@@ -11,7 +11,7 @@
   let { channel, class: className }: Props = $props();
 </script>
 
-<div data-slot="mention-container" class={cn(className)} data-id={channel?.id}>
+<div data-slot="mention-container" class={cn(className)} data-channel-id={channel?.id}>
   <ChannelIcon type={channel?.type} class="size-4.5" />
   <span class="text-sm font-medium">
     {channel?.name || "unknown-channel"}

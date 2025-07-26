@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { ClassValue } from "clsx";
   import { cn } from "$lib/utils";
-  import type { APIRole } from "discord-api-types/v10";
 
   type Props = {
     role?: GuildRole;
@@ -14,7 +13,7 @@
   );
 </script>
 
-<div data-slot="mention-container" class={cn(className)} data-id={role?.id}>
+<div data-slot="mention-container" class={cn(className)} data-role-id={role?.id}>
   {#if color}
     <div>
       <svg

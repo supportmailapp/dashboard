@@ -1,7 +1,6 @@
 <script lang="ts">
   import "./mentions.css";
   import type { ClassValue } from "clsx";
-  import type { APIUser } from "discord-api-types/v10";
   import Channel from "./Channel.svelte";
   import Role from "./Role.svelte";
   import User from "./User.svelte";
@@ -19,15 +18,17 @@
      */
     onDelete?: (id: string) => boolean | Promise<boolean>;
     channel?: GuildCoreChannel;
-    user?: (Partial<APIUser> & { id: string }) | null;
+    userId?: string;
     role?: GuildRole;
     /**
      * The fallback type to use when no specific mention type is provided.
-     * - `u` - user
      * - `c` - channel
      * - `r` - role
+     *
+     * **Important:**
+     * Since the mention automatically handles fetching users from the websocket, there is no need for a fallback, because the fallback is automatically applied, as long as the user isn't fetched.
      */
-    fallback?: "u" | "c" | "r";
+    fallback?: "c" | "r";
     /**
      * Which actions to enable.
      *
@@ -39,13 +40,12 @@
   let {
     role,
     channel,
-    user,
+    userId,
     class: className,
     onDelete = () => !!toast.error("This function is not set, please report this bug."),
-    fallback = role ? "r" : channel ? "c" : "u",
+    fallback = role ? "r" : channel ? "c" : undefined,
     buttons = "all",
   }: Props = $props();
-  const id = $derived<string | undefined>(role?.id ?? channel?.id ?? user?.id);
   let hovered = $state(false);
 
   function setHovered(value: boolean) {
@@ -66,11 +66,11 @@
     <Role {role} class={className} />
   {:else if channel || fallback === "c"}
     <Channel {channel} class={className} />
-  {:else if user || fallback === "u"}
-    <User user={user ?? undefined} class={className} />
+  {:else if userId}
+    <User {userId} class={className} />
   {/if}
 
-  {#if role || channel || user}
-    <MentionActions bind:hovered {id} {onDelete} {buttons} />
+  {#if role || channel || userId}
+    <MentionActions bind:hovered id={role?.id ?? channel?.id ?? userId} {onDelete} {buttons} />
   {/if}
 </div>
