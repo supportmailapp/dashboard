@@ -2,19 +2,33 @@
   import type { ClassValue } from "clsx";
   import { cn } from "$lib/utils";
   import AtSign from "@lucide/svelte/icons/at-sign";
-  import type { APIUser } from "discord-api-types/v10";
+  import { fetchMentionUsers, mentionUsers } from "$lib/stores/users.svelte";
+  import { Inset } from "$ui/sidebar";
 
   type Props = {
-    user?: Partial<APIUser> & { id: string };
+    userId: string;
     class?: ClassValue;
   };
 
-  let { user, class: className }: Props = $props();
+  let { userId, class: className }: Props = $props();
+
+  let userMention = $derived(mentionUsers.get(userId));
+  let triggeredUserFetch = false;
+
+  $inspect("m user", userMention);
+
+  $effect(() => {
+    console.log("Running user effect again");
+    if (!triggeredUserFetch && !userMention) {
+      triggeredUserFetch = true;
+      fetchMentionUsers([userId]);
+    }
+  });
 </script>
 
-<div data-slot="mention-container" class={cn(className)} data-id={user?.id}>
+<div data-slot="mention-container" class={cn(className)} data-user-id={userId}>
   <AtSign class="size-3.5" />
   <span class="text-sm font-medium">
-    {user?.global_name ?? user?.username ?? "unknown-user"}
+    {userMention?.global_name ?? userMention?.username ?? "unknown-user"}
   </span>
 </div>
