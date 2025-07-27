@@ -149,7 +149,7 @@ export class ConfigState<T extends PossibleConfig> {
    */
   public evalUnsaved(): boolean {
     this.unsaved = !equal(this.snap(), this._backup);
-    return $state.snapshot(this.unsaved);
+    return this.unsaved;
   }
 
   /**
