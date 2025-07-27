@@ -21,6 +21,8 @@ const putSchema = z.object({
   customMessageId: z.string().optional(),
 });
 
+// It may be a PUT endpoint, but the index field is not allowed to be passed, because it is managed by the server.
+// To change the index (order) of categories, use the PUT endpoint at /api/v1/guilds/[guildid]/config/tickets/categories
 export async function PUT({ request, locals, params: { categoryid } }) {
   const guildId = locals.guildId!;
   if (!locals.isAuthenticated()) {
