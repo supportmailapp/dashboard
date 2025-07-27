@@ -123,3 +123,25 @@ export function roundAndFormatNumber(num: number, opts: FormatNumberOptions = {}
 export function userDisplayName(user?: APIUser | null): string {
   return !!user ? user.global_name || user.username : "Unknown User";
 }
+
+export class MarkdownFormatter {
+  constructor(private text: string) {}
+
+  /**
+   * Converts the text to HTML, escaping any unsafe characters.
+   * @returns The HTML formatted text.
+   */
+  toHTML(): string {
+    // Escape unsafe characters
+    const escapedText = this.text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    // Convert markdown to HTML (simple implementation)
+    return escapedText
+      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // Bold
+      .replace(/__(.*?)__/g, "<strong>$1</strong>") // Bold
+      .replace(/\*(.*?)\*/g, "<em>$1</em>") // Italic
+      .replace(/_(.*?)_/g, "<em>$1</em>") // Italic
+      .replace(/`(.*?)`/g, "<code>$1</code>") // Inline code
+      .replace(/\n/g, "<br>") // New lines to <br>
+      .replace(/\[([^\]]+)\]\(([^) ]+)\)/gi, `<a href="$2" class="md-link" target="_blank">$1</a>`);
+  }
+}
