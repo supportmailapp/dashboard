@@ -4,6 +4,7 @@
   import { Button } from "$ui/button";
   import type { ClassValue } from "clsx";
   import { cn } from "$lib/utils";
+  import Save from "@lucide/svelte/icons/save";
 
   type Props = {
     title: string;
@@ -41,9 +42,12 @@
         variant="default"
         disabled={saveBtnDisabled}
         showLoading={saveBtnLoading}
-        class="w-2xs"
-        onclick={saveFn}>Save</Button
+        class="w-[100px]"
+        onclick={saveFn}
       >
+        <Save class="mr-0.5 size-4" />
+        Save
+      </Button>
     </Card.Footer>
   {/if}
 </Card.Root>
