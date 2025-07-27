@@ -28,6 +28,9 @@
   import equal from "fast-deep-equal/es6";
   import { EntityType, type ICustomModalField, type ITicketCategory } from "supportmail-types";
   import { toast } from "svelte-sonner";
+  import { slide } from "svelte/transition";
+  import { Badge } from "$ui/badge/index.js";
+  import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
 
   let { data } = $props();
 
@@ -105,8 +108,7 @@
         throw new Error(error.message || "Failed to save ticket category.");
       }
 
-      const json = await res.json<any>();
-      category.saveConfig(json);
+      await res.json<DocumentWithId<Omit<ITicketCategory, "_id" | "__v">>>();
       toast.success("Ticket category saved successfully.");
       category.loading = false;
       invalidate("ticket-category-" + page.params.categoryid);
@@ -183,9 +185,71 @@
       dialogState.edit = false;
     }
   }
+
+  // Field reordering state
+  let fieldReorderingEnabled = $state(false);
+  let draggedField: ICustomModalField | null = $state(null);
+  let draggedOverIndex = $state(-1);
+
+  // Field reordering handlers
+  type MyDragEvent = DragEvent & {
+    currentTarget: EventTarget & HTMLLIElement;
+  };
+
+  function handleFieldDragStart(event: MyDragEvent, field: ICustomModalField, index: number) {
+    if (!fieldReorderingEnabled) {
+      event.preventDefault();
+      return;
+    }
+    if (!event.dataTransfer) return;
+
+    draggedField = { ...field, position: index };
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/html", event.currentTarget.outerHTML);
+    event.currentTarget.style.opacity = "0.5";
+  }
+
+  function handleFieldDragEnd(event: MyDragEvent) {
+    event.currentTarget.style.opacity = "1";
+    draggedField = null;
+    draggedOverIndex = -1;
+  }
+
+  function handleFieldDragOver(event: any, index: number) {
+    if (!fieldReorderingEnabled) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    draggedOverIndex = index;
+  }
+
+  function handleFieldDragLeave() {
+    draggedOverIndex = -1;
+  }
+
+  function handleFieldDrop(event: MyDragEvent, dropIndex: number) {
+    if (!fieldReorderingEnabled || !category.config) return;
+    event.preventDefault();
+
+    if (draggedField && draggedField.position !== dropIndex) {
+      const newFields = [...category.config.fields];
+      const draggedElement = newFields.splice(draggedField.position, 1)[0];
+      newFields.splice(dropIndex, 0, draggedElement);
+
+      // Update position values to match new order
+      newFields.forEach((field, index) => {
+        field.position = index + 1;
+      });
+
+      category.config.fields = newFields;
+    }
+
+    draggedOverIndex = -1;
+  }
+
+  // ...existing code...
 </script>
 
-<div class="container mx-auto max-w-4xl space-y-6 py-6">
+<div class="container max-w-4xl space-y-6">
   <div class="flex items-center gap-4">
     <Button variant="ghost" size="sm" onclick={navigateBack}>
       <ArrowLeft class="mr-2 h-4 w-4" />
@@ -314,47 +378,63 @@
           Have up to 5 questions, the user is asked before creating a ticket.
         </Card.Description>
       </Card.Header>
-      <Card.Content>
+      <Card.Content class="space-y-2">
         {#if category.config.fields.length > 0}
-          <Table.Root>
-            <Table.Header>
-              <Table.Row>
-                <Table.Head class="w-[100px]">Position</Table.Head>
-                <Table.Head>Label</Table.Head>
-                <Table.Head></Table.Head>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {#each category.config.fields as field, index}
-                <Table.Row>
-                  <Table.Cell class="font-medium">#{field.position}</Table.Cell>
-                  <Table.Cell>{field.label}</Table.Cell>
-                  <Table.Cell>
-                    <Button
-                      onclick={() => {
-                        editField.setConfig($state.snapshot(category.config.fields[index]));
-                        dialogState.edit = true;
-                      }}
-                    >
-                      <Pencil />
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onclick={() => {
-                        if (confirm("Do you really want to delete this field?")) {
-                          category.config!.fields = category
-                            .snap()!
-                            .fields.filter((f) => f.position !== field.position);
-                        }
-                      }}
-                    >
-                      <Trash />
-                    </Button>
-                  </Table.Cell>
-                </Table.Row>
-              {/each}
-            </Table.Body>
-          </Table.Root>
+          <div class="mb-4">
+            <Label class="w-fit">
+              <Checkbox bind:checked={fieldReorderingEnabled} />
+              Enable field reordering
+            </Label>
+          </div>
+          <ul class="flex max-w-2xl flex-col gap-1">
+            {#each category.config.fields as field, index (field.position)}
+              <li
+                class={cn(
+                  "bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/70 flex h-16 flex-row items-center gap-3 rounded border p-3 shadow-xs transition duration-100 select-none",
+                  draggedOverIndex === index && "border-primary dark:border-primary scale-101 border-2",
+                  fieldReorderingEnabled ? "cursor-grab hover:-translate-y-0.5" : "cursor-default",
+                )}
+                draggable={fieldReorderingEnabled}
+                ondragstart={(event) => handleFieldDragStart(event, field, index)}
+                ondragend={handleFieldDragEnd}
+                ondragover={(event) => handleFieldDragOver(event, index)}
+                ondragleave={handleFieldDragLeave}
+                ondrop={(event) => handleFieldDrop(event, index)}
+              >
+                {#if fieldReorderingEnabled}
+                  <span
+                    class="drag-handle text-muted-foreground"
+                    transition:slide={{ duration: 150, axis: "x" }}>⋮⋮</span
+                  >
+                {/if}
+                <Badge variant="outline">{field.position}</Badge>
+                <span>{field.label}</span>
+                {#if !fieldReorderingEnabled}
+                  <Button
+                    class="ml-auto"
+                    onclick={() => {
+                      editField.setConfig($state.snapshot(category.config.fields[index]));
+                      dialogState.edit = true;
+                    }}
+                  >
+                    <Pencil />
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onclick={() => {
+                      if (confirm("Do you really want to delete this field?")) {
+                        category.config!.fields = category
+                          .snap()!
+                          .fields.filter((f) => f.position !== field.position);
+                      }
+                    }}
+                  >
+                    <Trash />
+                  </Button>
+                {/if}
+              </li>
+            {/each}
+          </ul>
         {:else}
           <p class="text-muted-foreground mb-3 text-sm">No fields added.</p>
         {/if}
@@ -562,38 +642,23 @@
       </Card.Header>
       <Card.Content>
         <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
-          <AlertDialog.Root>
-            <AlertDialog.Trigger
+          <AreYouSureDialog
+            title="Are you absolutely sure?"
+            description="Are you sure you want to delete <strong>{category.config
+              .label}</strong>? This action cannot be undone."
+            onYes={() => deleteCategory(category.config._id)}
+            disabled={category.loading}
+          >
+            <div
               class={buttonVariants({
                 variant: "destructive",
                 class: "sm:w-auto",
               })}
-              disabled={category.loading}
             >
               <Trash class="mr-2 h-4 w-4" />
               Delete Category
-            </AlertDialog.Trigger>
-            <AlertDialog.Content>
-              <AlertDialog.Header>
-                <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
-                <AlertDialog.Description>
-                  Are you sure you want to delete <strong>{category.config.label}</strong>? This action cannot
-                  be undone.
-                </AlertDialog.Description>
-              </AlertDialog.Header>
-              <AlertDialog.Footer>
-                <AlertDialog.Cancel>No</AlertDialog.Cancel>
-                <AlertDialog.Action
-                  onclick={() => {
-                    deleteCategory(category.config._id);
-                  }}
-                  disabled={category.loading}
-                >
-                  Yes
-                </AlertDialog.Action>
-              </AlertDialog.Footer>
-            </AlertDialog.Content>
-          </AlertDialog.Root>
+            </div>
+          </AreYouSureDialog>
 
           <Button
             onclick={() => saveCategory(category.config._id)}
