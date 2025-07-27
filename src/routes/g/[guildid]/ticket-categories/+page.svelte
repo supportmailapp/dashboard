@@ -20,10 +20,12 @@
   import Trash from "@lucide/svelte/icons/trash";
   import equal from "fast-deep-equal/es6/index.js";
   import { invalidate } from "$app/navigation";
+  import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
+  import Save from "@lucide/svelte/icons/save";
 
   let { data } = $props();
 
-  const categories = new ConfigState(data.categories);
+  const categories = new ConfigState(data.categories, false);
 
   class NewCategory {
     open = $state(false);
@@ -59,10 +61,11 @@
         throw new Error(error.message || "Failed to save ticket configuration.");
       }
 
-      const json = await res.json<ITicketCategory & { _id: string }>();
-      newCategory.reset();
-      categories.config?.push(json);
+      const json = await res.json<DocumentWithId<Omit<ITicketCategory, "_id" | "__v">>>();
+      categories.saveConfig([...(categories.config ?? []), json]);
       toast.success("Ticket configuration saved successfully.");
+      categories.loading = false;
+      // invalidate("ticket-categories");
     } catch (error: any) {
       toast.error(`Failed to save ticket configuration: ${error.message}`);
       return;
@@ -72,6 +75,14 @@
   }
 
   async function saveCategories() {
+    if (!categories.isConfigured()) {
+      toast.error("No ticket categories configured.");
+      return;
+    }
+    if (!categories.evalUnsaved()) {
+      toast.info("Nothing to save.");
+      return;
+    }
     categories.loading = true;
 
     const current = categories.snap();
@@ -92,10 +103,31 @@
       }
 
       toast.success("Ticket categories saved successfully.");
-      invalidate("categories");
+      categories.loading = false;
+      invalidate("ticket-categories");
     } catch (error: any) {
       toast.error(`Failed to save ticket categories: ${error.message}`);
       return;
+    } finally {
+      categories.loading = false;
+    }
+  }
+
+  async function deleteCategory(categoryId: string) {
+    categories.loading = true;
+
+    try {
+      const res = await apiClient.delete(APIRoutes.ticketCategory(page.data.guildId!, categoryId));
+
+      if (!res.ok) {
+        const error = await res.json<any>();
+        throw new Error(error.message || "Failed to delete ticket category.");
+      }
+
+      toast.success("Ticket category deleted successfully.");
+      invalidate("ticket-categories");
+    } catch (error: any) {
+      toast.error(`Failed to delete ticket category: ${error.message}`);
     } finally {
       categories.loading = false;
     }
@@ -240,9 +272,21 @@
             <Button class="ml-auto" href={page.data.guildHref(`/ticket-categories/${cat._id}`)}>
               <Pencil />
             </Button>
-            <Button variant="destructive">
-              <Trash />
-            </Button>
+            <AreYouSureDialog
+              title="Are you absolutely sure?"
+              description="Are you sure you want to delete **{cat.label}**? This action cannot be undone."
+              onYes={() => deleteCategory(cat._id)}
+              disabled={categories.loading}
+            >
+              <div
+                class={buttonVariants({
+                  variant: "destructive",
+                  class: "sm:w-auto",
+                })}
+              >
+                <Trash />
+              </div>
+            </AreYouSureDialog>
           {/if}
         </li>
       {/each}
@@ -288,7 +332,15 @@
           </Dialog.Content>
         </Dialog.Root>
       {/if}
-      <Button class="flex-1" onclick={saveCategories}>Save</Button>
+      <Button
+        class="flex-1"
+        onclick={saveCategories}
+        disabled={categories.loading}
+        showLoading={categories.loading}
+      >
+        <Save class="mr-0.5 size-4" />
+        Save
+      </Button>
     </div>
   </div>
 {:else}
