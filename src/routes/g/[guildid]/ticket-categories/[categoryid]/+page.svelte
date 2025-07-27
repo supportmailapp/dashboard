@@ -5,12 +5,10 @@
   import EmojiInput from "$lib/components/EmojiInput.svelte";
   import MentionableSelect from "$lib/components/MentionableSelect.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
-  import * as Table from "$lib/components/ui/table/index.js";
   import { ConfigState } from "$lib/stores/ConfigState.svelte";
   import { APIRoutes } from "$lib/urls.js";
   import { cn } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient.js";
-  import * as AlertDialog from "$ui/alert-dialog/index.js";
   import { Button, buttonVariants } from "$ui/button";
   import * as Card from "$ui/card/index.js";
   import { Checkbox } from "$ui/checkbox/index.js";
@@ -111,7 +109,7 @@
       await res.json<DocumentWithId<Omit<ITicketCategory, "_id" | "__v">>>();
       toast.success("Ticket category saved successfully.");
       category.loading = false;
-      invalidate("ticket-category-" + page.params.categoryid);
+      invalidate("ticket-category/" + page.params.categoryid);
     } catch (error: any) {
       toast.error(`Failed to save ticket category: ${error.message}`);
       category.loading = false;
@@ -644,8 +642,8 @@
         <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
           <AreYouSureDialog
             title="Are you absolutely sure?"
-            description="Are you sure you want to delete <strong>{category.config
-              .label}</strong>? This action cannot be undone."
+            description="Are you sure you want to delete **{category.config
+              .label}**? This action cannot be undone."
             onYes={() => deleteCategory(category.config._id)}
             disabled={category.loading}
           >
@@ -671,7 +669,7 @@
               ></div>
               Saving...
             {:else}
-              <Save class="mr-2 h-4 w-4" />
+              <Save class="mr-0.5 size-4" />
               Save Changes
             {/if}
           </Button>
