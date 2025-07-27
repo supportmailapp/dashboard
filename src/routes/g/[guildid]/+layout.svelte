@@ -48,26 +48,31 @@
 
   const navItems = [
     {
+      id: "home",
       name: "Home",
       href: guildHref("/home"),
       icon: Home,
     },
     {
+      id: "tickets-settings",
       name: "Tickets-Settings",
       href: guildHref("/tickets"),
       icon: Ticket,
     },
     {
+      id: "ticket-categories",
       name: "Ticket Categories",
       href: guildHref("/ticket-categories"),
       icon: FolderOpen,
     },
     {
+      id: "tickets-feedback",
       name: "Feedback",
       href: guildHref("/tickets-feedback"),
       icon: FolderOpen,
     },
     {
+      id: "blacklist",
       name: "Blacklist",
       href: guildHref("/blacklist"),
       icon: ShieldUser,
@@ -137,7 +142,10 @@
               <Button
                 href={item.href}
                 variant="ghost"
-                class={cn("w-full justify-start", isCurrentPage(item.href) ? "bg-muted" : "")}
+                class={cn(
+                  "w-full justify-start",
+                  isCurrentPage(item.href, item.id === "ticket-categories") ? "bg-muted" : "",
+                )}
               >
                 <item.icon class="size-4" />
                 {item.name}
