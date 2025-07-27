@@ -46,7 +46,18 @@ export async function PUT({ request, locals, params: { categoryid } }) {
   }
 
   // Everything except the _id
-  const sanitizedData = Object.fromEntries(Object.entries(valRes.data).filter(([key]) => key !== "_id"));
+  const sanitizedData = Object.fromEntries(
+    Object.entries(valRes.data).filter(([key]) => key !== "_id"),
+  ) as Omit<typeof valRes.data, "_id">;
+
+  // Ensure fields are ordered by position and re-index them
+  console.log("fields", sanitizedData.fields);
+  const orderedFields = sanitizedData.fields?.sort((a, b) => a.position - b.position);
+  if (orderedFields) {
+    for (let i = 0; i < orderedFields.length; i++) {
+      orderedFields[i].position = i + 1; // Re-index fields starting from 1
+    }
+  }
 
   const cat = await TicketCategory.findOneAndUpdate({ guildId, _id: valRes.data._id }, sanitizedData, {
     upsert: true,
@@ -69,6 +80,13 @@ export async function DELETE({ locals, params: { categoryid } }) {
 
   if (!cat) {
     return JsonErrors.notFound(`Ticket category with ID "${categoryId}" not found.`);
+  }
+
+  // Update the index field on remaining categories
+  const remainingCategories = await TicketCategory.find({ guildId }).sort({ index: 1 });
+
+  for (let i = 0; i < remainingCategories.length; i++) {
+    await TicketCategory.updateOne({ _id: remainingCategories[i]._id }, { index: i + 1 });
   }
 
   return new Response(null, {
