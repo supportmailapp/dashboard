@@ -1,13 +1,6 @@
 import { JsonErrors } from "$lib/constants.js";
 import { FlattenDocToJSON, getTicketCategories, TicketCategory } from "$lib/server/db";
-import {
-  CustomModalFieldPredicate,
-  MentionableEntityPredicate,
-  PartialEmojiPredicate,
-  SnowflakePredicate,
-  ZodValidator,
-} from "$lib/server/validators/index.js";
-import type { ITicketCategory } from "supportmail-types";
+import { SnowflakePredicate, ZodValidator } from "$lib/server/validators/index.js";
 import z from "zod";
 
 export async function GET({ locals: { guildId } }) {
@@ -18,8 +11,6 @@ export async function GET({ locals: { guildId } }) {
 const postSchema = z.object({
   label: z.string().min(3).max(45),
 });
-
-type PostSchema = z.infer<typeof postSchema>;
 
 export async function POST({ request, locals }) {
   const guildId = locals.guildId!;
@@ -41,10 +32,15 @@ export async function POST({ request, locals }) {
     return JsonErrors.conflict(`A ticket category with the label "${valRes.data.label}" already exists.`);
   }
 
+  const existingCount = await TicketCategory.countDocuments({ guildId });
+
   const cat = await TicketCategory.create({
     guildId: guildId,
     label: valRes.data.label,
+    index: existingCount + 1, // Set index to the next available position
   });
+
+  console.log("Created new ticket category:", cat);
 
   return Response.json(FlattenDocToJSON(cat, true), {
     status: 201,
