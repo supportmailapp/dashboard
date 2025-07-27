@@ -1,27 +1,26 @@
 <script lang="ts">
+  import { invalidate } from "$app/navigation";
+  import { page } from "$app/state";
+  import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import { ConfigState } from "$lib/stores/ConfigState.svelte";
-  import type { ITicketCategory } from "supportmail-types";
-  import { toast } from "svelte-sonner";
-  import apiClient from "$lib/utils/apiClient";
   import { APIRoutes } from "$lib/urls";
-  import { page } from "$app/state";
+  import { cn } from "$lib/utils";
+  import apiClient from "$lib/utils/apiClient";
+  import { Badge } from "$ui/badge/index.js";
   import { Button, buttonVariants } from "$ui/button";
+  import { Checkbox } from "$ui/checkbox";
   import * as Dialog from "$ui/dialog/index.js";
-  import Plus from "@lucide/svelte/icons/plus";
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
-  import { cn } from "$lib/utils";
-  import { Checkbox } from "$ui/checkbox";
-  import { slide } from "svelte/transition";
-  import { Badge } from "$ui/badge/index.js";
   import Pencil from "@lucide/svelte/icons/pencil";
-  import Trash from "@lucide/svelte/icons/trash";
-  import equal from "fast-deep-equal/es6/index.js";
-  import { invalidate } from "$app/navigation";
-  import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
+  import Plus from "@lucide/svelte/icons/plus";
   import Save from "@lucide/svelte/icons/save";
+  import Trash from "@lucide/svelte/icons/trash";
+  import type { ITicketCategory } from "supportmail-types";
+  import { toast } from "svelte-sonner";
+  import { slide } from "svelte/transition";
 
   let { data } = $props();
 
@@ -76,22 +75,26 @@
   }
 
   async function saveCategories() {
-    if (!categories.evalUnsaved()) {
+    const current = categories.snap();
+    const currentOrder = current?.map((c) => c._id).join() ?? "";
+    const oldOrder = categories.backup?.map((c) => c._id).join() ?? "";
+
+    if (currentOrder === oldOrder) {
       toast.info("Nothing to save.");
       return;
     }
-    categories.loading = true;
 
-    const current = categories.snap();
+    categories.loading = true;
 
     try {
       const res = await apiClient.put(APIRoutes.ticketCategories(page.data.guildId!), {
         json:
-          current?.map((cat) => ({
-            _id: cat._id,
-            guildId: cat.guildId,
-            index: cat.index,
-          })) ?? [],
+          current
+            ?.sort((a, b) => a.index - b.index)
+            .map((cat) => ({
+              _id: cat._id,
+              guildId: cat.guildId,
+            })) ?? [],
       });
 
       if (!res.ok) {
@@ -188,7 +191,7 @@
         item.index = index + 1;
       });
 
-      categories.saveConfig(newItems);
+      categories.setConfig(newItems);
     }
 
     draggedOverIndex = -1;
@@ -237,7 +240,7 @@
 
 {#if categories.isConfigured()}
   <div class="flex w-full max-w-2xl flex-col justify-start gap-1.5">
-    {#if data.categoryCount > 1}
+    {#if categories.config && categories.config.length > 1}
       <div class="pb-4">
         <Label class="w-fit">
           <Checkbox bind:checked={reorderingEnabled} />
@@ -287,6 +290,9 @@
           {/if}
         </li>
       {/each}
+      {#if categories.config.length === 0}
+        <li class="text-muted-foreground my-2 text-sm">No categories configured.</li>
+      {/if}
     </ul>
     <div class="flex gap-2">
       {#if categories.config.length < 10}
@@ -329,15 +335,17 @@
           </Dialog.Content>
         </Dialog.Root>
       {/if}
-      <Button
-        class="flex-1"
-        onclick={saveCategories}
-        disabled={categories.loading}
-        showLoading={categories.loading}
-      >
-        <Save class="mr-0.5 size-4" />
-        Save
-      </Button>
+      {#if categories.config.length > 0}
+        <Button
+          class="flex-1"
+          onclick={saveCategories}
+          disabled={categories.loading}
+          showLoading={categories.loading}
+        >
+          <Save class="mr-0.5 size-4" />
+          Save
+        </Button>
+      {/if}
     </div>
   </div>
 {:else}
