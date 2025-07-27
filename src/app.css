@@ -226,4 +226,9 @@
       }
     }
   }
+
+  .md-link {
+    @apply text-primary hover:underline;
+    cursor: pointer;
+  }
 }
