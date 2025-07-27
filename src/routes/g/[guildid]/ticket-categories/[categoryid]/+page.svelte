@@ -107,7 +107,7 @@
       }
 
       await res.json<DocumentWithId<Omit<ITicketCategory, "_id" | "__v">>>();
-      toast.success("Ticket category saved successfully.");
+      toast.success("Ticket category saved.");
       category.loading = false;
       invalidate("ticket-category/" + page.params.categoryid);
     } catch (error: any) {
@@ -127,7 +127,7 @@
         throw new Error(error.message || "Failed to delete ticket category.");
       }
 
-      toast.success("Ticket category deleted successfully.");
+      toast.success("Ticket category deleted.");
       navigateBack();
     } catch (error: any) {
       toast.error(`Failed to delete ticket category: ${error.message}`);

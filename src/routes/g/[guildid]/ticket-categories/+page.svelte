@@ -63,7 +63,8 @@
 
       const json = await res.json<DocumentWithId<Omit<ITicketCategory, "_id" | "__v">>>();
       categories.saveConfig([...(categories.config ?? []), json]);
-      toast.success("Ticket configuration saved successfully.");
+      newCategory.reset();
+      toast.success("Ticket category created.");
       categories.loading = false;
       // invalidate("ticket-categories");
     } catch (error: any) {
@@ -75,10 +76,6 @@
   }
 
   async function saveCategories() {
-    if (!categories.isConfigured()) {
-      toast.error("No ticket categories configured.");
-      return;
-    }
     if (!categories.evalUnsaved()) {
       toast.info("Nothing to save.");
       return;
@@ -102,7 +99,7 @@
         throw new Error(error.message || "Failed to save ticket categories.");
       }
 
-      toast.success("Ticket categories saved successfully.");
+      toast.success("Ticket categories saved.");
       categories.loading = false;
       invalidate("ticket-categories");
     } catch (error: any) {
@@ -124,7 +121,7 @@
         throw new Error(error.message || "Failed to delete ticket category.");
       }
 
-      toast.success("Ticket category deleted successfully.");
+      toast.success("Ticket category deleted.");
       invalidate("ticket-categories");
     } catch (error: any) {
       toast.error(`Failed to delete ticket category: ${error.message}`);
