@@ -5,7 +5,7 @@ import z from "zod";
 
 export async function GET({ locals: { guildId } }) {
   const cats = await getTicketCategories(guildId!);
-  return Response.json(cats.map((cat) => FlattenDocToJSON(cat, true)));
+  return Response.json(cats.sort((a, b) => a.index - b.index).map((cat) => FlattenDocToJSON(cat, true)));
 }
 
 const postSchema = z.object({
@@ -51,14 +51,14 @@ const putSchema = z
   .object({
     _id: z.string(),
     guildId: SnowflakePredicate,
-    index: z.number().int().min(1).max(10),
   })
   .array();
 
 export async function PUT({ request, locals }) {
   // This endpoint accepts an array of ticket categories to reorder.
   // It expects the request body to be an array of objects with the following structure:
-  // { _id: string, index: number }
+  // { _id: string, guildId: string }
+  // This means, that the client sends an ordered list of ticket categories with their IDs and the guild ID, and we assign the correct index to each category based on the order in the array.
   if (!locals.isAuthenticated()) {
     return JsonErrors.unauthorized();
   }
@@ -80,14 +80,9 @@ export async function PUT({ request, locals }) {
   }
 
   // Ensure, the .index starts at 1 and is sequential
-  const sortedCategories = valRes.data.sort((a, b) => a.index - b.index);
-  const uniqueIndexes = new Set(sortedCategories.map((cat) => cat.index));
-  if (uniqueIndexes.size !== sortedCategories.length) {
-    return JsonErrors.badRequest("Category indexes must be unique.");
-  }
-  for (let i = 0; i < sortedCategories.length; i++) {
-    sortedCategories[i].index = i + 1; // Re-index to ensure they are sequential
-  }
+  const sortedCategories = valRes.data
+    .map((data, index) => ({ ...data, index: index + 1 })) // Assign sequential indexes starting from 1
+    .sort((a, b) => a.index - b.index);
 
   // Update the categories in the database
   const updatePromises = sortedCategories.map((category) =>
@@ -97,6 +92,7 @@ export async function PUT({ request, locals }) {
       { new: true, upsert: true },
     ),
   );
+
   try {
     const updatedCategories = await Promise.all(updatePromises);
     return Response.json(
