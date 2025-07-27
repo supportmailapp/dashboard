@@ -96,9 +96,12 @@
       payload.emoji = undefined;
     }
 
+    // Remove the index field from the payload
+    const { index, ...payloadWithoutIndex } = payload;
+
     try {
       const res = await apiClient.put(APIRoutes.ticketCategory(page.data.guildId!, categoryId), {
-        json: payload,
+        json: payloadWithoutIndex,
       });
 
       if (!res.ok) {
