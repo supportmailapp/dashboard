@@ -267,7 +267,7 @@ export const handleError: HandleServerError = async ({ error, event, status, mes
       ? Sentry.captureException(error, {
           extra: { event, status },
         })
-      : undefined;
+      : crypto.randomUUID();
 
   if (dev) {
     console.error("❌ Something has errored");
