@@ -107,8 +107,6 @@
       invalidate("ticket-categories");
     } catch (error: any) {
       toast.error(`Failed to save ticket categories: ${error.message}`);
-      return;
-    } finally {
       categories.loading = false;
     }
   }
@@ -125,6 +123,7 @@
       }
 
       toast.success("Ticket category deleted.");
+      categories.loading = false;
       invalidate("ticket-categories");
     } catch (error: any) {
       toast.error(`Failed to delete ticket category: ${error.message}`);

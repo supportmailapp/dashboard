@@ -395,12 +395,14 @@
       </Card.Header>
       <Card.Content class="space-y-2">
         {#if category.config.fields.length > 0}
-          <div class="mb-4">
-            <Label class="w-fit">
-              <Checkbox bind:checked={fieldReorderingEnabled} />
-              Enable field reordering
-            </Label>
-          </div>
+          {#if category.config.fields.length > 1}
+            <div class="mb-4">
+              <Label class="w-fit">
+                <Checkbox bind:checked={fieldReorderingEnabled} />
+                Enable field reordering
+              </Label>
+            </div>
+          {/if}
           <ul class="flex max-w-2xl flex-col gap-1">
             {#each category.config.fields as field, index (field.position)}
               <li
