@@ -29,6 +29,8 @@
   import { slide } from "svelte/transition";
   import { Badge } from "$ui/badge/index.js";
   import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
+  import XIcon from "@lucide/svelte/icons/x";
+  import { EmojiParser } from "$lib/utils/formatting.js";
 
   let { data } = $props();
 
@@ -308,8 +310,20 @@
               <p class="text-destructive text-sm">Name must be between 3 and 45 characters</p>
             {/if}
           </div>
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-start gap-2">
             <EmojiInput bind:emoji={category.config.emoji} />
+            {#if EmojiParser.isValid(category.config.emoji)}
+              <Button
+                size="icon"
+                variant="destructive"
+                onclick={() => {
+                  category.config.emoji = { name: "", animated: false, id: "" };
+                }}
+                aria-label="Reset "
+              >
+                <XIcon />
+              </Button>
+            {/if}
           </div>
         </Card.Content>
       </Card.Root>
