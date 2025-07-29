@@ -1,4 +1,5 @@
 import { ChannelType, type APIGuildCategoryChannel, type APIUser } from "discord-api-types/v10";
+import type { IPartialEmoji } from "supportmail-types";
 
 /**
  * Sorts an array of items by their position property in ascending order.
@@ -143,5 +144,54 @@ export class MarkdownFormatter {
       .replace(/`(.*?)`/g, "<code>$1</code>") // Inline code
       .replace(/\n/g, "<br>") // New lines to <br>
       .replace(/\[([^\]]+)\]\(([^) ]+)\)/gi, `<a href="$2" class="md-link" target="_blank">$1</a>`);
+  }
+}
+
+export class EmojiParser {
+  private static unicodeRE(): RegExp {
+    const r = String.raw;
+    const seq = r`(?:\p{Emoji}\uFE0F\u20E3?|\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation})`;
+    const sTags = r`\u{E0061}-\u{E007A}`;
+    return new RegExp(
+      r`^([\u{1F1E6}-\u{1F1FF}]{2}|\u{1F3F4}[${sTags}]{2}[\u{E0030}-\u{E0039}${sTags}]{1,3}\u{E007F}|${seq}(?:\u200D${seq})*)$`,
+      "u",
+    );
+  }
+
+  private static readonly customEmojiRegex = /^<?(?:(a))?:([a-zA-Z0-9_~]{2,32}):(\d{17,19})>?$/i;
+
+  static fromString(emojiStr: string, withFallback: true): IPartialEmoji;
+  static fromString(emojiStr: string, withFallback?: false): IPartialEmoji | null;
+  static fromString(emojiStr: string, withFallback?: boolean): IPartialEmoji | null {
+    // First try to match custom emoji
+    const customEmoji = emojiStr.match(this.customEmojiRegex);
+    if (customEmoji) {
+      return {
+        animated: Boolean(customEmoji[1]),
+        name: customEmoji[2],
+        id: customEmoji[3],
+      };
+    }
+
+    // Then try to match unicode emoji
+    const m = emojiStr.match(this.unicodeRE());
+    if (m?.[0]) return { name: m[0] };
+
+    return withFallback ? { name: emojiStr } : null;
+  }
+
+  static toString(emoji: IPartialEmoji): string {
+    if (emoji.id) {
+      return `<${emoji.animated ? "a" : ""}:${emoji.name}:${emoji.id}>`;
+    }
+    return emoji.name || "";
+  }
+
+  static isCustom(emoji: IPartialEmoji): emoji is IPartialEmoji & { id: string; name: string } {
+    return !!emoji.id && emoji.name.length > 0;
+  }
+
+  static isValid(emoji: IPartialEmoji): boolean {
+    return this.isCustom(emoji) || (!!emoji.name && this.unicodeRE().test(emoji.name));
   }
 }
