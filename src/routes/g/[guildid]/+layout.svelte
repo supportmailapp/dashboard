@@ -10,6 +10,7 @@
   import XIcon from "@lucide/svelte/icons/x";
   import FolderOpen from "@lucide/svelte/icons/folder-open";
   import RotateCcw from "@lucide/svelte/icons/rotate-ccw";
+  import Star from "@lucide/svelte/icons/star";
 
   import { afterNavigate, beforeNavigate } from "$app/navigation";
   import { cn } from "$lib/utils";
@@ -27,6 +28,7 @@
   import { Skeleton } from "$ui/skeleton";
   import ToggleModeBtn from "$lib/components/ToggleModeBtn.svelte";
   import Mounter from "./Mounter.svelte";
+  import VenocixBranding from "./VenocixBranding.svelte";
 
   let { children } = $props();
   let { isCurrentPage, guildHref } = page.data;
@@ -69,7 +71,7 @@
       id: "tickets-feedback",
       name: "Feedback",
       href: guildHref("/tickets-feedback"),
-      icon: FolderOpen,
+      icon: Star,
     },
     {
       id: "blacklist",
@@ -154,6 +156,8 @@
           {/each}
         </ul>
       </nav>
+
+      <VenocixBranding />
 
       <!-- User Profile Link (Desktop) -->
       <div class="inline-flex items-center gap-1 border-t p-3">
@@ -297,6 +301,8 @@
                 {/each}
               </ul>
             </nav>
+
+            <VenocixBranding />
 
             <!-- User Profile Link (Mobile) -->
             <div class="inline-flex items-center gap-1 border-t p-3">
