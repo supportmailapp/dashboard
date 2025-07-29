@@ -15,7 +15,7 @@
   import { slide } from "svelte/transition";
 
   let guildManager = $derived(page.data.guildsManager);
-  let loading = $state(false);
+  let loading = $state(true);
   let hrefAfterLogin = $state<string | null>(null);
   let hrefAfterSelection = $state<string>("/home");
 
@@ -52,10 +52,6 @@
     if (hrefAfterLogin !== null) {
       goto(hrefAfterLogin);
     }
-
-    loading = false;
-
-    return;
   });
 
   beforeNavigate(({ complete }) => {
