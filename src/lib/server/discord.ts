@@ -3,10 +3,12 @@
 import { discordBotToken } from "$env/static/private";
 import {
   Routes,
+  type APIChannel,
   type APIGuildMember,
   type APIRole,
   type APIUser,
   type RESTAPIPartialCurrentUserGuild,
+  type RESTPatchAPIChannelJSONBody,
 } from "discord-api-types/v10";
 import { DiscordAPIError, REST, HTTPError, RateLimitError, type RESTOptions } from "discord.js";
 import UserGuildsCache from "$lib/server/caches/userGuilds.js";
@@ -66,6 +68,20 @@ class SafeResponse<T = unknown> {
   public hasRateLimitError(): this is DefinitelyHasError<RateLimitError> {
     return this.error instanceof RateLimitError;
   }
+
+  public errorToString(): string {
+    if (this.error instanceof DiscordAPIError) {
+      return `Discord API Error: ${this.error.message} (Code: ${this.error.code}, Status: ${this.status})`;
+    } else if (this.error instanceof HTTPError) {
+      return `HTTP Error: ${this.error.message} (Status: ${this.status})`;
+    } else if (this.error instanceof RateLimitError) {
+      return `Rate Limit Error: ${this.error.message} (Retry After: ${this.error.retryAfter}ms)`;
+    } else if (typeof this.error === "string") {
+      return `Error: ${this.error}`;
+    } else {
+      return this.error?.message ?? "Unknown error occurred";
+    }
+  }
 }
 
 /**
@@ -104,6 +120,17 @@ class DiscordBotAPI extends BaseDiscordAPI {
 
   public async getGuildChannels(guildId: string): Promise<SafeResponse<GuildCoreChannel[]>> {
     return this.doSafeRequest(() => this.rest.get(Routes.guildChannels(guildId)) as any);
+  }
+
+  public async getGuildChannel<T extends APIChannel>(channelId: string): Promise<SafeResponse<T>> {
+    return this.doSafeRequest(() => this.rest.get(Routes.channel(channelId)) as any);
+  }
+
+  public async editGuildChannel<T extends APIChannel>(
+    channelId: string,
+    data: RESTPatchAPIChannelJSONBody,
+  ): Promise<SafeResponse<T>> {
+    return this.doSafeRequest(() => this.rest.patch(Routes.channel(channelId), { body: data }) as any);
   }
 
   public async getGuildRoles(guildId: string): Promise<SafeResponse<APIRole[]>> {
