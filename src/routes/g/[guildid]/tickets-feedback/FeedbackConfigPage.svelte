@@ -1,9 +1,12 @@
 <script lang="ts">
+  import { page } from "$app/state";
   import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
   import ConfigCard from "$lib/components/ConfigCard.svelte";
   import { Textarea } from "$lib/components/ui/textarea/index.js";
   import { ConfigState } from "$lib/stores/ConfigState.svelte";
+  import { APIRoutes } from "$lib/urls";
   import { cn } from "$lib/utils";
+  import apiClient from "$lib/utils/apiClient";
   import { Badge } from "$ui/badge/index.js";
   import { Button, buttonVariants } from "$ui/button";
   import * as Card from "$ui/card/index.js";
@@ -18,15 +21,17 @@
   import Save from "@lucide/svelte/icons/save";
   import Trash from "@lucide/svelte/icons/trash";
   import type { ICustomModalField, IFeedbackConfig } from "supportmail-types";
+  import { toast } from "svelte-sonner";
   import { slide } from "svelte/transition";
 
   type Props = {
     feedback: IFeedbackConfig;
     saveFn: SaveFunction;
+    resetFn: () => Promise<void>;
     loading: boolean;
     saving: boolean;
   };
-  let { feedback = $bindable(), saveFn, loading: isLoading, saving: isSaving }: Props = $props();
+  let { feedback = $bindable(), saveFn, resetFn, loading: isLoading, saving: isSaving }: Props = $props();
 
   // Initialize fields array if it doesn't exist
   if (!feedback.questions) {
@@ -443,7 +448,7 @@
         <AreYouSureDialog
           title="Are you absolutely sure?"
           description="Are you sure you want to reset feedback completely? This action cannot be undone."
-          onYes={() => {}}
+          onYes={resetFn}
           disabled={isLoading}
         >
           <div
