@@ -77,5 +77,5 @@ export function isNotUndefined<T>(val: T): val is Exclude<T, undefined> {
 }
 
 export function hasAllKeys<K extends string>(obj: any, keys: readonly K[]): obj is Record<K, any> {
-  return keys.every((key) => key in obj);
+  return typeof obj === "object" && !!obj && keys.every((key) => key in obj);
 }
