@@ -248,8 +248,6 @@
 
     draggedOverIndex = -1;
   }
-
-  // ...existing code...
 </script>
 
 <div class="container max-w-4xl space-y-6">
@@ -280,14 +278,6 @@
           <Card.Description>Configure the basic properties of your ticket category.</Card.Description>
         </Card.Header>
         <Card.Content class="space-y-5">
-          <div class="flex items-center justify-between">
-            <div class="space-y-0.5">
-              <Label for="cat-enabled">Enable Category</Label>
-              <p class="text-muted-foreground text-sm">Allow users to create tickets in this category</p>
-            </div>
-            <Switch bind:checked={category.config.enabled} id="cat-enabled" />
-          </div>
-
           <div class="space-y-2">
             <Label for="cat-label">Category Name</Label>
             <Input
@@ -309,6 +299,13 @@
             {#if !labelIsValid && category.config.label!.length > 0}
               <p class="text-destructive text-sm">Name must be between 3 and 45 characters</p>
             {/if}
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="space-y-0.5">
+              <Label for="cat-enabled">Enable Category</Label>
+              <p class="text-muted-foreground text-sm">Allow users to create tickets in this category</p>
+            </div>
+            <Switch bind:checked={category.config.enabled} id="cat-enabled" />
           </div>
           <div class="flex items-center justify-start gap-2">
             <EmojiInput bind:emoji={category.config.emoji} />
@@ -336,50 +333,48 @@
             Configure who gets pinged when tickets are created in this category.
           </Card.Description>
         </Card.Header>
-        <Card.Content>
-          <div class="space-y-2">
-            <Label>Category Pings</Label>
-            <div class="bg-accent/50 max-h-40 min-h-20 w-full overflow-y-auto rounded-md border p-3">
-              {#if (category.config.pings ?? []).length === 0}
-                <p class="text-muted-foreground text-sm">
-                  No pings configured. Add users or roles to notify when tickets are created.
-                </p>
-              {:else}
-                <div class="flex flex-wrap gap-2">
-                  {#each category.config.pings ?? [] as entity}
-                    <Mention
-                      class="w-max"
-                      userId={entity.typ === EntityType.user ? entity.id : undefined}
-                      roleId={entity.typ === EntityType.role ? entity.id : undefined}
-                      onDelete={() => handlePingDelete(entity)}
-                    />
-                  {/each}
-                </div>
-              {/if}
-
-              <div class="mt-2">
-                <Popover.Root>
-                  <Popover.Trigger
-                    class={buttonVariants({
-                      variant: "outline",
-                      size: "sm",
-                      class: "h-8",
-                    })}
-                    disabled={category.loading}
-                  >
-                    <Plus class="mr-2 h-4 w-4" />
-                    Add Ping
-                  </Popover.Trigger>
-                  <Popover.Content class="w-80">
-                    <MentionableSelect
-                      excludedRoleIds={pingRoles}
-                      excludedUserIds={pingUsers}
-                      onRoleSelect={handleRoleSelect}
-                      onUserSelect={handleUserSelect}
-                    />
-                  </Popover.Content>
-                </Popover.Root>
+        <Card.Content class="space-y-2">
+          <Label>Category Pings</Label>
+          <div class="bg-accent/50 max-h-40 min-h-20 w-full overflow-y-auto rounded-md border p-3">
+            {#if (category.config.pings ?? []).length === 0}
+              <p class="text-muted-foreground text-sm">
+                No pings configured. Add users or roles to notify when tickets are created.
+              </p>
+            {:else}
+              <div class="flex flex-wrap gap-2">
+                {#each category.config.pings ?? [] as entity}
+                  <Mention
+                    class="w-max"
+                    userId={entity.typ === EntityType.user ? entity.id : undefined}
+                    roleId={entity.typ === EntityType.role ? entity.id : undefined}
+                    onDelete={() => handlePingDelete(entity)}
+                  />
+                {/each}
               </div>
+            {/if}
+
+            <div class="mt-2">
+              <Popover.Root>
+                <Popover.Trigger
+                  class={buttonVariants({
+                    variant: "outline",
+                    size: "sm",
+                    class: "h-8",
+                  })}
+                  disabled={category.loading}
+                >
+                  <Plus class="mr-2 h-4 w-4" />
+                  Add Ping
+                </Popover.Trigger>
+                <Popover.Content class="w-80">
+                  <MentionableSelect
+                    excludedRoleIds={pingRoles}
+                    excludedUserIds={pingUsers}
+                    onRoleSelect={handleRoleSelect}
+                    onUserSelect={handleUserSelect}
+                  />
+                </Popover.Content>
+              </Popover.Root>
             </div>
           </div>
         </Card.Content>
@@ -655,7 +650,7 @@
     <!-- Action Buttons -->
     <Card.Root>
       <Card.Header>
-        <Card.Title>Danger Zone</Card.Title>
+        <Card.Title>Actions</Card.Title>
       </Card.Header>
       <Card.Content>
         <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
