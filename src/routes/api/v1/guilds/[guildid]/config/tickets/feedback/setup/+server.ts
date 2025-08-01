@@ -69,7 +69,6 @@ export async function POST({ locals }) {
     missingTags.push(...allTagKeys);
   }
 
-  // TODO: Add missingTags functionality for edit channel stuff
   if (missingTags.length > 0) {
     console.log(`[DEBUG] Setting up feedback tags for guild ${guildId}, missing tags:`, missingTags);
 
@@ -87,35 +86,54 @@ export async function POST({ locals }) {
     const currentTags: APIGuildForumTag[] = forum?.available_tags ?? [];
     console.log(`[DEBUG] Current forum tags count: ${currentTags.length}`);
 
-    const newTags = {
+    const allFeedbackTags = {
       one: { name: "1 ⭐", moderated: true },
       two: { name: "2 ⭐", moderated: true },
       three: { name: "3 ⭐", moderated: true },
       four: { name: "4 ⭐", moderated: true },
       five: { name: "5 ⭐", moderated: true },
     } as Record<"one" | "two" | "three" | "four" | "five", APIGuildForumTag>;
+
+    // Filter out tags that already exist based on name (because tag names must be unique)
+    const newTags = Object.fromEntries(
+      Object.entries(allFeedbackTags).filter(
+        ([_, tag]) => !currentTags.some((existingTag) => existingTag.name === tag.name),
+      ),
+    ) as Partial<typeof allFeedbackTags>;
+
     const finalTags = currentTags.concat(Object.values(newTags));
 
-    console.log(
-      `[DEBUG] Creating ${Object.values(newTags).length} new tags, total tags will be: ${finalTags.length}`,
-    );
+    if (finalTags.length > 25) {
+      return JsonErrors.badRequest("Cannot have more than 25 tags in a forum channel");
+    } else if (finalTags.length === 0) {
+      return JsonErrors.badRequest("Cannot remove all tags from a forum channel");
+    } else if (finalTags.length === currentTags.length) {
+      console.log(`[DEBUG] No new tags to add for guild ${guildId}, skipping update.`);
+      // Don't return early - we still need to update the DB with existing tag mappings
+    } else {
+      console.log(
+        `[DEBUG] Creating ${Object.values(newTags).length} new tags, total tags will be: ${finalTags.length}`,
+      );
 
-    const forumRes = await locals.discordRest.editGuildChannel<APIGuildForumChannel>(ticketConfig.forumId, {
-      available_tags: finalTags,
-    });
+      const forumRes = await locals.discordRest.editGuildChannel<APIGuildForumChannel>(ticketConfig.forumId, {
+        available_tags: finalTags,
+      });
 
-    if (!forumRes.isSuccess()) {
-      return JsonErrors.serverError(forumRes.errorToString());
+      if (!forumRes.isSuccess()) {
+        return JsonErrors.serverError(forumRes.errorToString());
+      }
+
+      forum = forumRes.data;
+      console.log(`[DEBUG] Forum updated successfully, new tag count: ${forum.available_tags.length}`);
+
+      // Wait because of rate limits
+      await new Promise((resolve) => setTimeout(resolve, 2_000));
     }
 
-    forum = forumRes.data;
-    console.log(`[DEBUG] Forum updated successfully, new tag count: ${forum.available_tags.length}`);
+    // Map all feedback tags (both existing and new) to their IDs
 
-    // Wait because of reatelimits
-    await new Promise((resolve) => setTimeout(resolve, 2_000));
-
-    const feedbackTags = Object.entries(newTags).reduce((acc, [tagKey, { name }]) => {
-      const tagId = forum.available_tags.find((t) => t.name === name)?.id;
+    const feedbackTags = Object.entries(allFeedbackTags).reduce((acc, [tagKey, tagData]) => {
+      const tagId = forum.available_tags.find((t) => t.name === tagData.name)?.id;
       if (tagId) {
         acc[tagKey] = tagId;
       }
