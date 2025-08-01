@@ -7,7 +7,7 @@
   import Save from "@lucide/svelte/icons/save";
 
   type Props = {
-    title: string;
+    title?: string;
     description?: string;
     class?: ClassValue;
     saveBtnDisabled?: boolean;
@@ -27,12 +27,16 @@
 </script>
 
 <Card.Root>
-  <Card.Header>
-    <Card.Title>{title}</Card.Title>
-    {#if description}
-      <Card.Description>{description}</Card.Description>
-    {/if}
-  </Card.Header>
+  {#if !!title || !!description}
+    <Card.Header>
+      {#if title}
+        <Card.Title>{title}</Card.Title>
+      {/if}
+      {#if description}
+        <Card.Description>{description}</Card.Description>
+      {/if}
+    </Card.Header>
+  {/if}
   <Card.Content class={cn(className)}>
     {@render children?.()}
   </Card.Content>
