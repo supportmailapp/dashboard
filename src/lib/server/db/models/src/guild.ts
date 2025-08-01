@@ -35,11 +35,12 @@ const FeedbackTagsSchema = new Schema<IFeedbackTags>(
     four: { type: String },
     five: { type: String },
   },
-  { id: false },
+  { _id: false },
 );
 
 const FeedbackConfigSchema = new Schema<IFeedbackConfig>(
   {
+    isEnabled: { type: Boolean, default: false },
     questions: { type: [CustomModalFieldSchema], required: false },
     thankYou: { type: String, required: false },
     tags: {
@@ -47,7 +48,7 @@ const FeedbackConfigSchema = new Schema<IFeedbackConfig>(
       required: false,
     },
   },
-  { id: false },
+  { _id: false },
 );
 
 const statusTagsSchema = new Schema<IStatusTags>(
@@ -82,7 +83,7 @@ const ticketConfigSchema = new Schema<ITicketConfig>({
   },
   autoForwarding: { type: Boolean, default: true },
   allowedBots: { type: [String], required: false },
-  feedback: { type: FeedbackConfigSchema, required: false },
+  feedback: { type: FeedbackConfigSchema, default: { isEnabled: false } },
   webhookDocId: { type: String, required: false },
 });
 
