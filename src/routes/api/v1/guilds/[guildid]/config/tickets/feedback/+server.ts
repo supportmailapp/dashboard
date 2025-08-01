@@ -1,6 +1,7 @@
 import { JsonErrors } from "$lib/constants";
-import { FlattenDocToJSON, getDBGuild, updateDBGuild } from "$lib/server/db";
-import { CustomModalFieldPredicate, SnowflakePredicate, ZodValidator } from "$lib/server/validators/index.js";
+import { DBGuild, FlattenDocToJSON, getDBGuild } from "$lib/server/db/index.js";
+import { CustomModalFieldPredicate, ZodValidator } from "$lib/server/validators/index.js";
+import { hasAllKeys } from "$lib/utils";
 import type { UpdateQuery } from "mongoose";
 import type { IDBGuild } from "supportmail-types";
 import z from "zod";
@@ -16,6 +17,13 @@ export async function GET({ locals: { guildId } }) {
       return JsonErrors.notFound();
     }
 
+    if (config && typeof config.isEnabled === "undefined") {
+      console.warn("[GET] isEnabled was undefined, checking tags for default value");
+      config.isEnabled = hasAllKeys(config.tags ?? {}, ["one", "two", "three", "four", "five"]);
+    }
+
+    console.log("Fetched guild ticket config:", config);
+
     return Response.json(config);
   } catch (err: any) {
     console.error("Error fetching guild ticket config:", err);
@@ -23,14 +31,16 @@ export async function GET({ locals: { guildId } }) {
   }
 }
 
-const putSchema = z.object({
-  postId: SnowflakePredicate.optional(),
-  questions: CustomModalFieldPredicate.array().min(0).max(5).optional(),
-  thankYou: z.string(),
-});
+const putSchema = z
+  .object({
+    isEnabled: z.boolean(),
+    questions: CustomModalFieldPredicate.array().min(0).max(5).optional(),
+    thankYou: z.string().optional(),
+  })
+  .default({ isEnabled: false });
 
 export async function PUT({ request, locals }) {
-  if (!locals.isAuthenticated()) return JsonErrors.unauthorized();
+  if (!locals.isAuthenticated() || !locals.guildId) return JsonErrors.unauthorized();
 
   const body = await request.json().catch(() => undefined);
   if (!body) return JsonErrors.badRequest("Invalid JSON body");
@@ -40,32 +50,37 @@ export async function PUT({ request, locals }) {
     return JsonErrors.badRequest(valRes.error.message);
   }
 
-  const { postId, questions, thankYou } = valRes.data;
+  const { isEnabled, questions = [], thankYou = "" } = valRes.data;
+  console.log("feedback config update data:", valRes.data);
   const updatePayload: UpdateQuery<IDBGuild> = {
-    $set: {
-      "ticketConfig.feedback": thankYou.trim(),
-      "ticketConfig.questions": questions?.length ? questions : undefined, // If no questions, set to undefined
-    },
+    "ticketConfig.feedback.isEnabled": isEnabled,
+    "ticketConfig.feedback.thankYou": thankYou.trim(),
+    "ticketConfig.feedback.questions": questions?.length ? questions : undefined,
   };
-  if (typeof postId === "string") {
-    // If postId is provided, feedback is enabled - ergo, all other fields are settable
-    updatePayload.$set!["ticketConfig.postId"] = postId;
-  } else {
-    // If postId is not provided, feedback is disabled - ergo, tags must be cleared
-    updatePayload.$unset = {
-      tags: "",
-      postId: "",
-    };
-  }
 
   try {
-    const newDoc = await updateDBGuild(locals.guildId!, updatePayload);
-    if (!newDoc) {
+    const newDoc = await DBGuild.findOneAndUpdate({ id: locals.guildId }, updatePayload, { new: true });
+    if (!newDoc || !newDoc.ticketConfig.feedback) {
       return JsonErrors.notFound("Guild not found or update failed");
     }
 
-    const json = FlattenDocToJSON(newDoc);
-    return Response.json(json);
+    const json = FlattenDocToJSON(newDoc, true);
+    const feedbackConfig = json.ticketConfig.feedback!;
+
+    // Ensure isEnabled is properly set in the response
+    if (typeof feedbackConfig.isEnabled === "undefined") {
+      console.warn("[PUT] isEnabled was undefined, checking tags for default value");
+      feedbackConfig.isEnabled = hasAllKeys(feedbackConfig.tags ?? {}, [
+        "one",
+        "two",
+        "three",
+        "four",
+        "five",
+      ]);
+    }
+
+    console.log("Updated guild ticket config:", feedbackConfig);
+    return Response.json(feedbackConfig);
   } catch (err: any) {
     console.error("Error updating guild ticket config:", err);
     return JsonErrors.serverError(err.message || "Failed to update ticket config");
