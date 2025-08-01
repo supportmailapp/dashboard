@@ -1,6 +1,7 @@
 import { JsonErrors } from "$lib/constants.js";
 import { FlattenDocToJSON, getTicketCategories, TicketCategory } from "$lib/server/db";
 import { SnowflakePredicate, ZodValidator } from "$lib/server/validators/index.js";
+import { reindexArrayByKey } from "$lib/utils/formatting.js";
 import z from "zod";
 
 export async function GET({ locals: { guildId } }) {
@@ -51,6 +52,7 @@ const putSchema = z
   .object({
     _id: z.string(),
     guildId: SnowflakePredicate,
+    index: z.number().int().min(1),
   })
   .array();
 
@@ -80,9 +82,11 @@ export async function PUT({ request, locals }) {
   }
 
   // Ensure, the .index starts at 1 and is sequential
-  const sortedCategories = valRes.data
-    .map((data, index) => ({ ...data, index: index + 1 })) // Assign sequential indexes starting from 1
-    .sort((a, b) => a.index - b.index);
+  const sortedCategories =
+    reindexArrayByKey(
+      valRes.data.sort((a, b) => a.index - b.index),
+      "index",
+    ) ?? [];
 
   // Update the categories in the database
   const updatePromises = sortedCategories.map((category) =>

@@ -7,6 +7,7 @@ import {
   SnowflakePredicate,
   ZodValidator,
 } from "$lib/server/validators";
+import { reindexArrayByKey } from "$lib/utils/formatting.js";
 import z from "zod";
 
 const putSchema = z.object({
@@ -53,13 +54,10 @@ export async function PUT({ request, locals, params: { categoryid } }) {
   ) as Omit<typeof valRes.data, "_id">;
 
   // Ensure fields are ordered by position and re-index them
-  console.log("fields", sanitizedData.fields);
-  const orderedFields = sanitizedData.fields?.sort((a, b) => a.position - b.position);
-  if (orderedFields) {
-    for (let i = 0; i < orderedFields.length; i++) {
-      orderedFields[i].position = i + 1; // Re-index fields starting from 1
-    }
-  }
+  sanitizedData.fields = reindexArrayByKey(
+    sanitizedData.fields?.sort((a, b) => a.position - b.position),
+    "position",
+  );
 
   const cat = await TicketCategory.findOneAndUpdate({ guildId, _id: valRes.data._id }, sanitizedData, {
     upsert: true,

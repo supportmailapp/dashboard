@@ -2,6 +2,7 @@ import { JsonErrors } from "$lib/constants";
 import { DBGuild, FlattenDocToJSON, getDBGuild } from "$lib/server/db/index.js";
 import { CustomModalFieldPredicate, ZodValidator } from "$lib/server/validators/index.js";
 import { hasAllKeys } from "$lib/utils";
+import { reindexArrayByKey } from "$lib/utils/formatting.js";
 import type { UpdateQuery } from "mongoose";
 import type { IDBGuild } from "supportmail-types";
 import z from "zod";
@@ -50,13 +51,19 @@ export async function PUT({ request, locals }) {
     return JsonErrors.badRequest(valRes.error.message);
   }
 
-  const { isEnabled, questions = [], thankYou = "" } = valRes.data;
+  const { isEnabled, questions, thankYou } = valRes.data;
   console.log("feedback config update data:", valRes.data);
   const updatePayload: UpdateQuery<IDBGuild> = {
     "ticketConfig.feedback.isEnabled": isEnabled,
-    "ticketConfig.feedback.thankYou": thankYou.trim(),
-    "ticketConfig.feedback.questions": questions?.length ? questions : undefined,
+    "ticketConfig.feedback.thankYou": thankYou?.trim(),
   };
+
+  const sortedQuestions = reindexArrayByKey(
+    questions?.sort((a, b) => a.position - b.position),
+    "position",
+  );
+
+  updatePayload["ticketConfig.feedback.questions"] = sortedQuestions;
 
   try {
     const newDoc = await DBGuild.findOneAndUpdate({ id: locals.guildId }, updatePayload, { new: true });
