@@ -1,15 +1,15 @@
 import pkg, { model, Schema } from "mongoose";
-import {
-  type ICustomModalField,
-  type IDBGuild,
-  type IFeedbackConfig,
-  type IFeedbackTags,
-  type IGuildFlags,
-  type IReportConfig,
-  type IStatusTags,
-  type ITicketConfig,
-  type PausedUntil,
-  type ReportLimitsConfig,
+import type {
+  ICustomModalField,
+  IDBGuild,
+  IFeedbackConfig,
+  IFeedbackTags,
+  IGuildFlags,
+  IReportConfig,
+  IStatusTags,
+  ITicketConfig,
+  PausedUntil,
+  ReportLimitsConfig,
 } from "supportmail-types";
 import { EntitySchema } from "./utilSchemas";
 const { models } = pkg;
@@ -40,7 +40,6 @@ const FeedbackTagsSchema = new Schema<IFeedbackTags>(
 
 const FeedbackConfigSchema = new Schema<IFeedbackConfig>(
   {
-    postId: { type: String, required: false }, // Post where the feedbacks should be sent
     questions: { type: [CustomModalFieldSchema], required: false },
     thankYou: { type: String, required: false },
     tags: {
