@@ -7,8 +7,8 @@
   import { APIRoutes } from "$lib/urls";
   import apiClient from "$lib/utils/apiClient";
   import { toast } from "svelte-sonner";
-  import FeedbackConfigPage from "./FeedbackConfigPage.svelte";
-  import SetupFeedbackPage from "./SetupFeedbackPage.svelte";
+  import FeedbackConfigPage from "./settings/FeedbackConfigPage.svelte";
+  import SetupFeedbackPage from "./settings/SetupFeedbackPage.svelte";
   import type { IFeedbackConfig } from "supportmail-types";
   import { hasAllKeys } from "$lib/utils";
 
