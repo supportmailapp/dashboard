@@ -15,11 +15,11 @@
   import { toast } from "svelte-sonner";
   import type { DBGuildProjectionReturns } from "$lib/server/db";
 
-  let {
-    forumId: fetchedForumId,
-    wholeConfig,
-  }: { forumId: string | null; wholeConfig: ConfigState<DBGuildProjectionReturns["generalTicketSettings"]> } =
-    $props();
+  type Props = {
+    forumId: string | null;
+    wholeConfig: ConfigState<DBGuildProjectionReturns["generalTicketSettings"]>;
+  };
+  let { forumId: fetchedForumId, wholeConfig }: Props = $props();
 
   const forum = new ConfigState<GuildCoreChannel>(null);
   let channelsLoaded = $derived(page.data.guildsManager.channelsLoaded);
@@ -55,7 +55,7 @@
       wholeConfig.saveConfig(json);
       fetchedForumId = json.forumId!;
 
-      toast.success("Config updated, refresh needed");
+      toast.success("Config updated");
     } catch (err: any) {
       toast.error("Setup failed.", {
         description: String(err.message ?? err),
@@ -72,11 +72,6 @@
       forum.clear();
     }
   });
-
-  $effect(() => {
-    if (forum.loading) {
-    }
-  });
 </script>
 
 <ConfigCard
@@ -87,7 +82,7 @@
   <div class="flex flex-col gap-2">
     {#if channelsLoaded}
       <div class="flex w-full items-center justify-between">
-        <Mention channel={forum.config ?? undefined} fallback="c" buttons="copy" />
+        <Mention channel={forum.config ?? undefined} fallback buttons="copy" />
         <Dialog.Root>
           <Dialog.Trigger class={buttonVariants({ variant: "outline" })}>Setup New Forum</Dialog.Trigger>
           <Dialog.Content class="sm:max-w-[525px]">
@@ -106,7 +101,7 @@
                   newCategoryId = null;
                   return true;
                 }}
-                <Mention channel={newCategory} fallback="c" onDelete={deleteHandler} />
+                <Mention channel={newCategory} fallback onDelete={deleteHandler} />
                 <Button
                   variant="destructive"
                   class={buttonVariants({ variant: "destructive" })}
