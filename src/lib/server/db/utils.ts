@@ -10,7 +10,7 @@ import { ValidationError } from "zod-validation-error";
 import { DBGuild, DBUser } from "./models";
 import { TicketCategory } from "./models/src/ticketCategory";
 
-type DBGuildProjection = "full" | "generalTicketSettings" | "language" | "pausing";
+type DBGuildProjection = "full" | "generalTicketSettings" | "language" | "pausing" | "feedback";
 
 export interface DBGuildProjectionReturns {
   full: IDBGuild;
@@ -23,6 +23,15 @@ export interface DBGuildProjectionReturns {
     tickets: PausedUntil;
     reports: PausedUntil;
   };
+  feedback:
+    | {
+        isSet: true;
+        data: NonNullable<ITicketConfig["feedback"]>;
+      }
+    | {
+        isSet: false;
+        data: null;
+      };
 }
 
 // Typed functions
@@ -35,7 +44,7 @@ export async function getDBGuild<T extends DBGuildProjection>(
     return (_config ? FlattenDocToJSON(_config) : null) as DBGuildProjectionReturns[T] | null;
   }
 
-  const jsonConfig = FlattenDocToJSON(_config);
+  const jsonConfig = FlattenDocToJSON(_config, true);
 
   switch (projection) {
     case "generalTicketSettings":
@@ -57,6 +66,11 @@ export async function getDBGuild<T extends DBGuildProjection>(
       return {
         tickets: jsonConfig.ticketConfig.pausedUntil ?? defaultP,
         reports: jsonConfig.reportConfig.pausedUntil ?? defaultP,
+      } as DBGuildProjectionReturns[T];
+    case "feedback":
+      return {
+        isSet: !!jsonConfig.ticketConfig.feedback && !!jsonConfig.ticketConfig.feedback.postId,
+        data: jsonConfig.ticketConfig.feedback ?? { postId: undefined },
       } as DBGuildProjectionReturns[T];
     default:
       throw new Error(`Unsupported projection: ${projection}`);
