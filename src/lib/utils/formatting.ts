@@ -195,3 +195,26 @@ export class EmojiParser {
     return this.isCustom(emoji) || (!!emoji.name && this.unicodeRE().test(emoji.name));
   }
 }
+
+/**
+ * Indexes an array of objects by a specified key, re-indexing the key to be sequential starting from a given value.
+ *
+ * @param arr - The array to index. Must be pre-sorted, just not sequentially!
+ * @param key - The key to index by.
+ * @param start - The starting index value (default is 1).
+ * @template T - The type of the objects in the array.
+ * @template K - The key type of the objects in the array.
+ * @returns The indexed array or undefined if the input is invalid.
+ */
+export function reindexArrayByKey<T, K extends keyof T>(
+  arr: T[] | undefined | null,
+  key: K,
+  start: number = 1,
+): T[] | undefined {
+  if (Array.isArray(arr)) {
+    for (let i = 0; i < arr.length; i++) {
+      (arr[i][key] as any) = i + start; // Re-index fields starting from 0 or 1
+    }
+  }
+  return arr ?? undefined;
+}
