@@ -15,9 +15,7 @@
   async function setupFn() {
     try {
       waitModalOpen = true;
-      const res = await apiClient.post(APIRoutes.ticketFeedbackSetup(page.data.guildId!), {
-        json: {},
-      });
+      const res = await apiClient.post(APIRoutes.ticketFeedbackSetup(page.data.guildId!));
 
       if (!res.ok) {
         const errJson = await res.json<any>();
