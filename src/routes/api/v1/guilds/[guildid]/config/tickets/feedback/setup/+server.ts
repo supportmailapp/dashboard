@@ -153,3 +153,55 @@ export async function POST({ locals }) {
 
   return new Response(null, { status: 201 });
 }
+
+export async function DELETE({ locals }) {
+  // Delete tags from the forum channel and the DB afterwards; disable feedback
+  if (!locals.isAuthenticated() || !locals.guildId) return JsonErrors.unauthorized();
+
+  const guildId = locals.guildId;
+  const dbGuild = await getDBGuild(guildId, "full");
+  if (!dbGuild || !dbGuild.ticketConfig.feedback || !dbGuild.ticketConfig.forumId) {
+    return JsonErrors.notFound("Feedback configuration not found");
+  }
+
+  const forumId = dbGuild.ticketConfig.forumId;
+  const forumGetRes = await locals.discordRest.getGuildChannel<APIGuildForumChannel>(forumId);
+  if (!forumGetRes.isSuccess()) {
+    if (forumGetRes.status === 404) {
+      return JsonErrors.notFound("Forum channel not found");
+    }
+    return JsonErrors.serverError(forumGetRes.errorToString());
+  }
+
+  const forum = forumGetRes.data;
+  const currentTags: APIGuildForumTag[] = forum.available_tags ?? [];
+  const feedbackTags = dbGuild.ticketConfig.feedback.tags;
+  if (!feedbackTags || Object.keys(feedbackTags).length === 0) {
+    return JsonErrors.badRequest("No feedback tags to delete");
+  }
+
+  const tagsWithoutFeedback = currentTags.filter((tag) => {
+    return !Object.values(feedbackTags).includes(tag.id);
+  });
+
+  if (tagsWithoutFeedback.length === currentTags.length) {
+    return new Response(null, { status: 204 }); // No feedback tags to delete
+  }
+
+  const forumRes = await locals.discordRest.editGuildChannel<APIGuildForumChannel>(forumId, {
+    available_tags: tagsWithoutFeedback,
+  });
+
+  if (!forumRes.isSuccess()) {
+    return JsonErrors.serverError(forumRes.errorToString());
+  }
+
+  console.log(`[DEBUG] Forum updated successfully, new tag count: ${forumRes.data.available_tags.length}`);
+
+  await updateDBGuild(guildId, {
+    "ticketConfig.feedback.tags": {},
+  });
+
+  console.log(`[DEBUG] Database updated successfully for guild ${guildId}`);
+  return new Response(null, { status: 204 });
+}
