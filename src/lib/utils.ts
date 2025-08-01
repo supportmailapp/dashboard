@@ -75,3 +75,7 @@ export function relativeDatetime(djs: dayjs.ConfigType): string {
 export function isNotUndefined<T>(val: T): val is Exclude<T, undefined> {
   return typeof val !== "undefined";
 }
+
+export function hasAllKeys<K extends string>(obj: any, keys: readonly K[]): obj is Record<K, any> {
+  return keys.every((key) => key in obj);
+}

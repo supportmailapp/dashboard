@@ -73,6 +73,8 @@ const APIRoutes = {
     return `${API_BASE}/@me/guilds` + (sParams.toString() ? `?${sParams.toString()}` : "");
   },
   guildChannels: (guildId: string) => `${API_BASE}/guilds/${guildId}/channels` as const,
+  guildChannel: (guildId: string, channelId: string) =>
+    `${API_BASE}/guilds/${guildId}/channels/${channelId}` as const,
   guildRoles: (guildId: string) => `${API_BASE}/guilds/${guildId}/roles` as const,
   /**
    * Returns the URL for a specific guild's configuration.
@@ -84,6 +86,8 @@ const APIRoutes = {
    */
   ticketsConfig: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/tickets` as const,
   ticketSetup: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/tickets/setup` as const,
+  ticketFeedbackSetup: (guildId: string) =>
+    `${API_BASE}/guilds/${guildId}/config/tickets/feedback/setup` as const,
   pausing: (guildId: string, modul: "tickets" | "reports") =>
     `${API_BASE}/guilds/${guildId}/config/pausing/${modul}` as const,
   memberSearch: (guildId: string, query: string, filter?: "bot") =>
@@ -91,6 +95,7 @@ const APIRoutes = {
   ticketCategories: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/tickets/categories` as const,
   ticketCategory: (guildId: string, categoryId: string) =>
     `${API_BASE}/guilds/${guildId}/config/tickets/categories/${categoryId}` as const,
+  ticketFeedback: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/tickets/feedback` as const,
 };
 
 const LegalLinks = {
