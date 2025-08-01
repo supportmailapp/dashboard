@@ -1,32 +1,32 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import { innerWidth } from "svelte/reactivity/window";
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
+  import FolderOpen from "@lucide/svelte/icons/folder-open";
   import Home from "@lucide/svelte/icons/home";
   import Menu from "@lucide/svelte/icons/menu";
-  import Ticket from "@lucide/svelte/icons/ticket";
-  import ShieldUser from "@lucide/svelte/icons/shield-user";
-  import XIcon from "@lucide/svelte/icons/x";
-  import FolderOpen from "@lucide/svelte/icons/folder-open";
   import RotateCcw from "@lucide/svelte/icons/rotate-ccw";
+  import ShieldUser from "@lucide/svelte/icons/shield-user";
   import Star from "@lucide/svelte/icons/star";
+  import Ticket from "@lucide/svelte/icons/ticket";
+  import XIcon from "@lucide/svelte/icons/x";
+  import { innerWidth } from "svelte/reactivity/window";
 
   import { afterNavigate, beforeNavigate } from "$app/navigation";
+  import { getNextPathFromGuildPath } from "$lib";
+  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
+  import ToggleModeBtn from "$lib/components/ToggleModeBtn.svelte";
+  import { cdnUrls } from "$lib/urls";
   import { cn } from "$lib/utils";
+  import { userDisplayName } from "$lib/utils/formatting";
   import { Avatar, AvatarFallback, AvatarImage } from "$ui/avatar";
   import { Button, buttonVariants } from "$ui/button";
   import * as Command from "$ui/command";
   import * as Popover from "$ui/popover";
   import * as Sheet from "$ui/sheet";
-  import { fade, slide } from "svelte/transition";
-  import { getNextPathFromGuildPath } from "$lib";
-  import { cdnUrls } from "$lib/urls";
-  import { userDisplayName } from "$lib/utils/formatting";
-  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
-  import { onDestroy } from "svelte";
   import { Skeleton } from "$ui/skeleton";
-  import ToggleModeBtn from "$lib/components/ToggleModeBtn.svelte";
+  import { onDestroy } from "svelte";
+  import { fade, slide } from "svelte/transition";
   import Mounter from "./Mounter.svelte";
   import VenocixBranding from "./VenocixBranding.svelte";
 
@@ -68,9 +68,9 @@
       icon: FolderOpen,
     },
     {
-      id: "tickets-feedback",
+      id: "feedback",
       name: "Feedback",
-      href: guildHref("/tickets-feedback"),
+      href: guildHref("/feedback"),
       icon: Star,
     },
     {
