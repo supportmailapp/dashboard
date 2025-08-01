@@ -38,7 +38,7 @@ export async function POST({ locals, request }) {
       }
 
       if (!guildRoles) {
-        return JsonErrors.serverError("Could not determine channels");
+        return JsonErrors.serverError("Could not determine roles");
       }
 
       hasPerms = memberRes.data.roles.some((roleId) => {
