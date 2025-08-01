@@ -12,7 +12,8 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "format": "prettier --write .",
-    "lint": "prettier --check ."
+    "lint": "prettier --check .",
+    "update:sm-types": "pnpm remove supportmail-types && pnpm add github:supportmailapp/global-types"
   },
   "devDependencies": {
     "@internationalized/date": "^3.8.2",
@@ -62,5 +63,6 @@
     "wildcard-match": "^5.1.4",
     "zod": "^4.0.5",
     "zod-validation-error": "^3.5.3"
-  }
+  },
+  "packageManager": "pnpm@10.14.0"
 }
