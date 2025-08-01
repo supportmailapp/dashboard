@@ -50,9 +50,35 @@
         description: err.message,
       });
       feedback.saving = false;
-      return;
     }
   };
+
+  async function resetFn() {
+    try {
+      const current = feedback.snap();
+      feedback.saving = true;
+      const res = await apiClient.delete(APIRoutes.ticketFeedbackSetup(page.data.guildId!));
+
+      if (!res.ok) {
+        const error = await res.json<any>();
+        throw new Error(error.message || "Failed to save ticket feedback configuration.");
+      }
+
+      toast.success("Feedback configuration reset.");
+      feedback.saving = false;
+      feedback.saveConfig({
+        isEnabled: false,
+        thankYou: current?.thankYou || "",
+        questions: current?.questions || [],
+      });
+    } catch (error: any) {
+      console.error("Error resetting feedback config:", error);
+      toast.error("Failed to reset feedback configuration.", {
+        description: error.message || undefined,
+      });
+      feedback.saving = false;
+    }
+  }
 
   $effect(() => {
     console.log("Hello from feedback");
@@ -96,6 +122,7 @@
   <FeedbackConfigPage
     bind:feedback={feedback.config}
     {saveFn}
+    {resetFn}
     loading={feedback.loading}
     saving={feedback.saving}
   />
