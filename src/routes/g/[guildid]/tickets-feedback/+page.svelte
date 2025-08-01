@@ -9,8 +9,11 @@
   import { toast } from "svelte-sonner";
   import FeedbackConfigPage from "./FeedbackConfigPage.svelte";
   import SetupFeedbackPage from "./SetupFeedbackPage.svelte";
+  import type { IFeedbackConfig } from "supportmail-types";
+  import { hasAllKeys } from "$lib/utils";
 
-  const feedback = new ConfigState<DBGuildProjectionReturns["feedback"]>({ isSet: false, data: null });
+  const feedback = new ConfigState<DBGuildProjectionReturns["feedback"]>({ isEnabled: false });
+  let fetchedStatus = $state<null | boolean>(null);
 
   $inspect("feedback", feedback.config);
 
@@ -23,18 +26,30 @@
 
     feedback.saving = true;
 
-    const { data } = current;
-    const { tags, ...dataWithoutTags } = data ?? {};
-
     try {
       const res = await apiClient.put(APIRoutes.ticketFeedback(page.data.guildId!), {
-        json: dataWithoutTags,
+        json: {
+          isEnabled: current.isEnabled,
+          thankYou: current.thankYou || "",
+          questions: current.questions || [],
+        } as Omit<IFeedbackConfig, "tags">,
       });
+
+      if (!res.ok) {
+        const error = await res.json<any>();
+        throw new Error(error.message || "Failed to save ticket feedback configuration.");
+      }
+
+      const json = await res.json<DBGuildProjectionReturns["feedback"]>();
+
+      fetchedStatus = hasAllKeys(json.tags, ["one", "two", "three", "four", "five"]);
+      feedback.saveConfig(json);
     } catch (err: any) {
       console.error("Failed to save ticket feedback configuration:", err);
       toast.error("Failed to save ticket feedback configuration.", {
         description: err.message,
       });
+      feedback.saving = false;
       return;
     }
   };
@@ -55,6 +70,8 @@
           feedback.setBackup(data);
           feedback.saving = false; // Loading is also set with this one
           feedback.unsaved = false;
+          fetchedStatus = hasAllKeys(data.tags, ["one", "two", "three", "four", "five"]);
+          console.log("Feedback config loaded:", data);
         });
       })
       .catch((err) => {
@@ -71,12 +88,19 @@
 
 <SiteHeading title="Ticket Feedback" />
 
-{#if feedback.loading}
+{#if feedback.loading || fetchedStatus === null}
   <div class="h-full w-full">
     <LoadingSpinner />
   </div>
-{:else if feedback.config && feedback.config.isSet}
-  <FeedbackConfigPage bind:feedback={feedback.config.data} {saveFn} />
+{:else if !!fetchedStatus && feedback.isConfigured()}
+  <FeedbackConfigPage
+    bind:feedback={feedback.config}
+    {saveFn}
+    loading={feedback.loading}
+    saving={feedback.saving}
+  />
 {:else}
-  <SetupFeedbackPage />
+  <div class="w-full max-w-3xl">
+    <SetupFeedbackPage />
+  </div>
 {/if}
