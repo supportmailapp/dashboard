@@ -21,8 +21,8 @@
 <style>
   @keyframes bop {
     0%,
-    35%,
-    65%,
+    40%,
+    60%,
     100% {
       transform: scale(1);
     }
@@ -33,10 +33,8 @@
 
   @media (prefers-reduced-motion: no-preference) {
     #branding img {
-      animation: bop 1750ms ease-in-out infinite;
+      animation: bop 3s ease-in-out infinite;
       animation-play-state: active;
     }
-
-    
   }
 </style>
