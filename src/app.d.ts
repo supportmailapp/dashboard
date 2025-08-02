@@ -62,6 +62,13 @@ declare global {
       manager: DataManager;
       user: APIUser | null;
       guildId?: string;
+      /**
+       * Checks if the current page matches the given href.
+       * @param url The current URL.
+       * @param check The href to check against the current page.
+       * @param partial If true, checks if the current page starts with the given href. Defaults to true.
+       * @returns True if the current page matches the href, false otherwise.
+       */
       isCurrentPage: (href: string, partial?: boolean) => boolean;
       guildHref: (path: string) => string;
     }

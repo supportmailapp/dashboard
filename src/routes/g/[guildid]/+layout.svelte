@@ -63,7 +63,7 @@
 <Sidebar.Provider bind:open={sidebarOpen}>
   <AppSidebar />
   <Sidebar.Inset class="main-container">
-    <header class="main-header bg-sidebar flex items-center justify-between p-3">
+    <header class="main-header bg-sidebar text-sidebar-foreground flex items-center justify-between p-3">
       <Sidebar.Trigger />
 
       <!-- Server Selector in Center -->

@@ -18,7 +18,7 @@
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
   import { userDisplayName } from "$lib/utils/formatting";
-  import { Button, buttonVariants } from "$ui/button";
+  import { buttonVariants } from "$ui/button";
   import { cdnUrls } from "$lib/urls";
   import { cn } from "$lib/utils";
 
@@ -112,6 +112,7 @@
 
   let reloadBtnDisabled = $state(false);
   let atMeHref = $derived(`/@me?back=${page.url.pathname}`);
+  let isCurrentPage = $derived(page.data.isCurrentPage);
 
   async function reloadGuildData() {
     if (reloadBtnDisabled) return;
@@ -145,7 +146,7 @@
               </Sidebar.MenuItem>
             {/if}
             <Sidebar.MenuItem>
-              <Sidebar.MenuButton>
+              <Sidebar.MenuButton isActive={isCurrentPage(item.href, false)}>
                 {#snippet child({ props })}
                   <a href={item.href} {...props}>
                     <item.icon />
@@ -161,7 +162,7 @@
             <Sidebar.Menu>
               {#each item.items as subItem (subItem.id)}
                 <Sidebar.MenuItem>
-                  <Sidebar.MenuButton>
+                  <Sidebar.MenuButton isActive={isCurrentPage(subItem.href)}>
                     {#snippet child({ props })}
                       <a href={subItem.href} {...props}>
                         <subItem.icon />

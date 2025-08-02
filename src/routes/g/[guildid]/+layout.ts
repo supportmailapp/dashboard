@@ -1,6 +1,5 @@
 import { page } from "$app/state";
 import { isCurrentPage as _isCurrentPage, guildHref as _guildHref } from "$lib";
-import type { GuildsManager } from "$lib/stores/GuildsManager.svelte.js";
 
 export async function load({ params, parent }) {
   const data = await parent();

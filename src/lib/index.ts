@@ -35,6 +35,13 @@ export function redirectToLoginWithError(errStr: string, status: number = 302): 
   return redirectResponse(status, "/login?error=" + encodeURIComponent(errStr));
 }
 
+/**
+ * Checks if the current page matches the given href.
+ * @param url The current URL.
+ * @param check The href to check against the current page.
+ * @param partial If true, checks if the current page starts with the given href. Defaults to true.
+ * @returns True if the current page matches the href, false otherwise.
+ */
 export function isCurrentPage(url: URL, check: string, partial = true) {
   if (partial) {
     return url.pathname.startsWith(check);
