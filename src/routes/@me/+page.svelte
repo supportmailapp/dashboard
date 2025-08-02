@@ -9,7 +9,6 @@
   import { goto } from "$app/navigation";
   import ConfigCard from "$lib/components/ConfigCard.svelte";
   import { LANGUAGES } from "$lib/constants";
-  import type { APIUser } from "discord-api-types/v10";
   import { APIRoutes } from "$lib/urls";
   import { toast } from "svelte-sonner";
   import ky from "ky";
@@ -129,7 +128,7 @@
             onclick={async () => {
               if (!dcUser?.id) return;
               await navigator.clipboard?.writeText(dcUser?.id);
-              alert("✅ Successfully copied your User ID!");
+              toast.success("Copied your User ID!");
             }}
           >
             {dcUser?.id}

@@ -82,7 +82,7 @@
   });
 </script>
 
-<SiteHeading title="Ticket Configuration" />
+<SiteHeading title="Ticket Settings" />
 
 <section class="mt-6 w-full max-w-2xl space-y-4">
   {#if generalTicketsConf.isConfigured()}

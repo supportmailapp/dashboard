@@ -1,9 +1,10 @@
 <script lang="ts">
+  import * as Sheet from "$lib/components/ui/sheet/index.js";
   import { cn, type WithElementRef } from "$lib/utils.js";
-  import * as Sheet from "$ui/sheet/index.js";
   import type { HTMLAttributes } from "svelte/elements";
   import { SIDEBAR_WIDTH_MOBILE } from "./constants.js";
   import { useSidebar } from "./context.svelte.js";
+  import { slide } from "svelte/transition";
 
   let {
     ref = $bindable(null),
@@ -24,6 +25,7 @@
 
 {#if collapsible === "none"}
   <div
+    transition:slide={{ duration: 200, axis: "x" }}
     class={cn("bg-sidebar text-sidebar-foreground flex h-full w-(--sidebar-width) flex-col", className)}
     bind:this={ref}
     {...restProps}
@@ -51,6 +53,7 @@
   </Sheet.Root>
 {:else}
   <div
+    transition:slide={{ duration: 200, axis: "x" }}
     bind:this={ref}
     class="text-sidebar-foreground group peer hidden md:block"
     data-state={sidebar.state}
@@ -67,7 +70,7 @@
         "group-data-[collapsible=offcanvas]:w-0",
         "group-data-[side=right]:rotate-180",
         variant === "floating" || variant === "inset"
-          ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]"
+          ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
           : "group-data-[collapsible=icon]:w-(--sidebar-width-icon)",
       )}
     ></div>
