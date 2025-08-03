@@ -165,7 +165,7 @@
             <Sidebar.Menu>
               {#each item.items as subItem (subItem.id)}
                 <Sidebar.MenuItem>
-                  <Sidebar.MenuButton isActive={isCurrentPage(subItem.href)}>
+                  <Sidebar.MenuButton isActive={isCurrentPage(subItem.href, true)}>
                     {#snippet child({ props })}
                       <a href={subItem.href} {...props}>
                         <subItem.icon />
