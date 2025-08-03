@@ -6,6 +6,8 @@
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import { Button } from "$ui/button";
   import { cn } from "$lib/utils";
+  import { goto } from "$app/navigation";
+  import { guildHref } from "$lib";
 
   let { items }: { items: PaginatedTicketsResponse["data"] } = $props();
 
@@ -15,7 +17,7 @@
     [TicketStatus.closeRequested]: "Close Requested",
   };
   const ticketStateMap: Record<TicketState, string> = {
-    [TicketState.awaitingRes]: "Awaiting  Staff Response",
+    [TicketState.awaitingRes]: "Awaiting Staff Response",
     [TicketState.pendingQR]: "Pending Close Request",
     [TicketState.uResponded]: "User Responded",
     [TicketState.unanswered]: "Unanswered",
@@ -32,7 +34,7 @@
     </Table.Row>
   </Table.Header>
   <Table.Body>
-    {#each items as ticket (ticket.id)}
+    {#each items as ticket, index (ticket.id)}
       <Table.Row>
         <Table.Cell class="font-mono font-medium">{ticket.id}</Table.Cell>
         <Table.Cell>{ticketStatusMap[ticket.status]}</Table.Cell>
@@ -47,7 +49,18 @@
           {/if}
         </Table.Cell>
         <Table.Cell class="text-right">
-          <Button variant="outline" size="icon">
+          <Button
+            variant="outline"
+            size="icon"
+            onclick={() => {
+              goto(
+                guildHref(
+                  ticket.guildId,
+                  `/tickets/${ticket.id}?back=${encodeURIComponent(location.pathname + location.search)}`,
+                ),
+              );
+            }}
+          >
             <ChevronRight class="text-muted-foreground size-4" />
           </Button>
         </Table.Cell>
