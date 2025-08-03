@@ -48,7 +48,7 @@ const aj = arcjet({
 const devToolsCheck: Handle = async ({ event, resolve }) => {
   if (event.url.pathname.startsWith("/.well-known/appspecific/com.chrome.devtools")) {
     console.debug("Serving empty DevTools response");
-    return new Response(null, { status: 404 }); // Return empty response with 404 Not Found
+    return new Response(null, { status: 404 });
   }
   return resolve(event);
 };
@@ -267,7 +267,7 @@ export const handleError: HandleServerError = async ({ error, event, status, mes
       ? Sentry.captureException(error, {
           extra: { event, status },
         })
-      : crypto.randomUUID();
+      : "development-mode";
 
   if (dev) {
     console.error("❌ Something has errored");
