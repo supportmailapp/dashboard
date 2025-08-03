@@ -15,9 +15,9 @@
   import * as Sidebar from "$ui/sidebar/index.js";
   import { Skeleton } from "$ui/skeleton";
   import { innerWidth } from "svelte/reactivity/window";
-  import { MediaQuery } from "svelte/reactivity";
-  import { fade, fly, scale, slide } from "svelte/transition";
+  import { fade, slide } from "svelte/transition";
   import { IsMobile } from "$lib/hooks/is-mobile.svelte";
+  import Mounter from "./Mounter.svelte";
 
   let { children } = $props();
 
@@ -60,10 +60,14 @@
   });
 </script>
 
-<Sidebar.Provider bind:open={sidebarOpen}>
+<Mounter />
+
+<Sidebar.Provider bind:open={sidebarOpen} class="h-svh">
   <AppSidebar />
   <Sidebar.Inset class="main-container">
-    <header class="main-header bg-sidebar text-sidebar-foreground flex items-center justify-between p-3">
+    <header
+      class="bg-sidebar text-sidebar-foreground sticky top-0 z-10 flex h-(--main-header-height) items-center justify-between p-3"
+    >
       <Sidebar.Trigger />
 
       <!-- Server Selector in Center -->
@@ -142,19 +146,14 @@
         </a>
       </div>
     </header>
-    <main class="main-content p-3 md:p-5" transition:fade={{ duration: 200 }}>
+    <main class="main-content overflow-y-auto p-3 md:p-5" transition:fade={{ duration: 200 }}>
       {@render children?.()}
     </main>
   </Sidebar.Inset>
 </Sidebar.Provider>
 
 <style>
-  main {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 1rem;
-    overflow-x: auto;
-    overflow-y: scroll;
+  :root {
+    --main-header-height: 4rem;
   }
 </style>
