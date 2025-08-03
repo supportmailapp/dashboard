@@ -121,7 +121,9 @@ export function roundAndFormatNumber(num: number, opts: FormatNumberOptions = {}
   return formattedNumber + (options.plus ? "+" : "");
 }
 
-export function userDisplayName(user?: APIUser | null): string {
+export function userDisplayName(
+  user?: (Record<string, any> & Pick<APIUser, "global_name" | "username">) | null,
+): string {
   return !!user ? user.global_name || user.username : "Unknown User";
 }
 
@@ -217,4 +219,18 @@ export function reindexArrayByKey<T, K extends keyof T>(
     }
   }
   return arr ?? undefined;
+}
+
+export function dateToLocalString(date: Date | string): string {
+  if (typeof date === "string") {
+    date = new Date(date);
+  }
+  return date.toLocaleString(undefined, {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
 }
