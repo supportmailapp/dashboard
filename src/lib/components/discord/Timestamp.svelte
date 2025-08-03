@@ -59,7 +59,9 @@
 
 <Tooltip.Provider delayDuration={0} disableCloseOnTriggerClick>
   <Tooltip.Root>
-    <Tooltip.Trigger class="bg-card-foreground/20 rounded px-1 py-0.5">{formattedDate}</Tooltip.Trigger>
+    <Tooltip.Trigger class="bg-card-foreground/20 rounded-[calc(var(--radius)-2px)] px-1 py-0.5">
+      {formattedDate}
+    </Tooltip.Trigger>
     <Tooltip.Content class="select-none">
       <p>
         {parsedDate.toDate().toLocaleDateString([], {
