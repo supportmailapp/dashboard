@@ -1,42 +1,50 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
   import { page } from "$app/state";
+  import SiteHeading from "$lib/components/SiteHeading.svelte";
   import * as Pagination from "$lib/components/ui/pagination/index.js";
+  import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import { APIRoutes } from "$lib/urls";
   import { safeParseInt } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
-  import { Skeleton } from "$ui/skeleton";
-  import type { PaginatedTicketsResponse } from "../../../api/v1/guilds/[guildid]/tickets/+server";
-  import SiteHeading from "$lib/components/SiteHeading.svelte";
-  import * as Select from "$ui/select";
   import { Button } from "$ui/button";
+  import { Skeleton } from "$ui/skeleton";
+  import Files from "@lucide/svelte/icons/files";
+  import equal from "fast-deep-equal/es6";
+  import { TicketStatus } from "supportmail-types";
   import { toast } from "svelte-sonner";
+  import type { PaginatedTicketsResponse } from "../../../api/v1/guilds/[guildid]/tickets/+server";
+  import FilterControls from "./FilterControls.svelte";
+  import TicketsTable from "./TicketsTable.svelte";
 
   const pageData = $state({
     page: safeParseInt(page.url.searchParams.get("page"), 1),
     perPage: safeParseInt(page.url.searchParams.get("count"), 20),
     total: null as null | number,
     totalPages: null as null | number,
+    status: null as TicketStatus | null,
+    anonym: false,
+    search: "",
   });
   /**
    * Used to determine whether it is allowed to fetch tickets again.
    */
-  let fetchedPerPage = $state(pageData.perPage);
+  let fetchedData = $state.snapshot(pageData);
   let ticketItems = $state<PaginatedTicketsResponse["data"]>([]);
   let ticketsStatus = $state<"loading" | "loaded" | "error">("loading");
 
   async function fetchTickets() {
-    if (fetchedPerPage === pageData.perPage && ticketsStatus === "loaded") {
+    if (equal(fetchedData, $state.snapshot(pageData)) && ticketsStatus === "loaded") {
       toast.info("Nothing changed, not fetching tickets again.");
       return;
     }
 
     try {
       ticketsStatus = "loading";
+      const searchParams = buildSearchParams(true);
+
       const res = await apiClient.get<PaginatedTicketsResponse>(APIRoutes.tickets(page.data.guildId!), {
-        searchParams: {
-          page: pageData.page,
-          count: pageData.perPage,
-        },
+        searchParams,
       });
 
       if (res.ok) {
@@ -46,8 +54,9 @@
         pageData.perPage = data.pagination.pageSize;
         pageData.page = data.pagination.page;
         pageData.totalPages = data.pagination.totalPages;
-        fetchedPerPage = data.pagination.pageSize;
+        fetchedData = $state.snapshot(pageData);
         ticketsStatus = "loaded";
+        await goto(buildUrlWithParams(false), { replaceState: true });
       } else {
         if (res.headers.get("Content-Type")?.includes("application/json")) {
           const errorData = await res.json();
@@ -72,29 +81,96 @@
       });
     }
   });
+
+  function stringifyStatus(status: TicketStatus | null) {
+    switch (status) {
+      case TicketStatus.open:
+        return "open";
+      case TicketStatus.closed:
+        return "closed";
+      case TicketStatus.closeRequested:
+        return "closeRequested";
+      default:
+        return "all"; // Default to "all" if unknown
+    }
+  }
+
+  function parseStatus(status: string): TicketStatus | null {
+    console.log("Parsing status:", status);
+    switch (status) {
+      case "open":
+        return TicketStatus.open;
+      case "closed":
+        return TicketStatus.closed;
+      case "closeRequested":
+        return TicketStatus.closeRequested;
+      case "all":
+        return null; // Return null for "all" to indicate no specific status filter
+      default:
+        return TicketStatus.open; // Default to open if unknown
+    }
+  }
+
+  function buildSearchParams(raw = true) {
+    const params = new URLSearchParams();
+    params.set("page", pageData.page.toString());
+    params.set("count", pageData.perPage.toString());
+    if (pageData.status !== null) {
+      params.set("status", raw ? pageData.status.toString() : stringifyStatus(pageData.status)); // For the api, this is the internal enum value
+    }
+    if (pageData.anonym) {
+      params.set("anonym", "true");
+    }
+    if (pageData.search) {
+      params.set("search", encodeURIComponent(pageData.search));
+    }
+    return params;
+  }
+
+  function buildUrlWithParams(raw = true) {
+    const params = buildSearchParams(raw);
+    return `${page.url.origin}${page.url.pathname}?${params.toString()}`;
+  }
 </script>
 
 <SiteHeading title="Tickets" />
 
 <!-- pageData Controls -->
-<div class="mb-4 flex items-center justify-start gap-3">
-  <div class="flex items-center space-x-2">
-    <label for="perPage" class="text-muted-foreground text-sm">Tickets per page:</label>
-    <Select.Root
-      type="single"
-      bind:value={() => pageData.perPage.toString(), (v) => (pageData.perPage = parseInt(v, 10))}
-    >
-      <Select.Trigger class="w-20">{pageData.perPage.toString()}</Select.Trigger>
-      <Select.Content>
-        <Select.Item value="20">20</Select.Item>
-        <Select.Item value="50">50</Select.Item>
-        <Select.Item value="100">100</Select.Item>
-      </Select.Content>
-    </Select.Root>
+
+<div class="mb-4 flex flex-col items-start justify-start gap-3">
+  <FilterControls
+    bind:status={() => stringifyStatus(pageData.status), (v) => (pageData.status = parseStatus(v))}
+    bind:anonym={pageData.anonym}
+    bind:search={pageData.search}
+    bind:perPage={pageData.perPage}
+  />
+  <div class="grid grid-cols-2 gap-2">
+    <Button variant="default" onclick={fetchTickets}>
+      <span class="text-sm">Fetch</span>
+    </Button>
+    <Tooltip.Provider delayDuration={100}>
+      <Tooltip.Root>
+        <Tooltip.Trigger>
+          {#snippet child({ props })}
+            <Button
+              {...props}
+              variant="outline"
+              size="icon"
+              onclick={() => {
+                navigator.clipboard.writeText(buildUrlWithParams(false));
+                toast.success("Link copied to clipboard!");
+              }}
+            >
+              <Files class="size-4" />
+            </Button>
+          {/snippet}
+        </Tooltip.Trigger>
+        <Tooltip.Content>
+          <p>Copy link</p>
+        </Tooltip.Content>
+      </Tooltip.Root>
+    </Tooltip.Provider>
   </div>
-  <Button variant="default" onclick={fetchTickets}>
-    <span class="text-sm">Fetch</span>
-  </Button>
 </div>
 
 <div class="flex flex-col items-center">
@@ -105,11 +181,7 @@
   {:else if ticketsStatus === "loaded" && ticketItems.length === 0}
     <div class="text-muted-foreground">No tickets found :(</div>
   {:else if ticketsStatus === "loaded" && ticketItems.length > 0}
-    <ul class="w-full max-w-2xl">
-      {#each ticketItems as ticket (ticket.id)}
-        <li>{ticket.id}</li>
-      {/each}
-    </ul>
+    <TicketsTable items={ticketItems} />
   {/if}
 </div>
 
