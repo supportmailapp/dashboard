@@ -4,33 +4,29 @@
   import { page } from "$app/state";
   import Branding from "$lib/assets/Branding.svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
-  import { cdnUrls, LegalLinks } from "$lib/urls";
-  import * as Avatar from "$ui/avatar/index.js";
+  import { LegalLinks } from "$lib/urls";
   import * as Card from "$ui/card/index.js";
   import { Separator } from "$ui/separator/index.js";
-  import * as Table from "$ui/table/index.js";
-  import ArrowBigRight from "@lucide/svelte/icons/arrow-big-right";
-  import Plus from "@lucide/svelte/icons/plus";
-  import { onMount } from "svelte";
   import { slide } from "svelte/transition";
+  import ServerSelect from "./ServerSelect.svelte";
+  import { site } from "$lib/stores/site.svelte";
 
-  let guildManager = $derived(page.data.guildsManager);
-  let loading = $state(true);
+  let loading = $derived(site.showLoading);
   let hrefAfterLogin = $state<string | null>(null);
   let hrefAfterSelection = $state<string>("/home");
 
   $effect(() => {
-    if (guildManager.loaded) {
-      loading = false;
+    if (page.data.guildsManager.loaded) {
+      site.showLoading = false;
     } else {
-      loading = true;
+      site.showLoading = true;
     }
   });
 
   $effect(() => {
     if (!browser) return;
 
-    loading = true;
+    site.showLoading = true;
     const nextUrl = page.url.searchParams.get("next");
     if (nextUrl?.startsWith("/g/")) {
       goto(nextUrl);
@@ -55,15 +51,17 @@
   });
 
   beforeNavigate(({ complete }) => {
-    loading = true;
+    site.showLoading = true;
     complete.finally(() => {
-      loading = false;
+      site.showLoading = false;
     });
   });
 
-  onMount(async () => {
-    if (!page.data.guildsManager.guilds.length) {
-      await page.data.guildsManager.loadGuilds();
+  let mounted = false;
+  $effect(() => {
+    if (!page.data.guildsManager.guilds.length && !mounted) {
+      mounted = true;
+      page.data.guildsManager.loadGuilds();
     }
   });
 </script>
@@ -80,59 +78,21 @@
 
 <div class="flex h-screen flex-col items-center justify-center gap-6 p-3">
   <Card.Root
-    class="flex max-h-[40rem] w-full max-w-xl flex-col overflow-clip shadow-2xl shadow-black/50 select-none"
+    class="flex h-[40rem] w-full max-w-xl flex-col overflow-clip shadow-2xl shadow-black/50 select-none"
   >
     <Card.Header class="shrink-0 text-center">
       <Branding />
     </Card.Header>
     <Card.Content class="flex min-h-0 flex-1 flex-col">
-      {#if loading}
+      {#if loading || page.data.guildsManager.guilds.length === 0}
         <div
-          class="grid h-fit w-full place-items-center py-3"
+          class="grid h-full w-full place-items-center py-3"
           transition:slide={{ duration: 200, axis: "x" }}
         >
-          <LoadingSpinner size="12" />
+          <LoadingSpinner size="20" />
         </div>
       {:else}
-        <div
-          class="min-h-0 flex-1 cursor-pointer overflow-auto"
-          transition:slide={{ duration: 200, axis: "x" }}
-        >
-          <Table.Root>
-            <Table.Body>
-              {#if guildManager.guilds.length === 0}
-                <Table.Row>
-                  <Table.Cell>No servers found</Table.Cell>
-                </Table.Row>
-              {:else}
-                {#each guildManager.guilds as guild (guild.id)}
-                  <Table.Row
-                    class={!guild.isConfigured ? "opacity-50 hover:opacity-100" : ""}
-                    onclick={() => goto(`/g/${guild.id}${hrefAfterSelection}`)}
-                  >
-                    <!-- Icon, Name, either a PLUS icon or a "login" icon -->
-                    <Table.Cell>
-                      <Avatar.Root>
-                        <Avatar.Fallback>{guild.name}</Avatar.Fallback>
-                        <Avatar.Image src={cdnUrls.guildIcon(guild.id, guild.icon, 256)} />
-                      </Avatar.Root>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <p class="w-full truncate text-center">{guild.name}</p>
-                    </Table.Cell>
-                    <Table.Cell>
-                      {#if guild.isConfigured}
-                        <ArrowBigRight />
-                      {:else}
-                        <Plus />
-                      {/if}
-                    </Table.Cell>
-                  </Table.Row>
-                {/each}
-              {/if}
-            </Table.Body>
-          </Table.Root>
-        </div>
+        <ServerSelect />
       {/if}
     </Card.Content>
     <Card.Footer class="text-muted-foreground flex h-5 shrink-0 flex-row justify-center gap-4 px-3 text-xs">
