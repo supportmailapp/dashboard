@@ -14,8 +14,8 @@
   import ky from "ky";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import { Label } from "$ui/label";
-  import { Checkbox } from "$ui/checkbox";
   import ChevronLeft from "@lucide/svelte/icons/chevron-left";
+  import { Switch } from "$ui/switch";
 
   const user = new ConfigState<{ language: string; autoRedirect: boolean }>(null);
   const dcUser = $derived(page.data.user);
@@ -161,7 +161,7 @@
       <Label
         class="hover:bg-accent/50 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-blue-600 has-[[aria-checked=true]]:bg-blue-50 dark:has-[[aria-checked=true]]:border-blue-900 dark:has-[[aria-checked=true]]:bg-blue-950"
       >
-        <Checkbox
+        <Switch
           id="toggle-2"
           bind:checked={user.config.autoRedirect}
           class="data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white dark:data-[state=checked]:border-blue-700 dark:data-[state=checked]:bg-blue-700"
