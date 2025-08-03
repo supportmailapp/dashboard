@@ -60,7 +60,7 @@
   --destructive-foreground: oklch(91.744% 0.04243 16.022);
   --success: oklch(88.37% 0.23336 145.42);
   --success-foreground: oklch(96.487% 0.06297 142.365);
-  --warning: oklch(94.001% 0.19106 105.046);
+  --warning: oklch(91.777% 0.16314 99.128);
   --warning-foreground: oklch(19.378% 0.04223 109.783);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
@@ -129,6 +129,7 @@
   :root {
     --blurple: oklch(57.745% 0.20919 273.861);
   }
+
   * {
     @apply border-border outline-ring/50;
     /* Firefox */
@@ -138,6 +139,10 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  html {
+    overflow-y: none;
   }
 
   button,
