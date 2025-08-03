@@ -34,12 +34,12 @@
     </Table.Row>
   </Table.Header>
   <Table.Body>
-    {#each items as ticket, index (ticket.id)}
-      <Table.Row>
+    {#each items as ticket (ticket.id)}
+      <Table.Row class={cn(ticket.alias ? "bg-primary/7 hover:bg-primary/20" : "")}>
         <Table.Cell class="font-mono font-medium">{ticket.id}</Table.Cell>
         <Table.Cell>{ticketStatusMap[ticket.status]}</Table.Cell>
         <!-- Anon tickets don't expose the userId -->
-        <Table.Cell class={cn(ticket.alias ? "bg-primary/10 hover:bg-primary/40" : "")}>
+        <Table.Cell>
           {#if ticket.userId}
             <Mention userId={ticket.userId} buttons="copy" />
           {:else if ticket.alias}
