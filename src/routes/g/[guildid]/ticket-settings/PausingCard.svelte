@@ -14,6 +14,7 @@
   import { toast } from "svelte-sonner";
   import { relativeDatetime } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
+  import { dateToLocalString } from "$lib/utils/formatting";
 
   interface Props {
     pausedUntil: APIPausedUntil;
@@ -102,103 +103,98 @@
   });
 </script>
 
-{#if fetchedState?.value}
-  {@const pausedDate = fetchedState.date ? new Date(fetchedState.date) : null}
-  <Alert.Root variant="warning">
-    <CircleAlertIcon class="size-4" />
-    <Alert.Title>Tickets are paused.</Alert.Title>
-    <Alert.Description class="inline-flex">
-      {#if pausedDate}
-        Tickets are paused until {`${pausedDate?.toLocaleDateString(undefined, {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          hourCycle: "h24",
-          minute: "2-digit",
-        })} (${relativeDatetime(pausedDate)}).`}
-      {:else}
-        Paused until manually resumed.
-      {/if}
-    </Alert.Description>
-  </Alert.Root>
-{/if}
+<div class="col-span-1 flex max-w-4xl flex-col gap-2 md:col-span-2">
+  {#if fetchedState?.value}
+    {@const pausedDate = fetchedState.date ? new Date(fetchedState.date) : null}
+    <Alert.Root variant="warning">
+      <CircleAlertIcon class="size-4" />
+      <Alert.Title>Tickets are paused.</Alert.Title>
+      <Alert.Description class="inline-flex">
+        {#if pausedDate}
+          Tickets are paused until {`${dateToLocalString(pausedDate)} (${relativeDatetime(pausedDate)}).`}
+        {:else}
+          Paused until manually resumed.
+        {/if}
+      </Alert.Description>
+    </Alert.Root>
+  {/if}
 
-{#if pauseState.isConfigured()}
-  {@const activeTabs = [
-    { value: "active", label: "Active" },
-    { value: "paused", label: "Paused" },
-  ]}
-  <ConfigCard
-    class="flex flex-col gap-4"
-    title="Pausing Status"
-    description="Pausing won't reset any settings."
-    {saveFn}
-    saveBtnDisabled={pauseState.saving}
-    saveBtnLoading={pauseState.loading}
-  >
-    <!-- Tabs control 'isActive' -->
-    <RadioGroup.Root
-      orientation="horizontal"
-      class="flex flex-row gap-8"
-      bind:value={
-        () => (pauseState.config.pausedUntil.value ? "paused" : "active"),
-        (val) => (pauseState.config.pausedUntil.value = val === "paused")
-      }
+  {#if pauseState.isConfigured()}
+    {@const activeTabs = [
+      { value: "active", label: "Active" },
+      { value: "paused", label: "Paused" },
+    ]}
+    <ConfigCard
+      class="flex flex-col gap-4"
+      title="Pausing Status"
+      description="Pausing won't reset any settings."
+      {saveFn}
+      saveBtnDisabled={pauseState.saving}
+      saveBtnLoading={pauseState.loading}
     >
-      {#each activeTabs as tab}
-        <div class="inline-flex cursor-pointer items-center gap-2 py-1 *:cursor-pointer">
-          <RadioGroup.Item value={tab.value} id={tab.value} class="size-5" />
-          <Label for={tab.value} class="text-lg">{tab.label}</Label>
+      <!-- Tabs control 'isActive' -->
+      <RadioGroup.Root
+        orientation="horizontal"
+        class="flex flex-row gap-8"
+        bind:value={
+          () => (pauseState.config.pausedUntil.value ? "paused" : "active"),
+          (val) => (pauseState.config.pausedUntil.value = val === "paused")
+        }
+      >
+        {#each activeTabs as tab}
+          <div class="inline-flex cursor-pointer items-center gap-2 py-1 *:cursor-pointer">
+            <RadioGroup.Item value={tab.value} id={tab.value} class="size-5" />
+            <Label for={tab.value} class="text-lg">{tab.label}</Label>
+          </div>
+        {/each}
+      </RadioGroup.Root>
+      {#if !pauseState.config.pausedUntil.value}
+        <div class="flex-1 space-y-4 outline-none">
+          <p>Tickets are <strong>active</strong>, users can create tickets.</p>
         </div>
-      {/each}
-    </RadioGroup.Root>
-    {#if !pauseState.config.pausedUntil.value}
-      <div class="flex-1 space-y-4 outline-none">
-        <p>Tickets are <strong>active</strong>, users can create tickets.</p>
-      </div>
-    {:else}
-      <div class="flex-1 space-y-4 outline-none">
-        <p>Tickets are <strong>paused</strong>, users <strong>cannot</strong> create new tickets.</p>
-        <!-- Radio group controls 'pauseType' -->
-        <RadioGroup.Root
-          bind:value={
-            () => pauseState.config.type,
-            (val) => {
-              pauseState.config.type = val;
-              if (val === "indefinite") {
-                pauseState.config.pausedUntil.date = null;
+      {:else}
+        <div class="flex-1 space-y-4 outline-none">
+          <p>Tickets are <strong>paused</strong>, users <strong>cannot</strong> create new tickets.</p>
+          <!-- Radio group controls 'pauseType' -->
+          <RadioGroup.Root
+            bind:value={
+              () => pauseState.config.type,
+              (val) => {
+                pauseState.config.type = val;
+                if (val === "indefinite") {
+                  pauseState.config.pausedUntil.date = null;
+                }
               }
             }
-          }
-        >
-          <div class="flex items-center space-x-2">
-            <RadioGroup.Item value="indefinite" id="indefinite" />
-            <Label for="indefinite">Indefinitly</Label>
-          </div>
-          <div class="flex items-center space-x-2">
-            <RadioGroup.Item value="timed" id="timed" />
-            <Label for="timed">Until Date/Time</Label>
-          </div>
-        </RadioGroup.Root>
-        {#if pauseState.config?.type === "timed"}
-          <div class="flex flex-col gap-1">
-            <Label>Until when?</Label>
-            <DateTimePicker
-              showError={showDateError}
-              onChange={(val: string) => {
-                const djs = dayjs(val);
-                console.log(djs.toString());
-                if (djs.isValid()) {
-                  pauseState.config.pausedUntil.date = val; // val is an ISOString
-                } else if (!pauseState) {
-                  console.warn("Pause State not initialized???");
-                }
-              }}
-            />
-          </div>
-        {/if}
-      </div>
-    {/if}
-  </ConfigCard>
-{/if}
+          >
+            <div class="flex items-center space-x-2">
+              <RadioGroup.Item value="indefinite" id="indefinite" />
+              <Label for="indefinite">Indefinitly</Label>
+            </div>
+            <div class="flex items-center space-x-2">
+              <RadioGroup.Item value="timed" id="timed" />
+              <Label for="timed">Until Date/Time</Label>
+            </div>
+          </RadioGroup.Root>
+          {#if pauseState.config?.type === "timed"}
+            <div class="flex flex-col gap-1">
+              <Label>Until when?</Label>
+              <DateTimePicker
+                showError={showDateError}
+                onChange={(val: string) => {
+                  const djs = dayjs(val);
+                  console.log(djs.toString());
+                  if (djs.isValid()) {
+                    pauseState.config.pausedUntil.date = val; // val is an ISOString
+                  } else if (!pauseState) {
+                    console.warn("Pause State not initialized???");
+                  }
+                }}
+              />
+            </div>
+          {/if}
+        </div>
+      {/if}
+    </ConfigCard>
+  {/if}
+</div>
