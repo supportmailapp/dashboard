@@ -3,14 +3,12 @@
   import Mention from "$lib/components/discord/Mention.svelte";
   import UserSelect from "$lib/components/UserSelect.svelte";
   import * as Popover from "$ui/popover/index.js";
-  import type { DBGuildProjectionReturns } from "$lib/server/db";
   import { buttonVariants } from "$ui/button";
   import Plus from "@lucide/svelte/icons/plus";
   import type { APIUser } from "discord-api-types/v10";
 
   let { allowedBots = $bindable(), saveAllFn }: { allowedBots: string[]; saveAllFn: SaveFunction } = $props();
 
-  let oldConfig = $state($state.snapshot(allowedBots) ?? []);
   const loading = $state({
     saving: false,
   });
@@ -20,9 +18,6 @@
       allowedBots.push(user.id);
     }
   }
-
-  $inspect("oldConfig", oldConfig);
-  $inspect("current allowedBots", allowedBots);
 </script>
 
 <ConfigCard
@@ -32,9 +27,6 @@
   saveFn={async () =>
     await saveAllFn(
       (v: boolean) => (loading.saving = v),
-      (data: DBGuildProjectionReturns["generalTicketSettings"]) => {
-        oldConfig = data.allowedBots ?? [];
-      },
     )}
   saveBtnDisabled={loading.saving}
   saveBtnLoading={loading.saving}
