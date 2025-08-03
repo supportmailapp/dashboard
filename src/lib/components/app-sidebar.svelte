@@ -21,6 +21,7 @@
   import { buttonVariants } from "$ui/button";
   import { cdnUrls } from "$lib/urls";
   import { cn } from "$lib/utils";
+  import { toast } from "svelte-sonner";
 
   type NavItem = {
     id: string;
@@ -119,6 +120,8 @@
     reloadBtnDisabled = true;
     await page.data.guildsManager.loadChannels();
     await page.data.guildsManager.loadRoles();
+
+    toast.success("Channels and roles reloaded!");
 
     setTimeout(() => {
       reloadBtnDisabled = false;
