@@ -10,6 +10,7 @@
     title?: string;
     description?: string;
     class?: ClassValue;
+    rootClass?: ClassValue;
     saveBtnDisabled?: boolean;
     saveBtnLoading?: boolean;
     saveFn?: () => void | Promise<void>;
@@ -23,10 +24,11 @@
     class: className,
     saveBtnDisabled,
     saveBtnLoading,
+    rootClass = "",
   }: Props = $props();
 </script>
 
-<Card.Root>
+<Card.Root class={cn(rootClass)}>
   {#if !!title || !!description}
     <Card.Header>
       {#if title}
