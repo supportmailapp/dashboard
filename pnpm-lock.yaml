@@ -64,7 +64,7 @@ importers:
         version: 4.8.1
       supportmail-types:
         specifier: github:supportmailapp/global-types
-        version: https://codeload.github.com/supportmailapp/global-types/tar.gz/a749e2151f89cbc6206f4c9d82b9df0fe2f5f4a9
+        version: https://codeload.github.com/supportmailapp/global-types/tar.gz/0d39535dc081a446cb3aff99bef8c0c94fe22e5e
       wildcard-match:
         specifier: ^5.1.4
         version: 5.1.4
@@ -2476,9 +2476,9 @@ packages:
   style-to-object@1.0.9:
     resolution: {integrity: sha512-G4qppLgKu/k6FwRpHiGiKPaPTFcG3g4wNVX/Qsfu+RqQM30E7Tyu/TEgxcL9PNLF5pdRLwQdE3YKKf+KF2Dzlw==}
 
-  supportmail-types@https://codeload.github.com/supportmailapp/global-types/tar.gz/a749e2151f89cbc6206f4c9d82b9df0fe2f5f4a9:
-    resolution: {tarball: https://codeload.github.com/supportmailapp/global-types/tar.gz/a749e2151f89cbc6206f4c9d82b9df0fe2f5f4a9}
-    version: 2.1.2
+  supportmail-types@https://codeload.github.com/supportmailapp/global-types/tar.gz/0d39535dc081a446cb3aff99bef8c0c94fe22e5e:
+    resolution: {tarball: https://codeload.github.com/supportmailapp/global-types/tar.gz/0d39535dc081a446cb3aff99bef8c0c94fe22e5e}
+    version: 2.1.3
 
   supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
@@ -5217,7 +5217,7 @@ snapshots:
     dependencies:
       inline-style-parser: 0.2.4
 
-  supportmail-types@https://codeload.github.com/supportmailapp/global-types/tar.gz/a749e2151f89cbc6206f4c9d82b9df0fe2f5f4a9:
+  supportmail-types@https://codeload.github.com/supportmailapp/global-types/tar.gz/0d39535dc081a446cb3aff99bef8c0c94fe22e5e:
     dependencies:
       discord-api-types: 0.38.18
       zod: 4.0.14
