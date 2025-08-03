@@ -15,6 +15,7 @@
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import { Label } from "$ui/label";
   import { Checkbox } from "$ui/checkbox";
+  import ChevronLeft from "@lucide/svelte/icons/chevron-left";
 
   const user = new ConfigState<{ language: string; autoRedirect: boolean }>(null);
   const dcUser = $derived(page.data.user);
@@ -95,6 +96,7 @@
     onclick={() =>
       goto(page.url.searchParams.get("back")?.startsWith("/") ? page.url.searchParams.get("back")! : "/")}
   >
+    <ChevronLeft class="size-4" />
     Back
   </Button>
   <div>
