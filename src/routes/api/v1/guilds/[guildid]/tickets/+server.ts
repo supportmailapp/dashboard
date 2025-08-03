@@ -30,7 +30,8 @@ function sanitizeTicketData(
 ): FlattenDocResult<ITicket & { userId?: string }, true> {
   return Object.assign(ticket, {
     userId: ticket.alias ? undefined : ticket.userId,
-  });
+    feedback: undefined, // Feedback is not provided in the list response
+  } as Partial<ITicket>);
 }
 
 export async function GET({ locals, url }) {
