@@ -12,6 +12,7 @@
   import AutoForward from "./AutoForward.svelte";
   import type { PatchFields } from "../../../api/v1/guilds/[guildid]/config/+server";
   import AllowedBots from "./AllowedBots.svelte";
+  import AnonymSettings from "./AnonymSettings.svelte";
 
   const generalTicketsConf = new ConfigState<DBGuildProjectionReturns["generalTicketSettings"]>();
 
@@ -84,12 +85,13 @@
 
 <SiteHeading title="Ticket Settings" />
 
-<section class="mt-6 w-full max-w-2xl space-y-4">
+<section class="mt-6 grid w-full grid-cols-1 gap-4 md:grid-cols-2">
   {#if generalTicketsConf.isConfigured()}
     <PausingCard bind:pausedUntil={generalTicketsConf.config.pausedUntil} />
     <TicketForumCard forumId={generalTicketsConf.config.forumId ?? null} wholeConfig={generalTicketsConf} />
     <AutoForward bind:autoForward={generalTicketsConf.config.autoForwarding} saveAllFn={saveAll} />
     <AllowedBots bind:allowedBots={generalTicketsConf.config.allowedBots} saveAllFn={saveAll} />
+    <AnonymSettings bind:anonymSettings={generalTicketsConf.config.anonym} saveAllFn={saveAll} />
   {:else}
     <div class="grid place-items-center">
       <LoadingSpinner />
