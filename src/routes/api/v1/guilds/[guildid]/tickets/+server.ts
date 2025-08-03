@@ -1,7 +1,8 @@
 import { Ticket } from "$lib/server/db/models/src/ticket";
 import type { ITicket } from "supportmail-types";
 import { JsonErrors } from "$lib/constants";
-import { FlattenDocToJSON } from "$lib/server/db";
+import { FlattenDocToJSON, type FlattenDocResult } from "$lib/server/db";
+import { safeParseInt } from "$lib/utils.js";
 
 export type PaginatedResponse<T> = {
   data: T[];
@@ -14,6 +15,12 @@ export type PaginatedResponse<T> = {
   error?: string;
 };
 
+export type PaginatedResponseWithError<T> = PaginatedResponse<T> & {
+  error: string;
+};
+
+export type PaginatedTicketsResponse = PaginatedResponse<FlattenDocResult<ITicket, true>>;
+
 export async function GET({ locals, url }) {
   if (!locals.guildId || !locals.isAuthenticated()) return JsonErrors.unauthorized();
   const guildId = locals.guildId;
@@ -21,8 +28,8 @@ export async function GET({ locals, url }) {
   try {
     // Parse pagination parameters
     const Params = {
-      page: Math.max(1, parseInt(url.searchParams.get("page") || "1")),
-      pageSize: Math.min(100, Math.max(1, parseInt(url.searchParams.get("pageSize") || "10"))),
+      page: safeParseInt(url.searchParams.get("page"), 1, 1),
+      pageSize: safeParseInt(url.searchParams.get("pageSize"), 20, 10, 100),
     };
 
     // Calculate skip value for pagination
@@ -40,8 +47,8 @@ export async function GET({ locals, url }) {
 
     const totalPages = Math.ceil(totalItems / Params.pageSize);
 
-    const response: PaginatedResponse<ITicket> = {
-      data: tickets.map((d) => FlattenDocToJSON(d)),
+    const response: PaginatedTicketsResponse = {
+      data: tickets.map((d) => FlattenDocToJSON(d, true)),
       pagination: {
         page: Params.page,
         pageSize: Params.pageSize,
@@ -52,7 +59,7 @@ export async function GET({ locals, url }) {
 
     return Response.json(response);
   } catch (error) {
-    const response: PaginatedResponse<ITicket> = {
+    const response: PaginatedTicketsResponse = {
       data: [],
       pagination: {
         page: 1,
