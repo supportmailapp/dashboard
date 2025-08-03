@@ -18,6 +18,10 @@
      */
     onDelete?: (id: string) => boolean | Promise<boolean>;
     channel?: GuildCoreChannel;
+    /**
+     * Channel ID as a fallback.
+     */
+    channelId?: string;
     userId?: string;
     roleId?: string;
     /**
@@ -40,6 +44,7 @@
   let {
     roleId,
     channel,
+    channelId,
     userId,
     class: className,
     onDelete = () => !!toast.error("This function is not set, please report this bug."),
@@ -66,11 +71,11 @@
     <Role {roleId} class={className} />
   {:else if userId}
     <User {userId} class={className} />
-  {:else if channel || fallback}
-    <Channel {channel} class={className} />
+  {:else if channel || channelId || fallback}
+    <Channel {channel} class={className} {channelId} />
   {/if}
 
-  {#if roleId || channel || userId}
-    <MentionActions bind:hovered id={roleId ?? channel?.id ?? userId} {onDelete} {buttons} />
+  {#if roleId || channel || userId || channelId}
+    <MentionActions bind:hovered id={roleId ?? channel?.id ?? userId ?? channelId} {onDelete} {buttons} />
   {/if}
 </div>
