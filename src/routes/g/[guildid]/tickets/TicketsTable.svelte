@@ -24,7 +24,7 @@
   };
 </script>
 
-<Table.Root>
+<Table.Root class="w-full max-w-3xl">
   <Table.Header>
     <Table.Row>
       <Table.Head class="w-[100px]">ID</Table.Head>
@@ -53,12 +53,7 @@
             variant="outline"
             size="icon"
             onclick={() => {
-              goto(
-                guildHref(
-                  ticket.guildId,
-                  `/tickets/${ticket.id}?back=${encodeURIComponent(location.pathname + location.search)}`,
-                ),
-              );
+              goto(guildHref(ticket.guildId, `/tickets/${ticket.id}`));
             }}
           >
             <ChevronRight class="text-muted-foreground size-4" />
