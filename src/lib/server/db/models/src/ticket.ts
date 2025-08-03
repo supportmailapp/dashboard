@@ -1,12 +1,7 @@
 import pkg, { model, Schema } from "mongoose";
 import dayjs from "dayjs";
-import { type IFeedback, type ITicket, TicketStatus } from "supportmail-types";
+import { type IFeedback, type IFeedbackAnswer, type ITicket, TicketStatus } from "supportmail-types";
 const { models } = pkg;
-
-export interface IFeedbackAnswer {
-  question: string;
-  answer: string;
-}
 
 const feedbackAnswerSchema = new Schema<IFeedbackAnswer>(
   {
