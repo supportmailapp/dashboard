@@ -116,3 +116,14 @@ export function safeParseInt(str: unknown, _defaultValue: number, min = 1, max?:
     return _defaultValue;
   }
 }
+
+export function makeFallbackInitials(name: string, maxLength = 2): string {
+  if (!name) return "??";
+  const initials = name
+    .split(" ")
+    .map((s) => s[0])
+    .slice(0, maxLength)
+    .join("")
+    .toUpperCase();
+  return initials.length < maxLength ? initials.padEnd(maxLength, "?") : initials;
+}
