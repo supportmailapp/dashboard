@@ -3,7 +3,6 @@
   import { cn } from "$lib/utils";
   import AtSign from "@lucide/svelte/icons/at-sign";
   import { fetchMentionUsers, mentionUsers } from "$lib/stores/users.svelte";
-  import { Inset } from "$ui/sidebar";
 
   type Props = {
     userId: string;
