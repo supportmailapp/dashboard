@@ -22,9 +22,11 @@
     perPage: safeParseInt(page.url.searchParams.get("count"), 20),
     total: null as null | number,
     totalPages: null as null | number,
-    status: null as TicketStatus | null,
-    anonym: false,
-    search: "",
+    status: (page.url.searchParams.has("status")
+      ? parseStatus(page.url.searchParams.get("status")!)
+      : null) as TicketStatus | null,
+    anonym: (page.url.searchParams.get("anonym") || "") === "true",
+    search: page.url.searchParams.get("search") || "",
   });
   /**
    * Used to determine whether it is allowed to fetch tickets again.
@@ -104,10 +106,8 @@
         return TicketStatus.closed;
       case "closeRequested":
         return TicketStatus.closeRequested;
-      case "all":
-        return null; // Return null for "all" to indicate no specific status filter
       default:
-        return TicketStatus.open; // Default to open if unknown
+        return null; // Default to null (all) if unknown
     }
   }
 
