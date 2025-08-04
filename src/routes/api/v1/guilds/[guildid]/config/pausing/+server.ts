@@ -7,5 +7,6 @@ export async function GET({ locals }) {
   if (!pausing) {
     return JsonErrors.notFound();
   }
+
   return Response.json(pausing);
 }

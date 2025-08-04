@@ -98,6 +98,8 @@ const APIRoutes = {
   ticketCategory: (guildId: string, categoryId: string) =>
     `${API_BASE}/guilds/${guildId}/config/tickets/categories/${categoryId}` as const,
   ticketFeedback: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/tickets/feedback` as const,
+
+  reportsConfig: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/reports` as const,
 };
 
 const LegalLinks = {

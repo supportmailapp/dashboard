@@ -11,7 +11,13 @@ import { DBGuild, DBUser } from "./models";
 import { TicketCategory } from "./models/src/ticketCategory";
 import { hasAllKeys } from "$lib/utils";
 
-type DBGuildProjection = "full" | "generalTicketSettings" | "language" | "pausing" | "feedback";
+type DBGuildProjection =
+  | "full"
+  | "generalTicketSettings"
+  | "language"
+  | "pausing"
+  | "feedback"
+  | "reportSettings";
 
 export interface DBGuildProjectionReturns {
   full: IDBGuild;
@@ -25,6 +31,10 @@ export interface DBGuildProjectionReturns {
     reports: PausedUntil;
   };
   feedback: NonNullable<ITicketConfig["feedback"]>;
+
+  reportSettings: Omit<IDBGuild["reportConfig"], "pausedUntil"> & {
+    pausedUntil: APIPausedUntil;
+  };
 }
 
 // Typed functions
@@ -38,6 +48,10 @@ export async function getDBGuild<T extends DBGuildProjection>(
   }
 
   const jsonConfig = FlattenDocToJSON(_config, true);
+  const defaultP = {
+    value: false,
+    date: null,
+  };
 
   switch (projection) {
     case "generalTicketSettings":
@@ -52,16 +66,18 @@ export async function getDBGuild<T extends DBGuildProjection>(
     case "language":
       return jsonConfig.lang as DBGuildProjectionReturns[T];
     case "pausing":
-      const defaultP = {
-        value: false,
-        date: null,
-      };
       return {
         tickets: jsonConfig.ticketConfig.pausedUntil ?? defaultP,
         reports: jsonConfig.reportConfig.pausedUntil ?? defaultP,
       } as DBGuildProjectionReturns[T];
     case "feedback":
       return (jsonConfig.ticketConfig.feedback ?? { enabled: false }) as DBGuildProjectionReturns[T];
+
+    case "reportSettings":
+      return {
+        ...jsonConfig.reportConfig,
+        pausedUntil: jsonConfig.reportConfig.pausedUntil ?? defaultP,
+      } as DBGuildProjectionReturns[T];
     default:
       throw new Error(`Unsupported projection: ${projection}`);
   }
