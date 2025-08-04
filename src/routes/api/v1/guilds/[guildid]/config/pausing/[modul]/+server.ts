@@ -55,17 +55,6 @@ export async function PUT({ locals, params, request }) {
   const flat = FlattenDocToJSON(newDBGuild)[configKey]["pausedUntil"];
   console.log("flat", flat);
 
-  console.log("1", new ZodValidator(putSchema).validate({}));
-  console.log("2", new ZodValidator(putSchema).validate("asasd"));
-  console.log("3", new ZodValidator(putSchema).validate(false));
-  console.log(
-    "4",
-    new ZodValidator(putSchema).validate({
-      value: false,
-      date: null,
-    }),
-  );
-
   return Response.json({
     value: flat?.value,
     date: flat?.date?.toISOString() ?? null,
