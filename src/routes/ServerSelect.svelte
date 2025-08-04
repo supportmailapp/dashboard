@@ -11,9 +11,13 @@
   let guildManager = $derived(page.data.guildsManager);
 </script>
 
-<Command.Root class="h-full rounded-lg border shadow-md md:min-w-[450px]">
-  <Command.Input placeholder="Search a server" autofocus={false} />
-  <Command.List class="max-h-auto h-full">
+<Command.Root class="h-full bg-transparent md:min-w-[450px]">
+  <Command.Input
+    placeholder="Search a server"
+    class="rounded-lg [&::placeholder]:text-white [&::placeholder]:opacity-100"
+    autofocus={false}
+  />
+  <Command.List class="max-h-auto h-full pt-0.5">
     <Command.Empty>No servers found.</Command.Empty>
     {#each guildManager.guilds as guild (guild.id)}
       {@const _guildHref = guild.isConfigured
@@ -23,8 +27,8 @@
         href={_guildHref}
         value="{guild.id}:{guild.name}"
         class={cn(
-          "cursor-pointer pr-3 transition-all duration-100 active:scale-99",
-          !guild.isConfigured && "text-muted-foreground hover:text-white",
+          "aria-selected:bg-primary/20 aria-selected:*:text-primary-foreground cursor-pointer pr-3 transition-all active:scale-99 aria-selected:-translate-y-0.5 aria-selected:*:font-medium",
+          !guild.isConfigured && "text-accent-foreground",
         )}
       >
         <Avatar.Root>
@@ -33,9 +37,9 @@
         </Avatar.Root>
         <span class="max-w-40 truncate">{guild.name}</span>
         {#if guild.isConfigured}
-          <ArrowRight class="ml-auto text-white" />
+          <ArrowRight class="ml-auto text-current" />
         {:else}
-          <Plus class="ml-auto" />
+          <Plus class="ml-auto text-current" />
         {/if}
       </Command.LinkItem>
     {/each}
