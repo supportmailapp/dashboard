@@ -24,10 +24,7 @@
   class="flex flex-col gap-4"
   title="Allowed Bots"
   description="Bots are usually ignored in ticket posts. This allows you to allow up to 5 bots that will not be ignored."
-  saveFn={async () =>
-    await saveAllFn(
-      (v: boolean) => (loading.saving = v),
-    )}
+  saveFn={async () => await saveAllFn((v: boolean) => (loading.saving = v))}
   saveBtnDisabled={loading.saving}
   saveBtnLoading={loading.saving}
 >
