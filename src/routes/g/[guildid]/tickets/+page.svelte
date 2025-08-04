@@ -16,6 +16,7 @@
   import type { PaginatedTicketsResponse } from "../../../api/v1/guilds/[guildid]/tickets/+server";
   import FilterControls from "./FilterControls.svelte";
   import TicketsTable from "./TicketsTable.svelte";
+  import { onMount } from "svelte";
 
   const pageData = $state({
     page: safeParseInt(page.url.searchParams.get("page"), 1),
@@ -74,16 +75,6 @@
     }
   }
 
-  let mounted = $state(false);
-  $effect(() => {
-    if (!mounted) {
-      mounted = true;
-      fetchTickets().then(() => {
-        console.log("Tickets fetched successfully");
-      });
-    }
-  });
-
   function stringifyStatus(status: TicketStatus | null) {
     switch (status) {
       case TicketStatus.open:
@@ -131,6 +122,13 @@
     const params = buildSearchParams(raw);
     return `${page.url.origin}${page.url.pathname}?${params.toString()}`;
   }
+
+  onMount(() => {
+    // Fetch tickets when the component mounts
+    fetchTickets().then(() => {
+      console.log("Tickets fetched successfully");
+    });
+  });
 </script>
 
 <SiteHeading title="Tickets" />

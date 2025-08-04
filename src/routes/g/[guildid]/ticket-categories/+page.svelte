@@ -19,6 +19,7 @@
   import Save from "@lucide/svelte/icons/save";
   import Trash from "@lucide/svelte/icons/trash";
   import type { ITicketCategory } from "supportmail-types";
+  import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
   import { slide } from "svelte/transition";
 
@@ -209,7 +210,7 @@
     }
   });
 
-  $effect(() => {
+  onMount(() => {
     fetch(APIRoutes.ticketCategories(page.data.guildId!))
       .then((res) => {
         if (!res.ok) {
@@ -227,7 +228,7 @@
           description: err.message,
         });
       });
-    // Cleanup
+
     return () => {
       console.log("Cleaning up ticket categories state");
       categories.clear();

@@ -13,6 +13,7 @@
   import type { PatchFields } from "../../../api/v1/guilds/[guildid]/config/+server";
   import AllowedBots from "./AllowedBots.svelte";
   import AnonymSettings from "./AnonymSettings.svelte";
+  import { onMount } from "svelte";
 
   const generalTicketsConf = new ConfigState<DBGuildProjectionReturns["generalTicketSettings"]>();
 
@@ -57,7 +58,7 @@
     }
   };
 
-  $effect(() => {
+  onMount(() => {
     fetch(APIRoutes.ticketsConfig(page.data.guildId!))
       .then((res) => {
         if (!res.ok) {
@@ -75,7 +76,7 @@
           description: err.message,
         });
       });
-    // Cleanup
+
     return () => {
       console.log("Cleaning up ticket configuration state");
       generalTicketsConf.clear();
