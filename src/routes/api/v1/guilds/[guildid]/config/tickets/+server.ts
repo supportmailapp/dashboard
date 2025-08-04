@@ -69,7 +69,7 @@ export async function PATCH({ request, locals }) {
   if (!guild) {
     return JsonErrors.notFound();
   }
-  const { allowedBots, anonym, autoForwarding } = body as PatchFields;
+  const { allowedBots, anonym, autoForwarding } = validationRes.data;
 
   let updateFields: UpdateQuery<IDBGuild> = {};
   if (isNotUndefined(allowedBots)) {
