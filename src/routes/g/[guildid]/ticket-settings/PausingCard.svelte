@@ -8,7 +8,6 @@
   import { APIRoutes } from "$lib/urls";
   import * as Alert from "$ui/alert";
   import CircleAlertIcon from "@lucide/svelte/icons/circle-alert";
-  import * as Tabs from "$ui/tabs";
   import dayjs from "dayjs";
   import equal from "fast-deep-equal/es6";
   import { toast } from "svelte-sonner";
