@@ -2,6 +2,7 @@
   import { page } from "$app/state";
   import { cn } from "$lib/utils";
   import type { Snippet } from "svelte";
+  import { onMount } from "svelte";
 
   let {
     title,
@@ -26,15 +27,39 @@
     "4xl": "text-4xl",
     "5xl": "text-5xl",
   };
+
+  let h1Element: HTMLHeadingElement;
+  let hasBeenViewed = $state(false);
+
+  onMount(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            hasBeenViewed = true;
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    if (h1Element) {
+      observer.observe(h1Element);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  });
 </script>
 
 <svelte:head>
   <title>{title} | {page.data.guildsManager.currentGuild?.name ?? "..."}</title>
 </svelte:head>
 
-<section class="h-fit w-full max-w-2xl space-y-3" class:text-center={centered}>
+<section class="mb-6 h-fit w-full max-w-2xl space-y-3" class:text-center={centered}>
   <div class="space-y-2">
-    <h1 class={cn("font-bold", sizeClasses[size])}>
+    <h1 bind:this={h1Element} class={cn("un space-b font-bold", sizeClasses[size], hasBeenViewed && "force-un")}>
       {#if typeof realTitle === "string"}
         {realTitle}
       {:else if realTitle}
