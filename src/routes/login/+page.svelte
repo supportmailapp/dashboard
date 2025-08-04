@@ -42,7 +42,7 @@
     </Alert.Root>
   {/if}
 
-  <Card.Root class="w-full max-w-md shadow-xl shadow-black/50 select-none">
+  <Card.Root class="w-full max-w-md shadow-xl shadow-black/50 select-none backdrop-blur-md bg-transparent">
     <Card.Header class="text-center">
       <Branding />
     </Card.Header>
@@ -73,7 +73,7 @@
           };
         }}
       >
-        <Button type="submit" class="w-full max-w-xs" disabled={showLoading}>
+        <Button type="submit" class="w-full max-w-xs hover:scale-102" disabled={showLoading}>
           {#if showLoading}
             <LoadingSpinner size="8" />
           {:else}
@@ -96,9 +96,6 @@
     background-position: center;
     background-repeat: no-repeat;
     object-fit: cover;
-    backdrop-filter: blur(0.75vh);
-    filter: blur(0.75vh);
-    -webkit-filter: blur(0.75vh);
     box-shadow: 0 0 200px rgba(0, 0, 0, 0.9) inset;
     z-index: -1;
   }
