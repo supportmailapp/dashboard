@@ -78,7 +78,7 @@
 
 <div class="flex h-screen flex-col items-center justify-center gap-6 p-3">
   <Card.Root
-    class="flex h-[40rem] w-full max-w-xl flex-col overflow-clip shadow-2xl shadow-black/50 select-none"
+    class="flex h-[40rem] w-full max-w-xl flex-col overflow-clip bg-black/40 shadow-2xl shadow-black/50 backdrop-blur-md select-none"
   >
     <Card.Header class="shrink-0 text-center">
       <Branding />
