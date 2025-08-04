@@ -142,6 +142,7 @@
                   class="justify-center transition-all duration-100 ease-in-out"
                   variant="outline"
                   aria-disabled={reloadBtnDisabled}
+                  tooltipContent="Reload Channels & Roles"
                 >
                   <RotateCcw />
                   <span>Reload Channels & Roles</span>
@@ -149,7 +150,7 @@
               </Sidebar.MenuItem>
             {/if}
             <Sidebar.MenuItem>
-              <Sidebar.MenuButton isActive={isCurrentPage(item.href, false)}>
+              <Sidebar.MenuButton isActive={isCurrentPage(item.href, false)} tooltipContent={item.name}>
                 {#snippet child({ props })}
                   <a href={item.href} {...props}>
                     <item.icon />
@@ -165,7 +166,7 @@
             <Sidebar.Menu>
               {#each item.items as subItem (subItem.id)}
                 <Sidebar.MenuItem>
-                  <Sidebar.MenuButton isActive={isCurrentPage(subItem.href, true)}>
+                  <Sidebar.MenuButton isActive={isCurrentPage(subItem.href, true)} tooltipContent={subItem.name}>
                     {#snippet child({ props })}
                       <a href={subItem.href} {...props}>
                         <subItem.icon />
