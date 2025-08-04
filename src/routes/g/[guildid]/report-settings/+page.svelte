@@ -84,7 +84,7 @@
 
 <SiteHeading title="Report Settings" />
 
-<section class="mt-6 grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+<section class="mt-6 grid w-full grid-cols-1 gap-4 md:grid-cols-3">
   {#if reportsConfig.isConfigured()}
     <PausingCard bind:pausedUntil={reportsConfig.config.pausedUntil} />
     <!-- TODO: ChannelSelect Card with Actions Status (General Settings) -->

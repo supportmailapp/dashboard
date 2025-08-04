@@ -102,7 +102,9 @@
   });
 </script>
 
-<div class="col-span-1 flex max-w-4xl flex-col gap-2 md:col-span-2">
+<!-- TODO -->
+<!-- ! This style is a bit different to the one ticket settings page (idk why, I will have to look into that) -->
+<div class="col-span-2 flex max-w-4xl flex-col gap-2 md:col-span-3">
   {#if fetchedState?.value}
     {@const pausedDate = fetchedState.date ? new Date(fetchedState.date) : null}
     <Alert.Root variant="warning">
