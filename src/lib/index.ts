@@ -1,5 +1,7 @@
 import { redirect as svRedirect } from "@sveltejs/kit";
 
+type RedirectStatus = 300 | 301 | 302 | 303 | 304 | 305 | 306 | 307 | 308;
+
 /**
  * Redirects the user to a different URL with a specified status code.
  *
@@ -27,11 +29,11 @@ import { redirect as svRedirect } from "@sveltejs/kit";
  * - `404` - Not Found (for custom error handling)
  * - `500` - Internal Server Error (for custom error handling)
  */
-export function redirectResponse(status: number, url: string | URL): never {
-  return svRedirect(status as any, url);
+export function redirectResponse(status: RedirectStatus, url: string | URL): never {
+  return svRedirect(status, url);
 }
 
-export function redirectToLoginWithError(errStr: string, status: number = 302): never {
+export function redirectToLoginWithError(errStr: string, status: RedirectStatus = 302): never {
   return redirectResponse(status, "/login?error=" + encodeURIComponent(errStr));
 }
 
