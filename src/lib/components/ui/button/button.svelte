@@ -5,19 +5,19 @@
   import { type VariantProps, tv } from "tailwind-variants";
 
   export const buttonVariants = tv({
-    base: "focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium outline-none transition-all focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+    base: "duration-120 focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium outline-none transition-all focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0 shadow-xs",
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+          "bg-destructive/80 text-destructive-foreground hover:bg-destructive focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/50",
         outline:
-          "bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 border",
-        secondary: "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+          "bg-background bg-accent/30 hover:bg-accent/80 hover:text-accent-foreground  dark:border-accent border dark:focus-visible:ring-primary/40 dark:hover:bg-accent/80",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 shadow-none",
         link: "text-primary underline-offset-4 hover:underline",
-        success: "bg-success text-success-foreground shadow-xs hover:bg-success/80",
-        warning: "bg-warning text-warning-foreground shadow-xs hover:bg-warning/80",
+        success: "bg-success text-success-foreground hover:bg-success/80",
+        warning: "bg-warning text-warning-foreground hover:bg-warning/80",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

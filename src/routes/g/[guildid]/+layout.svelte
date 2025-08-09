@@ -116,6 +116,7 @@
                       : `/add/${guild.id}`}
                     <Command.LinkItem
                       href={_guildHref}
+                      target="_self"
                       value={guild.name}
                       class={cn(!guild.isConfigured && "opacity-80 hover:opacity-100")}
                     >

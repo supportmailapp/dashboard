@@ -64,7 +64,7 @@
   }
 </script>
 
-<Card.Root>
+<Card.Root class="col-span-full lg:col-span-2">
   <Card.Header>
     <Card.Title>{title}</Card.Title>
     {#if description}
@@ -75,34 +75,26 @@
     {#if labelText}
       <Label>{labelText}</Label>
     {/if}
-    <div class="bg-accent/50 max-h-40 min-h-20 w-full overflow-y-auto rounded-md border p-3">
-      {#if (entities ?? []).length === 0}
-        <p class="text-muted-foreground text-sm">{notFoundText}</p>
-      {:else}
-        <div class="flex flex-wrap gap-2">
-          {#each entities ?? [] as entity}
-            <Mention
-              class="w-max"
-              userId={entity.typ === EntityType.user ? entity.id : undefined}
-              roleId={entity.typ === EntityType.role ? entity.id : undefined}
-              onDelete={() => handlePingDelete(entity)}
-            />
-          {/each}
-        </div>
-      {/if}
-
-      <div class="mt-2">
+    <div class="bg-input/30 border-input max-h-40 w-full overflow-y-auto rounded-md border p-3">
+      <div class="flex flex-wrap gap-2">
+        {#each entities ?? [] as entity}
+          <Mention
+            class="w-max"
+            userId={entity.typ === EntityType.user ? entity.id : undefined}
+            roleId={entity.typ === EntityType.role ? entity.id : undefined}
+            onDelete={() => handlePingDelete(entity)}
+          />
+        {/each}
         <Popover.Root>
           <Popover.Trigger
             class={buttonVariants({
               variant: "outline",
-              size: "sm",
-              class: "h-8",
+              size: "icon",
+              class: "size-7",
             })}
             disabled={!!loading}
           >
-            <Plus class="mr-2 h-4 w-4" />
-            {addButtonText}
+            <Plus />
           </Popover.Trigger>
           <Popover.Content class="w-80">
             <MentionableSelect

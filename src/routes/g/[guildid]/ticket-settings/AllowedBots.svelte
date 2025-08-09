@@ -21,6 +21,7 @@
 </script>
 
 <ConfigCard
+  rootClass="col-span-full lg:col-span-2"
   class="flex flex-col gap-4"
   title="Allowed Bots"
   description="Bots are usually ignored in ticket posts. This allows you to allow up to 5 bots that will not be ignored."
@@ -28,7 +29,7 @@
   saveBtnDisabled={loading.saving}
   saveBtnLoading={loading.saving}
 >
-  <div class="bg-accent flex flex-row gap-1 rounded-md p-2">
+  <div class="bg-input/30 border-input max-h-40 w-full overflow-y-auto rounded-md border p-3">
     {#each allowedBots as botId}
       <Mention
         userId={botId}
@@ -40,7 +41,7 @@
     {/each}
     <Popover.Root>
       <Popover.Trigger
-        class={buttonVariants({ variant: "outline", size: "icon", class: "aspect-square size-7" })}
+        class={buttonVariants({ variant: "outline", size: "icon", class: "size-7" })}
       >
         <Plus />
       </Popover.Trigger>

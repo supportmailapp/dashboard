@@ -305,7 +305,7 @@
               <Label for="cat-enabled">Enable Category</Label>
               <p class="text-muted-foreground text-sm">Allow users to create tickets in this category</p>
             </div>
-            <Switch bind:checked={category.config.enabled} id="cat-enabled" />
+            <Switch variant="success" bind:checked={category.config.enabled} id="cat-enabled" />
           </div>
           <div class="flex items-center justify-start gap-2">
             <EmojiInput bind:emoji={category.config.emoji} />
@@ -335,7 +335,9 @@
         </Card.Header>
         <Card.Content class="space-y-2">
           <Label>Category Pings</Label>
-          <div class="bg-accent/50 max-h-40 min-h-20 w-full overflow-y-auto rounded-md border p-3">
+          <div
+            class="bg-input/30 border-input max-h-40 min-h-20 w-full overflow-y-auto rounded-md border p-3"
+          >
             {#if (category.config.pings ?? []).length === 0}
               <p class="text-muted-foreground text-sm">
                 No pings configured. Add users or roles to notify when tickets are created.
@@ -350,32 +352,24 @@
                     onDelete={() => handlePingDelete(entity)}
                   />
                 {/each}
+                <Popover.Root>
+                  <Popover.Trigger
+                    class={buttonVariants({ variant: "outline", size: "icon", class: "size-7" })}
+                    disabled={category.loading}
+                  >
+                    <Plus />
+                  </Popover.Trigger>
+                  <Popover.Content class="w-80">
+                    <MentionableSelect
+                      excludedRoleIds={pingRoles}
+                      excludedUserIds={pingUsers}
+                      onRoleSelect={handleRoleSelect}
+                      onUserSelect={handleUserSelect}
+                    />
+                  </Popover.Content>
+                </Popover.Root>
               </div>
             {/if}
-
-            <div class="mt-2">
-              <Popover.Root>
-                <Popover.Trigger
-                  class={buttonVariants({
-                    variant: "outline",
-                    size: "sm",
-                    class: "h-8",
-                  })}
-                  disabled={category.loading}
-                >
-                  <Plus class="mr-2 h-4 w-4" />
-                  Add Ping
-                </Popover.Trigger>
-                <Popover.Content class="w-80">
-                  <MentionableSelect
-                    excludedRoleIds={pingRoles}
-                    excludedUserIds={pingUsers}
-                    onRoleSelect={handleRoleSelect}
-                    onUserSelect={handleUserSelect}
-                  />
-                </Popover.Content>
-              </Popover.Root>
-            </div>
           </div>
         </Card.Content>
       </Card.Root>

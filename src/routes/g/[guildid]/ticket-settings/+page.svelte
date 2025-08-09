@@ -14,6 +14,9 @@
   import AllowedBots from "./AllowedBots.svelte";
   import AnonymSettings from "./AnonymSettings.svelte";
   import { onMount } from "svelte";
+  import SettingsGrid from "$lib/components/SettingsGrid.svelte";
+  import Separator from "$ui/separator/separator.svelte";
+  import ResetStuff from "./ResetStuff.svelte";
 
   const generalTicketsConf = new ConfigState<DBGuildProjectionReturns["generalTicketSettings"]>();
 
@@ -86,16 +89,18 @@
 
 <SiteHeading title="Ticket Settings" />
 
-<section class="mt-6 grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+<SettingsGrid class="mt-6">
   {#if generalTicketsConf.isConfigured()}
     <PausingCard bind:pausedUntil={generalTicketsConf.config.pausedUntil} />
     <TicketForumCard forumId={generalTicketsConf.config.forumId ?? null} wholeConfig={generalTicketsConf} />
     <AutoForward bind:autoForward={generalTicketsConf.config.autoForwarding} saveAllFn={saveAll} />
     <AllowedBots bind:allowedBots={generalTicketsConf.config.allowedBots} saveAllFn={saveAll} />
     <AnonymSettings bind:anonymSettings={generalTicketsConf.config.anonym} saveAllFn={saveAll} />
+    <Separator class="col-span-full my-5" />
+    <ResetStuff />
   {:else}
     <div class="grid place-items-center">
       <LoadingSpinner />
     </div>
   {/if}
-</section>
+</SettingsGrid>

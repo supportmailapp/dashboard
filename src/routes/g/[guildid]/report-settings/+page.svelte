@@ -11,6 +11,7 @@
   import { onMount } from "svelte";
   import type { PutFields } from "../../../api/v1/guilds/[guildid]/config/reports/+server";
   import MentionableSelectCard from "./MentionableSelectCard.svelte";
+  import SettingsGrid from "$lib/components/SettingsGrid.svelte";
 
   const reportsConfig = new ConfigState<DBGuildProjectionReturns["reportSettings"]>();
 
@@ -84,7 +85,7 @@
 
 <SiteHeading title="Report Settings" />
 
-<section class="mt-6 grid w-full grid-cols-1 gap-4 md:grid-cols-3">
+<SettingsGrid class="mt-6">
   {#if reportsConfig.isConfigured()}
     <PausingCard bind:pausedUntil={reportsConfig.config.pausedUntil} />
     <!-- TODO: ChannelSelect Card with Actions Status (General Settings) -->
@@ -120,4 +121,4 @@
       <LoadingSpinner />
     </div>
   {/if}
-</section>
+</SettingsGrid>

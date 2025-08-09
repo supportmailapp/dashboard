@@ -14,8 +14,9 @@
 </script>
 
 <ConfigCard
+  rootClass="col-span-full lg:col-span-2"
   class="flex flex-col gap-4"
-  title="Automatic Forwading"
+  title="Automatic Forwarding"
   description="This setting indicates whether messages in ticket posts are always forwarded to the user or not."
   saveFn={async () =>
     await saveAllFn(

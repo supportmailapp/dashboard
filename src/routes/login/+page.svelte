@@ -42,7 +42,7 @@
     </Alert.Root>
   {/if}
 
-  <Card.Root class="w-full max-w-md shadow-xl shadow-black/50 select-none backdrop-blur-md bg-transparent">
+  <Card.Root class="w-full max-w-md shadow-xl shadow-black/60 select-none backdrop-blur-md bg-transparent border-none">
     <Card.Header class="text-center">
       <Branding />
     </Card.Header>

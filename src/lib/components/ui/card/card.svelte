@@ -6,14 +6,21 @@
     ref = $bindable(null),
     class: className,
     children,
+    destructive = false,
     ...restProps
-  }: WithElementRef<HTMLAttributes<HTMLDivElement>> = $props();
+  }: WithElementRef<HTMLAttributes<HTMLDivElement>> & {
+    destructive?: boolean;
+  } = $props();
 </script>
 
 <div
   bind:this={ref}
   data-slot="card"
-  class={cn("bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm", className)}
+  class={cn(
+    "flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
+    destructive ? "card-destructive" : "bg-card text-card-foreground",
+    className,
+  )}
   {...restProps}
 >
   {@render children?.()}

@@ -22,6 +22,9 @@
   import { cdnUrls } from "$lib/urls";
   import { cn } from "$lib/utils";
   import { toast } from "svelte-sonner";
+  import { mode, toggleMode } from "mode-watcher";
+  import Moon from "@lucide/svelte/icons/moon";
+  import Sun from "@lucide/svelte/icons/sun";
 
   type NavItem = {
     id: string;
@@ -206,6 +209,14 @@
             <DropdownMenu.Item onclick={() => goto("/billing")}>
               <ReceiptText />
               <span>Billing</span>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item closeOnSelect={false} onclick={() => toggleMode()}>
+              {#if mode.current === "dark"}
+                <Moon />
+              {:else}
+                <Sun />
+              {/if}
+              <span>Toggle Theme</span>
             </DropdownMenu.Item>
             <DropdownMenu.Item variant="destructive" onclick={() => goto("/logout")}>
               <LogOut />

@@ -9,6 +9,7 @@
   -webkit-user-select: none;
   overflow: clip;
   position: relative;
+  color: white;
 }
 
 .actions-container {

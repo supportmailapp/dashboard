@@ -252,9 +252,11 @@
       {#each categories.config as cat, index (cat.index)}
         <li
           class={cn(
-            "bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/70 flex h-16 flex-row items-center gap-3 rounded border p-3 shadow-xs transition duration-100 select-none",
+            "bg-background hover:text-accent-foreground dark:bg-input/30  flex h-16 flex-row items-center gap-3 rounded-lg border p-3 shadow-xs transition duration-100 select-none",
             draggedOverIndex === index && "border-primary dark:border-primary scale-101 border-2",
-            reorderingEnabled ? "cursor-grab hover:-translate-y-0.5" : "cursor-default",
+            reorderingEnabled
+              ? "hover:bg-accent dark:hover:bg-input/50 cursor-grab hover:-translate-y-0.5"
+              : "cursor-default",
           )}
           draggable={reorderingEnabled}
           ondragstart={(event) => handleDragStart(event, cat, index)}

@@ -177,15 +177,13 @@
   {:else if ticketsStatus === "error"}
     <div class="text-destructive">Failed to load tickets. Please try again later.</div>
   {:else if ticketsStatus === "loaded" && ticketItems.length === 0}
-    <div class="text-muted-foreground">No tickets found :(</div>
+    <div class="text-muted-foreground">{"No tickets found :("}</div>
   {:else if ticketsStatus === "loaded" && ticketItems.length > 0}
     <TicketsTable items={ticketItems} />
   {/if}
 </div>
 
-{#if pageData.total === null}
-  <Skeleton class="mx-auto h-8 w-full max-w-2xl" />
-{:else if typeof pageData.totalPages === "number" && pageData.totalPages > 1}
+{#if pageData.total && typeof pageData.totalPages === "number" && pageData.totalPages > 1}
   <Pagination.Root
     page={pageData.page}
     count={pageData.total}

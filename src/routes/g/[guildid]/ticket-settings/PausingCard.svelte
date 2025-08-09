@@ -102,22 +102,22 @@
   });
 </script>
 
-<div class="col-span-1 flex max-w-4xl flex-col gap-2 md:col-span-2">
-  {#if fetchedState?.value}
-    {@const pausedDate = fetchedState.date ? new Date(fetchedState.date) : null}
-    <Alert.Root variant="warning">
-      <CircleAlertIcon class="size-4" />
-      <Alert.Title>Tickets are paused.</Alert.Title>
-      <Alert.Description class="inline-flex">
-        {#if pausedDate}
-          Tickets are paused until {`${dateToLocalString(pausedDate)} (${relativeDatetime(pausedDate)}).`}
-        {:else}
-          Paused until manually resumed.
-        {/if}
-      </Alert.Description>
-    </Alert.Root>
-  {/if}
+{#if fetchedState?.value}
+  {@const pausedDate = fetchedState.date ? new Date(fetchedState.date) : null}
+  <Alert.Root variant="warning" class="col-span-full">
+    <CircleAlertIcon class="size-4" />
+    <Alert.Title>Tickets are paused.</Alert.Title>
+    <Alert.Description class="inline-flex">
+      {#if pausedDate}
+        Tickets are paused until {`${dateToLocalString(pausedDate)} (${relativeDatetime(pausedDate)}).`}
+      {:else}
+        Paused until manually resumed.
+      {/if}
+    </Alert.Description>
+  </Alert.Root>
+{/if}
 
+<div class="col-span-full flex max-w-4xl flex-col gap-2 lg:col-span-3">
   {#if pauseState.isConfigured()}
     {@const activeTabs = [
       { value: "active", label: "Active" },

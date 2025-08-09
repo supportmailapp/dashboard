@@ -78,6 +78,7 @@
   title="Ticket Forum"
   description="Configure the forum where tickets will be created."
   saveBtnDisabled={!forum.config}
+  rootClass="col-span-full lg:col-span-3"
 >
   <div class="flex flex-col gap-2">
     {#if channelsLoaded}

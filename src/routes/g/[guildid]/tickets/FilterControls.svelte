@@ -38,22 +38,17 @@
     <div class="flex gap-3 sm:items-end">
       <div class="flex flex-col gap-2">
         <Label class="text-sm font-medium">Status</Label>
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger>
-            {#snippet child({ props })}
-              <Button {...props} variant="outline" class="w-32">
-                {statusOptions.find((opt) => opt.value === status)?.label || "Status"}
-              </Button>
-            {/snippet}
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Content class="w-40" align="center">
-            <DropdownMenu.RadioGroup bind:value={status as any}>
-              {#each statusOptions as { value, label } (value)}
-                <DropdownMenu.RadioItem {value}>{label}</DropdownMenu.RadioItem>
-              {/each}
-            </DropdownMenu.RadioGroup>
-          </DropdownMenu.Content>
-        </DropdownMenu.Root>
+        <Select.Root type="single" bind:value={status}>
+          <Select.Trigger class="w-40">
+            {statusOptions.find((opt) => opt.value === status)?.label || "Status"}
+          </Select.Trigger>
+          <Select.Content class="w-40" align="center">
+            <Select.Item value="all">All</Select.Item>
+            <Select.Item value="open">Open</Select.Item>
+            <Select.Item value="closed">Closed</Select.Item>
+            <Select.Item value="closeRequested">Close Requested</Select.Item>
+          </Select.Content>
+        </Select.Root>
       </div>
 
       <div class="flex flex-col gap-2">

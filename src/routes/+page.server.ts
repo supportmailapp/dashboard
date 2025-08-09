@@ -7,9 +7,9 @@ export async function load({ locals, cookies, parent }) {
   if (data.error) {
     if (data.error === "expired") {
       cookies.delete("session", { path: "/" });
-      redirectToLoginWithError("Session expired. Please log in again.", 401);
+      redirectToLoginWithError("Session expired. Please log in again.");
     }
-    redirectToLoginWithError("An error occurred. Please try again later.", 500);
+    redirectToLoginWithError("An error occurred. Please try again later.");
   }
 
   return {
