@@ -14,6 +14,12 @@ importers:
       '@arcjet/sveltekit':
         specifier: ^1.0.0-beta.8
         version: 1.0.0-beta.8
+      '@fontsource-variable/geist':
+        specifier: ^5.2.6
+        version: 5.2.6
+      '@fontsource-variable/raleway':
+        specifier: ^5.2.6
+        version: 5.2.6
       '@fuxui/base':
         specifier: ^0.2.3
         version: 0.2.3(svelte@5.33.19)(tailwindcss@4.1.9)
@@ -509,6 +515,12 @@ packages:
 
   '@floating-ui/utils@0.2.9':
     resolution: {integrity: sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==}
+
+  '@fontsource-variable/geist@5.2.6':
+    resolution: {integrity: sha512-Bt9pdD55Fojq4h9yFKQAzh5+Xj4tKFpwbcDzK6t5PPSH2GrjPoPqm6N8y+tK6vzwKZ9hHyaOz/tAbO9cQd9UFQ==}
+
+  '@fontsource-variable/raleway@5.2.6':
+    resolution: {integrity: sha512-C3HhxprSw+hMNtYJcZBadKvskuVIq35qS8QwVUhFvZciILd6YuOW41pRY2e8jDpcb5TZVQFrwcRi81cgPLfg1g==}
 
   '@fuxui/base@0.2.3':
     resolution: {integrity: sha512-zp73ww4TGQmXiRfP+Kgx5DPhEKW2h338XsuRUBnGPecX6X8/ax71u6m1zNHHzgWpX3QH3hbzs+AjDWmIG1B+FQ==}
@@ -3144,6 +3156,10 @@ snapshots:
       '@floating-ui/utils': 0.2.9
 
   '@floating-ui/utils@0.2.9': {}
+
+  '@fontsource-variable/geist@5.2.6': {}
+
+  '@fontsource-variable/raleway@5.2.6': {}
 
   '@fuxui/base@0.2.3(svelte@5.33.19)(tailwindcss@4.1.9)':
     dependencies:
