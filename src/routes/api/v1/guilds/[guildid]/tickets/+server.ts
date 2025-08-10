@@ -5,6 +5,7 @@ import { safeParseInt } from "$lib/utils.js";
 import type { FilterQuery } from "mongoose";
 import type { ITicket } from "supportmail-types";
 import { TicketStatus } from "supportmail-types";
+import type { TicketSearchScope } from "../../../../../g/[guildid]/tickets/FilterControls.svelte";
 
 export type PaginatedResponse<T> = {
   data: T[];
@@ -48,6 +49,7 @@ export async function GET({ locals, url }) {
       search: url.searchParams.has("search")
         ? decodeURIComponent(url.searchParams.get("search")!)
         : undefined,
+      searchScope: ((url.searchParams.get("sscope") as string) || "all") as TicketSearchScope,
     };
 
     if (Params.status === -1) {
@@ -69,12 +71,28 @@ export async function GET({ locals, url }) {
       filter.status = Params.status;
     }
 
+    const filterFields = {
+      id: { $regex: Params.search, $options: "i" },
+      postId: { $regex: Params.search, $options: "i" },
+      userId: { $regex: Params.search, $options: "i" },
+    };
+
     if (Params.search) {
-      filter.$or = [
-        { id: { $regex: Params.search, $options: "i" } },
-        { postId: { $regex: Params.search, $options: "i" } },
-        { userId: { $regex: Params.search, $options: "i" } },
-      ];
+      switch (Params.searchScope) {
+        case "postid":
+          filter.postId = filterFields.postId;
+          break;
+        case "userid":
+          filter.userId = filterFields.userId;
+          break;
+        case "ticketid":
+          filter.id = filterFields.id;
+          break;
+        default:
+          filter.$or = Object.entries(filterFields).map(([key, value]) => ({
+            [key]: value,
+          }));
+      }
     }
 
     // Query tickets for the guild with pagination
