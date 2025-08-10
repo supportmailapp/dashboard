@@ -10,7 +10,7 @@
   import Separator from "$ui/separator/separator.svelte";
   import Star from "@lucide/svelte/icons/star";
   import { cn, makeFallbackInitials } from "$lib/utils.js";
-  import { dateToLocalString, userDisplayName } from "$lib/utils/formatting.js";
+  import { userDisplayName } from "$lib/utils/formatting.js";
   import { cdnUrls } from "$lib/urls";
   import { mentionUsers } from "$lib/stores/users.svelte";
   import Skeleton from "$ui/skeleton/skeleton.svelte";
@@ -62,7 +62,7 @@
             <Table.Cell>
               <Badge
                 variant="outline"
-                class="cursor-pointer text-sm select-none"
+                class="cursor-pointer text-sm select-none font-mono"
                 onclick={() => {
                   navigator.clipboard.writeText(ticket.id).then(() => {
                     toast.success("Ticket ID copied to clipboard");
@@ -202,4 +202,6 @@
       </Card.Content>
     </Card.Root>
   {/if}
+{:else}
+  <Skeleton class="h-6 w-3xl" />
 {/if}
