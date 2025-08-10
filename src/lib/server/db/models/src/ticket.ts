@@ -1,7 +1,7 @@
 import pkg, { model, Schema } from "mongoose";
+const { models } = pkg;
 import dayjs from "dayjs";
 import { type IFeedback, type IFeedbackAnswer, type ITicket, TicketStatus } from "supportmail-types";
-const { models } = pkg;
 
 const feedbackAnswerSchema = new Schema<IFeedbackAnswer>(
   {
