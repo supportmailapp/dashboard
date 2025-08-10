@@ -66,7 +66,7 @@
   <AppSidebar />
   <Sidebar.Inset class="main-container">
     <header
-      class="bg-sidebar text-sidebar-foreground sticky top-0 z-10 flex h-(--main-header-height) items-center justify-between p-3"
+      class="bg-sidebar text-sidebar-foreground sticky top-0 z-10 flex h-(--main-header-height) items-center justify-between p-3 shadow-gray-900/60 shadow-xl"
     >
       <Sidebar.Trigger />
 
@@ -80,7 +80,7 @@
                 variant: "outline",
                 size: "lg",
               }),
-              "max-w-xs",
+              "w-[240px]",
               !currentGuild && "cursor-not-allowed opacity-50",
             )}
           >
@@ -92,11 +92,9 @@
                   alt={currentGuild?.name}
                 />
               </Avatar.Root>
-              {#if !isMobile.current}
-                <span class="flex-1 truncate text-start" transition:slide={{ duration: 200, axis: "x" }}>
-                  {currentGuild?.name}
-                </span>
-              {/if}
+              <span class="flex-1 truncate text-start" transition:slide={{ duration: 200, axis: "x" }}>
+                {currentGuild?.name}
+              </span>
               <ChevronDownUp class="ml-2 opacity-50" />
             {:else}
               <Skeleton class="size-8 rounded-full" />
