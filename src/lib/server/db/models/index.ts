@@ -8,3 +8,4 @@ export * from "./src/ticketCategory.js";
 export * from "./src/customMessage.js";
 export * from "./src/utilSchemas.js";
 export * from "./src/ticket.js";
+export * from "./src/report.js";
