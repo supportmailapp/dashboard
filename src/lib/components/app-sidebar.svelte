@@ -81,15 +81,15 @@
       name: "Moderation",
       items: [
         {
-          id: "report-settings",
-          name: "Report Settings",
-          href: page.data.guildHref("/report-settings"),
-          icon: ShieldUser,
-        },
-        {
           id: "view-reports",
           name: "View Reports",
           href: page.data.guildHref("/reports"),
+          icon: ShieldUser,
+        },
+        {
+          id: "report-settings",
+          name: "Report Settings",
+          href: page.data.guildHref("/report-settings"),
           icon: ShieldUser,
         },
         {
