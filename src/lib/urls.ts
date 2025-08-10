@@ -82,7 +82,6 @@ const APIRoutes = {
    */
   guildConfig: (guildId: string) => `${API_BASE}/guilds/${guildId}/config` as const,
   tickets: (guildId: string) => `${API_BASE}/guilds/${guildId}/tickets` as const,
-  ticket: (guildId: string, ticketId: string) => `${API_BASE}/guilds/${guildId}/tickets/${ticketId}` as const,
   /**
    * Returns the URL for a specific guild's tickets configuration.
    */
@@ -99,6 +98,7 @@ const APIRoutes = {
     `${API_BASE}/guilds/${guildId}/config/tickets/categories/${categoryId}` as const,
   ticketFeedback: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/tickets/feedback` as const,
 
+  reports: (guildId: string) => `${API_BASE}/guilds/${guildId}/reports` as const,
   reportsConfig: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/reports` as const,
 };
 
