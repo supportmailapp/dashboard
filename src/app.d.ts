@@ -171,6 +171,17 @@ declare global {
     _id: string;
   };
 
+  type StringifiedTicketStatus = "open" | "closed" | "closeRequested";
+
+  type StringifiedReportStatus =
+    | "open"
+    | "ignored"
+    | "timeouted"
+    | "kicked"
+    | "banned"
+    | "messageDeleted"
+    | "resolved";
+
   namespace ClientAPI {
     interface TicketSetupUpdate {
       step: "checkingPermissions" | "creatingChannels" | "updatingDatabase" | "success";
