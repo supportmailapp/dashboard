@@ -17,7 +17,7 @@ export async function GET({ locals, url }) {
     const Params = {
       page: safeParseInt(url.searchParams.get("page"), 1, 1),
       pageSize: safeParseInt(url.searchParams.get("pageSize"), 20, 10, 100),
-      search: url.searchParams.has("search")
+      searchUserId: url.searchParams.has("search")
         ? decodeURIComponent(url.searchParams.get("search")!)
         : undefined,
       searchScope: safeParseInt(
@@ -34,8 +34,8 @@ export async function GET({ locals, url }) {
     // Build filter query
     const filter: FilterQuery<IBlacklistEntry> = { guildId: guildId };
 
-    if (Params.search) {
-      filter.$or = [{ id: { $regex: Params.search, $options: "i" } }];
+    if (Params.searchUserId) {
+      filter.id = { $regex: Params.searchUserId, $options: "i" };
     }
 
     // Query blacklist entries for the guild with pagination
