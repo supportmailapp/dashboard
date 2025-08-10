@@ -6,6 +6,7 @@
 @custom-variant dark (&: is(.dark *));
 
 @theme inline {
+  --breakpoint-2xs: 20rem;
   --breakpoint-xs: 30rem;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -128,8 +129,8 @@
   --sidebar-accent-foreground: oklch(0.948 0.016 281.93382090544935);
   --sidebar-border: oklch(0.371 0.043 250.68547527659666);
   --sidebar-ring: oklch(0.637 0.179 253.88111374431216);
-  --success: oklch(79.2% 0.209 151.711);
-  --success-foreground: oklch(31.797% 0.09055 141.672);
+  --success: oklch(87.395% 0.17945 157.117);
+  --success-foreground: oklch(24.083% 0.06894 141.539);
   --warning: oklch(92.592% 0.14766 99.138);
   --warning-foreground: oklch(22.411% 0.04173 109.358);
 }
