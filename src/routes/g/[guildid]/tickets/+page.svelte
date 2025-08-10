@@ -14,7 +14,7 @@
   import { TicketStatus } from "supportmail-types";
   import { toast } from "svelte-sonner";
   import type { PaginatedTicketsResponse } from "../../../api/v1/guilds/[guildid]/tickets/+server";
-  import FilterControls from "./FilterControls.svelte";
+  import FilterControls, { type TicketSearchScope } from "./FilterControls.svelte";
   import TicketsTable from "./TicketsTable.svelte";
   import { onMount } from "svelte";
 
@@ -28,6 +28,7 @@
       : null) as TicketStatus | null,
     anonym: (page.url.searchParams.get("anonym") || "") === "true",
     search: page.url.searchParams.get("search") || "",
+    searchScope: (page.url.searchParams.get("sscope") || "all") as TicketSearchScope,
   });
   /**
    * Used to determine whether it is allowed to fetch tickets again.
@@ -106,6 +107,7 @@
     const params = new URLSearchParams();
     params.set("page", pageData.page.toString());
     params.set("count", pageData.perPage.toString());
+    params.set("sscope", pageData.searchScope);
     if (pageData.status !== null) {
       params.set("status", raw ? pageData.status.toString() : stringifyStatus(pageData.status)); // For the api, this is the internal enum value
     }
@@ -141,6 +143,7 @@
     bind:anonym={pageData.anonym}
     bind:search={pageData.search}
     bind:perPage={pageData.perPage}
+    bind:searchScope={pageData.searchScope}
   />
   <div class="grid grid-cols-2 gap-2">
     <Button variant="default" onclick={fetchTickets}>
