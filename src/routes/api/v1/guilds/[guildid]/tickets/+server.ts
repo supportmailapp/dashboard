@@ -7,28 +7,13 @@ import type { ITicket } from "supportmail-types";
 import { TicketStatus } from "supportmail-types";
 import type { TicketSearchScope } from "../../../../../g/[guildid]/tickets/FilterControls.svelte";
 
-export type PaginatedResponse<T> = {
-  data: T[];
-  pagination: {
-    page: number;
-    pageSize: number;
-    totalItems: number;
-    totalPages: number;
-  };
-  error?: string;
-};
-
 export type PaginatedResponseWithError<T> = PaginatedResponse<T> & {
   error: string;
 };
 
-export type PaginatedTicketsResponse = PaginatedResponse<
-  FlattenDocResult<ITicket & { userId?: string }, true>
->;
+export type PaginatedTicketsResponse = PaginatedResponse<DocumentWithId<ITicket & { userId?: string }>>;
 
-function sanitizeTicketData(
-  ticket: FlattenDocResult<ITicket, true>,
-): FlattenDocResult<ITicket & { userId?: string }, true> {
+function sanitizeTicketData(ticket: DocumentWithId<ITicket>): DocumentWithId<ITicket & { userId?: string }> {
   return Object.assign(ticket, {
     userId: ticket.alias ? undefined : ticket.userId,
     feedback: undefined, // Feedback is not provided in the list response

@@ -182,6 +182,17 @@ declare global {
     | "messageDeleted"
     | "resolved";
 
+  type PaginatedResponse<T> = {
+    data: T[];
+    pagination: {
+      page: number;
+      pageSize: number;
+      totalItems: number;
+      totalPages: number;
+    };
+    error?: string;
+  };
+
   namespace ClientAPI {
     interface TicketSetupUpdate {
       step: "checkingPermissions" | "creatingChannels" | "updatingDatabase" | "success";

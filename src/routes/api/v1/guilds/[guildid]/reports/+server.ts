@@ -1,31 +1,13 @@
 import { JsonErrors } from "$lib/constants";
-import { FlattenDocToJSON, type FlattenDocResult } from "$lib/server/db";
+import { FlattenDocToJSON } from "$lib/server/db";
 import { Report } from "$lib/server/db/models";
 import { safeParseInt } from "$lib/utils.js";
 import type { FilterQuery } from "mongoose";
 import { type IReport, ReportStatus } from "supportmail-types";
 import type { ReportSearchScope } from "../../../../../g/[guildid]/reports/FilterControls.svelte";
 
-export type PaginatedResponse<T> = {
-  data: T[];
-  pagination: {
-    page: number;
-    pageSize: number;
-    totalItems: number;
-    totalPages: number;
-  };
-  error?: string;
-};
-
-export type PaginatedResponseWithError<T> = PaginatedResponse<T> & {
-  error: string;
-};
-
 export type PaginatedReportsResponse = PaginatedResponse<
-  FlattenDocResult<
-    Pick<IReport, "authorId" | "userId" | "guildId" | "createdAt" | "status" | "message">,
-    true
-  >
+  DocumentWithId<Pick<IReport, "authorId" | "userId" | "guildId" | "createdAt" | "status" | "message">>
 >;
 
 export async function GET({ locals, url }) {
