@@ -62,7 +62,7 @@
     <Tooltip.Trigger class="bg-card-foreground/20 rounded-[calc(var(--radius)-2px)] px-1 py-0.5">
       {formattedDate}
     </Tooltip.Trigger>
-    <Tooltip.Content class="select-none">
+    <Tooltip.Content class="bg-accent select-none" arrowClasses="bg-accent">
       <p>
         {parsedDate.toDate().toLocaleDateString([], {
           weekday: "long",
