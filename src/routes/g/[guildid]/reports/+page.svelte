@@ -13,7 +13,7 @@
   import equal from "fast-deep-equal/es6";
   import { ReportStatus } from "supportmail-types";
   import { toast } from "svelte-sonner";
-  import FilterControls, { type ReportSearchScope } from "./FilterControls.svelte";
+  import FilterControls, { type ReportSearchScope, type ReportSearchType } from "./FilterControls.svelte";
   import ReportsTable from "./ReportsTable.svelte";
   import { onMount } from "svelte";
   import type { PaginatedReportsResponse } from "../../../api/v1/guilds/[guildid]/reports/+server";
@@ -28,6 +28,7 @@
       : null) as ReportStatus | null,
     search: page.url.searchParams.get("search") || "",
     searchScope: (page.url.searchParams.get("sscope") || "all") as ReportSearchScope,
+    reportType: (page.url.searchParams.get("type") || "all") as ReportSearchType,
   });
   /**
    * Used to determine whether it is allowed to fetch reports again.
@@ -120,12 +121,17 @@
     const params = new URLSearchParams();
     params.set("page", pageData.page.toString());
     params.set("count", pageData.perPage.toString());
-    params.set("sscope", pageData.searchScope);
     if (pageData.status !== null) {
       params.set("status", raw ? pageData.status.toString() : stringifyStatus(pageData.status)); // For the api, this is the internal enum value
     }
     if (pageData.search) {
       params.set("search", encodeURIComponent(pageData.search));
+    }
+    if (pageData.reportType !== "all") {
+      params.set("type", pageData.reportType);
+    }
+    if (pageData.searchScope !== "all") {
+      params.set("sscope", pageData.searchScope);
     }
     return params;
   }
@@ -153,6 +159,7 @@
     bind:search={pageData.search}
     bind:perPage={pageData.perPage}
     bind:searchScope={pageData.searchScope}
+    bind:reportType={pageData.reportType}
   />
   <div class="grid grid-cols-2 gap-2">
     <Button variant="default" onclick={fetchReports}>
