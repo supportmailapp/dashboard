@@ -34,7 +34,7 @@ export class ZodValidator<V extends z.ZodType> {
 
     for (let err of details) {
       const pathLabel = err.path.length > 0 ? err.path.join(".") : "root";
-      errors.push(`${pathLabel} : ${err.message}`);
+      errors.push(`${pathLabel}: ${err.message}`);
     }
 
     return errors.join("\n");
