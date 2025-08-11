@@ -24,6 +24,7 @@
      * @default false
      */
     selectCategories?: boolean;
+    allowCustomChannels?: boolean;
     onSelect?: (channel: GuildCoreChannel) => void;
   };
 
@@ -32,6 +33,7 @@
     channelTypes = [],
     excludedChannelIds,
     selectCategories = false,
+    allowCustomChannels = false,
     onSelect,
   }: Props = $props();
   let allowAllChannels = $derived(channelTypes.length === 0);
@@ -61,7 +63,6 @@
   $inspect("ChannelSelect[grouped]", groupedChannels);
 </script>
 
-<!-- TODO: Find a way to display the current selected channel differently -->
 {#snippet channelItem(channel: GuildCoreChannel)}
   <Command.Item
     value="{channel.id}:{channel.name}"
