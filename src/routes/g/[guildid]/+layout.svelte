@@ -14,7 +14,6 @@
   import { IsMobile } from "$lib/hooks/is-mobile.svelte";
   import Mounter from "./Mounter.svelte";
   import ServerSelector from "./ServerSelector.svelte";
-  import { site } from "$lib/stores/site.svelte";
 
   let { children } = $props();
 
@@ -44,11 +43,11 @@
     }
 
     switchingPage = true;
+    guildsSelectOpen = false;
   });
 
   afterNavigate(() => {
     switchingPage = false;
-    guildsSelectOpen = false;
   });
 
   $effect(() => {
@@ -114,7 +113,7 @@
   </Sidebar.Inset>
 </Sidebar.Provider>
 
-<ServerSelector bind:open={guildsSelectOpen} {switchingPage} />
+<ServerSelector bind:open={guildsSelectOpen} bind:switchingPage />
 
 <style>
   :root {
