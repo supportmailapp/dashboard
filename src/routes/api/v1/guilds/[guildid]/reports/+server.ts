@@ -4,7 +4,10 @@ import { Report } from "$lib/server/db/models";
 import { safeParseInt } from "$lib/utils.js";
 import type { FilterQuery } from "mongoose";
 import { type IReport, ReportStatus } from "supportmail-types";
-import type { ReportSearchScope } from "../../../../../g/[guildid]/reports/FilterControls.svelte";
+import type {
+  ReportSearchScope,
+  ReportSearchType,
+} from "../../../../../g/[guildid]/reports/FilterControls.svelte";
 
 export type PaginatedReportsResponse = PaginatedResponse<
   DocumentWithId<Pick<IReport, "authorId" | "userId" | "guildId" | "createdAt" | "status" | "message">>
@@ -24,6 +27,7 @@ export async function GET({ locals, url }) {
         ? decodeURIComponent(url.searchParams.get("search")!)
         : undefined,
       searchScope: ((url.searchParams.get("sscope") as string) || "all") as ReportSearchScope,
+      reportType: ((url.searchParams.get("type") as string) || "all") as ReportSearchType,
     };
 
     if (Params.status === -1) {
@@ -38,6 +42,11 @@ export async function GET({ locals, url }) {
     if (Params.status !== undefined) {
       filter.status = Params.status;
     }
+    if (Params.reportType === "message") {
+      filter.message = { $exists: true, $ne: null };
+    }
+    // Since we can only apply one $or condition, we have to filter out "non-message" reports later after fetching them
+    // The $or condition is needed mainly for the search scope so it has a higher prio
 
     const filterFields: Record<Exclude<ReportSearchScope, "all">, (keyof IReport)[]> = {
       author: ["authorId"],
@@ -97,6 +106,7 @@ export async function GET({ locals, url }) {
     const response: PaginatedReportsResponse = {
       data: reports
         .map((d) => FlattenDocToJSON(d, true))
+        .filter((d) => Params.reportType !== "user" || !(Params.reportType === "user" && !d.message))
         .map((d) => ({
           _id: d._id,
           authorId: d.authorId,
