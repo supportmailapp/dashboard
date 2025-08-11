@@ -5,9 +5,15 @@
 
   import ChannelIcon from "./discord/ChannelIcon.svelte";
   import * as Command from "$lib/components/ui/command/index.js";
+  import * as Tabs from "$lib/components/ui/tabs/index.js";
   import { sortChannels } from "$lib/utils/formatting";
   import { Skeleton } from "$ui/skeleton";
   import { cn } from "$lib/utils";
+  import { Input } from "$ui/input";
+  import { Button } from "$ui/button";
+  import { toast } from "svelte-sonner";
+  import apiClient from "$lib/utils/apiClient";
+  import { APIRoutes } from "$lib/urls";
 
   type Props = {
     selected?: GuildCoreChannel;
@@ -37,6 +43,8 @@
     onSelect,
   }: Props = $props();
   let allowAllChannels = $derived(channelTypes.length === 0);
+  let channelIdInput = $state("");
+  let channelButtonStyle = $state<"success" | "default">("default");
 
   function isChannelExcluded(channel: GuildCoreChannel): boolean {
     return excludedChannelIds !== undefined && excludedChannelIds.includes(channel.id);
@@ -59,8 +67,26 @@
     return () => onSelect?.(filteredChannels.find((c) => c.id === channelId)!);
   }
 
-  $inspect("ChannelSelect[filtered]", filteredChannels);
-  $inspect("ChannelSelect[grouped]", groupedChannels);
+  async function findChannelById() {
+    if (channelIdInput === "") {
+      toast.warning("Channel ID input empty.", { description: "What are you trying to do?" });
+      return;
+    }
+
+    try {
+      const res = await apiClient.get(APIRoutes.guildChannel(page.data.guildId!, channelIdInput));
+
+      if (!res.ok) {
+        throw new Error(`Failed to find channel with ID ${channelIdInput}`);
+      }
+
+      const data = await res.json<GuildCoreChannel>();
+      console.log("Fetched Channel:", data);
+      selected = data;
+    } catch (err: any) {
+      toast.error("Failed to find channel", { description: String(err.message ?? err) });
+    }
+  }
 </script>
 
 {#snippet channelItem(channel: GuildCoreChannel)}
@@ -78,39 +104,63 @@
   </Command.Item>
 {/snippet}
 
-<Command.Root class="w-full rounded-lg border shadow-md">
-  <Command.Input placeholder="Search channels..." />
-  <Command.List>
-    <Command.Empty>No channels found.</Command.Empty>
-    {#if !page.data.guildsManager.channelsLoaded}
-      {#each new Array(3) as _}
-        <Command.Item disabled>
-          <Hash />
-          <Skeleton class="h-4 w-full" />
-        </Command.Item>
-      {/each}
-    {:else if page.data.guildsManager.channelsLoaded && selectCategories && channelTypes.includes(ChannelType.GuildCategory)}
-      <!-- The logic for selecting everything BUT categories -->
-      {@const joinedChannels = filteredChannels}
-      {#each joinedChannels as channel}
-        {@render channelItem(channel)}
-      {/each}
-    {:else if page.data.guildsManager.channelsLoaded && selectCategories && channelTypes.includes(ChannelType.GuildCategory)}
-      <!-- The logic for selecting ONLY categories -->
-      {#each groupedChannels.categories as { cat, channels }}
-        {@render channelItem(cat)}
-      {/each}
-    {:else}
-      {#each groupedChannels.uncategorized as channel}
-        {@render channelItem(channel)}
-      {/each}
-      {#each groupedChannels.categories as { cat, channels }}
-        <Command.Group heading={cat.name}>
-          {#each channels as channel}
-            {@render channelItem(channel)}
-          {/each}
-        </Command.Group>
-      {/each}
-    {/if}
-  </Command.List>
-</Command.Root>
+{#snippet channelsCommand()}
+  <Command.Root class="w-full rounded-lg border shadow-md">
+    <Command.Input placeholder="Search channels..." />
+    <Command.List>
+      <Command.Empty>No channels found.</Command.Empty>
+      {#if !page.data.guildsManager.channelsLoaded}
+        {#each new Array(3) as _}
+          <Command.Item disabled>
+            <Hash />
+            <Skeleton class="h-4 w-full" />
+          </Command.Item>
+        {/each}
+      {:else if page.data.guildsManager.channelsLoaded && selectCategories && channelTypes.includes(ChannelType.GuildCategory)}
+        <!-- The logic for selecting everything BUT categories -->
+        {@const joinedChannels = filteredChannels}
+        {#each joinedChannels as channel}
+          {@render channelItem(channel)}
+        {/each}
+      {:else if page.data.guildsManager.channelsLoaded && selectCategories && channelTypes.includes(ChannelType.GuildCategory)}
+        <!-- The logic for selecting ONLY categories -->
+        {#each groupedChannels.categories as { cat, channels }}
+          {@render channelItem(cat)}
+        {/each}
+      {:else}
+        {#each groupedChannels.uncategorized as channel}
+          {@render channelItem(channel)}
+        {/each}
+        {#each groupedChannels.categories as { cat, channels }}
+          <Command.Group heading={cat.name}>
+            {#each channels as channel}
+              {@render channelItem(channel)}
+            {/each}
+          </Command.Group>
+        {/each}
+      {/if}
+    </Command.List>
+  </Command.Root>
+{/snippet}
+
+{#if allowCustomChannels}
+  <Tabs.Root value="selectChannel" class="w-full max-w-[400px]">
+    <Tabs.List>
+      <Tabs.Trigger value="selectChannel">Select Channel</Tabs.Trigger>
+      <Tabs.Trigger value="customChannel">Custom Channel</Tabs.Trigger>
+    </Tabs.List>
+    <Tabs.Content value="selectChannel">
+      {@render channelsCommand()}
+    </Tabs.Content>
+    <Tabs.Content value="customChannel" class="flex flex-col gap-2">
+      <Input
+        bind:value={channelIdInput}
+        placeholder="Channel/Thread ID"
+        class="[&::placeholder]:text-muted-foreground [&::placeholder]:text-sm"
+      />
+      <Button variant={channelButtonStyle} onclick={findChannelById}>Find Channel</Button>
+    </Tabs.Content>
+  </Tabs.Root>
+{:else}
+  {@render channelsCommand()}
+{/if}
