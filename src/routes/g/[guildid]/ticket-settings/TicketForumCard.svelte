@@ -1,25 +1,30 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import ConfigCard from "$lib/components/ConfigCard.svelte";
   import ChannelSelect from "$lib/components/ChannelSelect.svelte";
-  import * as Alert from "$lib/components/ui/alert/index.js";
-  import { Skeleton } from "$ui/skeleton";
-  import { ChannelType } from "discord-api-types/v10";
-  import * as Popover from "$lib/components/ui/popover/index.js";
-  import * as Dialog from "$lib/components/ui/dialog/index.js";
-  import { Button, buttonVariants } from "$ui/button/index.js";
-  import { ConfigState } from "$lib/stores/ConfigState.svelte";
+  import ConfigCard from "$lib/components/ConfigCard.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
+  import * as Dialog from "$lib/components/ui/dialog/index.js";
+  import * as Popover from "$lib/components/ui/popover/index.js";
+  import type { DBGuildProjectionReturns } from "$lib/server/db";
+  import { ConfigState } from "$lib/stores/ConfigState.svelte";
   import { APIRoutes } from "$lib/urls";
   import apiClient from "$lib/utils/apiClient";
+  import { Button, buttonVariants } from "$ui/button/index.js";
+  import * as Card from "$ui/card";
+  import { Label } from "$ui/label";
+  import { Separator } from "$ui/separator";
+  import { Skeleton } from "$ui/skeleton";
+  import { Switch } from "$ui/switch";
+  import { ChannelType } from "discord-api-types/v10";
   import { toast } from "svelte-sonner";
-  import type { DBGuildProjectionReturns } from "$lib/server/db";
 
   type Props = {
     forumId: string | null;
     wholeConfig: ConfigState<DBGuildProjectionReturns["generalTicketSettings"]>;
+    enabled?: boolean;
+    saveAllFn: SaveFunction;
   };
-  let { forumId: fetchedForumId, wholeConfig }: Props = $props();
+  let { forumId: fetchedForumId, wholeConfig, enabled = $bindable(), saveAllFn }: Props = $props();
 
   const forum = new ConfigState<GuildCoreChannel>(null);
   let channelsLoaded = $derived(page.data.guildsManager.channelsLoaded);
@@ -29,13 +34,16 @@
     newCategoryId ? (channels.find((c) => c.id === newCategoryId) ?? undefined) : undefined,
   );
   let categorySelectOpen = $state(false);
-  let setupBtnLoading = $state(false);
+  let loading = $state({
+    setup: false,
+    saving: false,
+  });
 
   $inspect("fetchedForumId", fetchedForumId);
 
   async function setupFn() {
     try {
-      setupBtnLoading = true;
+      loading.setup = true;
       const res = await apiClient.post(APIRoutes.ticketSetup(page.data.guildId!), {
         json: {
           categoryId: newCategoryId,
@@ -61,7 +69,7 @@
         description: String(err.message ?? err),
       });
     } finally {
-      setupBtnLoading = false;
+      loading.setup = false;
     }
   }
 
@@ -74,18 +82,37 @@
   });
 </script>
 
-<!--
-  TODO: Make this a "General Settings" card where tickets can also be manually enabled/disabled
-  see ~/report-settings page) 
--->
+<!-- TODO: Maybe outsource the status into an extra card? But it's just ONE switch... -->
 
 <ConfigCard
-  title="Ticket Forum"
-  description="Configure the forum where tickets will be created."
+  title="General Settings"
+  description="Configure the ticket system and forum where tickets will be created."
   saveBtnDisabled={!forum.config}
   rootClass="col-span-full lg:col-span-3"
 >
+  <Card.Root class="border-background gap-2 border-4">
+    <Card.Header>
+      <Card.Title>Ticket Status</Card.Title>
+    </Card.Header>
+    <Card.Content class="flex flex-col items-start gap-2">
+      <Label class="inline-flex w-full items-center gap-2">
+        <Switch variant="success" bind:checked={enabled} disabled={!fetchedForumId || loading.saving} />
+        {enabled ? "Enabled" : "Disabled"}
+      </Label>
+    </Card.Content>
+    <Card.Footer class="justify-start">
+      <Button
+        onclick={async () => await saveAllFn((v) => (loading.saving = v))}
+        disabled={loading.saving}
+        showLoading={loading.saving}
+      >
+        Save
+      </Button>
+    </Card.Footer>
+  </Card.Root>
+  <Separator class="my-3" />
   <div class="flex flex-col gap-2">
+    <Label>Ticket Forum</Label>
     {#if channelsLoaded}
       <div class="flex w-full items-center justify-between">
         <Mention channel={forum.config ?? undefined} fallback buttons="copy" />
@@ -139,8 +166,13 @@
             </Popover.Root>
 
             <Dialog.Footer>
-              <Button showLoading={setupBtnLoading} disabled={setupBtnLoading} onclick={setupFn}>Setup</Button
+              <Button
+                showLoading={loading.setup || loading.saving}
+                disabled={loading.setup || loading.saving}
+                onclick={setupFn}
               >
+                Setup
+              </Button>
             </Dialog.Footer>
           </Dialog.Content>
         </Dialog.Root>
