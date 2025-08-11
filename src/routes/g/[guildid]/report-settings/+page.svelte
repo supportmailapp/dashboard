@@ -39,6 +39,7 @@
       const res = await apiClient.put(APIRoutes.reportsConfig(page.data.guildId!), {
         json: {
           ...rest,
+          enabled: !rest.channelId ? false : rest.enabled, // Make sure reports are disabled, when no channel is set (I dunno if state handles this correctly; just to be safe)
         } as PutFields,
       });
 
@@ -103,6 +104,9 @@
         (c) => {
           reportChannel = c;
           reportsConfig.config.channelId = c?.id ?? null;
+          if (!c) {
+            reportsConfig.config.enabled = false; // Disable reports if no channel is selected
+          }
         }
       }
       bind:loading={reportsConfig.loading}
