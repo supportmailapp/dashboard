@@ -24,7 +24,7 @@
 
 <ConfigCard
   title="General Settings"
-  description="The channel where new reports will be sent to."
+  description="Change the status of the report system and the alert channel, where new reports get sent to."
   rootClass="col-span-full lg:col-span-2"
   saveFn={async () => {
     await saveFn((v) => (loading = v));
@@ -33,8 +33,8 @@
   saveBtnDisabled={loading}
 >
   <div class="flex flex-col items-start gap-2">
-    <Label>Report Status</Label>
-    <Label class="inline-flex items-center gap-2">
+    <Label class="w-fit">Report Status</Label>
+    <Label class="inline-flex w-full items-center gap-2">
       <Switch variant="success" bind:checked={enabled} />
       {enabled ? "Enabled" : "Disabled"}
     </Label>
