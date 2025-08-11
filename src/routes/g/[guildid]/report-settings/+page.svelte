@@ -97,6 +97,7 @@
   {#if reportsConfig.isConfigured()}
     <PausingCard bind:pausedUntil={reportsConfig.config.pausedUntil} />
     <ChannelSelectCard
+      bind:enabled={reportsConfig.config.enabled}
       bind:channel={
         () => reportChannel ?? undefined,
         (c) => {
