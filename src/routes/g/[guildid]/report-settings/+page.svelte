@@ -12,8 +12,11 @@
   import type { PutFields } from "../../../api/v1/guilds/[guildid]/config/reports/+server";
   import MentionableSelectCard from "./MentionableSelectCard.svelte";
   import SettingsGrid from "$lib/components/SettingsGrid.svelte";
+  import ChannelSelectCard from "./ChannelSelectCard.svelte";
 
   const reportsConfig = new ConfigState<DBGuildProjectionReturns["reportSettings"]>();
+
+  let reportChannel = $state<GuildCoreChannel | undefined>();
 
   const saveAll: SaveFunction = async function (setLoading, callback) {
     if (!reportsConfig.evalUnsaved()) {
@@ -57,6 +60,10 @@
     }
   };
 
+  function setChannel(channelId: string) {
+    reportChannel = page.data.guildsManager.channels?.find((c) => c.id === channelId);
+  }
+
   onMount(() => {
     fetch(APIRoutes.reportsConfig(page.data.guildId!))
       .then((res) => {
@@ -88,7 +95,7 @@
 <SettingsGrid class="mt-6">
   {#if reportsConfig.isConfigured()}
     <PausingCard bind:pausedUntil={reportsConfig.config.pausedUntil} />
-    <!-- TODO: ChannelSelect Card with Actions Status (General Settings) -->
+    <ChannelSelectCard bind:channel={reportChannel} bind:loading={reportsConfig.loading} saveFn={saveAll} />
     <MentionableSelectCard
       title="Notification Settings"
       description="Select users and roles to notify when reports are created."
