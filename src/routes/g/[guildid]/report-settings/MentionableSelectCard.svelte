@@ -32,8 +32,6 @@
     title,
     labelText,
     description = "Select users and roles",
-    notFoundText = "Nothing configured yet.",
-    addButtonText = "Add Entity",
     saveFn,
   }: Props = $props();
 

@@ -60,8 +60,8 @@
     }
   };
 
-  function setChannel(channelId: string) {
-    reportChannel = page.data.guildsManager.channels?.find((c) => c.id === channelId);
+  function setChannel(channelId?: string) {
+    reportChannel = channelId ? page.data.guildsManager.channels?.find((c) => c.id === channelId) : undefined;
   }
 
   onMount(() => {
@@ -75,6 +75,7 @@
         }
         res.json().then((data: DBGuildProjectionReturns["reportSettings"]) => {
           reportsConfig.saveConfig(data);
+          setChannel(reportsConfig.config?.channelId ?? undefined);
         });
       })
       .catch((err) => {
@@ -95,7 +96,17 @@
 <SettingsGrid class="mt-6">
   {#if reportsConfig.isConfigured()}
     <PausingCard bind:pausedUntil={reportsConfig.config.pausedUntil} />
-    <ChannelSelectCard bind:channel={reportChannel} bind:loading={reportsConfig.loading} saveFn={saveAll} />
+    <ChannelSelectCard
+      bind:channel={
+        () => reportChannel ?? undefined,
+        (c) => {
+          reportChannel = c;
+          reportsConfig.config.channelId = c?.id ?? null;
+        }
+      }
+      bind:loading={reportsConfig.loading}
+      saveFn={saveAll}
+    />
     <MentionableSelectCard
       title="Notification Settings"
       description="Select users and roles to notify when reports are created."

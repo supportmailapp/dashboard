@@ -31,7 +31,13 @@
     {#if !channel && loading}
       <LoadingSpinner />
     {:else if !loading && channel}
-      <Mention {channel} onDelete={() => Boolean((channel = undefined))} />
+      <Mention
+        {channel}
+        onDelete={() => {
+          channel = undefined;
+          return true;
+        }}
+      />
     {:else}
       <Button variant="outline" size="sm" onclick={() => (modalOpen = true)}>Select Channel</Button>
     {/if}
