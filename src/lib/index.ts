@@ -69,7 +69,7 @@ export function guildHref(guildId: string, nextPath?: string) {
 }
 
 export function getNextPathFromGuildPath(pathname: string) {
-  const match = pathname.match(/^\/g\/\d+(\/\w+)?$/i);
+  const match = pathname.replace(/^\/g\/\d+/, "").match(/^(\/[^/]+)?/);
   if (match) {
     return match[1] || "/";
   }
