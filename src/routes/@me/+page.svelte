@@ -16,10 +16,10 @@
   import { Label } from "$ui/label";
   import ChevronLeft from "@lucide/svelte/icons/chevron-left";
   import { Switch } from "$ui/switch";
-  import { site } from "$lib/stores/site.svelte";
 
   const user = new ConfigState<{ language: string; autoRedirect: boolean }>(null);
   const dcUser = $derived(page.data.user);
+  let goingBack = $state(false);
 
   const triggerContent = $derived(
     LANGUAGES.find((f) => f.value === user?.config?.language)?.name ?? "Select a langauge",
@@ -95,18 +95,18 @@
   <Button
     variant="outline"
     onclick={() => {
-      site.showLoading = true;
+      goingBack = true;
       goto(
         page.url.searchParams.get("back")?.startsWith("/") ? page.url.searchParams.get("back")! : "/",
       ).finally(() => {
-        site.showLoading = false;
+        goingBack = false;
       });
     }}
   >
     <ChevronLeft class="size-4" />
     Back
   </Button>
-  {#if !site.showLoading}
+  {#if !goingBack}
     <div>
       {#if profile.banner}
         <img
