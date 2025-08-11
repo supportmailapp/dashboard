@@ -78,7 +78,11 @@
   <button
     bind:this={ref}
     data-slot="button"
-    class={cn(buttonVariants({ variant, size }), className)}
+    class={cn(
+      buttonVariants({ variant, size }),
+      className,
+      disabled && "pointer-events-none cursor-not-allowed",
+    )}
     {type}
     {disabled}
     {...restProps}

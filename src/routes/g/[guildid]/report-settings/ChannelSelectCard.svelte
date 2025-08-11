@@ -1,19 +1,11 @@
 <script lang="ts">
-  import equal from "fast-deep-equal/es6";
-  import { EntityType, type MentionableEntity } from "supportmail-types";
-  import * as Card from "$ui/card/index.js";
-  import * as Popover from "$ui/popover/index.js";
+  import * as Dialog from "$ui/dialog/index.js";
   import { Label } from "$ui/label";
   import Mention from "$lib/components/discord/Mention.svelte";
-  import { Button, buttonVariants } from "$ui/button";
-  import Plus from "@lucide/svelte/icons/plus";
-  import MentionableSelect from "$lib/components/MentionableSelect.svelte";
-  import { ChannelType, type APIRole, type APIUser } from "discord-api-types/v10";
-  import Save from "@lucide/svelte/icons/save";
-  import { MarkdownFormatter } from "$lib/utils/formatting";
+  import { Button } from "$ui/button";
+  import { ChannelType } from "discord-api-types/v10";
   import ConfigCard from "$lib/components/ConfigCard.svelte";
   import ChannelSelect from "$lib/components/ChannelSelect.svelte";
-  import { page } from "$app/state";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
 
   type Props = {
@@ -41,7 +33,7 @@
       {#if !channel && loading}
         <LoadingSpinner />
       {:else if !loading && channel}
-        <Mention {channel} />
+        <Mention {channel} onDelete={() => Boolean((channel = undefined))} />
       {:else}
         <Button variant="outline" onclick={() => (modalOpen = true)}>Select Channel</Button>
       {/if}
@@ -49,19 +41,28 @@
   </div>
 </ConfigCard>
 
-<Popover.Root bind:open={modalOpen}>
-  <Popover.Content class="w-80">
-    <ChannelSelect
-      bind:selected={channel}
-      channelTypes={[
-        ChannelType.GuildText |
-          ChannelType.GuildVoice |
-          ChannelType.GuildAnnouncement |
-          ChannelType.GuildStageVoice |
+<Dialog.Root bind:open={modalOpen}>
+  <Dialog.Content>
+    <Dialog.Header>
+      <Dialog.Title>Select Alert Channel</Dialog.Title>
+    </Dialog.Header>
+    <div class="h-100 w-full max-w-100">
+      <ChannelSelect
+        selected={channel}
+        channelTypes={[
+          ChannelType.GuildText,
+          ChannelType.GuildVoice,
+          ChannelType.GuildAnnouncement,
+          ChannelType.GuildStageVoice,
           ChannelType.GuildForum,
-      ]}
-      allowCustomChannels
-      excludedChannelIds={!!channel ? [channel.id] : []}
-    />
-  </Popover.Content>
-</Popover.Root>
+        ]}
+        allowCustomChannels
+        excludedChannelIds={!!channel ? [channel.id] : []}
+        onSelect={(c) => {
+          channel = c;
+          modalOpen = false;
+        }}
+      />
+    </div>
+  </Dialog.Content>
+</Dialog.Root>

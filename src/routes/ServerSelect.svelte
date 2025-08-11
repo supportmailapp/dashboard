@@ -27,6 +27,7 @@
         : `/add/${guild.id}`}
       <Command.LinkItem
         href={_guildHref}
+        target="_self"
         value="{guild.id}:{guild.name}"
         class={cn(
           "aria-selected:bg-primary/20 aria-selected:*:text-primary-foreground cursor-pointer pr-3 transition-all active:scale-99 aria-selected:-translate-y-0.5 aria-selected:*:font-medium",

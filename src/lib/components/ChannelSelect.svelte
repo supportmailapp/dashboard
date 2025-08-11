@@ -44,6 +44,9 @@
   }: Props = $props();
   let allowAllChannels = $derived(channelTypes.length === 0);
   let channelIdInput = $state("");
+  let oldFetchInput = "";
+  // This not only covers the case where the input is the same, but also when empty
+  let buttonDisabled = $derived(oldFetchInput == $state.snapshot(channelIdInput));
   let channelButtonStyle = $state<"success" | "default">("default");
 
   function isChannelExcluded(channel: GuildCoreChannel): boolean {
@@ -73,18 +76,27 @@
       return;
     }
 
+    oldFetchInput = $state.snapshot(channelIdInput);
+
     try {
-      const res = await apiClient.get(APIRoutes.guildChannel(page.data.guildId!, channelIdInput));
+      const res = await apiClient.get(APIRoutes.guildChannel(page.data.guildId!, oldFetchInput));
 
       if (!res.ok) {
-        throw new Error(`Failed to find channel with ID ${channelIdInput}`);
+        throw new Error(`Failed to find channel with ID ${oldFetchInput}`);
       }
 
       const data = await res.json<GuildCoreChannel>();
       console.log("Fetched Channel:", data);
       selected = data;
     } catch (err: any) {
+      buttonDisabled = true;
       toast.error("Failed to find channel", { description: String(err.message ?? err) });
+      await new Promise((r) =>
+        setTimeout(() => {
+          buttonDisabled = false;
+          r(true);
+        }, 4000),
+      );
     }
   }
 </script>
@@ -158,7 +170,9 @@
         placeholder="Channel/Thread ID"
         class="[&::placeholder]:text-muted-foreground [&::placeholder]:text-sm"
       />
-      <Button variant={channelButtonStyle} onclick={findChannelById}>Find Channel</Button>
+      <Button variant={channelButtonStyle} onclick={findChannelById} disabled={buttonDisabled}>
+        Find Channel
+      </Button>
     </Tabs.Content>
   </Tabs.Root>
 {:else}

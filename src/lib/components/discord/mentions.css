@@ -1,5 +1,5 @@
 .mention-wrapper {
-  min-width: 35px;
+  min-width: 60px;
   width: fit-content;
   cursor: pointer;
   display: inline-flex;
@@ -10,6 +10,7 @@
   overflow: clip;
   position: relative;
   color: white;
+  min-width: 50px;
 }
 
 .actions-container {

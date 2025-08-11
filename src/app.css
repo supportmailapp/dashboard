@@ -213,11 +213,12 @@
     @apply gap-1 rounded-md px-2 py-1 transition;
     height: 28px;
     width: fit-content;
-    min-width: 35px;
+    min-width: 60px;
     max-width: 200px;
     background-color: color-mix(in oklab, var(--blurple) 80%, transparent);
     display: grid;
     grid-template-columns: auto;
+    justify-content: start;
     place-items: center;
     align-items: center;
     animation-duration: 100ms;
