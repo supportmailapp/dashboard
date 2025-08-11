@@ -27,17 +27,14 @@
     await saveFn((v) => (loading = v));
   }}
 >
-  <Label>Current Channel</Label>
-  <div class="bg-input/30 border-input max-h-40 w-full overflow-y-auto rounded-md border p-3">
-    <div class="flex flex-wrap gap-2">
-      {#if !channel && loading}
-        <LoadingSpinner />
-      {:else if !loading && channel}
-        <Mention {channel} onDelete={() => Boolean((channel = undefined))} />
-      {:else}
-        <Button variant="outline" onclick={() => (modalOpen = true)}>Select Channel</Button>
-      {/if}
-    </div>
+  <div>
+    {#if !channel && loading}
+      <LoadingSpinner />
+    {:else if !loading && channel}
+      <Mention {channel} onDelete={() => Boolean((channel = undefined))} />
+    {:else}
+      <Button variant="outline" size="sm" onclick={() => (modalOpen = true)}>Select Channel</Button>
+    {/if}
   </div>
 </ConfigCard>
 

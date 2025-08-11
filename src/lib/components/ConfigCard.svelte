@@ -43,7 +43,7 @@
     {@render children?.()}
   </Card.Content>
   {#if typeof saveFn !== "undefined"}
-    <Card.Footer class="justify-end">
+    <Card.Footer class="mt-auto justify-end">
       <Button
         variant="default"
         disabled={saveBtnDisabled}
