@@ -125,6 +125,7 @@
     ]}
     <ConfigCard
       class="flex flex-col gap-4"
+      rootClass="h-full"
       title="Pausing Status"
       description="Pausing won't reset any settings."
       {saveFn}
