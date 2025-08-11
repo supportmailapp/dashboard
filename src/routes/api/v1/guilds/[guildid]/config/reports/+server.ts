@@ -101,6 +101,7 @@ export async function PUT({ request, locals }) {
   const validationRes = new ZodValidator(putSchema).validate(body);
 
   if (!validationRes.success) {
+    console.error(validationRes.error);
     return JsonErrors.badRequest(ZodValidator.toHumanError(validationRes.error));
   }
 
