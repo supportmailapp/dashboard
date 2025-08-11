@@ -1,22 +1,22 @@
 <script lang="ts">
   import { page } from "$app/state";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
+  import SettingsGrid from "$lib/components/SettingsGrid.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import type { DBGuildProjectionReturns } from "$lib/server/db";
   import { ConfigState } from "$lib/stores/ConfigState.svelte";
   import { APIRoutes } from "$lib/urls";
-  import { toast } from "svelte-sonner";
-  import PausingCard from "./PausingCard.svelte";
-  import TicketForumCard from "./TicketForumCard.svelte";
   import apiClient from "$lib/utils/apiClient";
-  import AutoForward from "./AutoForward.svelte";
+  import Separator from "$ui/separator/separator.svelte";
+  import { onMount } from "svelte";
+  import { toast } from "svelte-sonner";
   import type { PatchFields } from "../../../api/v1/guilds/[guildid]/config/+server";
   import AllowedBots from "./AllowedBots.svelte";
   import AnonymSettings from "./AnonymSettings.svelte";
-  import { onMount } from "svelte";
-  import SettingsGrid from "$lib/components/SettingsGrid.svelte";
-  import Separator from "$ui/separator/separator.svelte";
+  import AutoForward from "./AutoForward.svelte";
+  import PausingCard from "./PausingCard.svelte";
   import ResetStuff from "./ResetStuff.svelte";
+  import TicketForumCard from "./TicketForumCard.svelte";
 
   const generalTicketsConf = new ConfigState<DBGuildProjectionReturns["generalTicketSettings"]>();
 
@@ -33,6 +33,7 @@
       const res = await apiClient.patch(APIRoutes.ticketsConfig(page.data.guildId!), {
         json: {
           allowedBots: current?.allowedBots,
+          enabled: current?.enabled,
           anonym: current?.anonym
             ? {
                 enabled: current.anonym.enabled,
@@ -92,7 +93,12 @@
 <SettingsGrid class="mt-6">
   {#if generalTicketsConf.isConfigured()}
     <PausingCard bind:pausedUntil={generalTicketsConf.config.pausedUntil} />
-    <TicketForumCard forumId={generalTicketsConf.config.forumId ?? null} wholeConfig={generalTicketsConf} />
+    <TicketForumCard
+      forumId={generalTicketsConf.config.forumId ?? null}
+      wholeConfig={generalTicketsConf}
+      bind:enabled={generalTicketsConf.config.enabled}
+      saveAllFn={saveAll}
+    />
     <AutoForward bind:autoForward={generalTicketsConf.config.autoForwarding} saveAllFn={saveAll} />
     <AllowedBots bind:allowedBots={generalTicketsConf.config.allowedBots} saveAllFn={saveAll} />
     <AnonymSettings bind:anonymSettings={generalTicketsConf.config.anonym} saveAllFn={saveAll} />
