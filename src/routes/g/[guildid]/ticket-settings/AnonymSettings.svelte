@@ -22,7 +22,7 @@
     <LoadingSpinner />
   {:else}
     <Label
-      class="hover:bg-accent/10 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-green-600 has-[[aria-checked=true]]:bg-green-50 dark:has-[[aria-checked=true]]:border-green-900 dark:has-[[aria-checked=true]]:bg-green-950"
+      class="hover:bg-accent/50 has-[[aria-checked=true]]:border-accent has-[[aria-checked=true]]:bg-accent/50 flex items-start gap-3 rounded-lg border p-3"
     >
       <Switch id="toggle-2" bind:checked={anonymSettings.enabled} variant="success" />
       <div class="grid gap-1.5 font-normal">
@@ -37,7 +37,7 @@
       </div>
     </Label>
     <Label
-      class="hover:bg-accent/10 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-green-600 has-[[aria-checked=true]]:bg-green-50 dark:has-[[aria-checked=true]]:border-green-900 dark:has-[[aria-checked=true]]:bg-green-950"
+      class="hover:bg-accent/50 has-[[aria-checked=true]]:border-accent has-[[aria-checked=true]]:bg-accent/50 flex items-start gap-3 rounded-lg border p-3"
     >
       <Switch id="toggle-2" bind:checked={anonymSettings.user} variant="success" />
       <div class="grid gap-1.5 font-normal">
