@@ -10,6 +10,8 @@
   import Settings from "@lucide/svelte/icons/settings";
   import ReceiptText from "@lucide/svelte/icons/receipt-text";
   import ChevronUp from "@lucide/svelte/icons/chevron-up";
+  import Moon from "@lucide/svelte/icons/moon";
+  import Sun from "@lucide/svelte/icons/sun";
 
   import * as Sidebar from "$ui/sidebar/index.js";
   import * as Avatar from "$ui/avatar";
@@ -23,8 +25,6 @@
   import { cn } from "$lib/utils";
   import { toast } from "svelte-sonner";
   import { mode, toggleMode } from "mode-watcher";
-  import Moon from "@lucide/svelte/icons/moon";
-  import Sun from "@lucide/svelte/icons/sun";
 
   type NavItem = {
     id: string;
@@ -130,6 +130,8 @@
       reloadBtnDisabled = false;
     }, 10_000);
   }
+
+  let { onClick }: { onClick?: () => void } = $props();
 </script>
 
 <Sidebar.Root side="left" variant="sidebar" class="select-none">
@@ -154,7 +156,7 @@
             <Sidebar.MenuItem>
               <Sidebar.MenuButton isActive={isCurrentPage(item.href, false)}>
                 {#snippet child({ props })}
-                  <a href={item.href} {...props}>
+                  <a href={item.href} {...props} onclick={onClick}>
                     <item.icon />
                     <span>{item.name}</span>
                   </a>
@@ -170,7 +172,7 @@
                 <Sidebar.MenuItem>
                   <Sidebar.MenuButton isActive={isCurrentPage(subItem.href, true)}>
                     {#snippet child({ props })}
-                      <a href={subItem.href} {...props}>
+                      <a href={subItem.href} {...props} onclick={onClick}>
                         <subItem.icon />
                         <span>{subItem.name}</span>
                       </a>
