@@ -8,6 +8,8 @@
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
   import Plus from "@lucide/svelte/icons/plus";
 
+  let { clickFn }: { clickFn?: () => any } = $props();
+
   let guildManager = $derived(page.data.guildsManager);
 </script>
 
@@ -30,6 +32,11 @@
           "aria-selected:bg-primary/20 aria-selected:*:text-primary-foreground cursor-pointer pr-3 transition-all active:scale-99 aria-selected:-translate-y-0.5 aria-selected:*:font-medium",
           !guild.isConfigured && "text-accent-foreground",
         )}
+        onclick={() => {
+          if (!page.url.pathname.startsWith(`/g/${guild.id}`)) {
+            clickFn?.();
+          }
+        }}
       >
         <Avatar.Root>
           <Avatar.Image src={cdnUrls.guildIcon(guild.id, guild.icon, 128)} alt={guild.name} />
