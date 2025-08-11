@@ -7,30 +7,44 @@
   import ConfigCard from "$lib/components/ConfigCard.svelte";
   import ChannelSelect from "$lib/components/ChannelSelect.svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
+  import { Switch } from "$ui/switch";
+  import { Separator } from "$ui/separator";
 
   type Props = {
     channel?: GuildCoreChannel;
+    enabled: boolean;
     loading: boolean;
     saveFn: SaveFunction;
   };
 
-  let { channel = $bindable(), loading = $bindable(), saveFn }: Props = $props();
+  let { enabled = $bindable(), channel = $bindable(), loading = $bindable(), saveFn }: Props = $props();
 
   let modalOpen = $state(false);
 </script>
 
 <ConfigCard
-  title="Alert Channel"
+  title="General Settings"
   description="The channel where new reports will be sent to."
   rootClass="col-span-full lg:col-span-2"
   saveFn={async () => {
     await saveFn((v) => (loading = v));
   }}
+  saveBtnLoading={loading}
+  saveBtnDisabled={loading}
 >
-  <div>
-    {#if !channel && loading}
-      <LoadingSpinner />
-    {:else if !loading && channel}
+  <div class="flex flex-col items-start gap-2">
+    <Label>Report Status</Label>
+    <Label class="inline-flex items-center gap-2">
+      <Switch variant="success" bind:checked={enabled} />
+      {enabled ? "Enabled" : "Disabled"}
+    </Label>
+  </div>
+  <Separator class="my-3" />
+  <div class="flex flex-col items-start gap-2" class:opacity-50={loading} class:pointer-events-none={loading}>
+    <Label>Alert Channel</Label>
+    {#if !channel}
+      <Button variant="outline" size="sm" onclick={() => (modalOpen = true)}>Select Channel</Button>
+    {:else}
       <Mention
         {channel}
         onDelete={() => {
@@ -38,8 +52,6 @@
           return true;
         }}
       />
-    {:else}
-      <Button variant="outline" size="sm" onclick={() => (modalOpen = true)}>Select Channel</Button>
     {/if}
   </div>
 </ConfigCard>
