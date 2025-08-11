@@ -102,8 +102,6 @@
   });
 </script>
 
-<!-- TODO -->
-<!-- ! This style is a bit different to the one ticket settings page (idk why, I will have to look into that) -->
 {#if fetchedState?.value}
   {@const pausedDate = fetchedState.date ? new Date(fetchedState.date) : null}
   <Alert.Root variant="warning" class="col-span-full">
