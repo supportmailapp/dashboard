@@ -2,7 +2,7 @@ import { TextInputStyle } from "discord-api-types/v10";
 import { EntityType } from "supportmail-types";
 import { z, ZodError } from "zod";
 import { type ValidationError } from "zod-validation-error";
-import { fromZodError } from "zod-validation-error/v4";
+import { fromError, fromZodError } from "zod-validation-error/v4";
 
 type ValidationRes<V extends z.ZodType> =
   | { success: true; data: z.core.output<V> }
@@ -23,7 +23,7 @@ export class ZodValidator<V extends z.ZodType> {
       return {
         success: false,
         // ? as of 2025-07-16 the fromError function isn't working and has a critical bug.
-        error: fromZodError(err as ZodError) as ValidationError,
+        error: fromError(err as ZodError) as ValidationError,
       };
     }
   }
