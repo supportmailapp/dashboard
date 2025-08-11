@@ -28,7 +28,7 @@
 
     const current = $state.snapshot(reportsConfig.config);
     if (!current) {
-      toast.error("No ticket configuration found to save.");
+      toast.error("No report configuration found to save.");
       setLoading(false);
       return;
     }
@@ -44,7 +44,7 @@
 
       if (!res.ok) {
         const error = await res.json<any>();
-        throw new Error(error.message || "Failed to save ticket configuration.");
+        throw new Error(error.message || "Failed to save report configuration.");
       }
 
       const json = await res.json<DBGuildProjectionReturns["reportSettings"]>();
