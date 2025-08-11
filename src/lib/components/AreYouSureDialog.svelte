@@ -1,8 +1,10 @@
 <script lang="ts">
   import { MarkdownFormatter } from "$lib/utils/formatting";
   import * as AlertDialog from "$ui/alert-dialog/index.js";
+  import type { Snippet } from "svelte";
 
   interface Props {
+    onYes: () => void;
     title?: string;
     /**
      * Optional description for the dialog.
@@ -10,15 +12,14 @@
      * Can be markdown.
      */
     description?: string;
-    onYes: () => void;
     disabled?: boolean;
-    children: import("svelte").Snippet;
+    children: Snippet;
   }
 
   let {
+    onYes,
     title = "Are you absolutely sure?",
     description,
-    onYes,
     disabled = false,
     children,
   }: Props = $props();
