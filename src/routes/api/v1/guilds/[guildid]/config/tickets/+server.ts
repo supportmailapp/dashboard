@@ -34,6 +34,7 @@ export async function GET({ locals: { guildId } }) {
 }
 
 const patchSchema = z.object({
+  enabled: z.boolean().optional(),
   autoForwarding: z.boolean().optional(),
   allowedBots: z.array(SnowflakePredicate).optional(),
   anonym: z
@@ -69,7 +70,7 @@ export async function PATCH({ request, locals }) {
   if (!guild) {
     return JsonErrors.notFound();
   }
-  const { allowedBots, anonym, autoForwarding } = validationRes.data;
+  const { allowedBots, anonym, autoForwarding, enabled } = validationRes.data;
 
   let updateFields: UpdateQuery<IDBGuild> = {};
   if (isNotUndefined(allowedBots)) {
@@ -80,6 +81,10 @@ export async function PATCH({ request, locals }) {
   }
   if (isNotUndefined(autoForwarding)) {
     updateFields["ticketConfig.autoForwarding"] = autoForwarding;
+  }
+  // Only allow changing the status if a forum is actually set
+  if (isNotUndefined(enabled) && !!guild.ticketConfig.forumId) {
+    updateFields["ticketConfig.enabled"] = enabled;
   }
 
   console.log("Update Fields", updateFields);
