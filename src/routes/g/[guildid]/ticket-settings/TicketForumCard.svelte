@@ -74,6 +74,11 @@
   });
 </script>
 
+<!--
+  TODO: Make this a "General Settings" card where tickets can also be manually enabled/disabled
+  see ~/report-settings page) 
+-->
+
 <ConfigCard
   title="Ticket Forum"
   description="Configure the forum where tickets will be created."
