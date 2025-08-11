@@ -9,7 +9,7 @@
   }: { open?: boolean; switchingPage?: boolean } = $props();
 </script>
 
-<Dialog.Root {open}>
+<Dialog.Root bind:open>
   <Dialog.Content class="md:min-w-[450px]">
     <Dialog.Header>
       <Dialog.Title>Select a Server</Dialog.Title>

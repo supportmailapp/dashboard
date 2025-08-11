@@ -60,7 +60,13 @@
 <Mounter />
 
 <Sidebar.Provider bind:open={sidebarOpen} class="h-svh">
-  <AppSidebar onClick={() => (sidebarOpen = false)} />
+  <AppSidebar
+    onClick={() => {
+      if (Sidebar.useSidebar().openMobile) {
+        sidebarOpen = false;
+      }
+    }}
+  />
   <Sidebar.Inset class="main-container">
     <header
       class="bg-sidebar text-sidebar-foreground shadow-accent/40 sticky top-0 z-10 flex h-(--main-header-height) items-center justify-between p-3 shadow-md"
@@ -74,7 +80,7 @@
           variant="outline"
           size="lg"
           class={cn("w-[230px] justify-center shadow-md", !currentGuild && "cursor-not-allowed opacity-50")}
-          onclick={() => (guildsSelectOpen = !guildsSelectOpen)}
+          onclick={() => (guildsSelectOpen = true)}
         >
           {#if currentGuild}
             <Avatar.Root class="size-7">
