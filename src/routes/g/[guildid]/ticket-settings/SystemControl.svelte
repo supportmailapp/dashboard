@@ -63,6 +63,10 @@
     showDateError = true;
   }
 
+  // TODO: Integrate new system status into function
+  // - merge api routes into one
+  // - only use saveAllFn
+
   async function saveFn() {
     const payload = buildPausedUntil();
     if (equal(payload, pauseState.backup?.pausedUntil)) {
