@@ -2,7 +2,6 @@ import { redirectToLoginWithError } from "$lib";
 
 export async function load({ locals, cookies, parent }) {
   await parent();
-  console.log("Loading +page.server.ts");
   const data = await locals.getSafeSession();
   if (data.error) {
     if (data.error === "expired") {
