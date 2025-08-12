@@ -13,7 +13,7 @@
   <span
     class={cn(
       "text-2xl font-bold text-shadow-black/20 text-shadow-md sm:text-3xl",
-      mode.current === "dark" ? "text-white" : "text-black",
+      mode.current !== "dark" ? "text-black" : "text-white",
     )}
   >
     SupportMail
