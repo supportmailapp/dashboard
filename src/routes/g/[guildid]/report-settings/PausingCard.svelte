@@ -117,7 +117,7 @@
   </Alert.Root>
 {/if}
 
-<div class="col-span-full flex max-w-4xl flex-col gap-2 lg:col-span-4">
+<div class="col-span-full flex flex-col gap-2 lg:col-span-3">
   {#if pauseState.isConfigured()}
     {@const activeTabs = [
       { value: "active", label: "Active" },

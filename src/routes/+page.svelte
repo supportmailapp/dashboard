@@ -78,7 +78,7 @@
 
 <div class="flex h-screen flex-col items-center justify-center gap-6 p-3">
   <Card.Root
-    class="flex h-[40rem] w-full max-w-xl flex-col overflow-clip border-none bg-black/40 shadow-xl shadow-black/60 backdrop-blur-md select-none"
+    class="flex h-[40rem] w-full max-w-xl flex-col overflow-clip border-none bg-background shadow-xl shadow-black/60 backdrop-blur-md select-none"
   >
     <Card.Header class="shrink-0 text-center">
       <Branding />
@@ -118,7 +118,7 @@
     backdrop-filter: blur(0.75vh);
     filter: blur(0.75vh);
     -webkit-filter: blur(0.75vh);
-    box-shadow: 0 0 200px rgba(0, 0, 0, 0.9) inset;
+    box-shadow: 0 0 200px rgba(0, 0, 0, 0.3) inset;
     z-index: -1;
   }
 </style>

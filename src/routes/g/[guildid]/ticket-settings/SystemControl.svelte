@@ -133,6 +133,7 @@
       { value: "paused", label: "Paused" },
     ]}
     <ConfigCard
+      rootClass="h-full"
       class="flex flex-col gap-4"
       title="System Control"
       description="Control the ticket system status and pausing settings."

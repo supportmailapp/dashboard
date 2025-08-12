@@ -14,6 +14,7 @@
   import { IsMobile } from "$lib/hooks/is-mobile.svelte";
   import Mounter from "./Mounter.svelte";
   import ServerSelector from "./ServerSelector.svelte";
+  import { mode } from "mode-watcher";
 
   let { children } = $props();
 
@@ -69,7 +70,10 @@
   />
   <Sidebar.Inset class="main-container">
     <header
-      class="bg-sidebar text-sidebar-foreground shadow-accent/40 sticky top-0 z-10 flex h-(--main-header-height) items-center justify-between p-3 shadow-md"
+      class={cn(
+        "bg-sidebar text-sidebar-foreground sticky top-0 z-10 flex h-(--main-header-height) items-center justify-between p-3 shadow-lg",
+        mode.current !== "dark" ? "shadow-accent/40" : "shadow-black/30",
+      )}
     >
       <Sidebar.Trigger />
 

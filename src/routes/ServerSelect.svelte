@@ -16,7 +16,7 @@
 <Command.Root class="h-full bg-transparent md:min-w-[450px]">
   <Command.Input
     placeholder="Search a server"
-    class="rounded-lg [&::placeholder]:text-white [&::placeholder]:opacity-100"
+    class="[&::placeholder]:text-foreground/50 rounded-lg"
     autofocus={false}
   />
   <Command.List class="max-h-auto h-full pt-0.5">
@@ -30,8 +30,8 @@
         target="_self"
         value="{guild.id}:{guild.name}"
         class={cn(
-          "aria-selected:bg-primary/20 aria-selected:*:text-primary-foreground cursor-pointer pr-3 transition-all active:scale-99 aria-selected:-translate-y-0.5 aria-selected:*:font-medium",
-          !guild.isConfigured && "text-accent-foreground",
+          "transition-all duration-100 aria-selected:-translate-y-0.5",
+          !guild.isConfigured && "text-foreground/70",
         )}
         onclick={() => {
           if (!page.url.pathname.startsWith(`/g/${guild.id}`)) {
