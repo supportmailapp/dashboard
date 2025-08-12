@@ -1,18 +1,19 @@
 <script lang="ts">
   import { page } from "$app/state";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
+  import SettingsGrid from "$lib/components/SettingsGrid.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import type { DBGuildProjectionReturns } from "$lib/server/db";
   import { ConfigState } from "$lib/stores/ConfigState.svelte";
   import { APIRoutes } from "$lib/urls";
-  import { toast } from "svelte-sonner";
-  import PausingCard from "./PausingCard.svelte";
   import apiClient from "$lib/utils/apiClient";
   import { onMount } from "svelte";
+  import { toast } from "svelte-sonner";
   import type { PutFields } from "../../../api/v1/guilds/[guildid]/config/reports/+server";
-  import MentionableSelectCard from "./MentionableSelectCard.svelte";
-  import SettingsGrid from "$lib/components/SettingsGrid.svelte";
   import ChannelSelectCard from "./ChannelSelectCard.svelte";
+  import MentionableSelectCard from "./MentionableSelectCard.svelte";
+  import SystemControl from "./SystemControl.svelte";
+  import LimitsCard from "./LimitsCard.svelte";
 
   const reportsConfig = new ConfigState<DBGuildProjectionReturns["reportSettings"]>();
 
@@ -75,7 +76,14 @@
           return;
         }
         res.json().then((data: DBGuildProjectionReturns["reportSettings"]) => {
-          reportsConfig.saveConfig(data);
+          reportsConfig.saveConfig({
+            ...data,
+            limits: {
+              perUserReceive: data.limits?.perUserReceive ?? 1,
+              perUserCreate: data.limits?.perUserCreate ?? 5,
+              opens: data.limits?.opens ?? 20,
+            },
+          });
           setChannel(reportsConfig.config?.channelId ?? undefined);
         });
       })
@@ -96,9 +104,13 @@
 
 <SettingsGrid class="mt-6">
   {#if reportsConfig.isConfigured()}
-    <PausingCard bind:pausedUntil={reportsConfig.config.pausedUntil} />
-    <ChannelSelectCard
+    <SystemControl
+      bind:pausedUntil={reportsConfig.config.pausedUntil}
       bind:enabled={reportsConfig.config.enabled}
+      saveAllFn={saveAll}
+    />
+    <LimitsCard bind:limits={reportsConfig.config.limits} loading={reportsConfig.loading} saveFn={saveAll} />
+    <ChannelSelectCard
       bind:channel={
         () => reportChannel ?? undefined,
         (c) => {

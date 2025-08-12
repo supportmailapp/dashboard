@@ -10,8 +10,6 @@
   import apiClient from "$lib/utils/apiClient";
   import { dateToLocalString } from "$lib/utils/formatting";
   import * as Alert from "$ui/alert";
-  import { Button } from "$ui/button";
-  import * as Card from "$ui/card";
   import Separator from "$ui/separator/separator.svelte";
   import { Switch } from "$ui/switch";
   import CircleAlertIcon from "@lucide/svelte/icons/circle-alert";
@@ -38,7 +36,7 @@
     false,
   );
   let showDateError = $state(false);
-  let savingTicketStatus = $state(false);
+  let savingReportStatus = $state(false);
 
   $inspect("pauseState", pauseState.config);
 
@@ -69,7 +67,6 @@
       toast.info("No changes to save.");
       return;
     }
-
     if (payload.value && pauseState.config?.type === "timed" && !payload.date) {
       errorHintIndefiniteButNoDate();
       return;
@@ -78,7 +75,7 @@
     pauseState.saving = true;
 
     try {
-      const res = await apiClient.put(APIRoutes.pausing(page.data.guildId!, "tickets"), {
+      const res = await apiClient.put(APIRoutes.pausing(page.data.guildId!, "reports"), {
         json: payload,
       });
 
@@ -94,8 +91,8 @@
       fetchedState = jsonRes;
       toast.success(
         !jsonRes.value
-          ? "Tickets resumed (unpaused)."
-          : `Tickets paused${jsonRes.date ? " temporarily" : " indefinitly"}.`,
+          ? "Reports resumed (unpaused)."
+          : `Reports paused${jsonRes.date ? " temporarily" : " indefinitly"}.`,
       );
     } catch (err: any) {
       toast.error("Failed to save guild configuration.", {
@@ -116,10 +113,10 @@
   {@const pausedDate = fetchedState.date ? new Date(fetchedState.date) : null}
   <Alert.Root variant="warning" class="col-span-full">
     <CircleAlertIcon class="size-4" />
-    <Alert.Title>Tickets are paused.</Alert.Title>
+    <Alert.Title>Reports are paused.</Alert.Title>
     <Alert.Description class="inline-flex">
       {#if pausedDate}
-        Tickets are paused until {`${dateToLocalString(pausedDate)} (${relativeDatetime(pausedDate)}).`}
+        Reports are paused until {`${dateToLocalString(pausedDate)} (${relativeDatetime(pausedDate)}).`}
       {:else}
         Paused until manually resumed.
       {/if}
@@ -137,15 +134,15 @@
       rootClass="h-full"
       class="flex flex-col gap-4"
       title="System Control"
-      description="Control the ticket system status and pausing settings."
+      description="Control the report system status and pausing settings."
       {saveFn}
       saveBtnDisabled={pauseState.saving}
       saveBtnLoading={pauseState.loading}
     >
-      <!-- Ticket Status Section -->
+      <!-- Report Status Section -->
       <div class="flex flex-col items-start gap-2">
         <Label class="inline-flex w-full items-center gap-2">
-          <Switch variant="success" bind:checked={enabled} disabled={savingTicketStatus} />
+          <Switch variant="success" bind:checked={enabled} disabled={savingReportStatus} />
           {enabled ? "Enabled" : "Disabled"}
         </Label>
       </div>
@@ -177,11 +174,11 @@
         </RadioGroup.Root>
         {#if !pauseState.config.pausedUntil.value}
           <div class="flex-1 space-y-4 outline-none">
-            <p>Tickets are <strong>active</strong>, users can create tickets.</p>
+            <p>Reports are <strong>active</strong>, users can create reports.</p>
           </div>
         {:else}
           <div class="flex-1 space-y-4 outline-none">
-            <p>Tickets are <strong>paused</strong>, users <strong>cannot</strong> create new tickets.</p>
+            <p>Reports are <strong>paused</strong>, users <strong>cannot</strong> create new reports.</p>
             <!-- Radio group controls 'pauseType' -->
             <RadioGroup.Root
               bind:value={
