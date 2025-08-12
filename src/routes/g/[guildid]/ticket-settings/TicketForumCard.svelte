@@ -21,10 +21,9 @@
   type Props = {
     forumId: string | null;
     wholeConfig: ConfigState<DBGuildProjectionReturns["generalTicketSettings"]>;
-    enabled?: boolean;
     saveAllFn: SaveFunction;
   };
-  let { forumId: fetchedForumId, wholeConfig, enabled = $bindable(), saveAllFn }: Props = $props();
+  let { forumId: fetchedForumId, wholeConfig, saveAllFn }: Props = $props();
 
   const forum = new ConfigState<GuildCoreChannel>(null);
   let channelsLoaded = $derived(page.data.guildsManager.channelsLoaded);
@@ -82,35 +81,12 @@
   });
 </script>
 
-<!-- TODO: Maybe outsource the status into an extra card? But it's just ONE switch... -->
-
 <ConfigCard
-  title="General Settings"
-  description="Configure the ticket system and forum where tickets will be created."
+  title="Ticket Forum"
+  description="Configure the forum where tickets will be created."
   saveBtnDisabled={!forum.config}
   rootClass="col-span-full lg:col-span-3"
 >
-  <Card.Root class="border-background gap-2 border-4">
-    <Card.Header>
-      <Card.Title>Ticket Status</Card.Title>
-    </Card.Header>
-    <Card.Content class="flex flex-col items-start gap-2">
-      <Label class="inline-flex w-full items-center gap-2">
-        <Switch variant="success" bind:checked={enabled} disabled={!fetchedForumId || loading.saving} />
-        {enabled ? "Enabled" : "Disabled"}
-      </Label>
-    </Card.Content>
-    <Card.Footer class="justify-start">
-      <Button
-        onclick={async () => await saveAllFn((v) => (loading.saving = v))}
-        disabled={loading.saving}
-        showLoading={loading.saving}
-      >
-        Save
-      </Button>
-    </Card.Footer>
-  </Card.Root>
-  <Separator class="my-3" />
   <div class="flex flex-col gap-2">
     <Label>Ticket Forum</Label>
     {#if channelsLoaded}
@@ -167,8 +143,8 @@
 
             <Dialog.Footer>
               <Button
-                showLoading={loading.setup || loading.saving}
-                disabled={loading.setup || loading.saving}
+                showLoading={loading.setup}
+                disabled={loading.setup}
                 onclick={setupFn}
               >
                 Setup

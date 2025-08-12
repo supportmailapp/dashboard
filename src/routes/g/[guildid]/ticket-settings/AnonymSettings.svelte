@@ -13,7 +13,7 @@
 </script>
 
 <ConfigCard
-  rootClass="col-span-full lg:col-span-2"
+  rootClass="col-span-full lg:col-span-3"
   title="Anonym Settings"
   saveFn={async () => await saveAllFn((v: boolean) => (saving = v))}
   class="space-y-2"
@@ -41,7 +41,7 @@
     >
       <Switch id="toggle-2" bind:checked={anonymSettings.user} variant="success" />
       <div class="grid gap-1.5 font-normal">
-        <p class="text-sm leading-none font-medium">Anonymoues Tickets</p>
+        <p class="text-sm leading-none font-medium">Anonymous Tickets</p>
         <p class="text-muted-foreground text-sm">
           You can allow users to open tickets without revealing their identity.
         </p>

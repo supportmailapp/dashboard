@@ -11,10 +11,9 @@
   import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
   import type { PatchFields } from "../../../api/v1/guilds/[guildid]/config/+server";
-  import AllowedBots from "./AllowedBots.svelte";
   import AnonymSettings from "./AnonymSettings.svelte";
-  import AutoForward from "./AutoForward.svelte";
-  import PausingCard from "./PausingCard.svelte";
+  import MessageHandling from "./MessageHandling.svelte";
+  import SystemControl from "./SystemControl.svelte";
   import ResetStuff from "./ResetStuff.svelte";
   import TicketForumCard from "./TicketForumCard.svelte";
 
@@ -92,15 +91,21 @@
 
 <SettingsGrid class="mt-6">
   {#if generalTicketsConf.isConfigured()}
-    <PausingCard bind:pausedUntil={generalTicketsConf.config.pausedUntil} />
-    <TicketForumCard
-      forumId={generalTicketsConf.config.forumId ?? null}
-      wholeConfig={generalTicketsConf}
+    <SystemControl
+      bind:pausedUntil={generalTicketsConf.config.pausedUntil}
       bind:enabled={generalTicketsConf.config.enabled}
       saveAllFn={saveAll}
     />
-    <AutoForward bind:autoForward={generalTicketsConf.config.autoForwarding} saveAllFn={saveAll} />
-    <AllowedBots bind:allowedBots={generalTicketsConf.config.allowedBots} saveAllFn={saveAll} />
+    <MessageHandling
+      bind:allowedBots={generalTicketsConf.config.allowedBots}
+      bind:autoForward={generalTicketsConf.config.autoForwarding}
+      saveAllFn={saveAll}
+    />
+    <TicketForumCard
+      forumId={generalTicketsConf.config.forumId ?? null}
+      wholeConfig={generalTicketsConf}
+      saveAllFn={saveAll}
+    />
     <AnonymSettings bind:anonymSettings={generalTicketsConf.config.anonym} saveAllFn={saveAll} />
     <Separator class="col-span-full my-5" />
     <ResetStuff />
