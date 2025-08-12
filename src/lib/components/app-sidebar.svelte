@@ -25,7 +25,7 @@
   import { cn } from "$lib/utils";
   import { toast } from "svelte-sonner";
   import { mode, toggleMode } from "mode-watcher";
-  import VenocixBranding from "./VenocixBranding.svelte";
+  import VenocixBranding from "$lib/assets/VenocixBranding.svelte";
 
   type NavItem = {
     id: string;

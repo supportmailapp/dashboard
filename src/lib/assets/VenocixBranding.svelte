@@ -11,13 +11,14 @@
     href="https://venocix.de"
     target="_blank"
     id="branding"
-    class={cn(
-      "mx-auto my-2 flex w-full flex-col items-center justify-center gap-1 gap-x-3 rounded-lg py-2 transition-all duration-120 select-none hover:opacity-75",
-      mode.current === "dark" ? "bg-auto" : "bg-foreground/80",
-    )}
+    class="mx-auto my-2 flex w-full flex-col items-center justify-center gap-1 gap-x-3 rounded-lg py-2 transition-all duration-120 select-none hover:opacity-75"
   >
     <span class="text-success rounded-lg px-2 py-1 font-bold">Hosted by</span>
-    <img src="https://venocix.de/assets/img/logo-white.png" alt="Logo" class="w-[70%]" />
+    {#if mode.current !== "dark"}
+      <img src="https://venocix.de/assets/img/logo.png" alt="Logo" class="w-[70%]" />
+    {:else}
+      <img src="https://venocix.de/assets/img/logo-white.png" alt="Logo" class="w-[70%]" />
+    {/if}
   </a>
 </div>
 
