@@ -43,9 +43,9 @@ const channelsSchema = z.object({
 });
 
 const limitSchema = z.object({
-  perUserReceive: z.number().int().min(1).max(10).optional(),
-  perUserCreate: z.number().int().min(1).max(50).optional(),
-  opens: z.number().int().min(1).max(100).optional(),
+  perUserReceive: z.number().int().min(1).max(10).default(1),
+  perUserCreate: z.number().int().min(1).max(50).default(5),
+  opens: z.number().int().min(1).max(100).default(20),
 });
 
 const notificationSchema = z.enum(ReportNotificationType).array();

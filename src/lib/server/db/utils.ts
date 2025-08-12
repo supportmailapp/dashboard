@@ -5,6 +5,7 @@ import {
   type IDBUser,
   type ITicketConfig,
   type PausedUntil,
+  type ReportLimitsConfig,
 } from "supportmail-types";
 import { ValidationError } from "zod-validation-error";
 import { DBGuild, DBUser } from "./models";
@@ -32,8 +33,9 @@ export interface DBGuildProjectionReturns {
   };
   feedback: NonNullable<ITicketConfig["feedback"]>;
 
-  reportSettings: Omit<IDBGuild["reportConfig"], "pausedUntil"> & {
+  reportSettings: Omit<IDBGuild["reportConfig"], "pausedUntil" | "limits"> & {
     pausedUntil: APIPausedUntil;
+    limits: ReportLimitsConfig;
   };
 }
 
