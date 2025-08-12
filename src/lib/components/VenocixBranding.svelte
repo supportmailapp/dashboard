@@ -1,9 +1,12 @@
-<script>
+<script lang="ts">
   import { cn } from "$lib/utils";
   import { mode } from "mode-watcher";
+  import type { ClassValue } from "clsx";
+
+  let { class: className }: { class?: ClassValue } = $props();
 </script>
 
-<div class="w-full px-2">
+<div class={cn("w-full px-2", className)}>
   <a
     href="https://venocix.de"
     target="_blank"
@@ -34,7 +37,8 @@
   @media (prefers-reduced-motion: no-preference) {
     #branding img {
       animation: bop 3s ease-in-out infinite;
-      animation-play-state: active;
     }
   }
+
+  /* TODO: Make a shimmer animation for the branding logo */
 </style>

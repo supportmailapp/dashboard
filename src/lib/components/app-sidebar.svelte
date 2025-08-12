@@ -25,6 +25,7 @@
   import { cn } from "$lib/utils";
   import { toast } from "svelte-sonner";
   import { mode, toggleMode } from "mode-watcher";
+  import VenocixBranding from "./VenocixBranding.svelte";
 
   type NavItem = {
     id: string;
@@ -185,6 +186,9 @@
         {/if}
       </Sidebar.Group>
     {/each}
+    <Sidebar.Group class="mt-auto">
+      <VenocixBranding />
+    </Sidebar.Group>
   </Sidebar.Content>
   <Sidebar.Footer>
     <Sidebar.Menu>
