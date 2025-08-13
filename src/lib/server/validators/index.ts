@@ -2,7 +2,7 @@ import { TextInputStyle } from "discord-api-types/v10";
 import { EntityType } from "supportmail-types";
 import { z, ZodError } from "zod";
 import { type ValidationError } from "zod-validation-error";
-import { fromError, fromZodError } from "zod-validation-error/v4";
+import { fromError } from "zod-validation-error/v4";
 
 type ValidationRes<V extends z.ZodType> =
   | { success: true; data: z.core.output<V> }
@@ -63,7 +63,7 @@ export const RoleEntityPredicate = EntityPredicate(EntityType.role);
 export const MentionableEntityPredicate = z.union([UserEntityPredicate, RoleEntityPredicate]);
 // ? Maybe add another predicate for guild?
 
-export const CustomModalFieldPredicate = z.object({
+export const CustomModalFieldSchema = z.object({
   position: z.number().int().min(1).max(5),
   label: z.string().min(1).max(100),
   placeholder: z.string().min(0).max(100).optional(),
@@ -71,4 +71,9 @@ export const CustomModalFieldPredicate = z.object({
   style: z.enum(TextInputStyle).default(TextInputStyle.Short),
   minL: z.int().min(0).max(4000).optional(),
   maxL: z.int().min(1).max(4000).optional(),
+});
+
+export const APIPausedUntilSchema = z.object({
+  value: z.boolean(),
+  date: z.iso.datetime({ offset: true, local: true, abort: true }).nullable(),
 });
