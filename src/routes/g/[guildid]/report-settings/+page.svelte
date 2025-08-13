@@ -6,20 +6,59 @@
   import type { DBGuildProjectionReturns } from "$lib/server/db";
   import { ConfigState } from "$lib/stores/ConfigState.svelte";
   import { APIRoutes } from "$lib/urls";
+  import { deepClone } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
+  import dayjs from "dayjs";
   import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
   import type { PutFields } from "../../../api/v1/guilds/[guildid]/config/reports/+server";
   import ChannelSelectCard from "./ChannelSelectCard.svelte";
+  import LimitsCard from "./LimitsCard.svelte";
   import MentionableSelectCard from "./MentionableSelectCard.svelte";
   import SystemControl from "./SystemControl.svelte";
-  import LimitsCard from "./LimitsCard.svelte";
+  import equal from "fast-deep-equal/es6";
+  import { Badge } from "$ui/badge";
 
   const reportsConfig = new ConfigState<DBGuildProjectionReturns["reportSettings"]>();
+  const pauseState = new ConfigState<TPauseState>({
+    enabled: false,
+    pausedUntil: { date: null, value: false },
+    type: "indefinite",
+  });
 
   let reportChannel = $state<GuildCoreChannel | undefined>();
+  let fetchedState = $state<APIPausedUntil>({
+    date: null,
+    value: false,
+  });
+
+  function errorHintTimedButNoDate() {
+    toast.error("Cannot set timed pause without a date.", {
+      description: "Please select a date or change the pause type.",
+    });
+  }
+
+  function setPauseState(pu: APIPausedUntil) {
+    pauseState.saveConfig({
+      pausedUntil: pu,
+      enabled: pu.value,
+      type: pu.date && pu.value ? "timed" : "indefinite",
+    });
+  }
+
+  function buildPausedUntil(_data?: TPauseState): APIPausedUntil {
+    const snap = _data ?? pauseState.snap();
+    return {
+      value: !!snap?.pausedUntil.value,
+      date: snap?.pausedUntil.value && snap.type === "timed" ? snap.pausedUntil.date : null,
+    };
+  }
 
   const saveAll: SaveFunction = async function (setLoading, callback) {
+    if (reportsConfig.config) {
+      reportsConfig.config.pausedUntil = buildPausedUntil();
+    }
+
     if (!reportsConfig.evalUnsaved()) {
       toast.info("Nothing to save.");
       return;
@@ -28,8 +67,27 @@
     setLoading(true);
 
     const current = $state.snapshot(reportsConfig.config);
+    const pausedPayload = buildPausedUntil();
+    const oldPausedUntil = pauseState.snap();
+
+    // Store original states for comparison
+    const originalPausedState = deepClone(fetchedState);
+    const originalConfig = deepClone(reportsConfig.backup);
+
     if (!current) {
       toast.error("No report configuration found to save.");
+      setLoading(false);
+      return;
+    }
+
+    if (oldPausedUntil?.type === "timed" && !pausedPayload.date) {
+      errorHintTimedButNoDate();
+      setLoading(false);
+      return;
+    } else if (dayjs(pausedPayload.date).isBefore(new Date())) {
+      toast.error("Cannot set a pause date in the past.", {
+        description: "Please select a future date for the pause.",
+      });
       setLoading(false);
       return;
     }
@@ -40,7 +98,8 @@
       const res = await apiClient.put(APIRoutes.reportsConfig(page.data.guildId!), {
         json: {
           ...rest,
-          enabled: !rest.channelId ? false : rest.enabled, // Make sure reports are disabled, when no channel is set (I dunno if state handles this correctly; just to be safe)
+          enabled: !rest.channelId ? false : rest.enabled,
+          pausedUntil: pausedPayload,
         } as PutFields,
       });
 
@@ -51,12 +110,31 @@
 
       const json = await res.json<DBGuildProjectionReturns["reportSettings"]>();
       reportsConfig.saveConfig(json);
-      toast.success("Report configuration saved successfully.");
+      setPauseState(json.pausedUntil);
+      fetchedState = json.pausedUntil;
+
+      // Determine what actually changed
+      const pauseStatusChanged = originalPausedState.value !== json.pausedUntil.value;
+      const pauseDateChanged = originalPausedState.date !== json.pausedUntil.date;
+      const configChanged = !equal(originalConfig, json);
+
+      let description: string | undefined;
+
+      if (pauseStatusChanged) {
+        description = json.pausedUntil.value ? "Reports paused." : "Reports resumed.";
+      } else if (pauseDateChanged && json.pausedUntil.value) {
+        description = "Pause schedule updated.";
+      } else if (configChanged) {
+        description = "Configuration updated successfully.";
+      }
+
+      toast.success("Report configuration saved successfully.", {
+        description,
+      });
 
       callback?.(json);
     } catch (error: any) {
       toast.error(`Failed to save report configuration: ${error.message}`);
-      return;
     } finally {
       setLoading(false);
     }
@@ -84,6 +162,8 @@
               opens: data.limits?.opens ?? 20,
             },
           });
+          setPauseState(data.pausedUntil);
+          fetchedState = data.pausedUntil;
           setChannel(reportsConfig.config?.channelId ?? undefined);
         });
       })
@@ -103,10 +183,12 @@
 <SiteHeading title="Report Settings" />
 
 <SettingsGrid class="mt-6">
-  {#if reportsConfig.isConfigured()}
+  {#if reportsConfig.isConfigured() && pauseState.isConfigured()}
     <SystemControl
-      bind:pausedUntil={reportsConfig.config.pausedUntil}
+      bind:pauseState={pauseState.config}
       bind:enabled={reportsConfig.config.enabled}
+      bind:loading={reportsConfig.loading}
+      {fetchedState}
       saveAllFn={saveAll}
     />
     <LimitsCard bind:limits={reportsConfig.config.limits} loading={reportsConfig.loading} saveFn={saveAll} />
