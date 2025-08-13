@@ -105,7 +105,7 @@ export class Bitfield {
    * Combine this bitfield with another (OR operation)
    */
   combine(other: Bitfield): this {
-    this._bits |= other._bits;
+    this._bits |= other.bits;
     return this;
   }
 
@@ -113,7 +113,7 @@ export class Bitfield {
    * Remove bits that are set in another bitfield
    */
   subtract(other: Bitfield): this {
-    this._bits &= ~other._bits;
+    this._bits &= ~other.bits;
     return this;
   }
 
@@ -121,7 +121,7 @@ export class Bitfield {
    * Keep only bits that are set in both bitfields (AND operation)
    */
   intersect(other: Bitfield): this {
-    this._bits &= other._bits;
+    this._bits &= other.bits;
     return this;
   }
 
@@ -129,7 +129,7 @@ export class Bitfield {
    * Check if this bitfield equals another
    */
   equals(other: Bitfield): boolean {
-    return this._bits === other._bits;
+    return this._bits === other.bits;
   }
 
   /**
