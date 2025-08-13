@@ -1,11 +1,11 @@
 import { JsonErrors } from "$lib/constants";
 import { FlattenDocToJSON, getTicketCategories, TicketCategory } from "$lib/server/db";
 import {
-  CustomModalFieldPredicate,
-  MentionableEntityPredicate,
-  PartialEmojiPredicate,
-  SnowflakePredicate,
-  ZodValidator,
+    CustomModalFieldSchema,
+    MentionableEntityPredicate,
+    PartialEmojiPredicate,
+    SnowflakePredicate,
+    ZodValidator,
 } from "$lib/server/validators";
 import { reindexArrayByKey } from "$lib/utils/formatting.js";
 import z from "zod";
@@ -18,7 +18,7 @@ const putSchema = z.object({
   enabled: z.boolean().default(true),
   tag: SnowflakePredicate.optional(),
   pings: MentionableEntityPredicate.array().optional(),
-  fields: CustomModalFieldPredicate.array().min(0).max(5).optional(),
+  fields: CustomModalFieldSchema.array().min(0).max(5).optional(),
   customMessageId: z.string().optional(),
 });
 

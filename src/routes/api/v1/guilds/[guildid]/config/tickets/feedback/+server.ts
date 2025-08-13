@@ -1,6 +1,6 @@
 import { JsonErrors } from "$lib/constants";
 import { DBGuild, FlattenDocToJSON, getDBGuild } from "$lib/server/db/index.js";
-import { CustomModalFieldPredicate, ZodValidator } from "$lib/server/validators/index.js";
+import { CustomModalFieldSchema, ZodValidator } from "$lib/server/validators/index.js";
 import { hasAllKeys } from "$lib/utils";
 import { reindexArrayByKey } from "$lib/utils/formatting.js";
 import type { UpdateQuery } from "mongoose";
@@ -35,7 +35,7 @@ export async function GET({ locals: { guildId } }) {
 const putSchema = z
   .object({
     isEnabled: z.boolean(),
-    questions: CustomModalFieldPredicate.array().min(0).max(5).optional(),
+    questions: CustomModalFieldSchema.array().min(0).max(5).optional(),
     thankYou: z.string().optional(),
   })
   .default({ isEnabled: false });

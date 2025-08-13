@@ -1,9 +1,17 @@
 import { JsonErrors } from "$lib/constants.js";
-import { FlattenDocToJSON, type DBGuildProjectionReturns } from "$lib/server/db/utils.js";
-import { getDBGuild, updateDBGuild } from "$lib/server/db/utils.js";
-import { MentionableEntityPredicate, ZodValidator } from "$lib/server/validators";
-import { SnowflakePredicate } from "$lib/server/validators";
-import { isNotUndefined } from "$lib/utils.js";
+import {
+  FlattenDocToJSON,
+  getDBGuild,
+  updateDBGuild,
+  type DBGuildProjectionReturns,
+} from "$lib/server/db/utils.js";
+import {
+  APIPausedUntilSchema,
+  MentionableEntityPredicate,
+  SnowflakePredicate,
+  ZodValidator,
+} from "$lib/server/validators";
+import dayjs from "dayjs";
 import type { UpdateQuery } from "mongoose";
 import { ReportNotificationType, SpecialReportChannelType, type IDBGuild } from "supportmail-types";
 import z from "zod";
@@ -68,6 +76,7 @@ const putSchema = z
       opens: 20,
     }),
     notifications: notificationSchema.optional(),
+    pausedUntil: APIPausedUntilSchema.default({ date: null, value: false }),
   })
   .refine(
     (data) => {
@@ -112,9 +121,20 @@ export async function PUT({ request, locals }) {
 
   const { data } = validationRes;
 
+  const pauseDjs = data.pausedUntil.date ? dayjs(data.pausedUntil.date) : null;
+  if (pauseDjs && !pauseDjs.isValid()) {
+    return JsonErrors.badRequest("Invalid Date.");
+  } else if (pauseDjs?.isBefore(new Date())) {
+    return JsonErrors.badRequest("Invalid Date. Must be in the future!");
+  }
+
   const updateFields: UpdateQuery<IDBGuild> = {
     $set: {
       "reportConfig.enabled": data.enabled,
+      "reportConfig.pausedUntil": {
+        value: data.pausedUntil.value,
+        date: pauseDjs?.toDate() ?? null,
+      },
       "reportConfig.channelId": data.channelId,
       "reportConfig.actionsEnabled": data.actionsEnabled,
       "reportConfig.channels": data.channels,
