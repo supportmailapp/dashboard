@@ -127,3 +127,55 @@ export function makeFallbackInitials(name: string, maxLength = 2): string {
     .toUpperCase();
   return initials.length < maxLength ? initials.padEnd(maxLength, "?") : initials;
 }
+
+/**
+ * Custom deep clone function that handles objects that cannot be structured cloned.
+ * Properly handles primitives, Dates, Arrays, and POJOs.
+ */
+export function deepClone<T>(obj: T): T {
+  // Handle null and undefined
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  // Handle primitives (string, number, boolean, bigint)
+  if (typeof obj !== "object") {
+    return obj;
+  }
+
+  // Handle Date objects
+  if (obj instanceof Date) {
+    return new Date(obj.getTime()) as T;
+  }
+
+  // Handle Arrays
+  if (Array.isArray(obj)) {
+    return obj.map((item) => deepClone(item)) as T;
+  }
+
+  // Try structuredClone first for complex objects
+  try {
+    return structuredClone(obj);
+  } catch (error) {
+    // Fallback for objects that can't be structured cloned
+    try {
+      // Handle plain objects with JSON serialization
+      if (obj.constructor === Object || obj.constructor === undefined) {
+        return JSON.parse(JSON.stringify(obj));
+      }
+
+      // For other object types, try to create a new object and copy properties
+      const cloned = {} as T;
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          (cloned as any)[key] = deepClone((obj as any)[key]);
+        }
+      }
+      return cloned;
+    } catch (jsonError) {
+      // If all else fails, return the original object
+      console.warn("Failed to clone object, returning original:", jsonError);
+      return obj;
+    }
+  }
+}
