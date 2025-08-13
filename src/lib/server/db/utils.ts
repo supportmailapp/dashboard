@@ -10,15 +10,8 @@ import {
 import { ValidationError } from "zod-validation-error";
 import { DBGuild, DBUser } from "./models";
 import { TicketCategory } from "./models/src/ticketCategory";
-import { hasAllKeys } from "$lib/utils";
 
-type DBGuildProjection =
-  | "full"
-  | "generalTicketSettings"
-  | "language"
-  | "pausing"
-  | "feedback"
-  | "reportSettings";
+type DBGuildProjection = "full" | "generalTicketSettings" | "language" | "feedback" | "reportSettings";
 
 export interface DBGuildProjectionReturns {
   full: IDBGuild;
@@ -27,12 +20,7 @@ export interface DBGuildProjectionReturns {
     allowedBots: string[];
   };
   language: string;
-  pausing: {
-    tickets: PausedUntil;
-    reports: PausedUntil;
-  };
   feedback: NonNullable<ITicketConfig["feedback"]>;
-
   reportSettings: Omit<IDBGuild["reportConfig"], "pausedUntil" | "limits"> & {
     pausedUntil: APIPausedUntil;
     limits: ReportLimitsConfig;
@@ -67,14 +55,8 @@ export async function getDBGuild<T extends DBGuildProjection>(
       } as DBGuildProjectionReturns[T];
     case "language":
       return jsonConfig.lang as DBGuildProjectionReturns[T];
-    case "pausing":
-      return {
-        tickets: jsonConfig.ticketConfig.pausedUntil ?? defaultP,
-        reports: jsonConfig.reportConfig.pausedUntil ?? defaultP,
-      } as DBGuildProjectionReturns[T];
     case "feedback":
       return (jsonConfig.ticketConfig.feedback ?? { enabled: false }) as DBGuildProjectionReturns[T];
-
     case "reportSettings":
       return {
         ...jsonConfig.reportConfig,
