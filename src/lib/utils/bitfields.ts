@@ -1,10 +1,10 @@
 /**
  * A TypeScript bitfield class for managing flags like permissions
  */
-export class Bitfield {
+class Bitfield {
   private _bits: bigint;
 
-  constructor(bits: bigint | number = 0n) {
+  constructor(bits: bigint | number = BigInt(0)) {
     this._bits = BigInt(bits);
   }
 
@@ -65,7 +65,7 @@ export class Bitfield {
   hasAny(...bits: (bigint | number)[]): boolean {
     for (const bit of bits) {
       const bitValue = BigInt(bit);
-      if ((this._bits & bitValue) !== 0n) {
+      if ((this._bits & bitValue) !== BigInt(0)) {
         return true;
       }
     }
@@ -76,7 +76,7 @@ export class Bitfield {
    * Clear all bits
    */
   clear(): this {
-    this._bits = 0n;
+    this._bits = BigInt(0);
     return this;
   }
 
@@ -150,7 +150,7 @@ export class Bitfield {
    * Convert to hexadecimal string
    */
   toHex(): string {
-    return '0x' + this._bits.toString(16).toUpperCase();
+    return "0x" + this._bits.toString(16).toUpperCase();
   }
 
   /**
@@ -161,11 +161,11 @@ export class Bitfield {
     let temp = this._bits;
     let position = 0;
 
-    while (temp > 0n) {
-      if (temp & 1n) {
+    while (temp > BigInt(0)) {
+      if (temp & BigInt(1)) {
         setBits.push(position);
       }
-      temp >>= 1n;
+      temp >>= BigInt(1);
       position++;
     }
 
@@ -179,56 +179,54 @@ export class Bitfield {
     let count = 0;
     let temp = this._bits;
 
-    while (temp > 0n) {
-      count += Number(temp & 1n);
-      temp >>= 1n;
+    while (temp > BigInt(0)) {
+      count += Number(temp & BigInt(1));
+      temp >>= BigInt(1);
     }
 
     return count;
   }
 }
 
-// Example usage with permissions
-// TODO: Move this to permissions.ts
 const PermissionFlagsBits = {
-  ADMIN: 1n,
-  MANAGER: 2n,
-  // etc.
+  ADMIN: BigInt(1),
+  MANAGER: BigInt(2),
+  // TODO: idk what permissions to add here. maybe one time?
 } as const;
 
 // Type for permission resolution
 export type PermissionResolvable = bigint | number | keyof typeof PermissionFlagsBits;
 
 /**
- * Utility function to resolve permission keys to bigint values
- */
-function resolvePermission(permission: PermissionResolvable): bigint {
-  if (typeof permission === 'string') {
-    const resolved = PermissionFlagsBits[permission];
-    if (resolved === undefined) {
-      throw new Error(`Unknown permission: ${permission}`);
-    }
-    return resolved;
-  }
-  return BigInt(permission);
-}
-
-/**
  * Permissions-specific bitfield class with string key support
  */
 class PermissionsBitfield extends Bitfield {
   /**
+   * Utility function to resolve permission keys to bigint values
+   */
+  private resolvePermission(permission: PermissionResolvable): bigint {
+    if (typeof permission === "string") {
+      const resolved = PermissionFlagsBits[permission];
+      if (resolved === undefined) {
+        throw new Error(`Unknown permission: ${permission}`);
+      }
+      return resolved;
+    }
+    return BigInt(permission);
+  }
+
+  /**
    * Check if a specific permission is set
    */
   has(permission: PermissionResolvable): boolean {
-    return super.has(resolvePermission(permission));
+    return super.has(this.resolvePermission(permission));
   }
 
   /**
    * Set one or more permissions
    */
   set(...permissions: PermissionResolvable[]): this {
-    const resolved = permissions.map(resolvePermission);
+    const resolved = permissions.map(this.resolvePermission);
     return super.set(...resolved);
   }
 
@@ -236,7 +234,7 @@ class PermissionsBitfield extends Bitfield {
    * Unset/clear one or more permissions
    */
   unset(...permissions: PermissionResolvable[]): this {
-    const resolved = permissions.map(resolvePermission);
+    const resolved = permissions.map(this.resolvePermission);
     return super.unset(...resolved);
   }
 
@@ -244,7 +242,7 @@ class PermissionsBitfield extends Bitfield {
    * Toggle one or more permissions
    */
   toggle(...permissions: PermissionResolvable[]): this {
-    const resolved = permissions.map(resolvePermission);
+    const resolved = permissions.map(this.resolvePermission);
     return super.toggle(...resolved);
   }
 
@@ -252,7 +250,7 @@ class PermissionsBitfield extends Bitfield {
    * Check if ALL specified permissions are set
    */
   hasAll(...permissions: PermissionResolvable[]): boolean {
-    const resolved = permissions.map(resolvePermission);
+    const resolved = permissions.map(this.resolvePermission);
     return super.hasAll(...resolved);
   }
 
@@ -260,7 +258,7 @@ class PermissionsBitfield extends Bitfield {
    * Check if ANY of the specified permissions are set
    */
   hasAny(...permissions: PermissionResolvable[]): boolean {
-    const resolved = permissions.map(resolvePermission);
+    const resolved = permissions.map(this.resolvePermission);
     return super.hasAny(...resolved);
   }
 
@@ -297,15 +295,15 @@ class PermissionsBitfield extends Bitfield {
    */
   getSetPermissions(): (keyof typeof PermissionFlagsBits)[] {
     const setPermissions: (keyof typeof PermissionFlagsBits)[] = [];
-    
+
     for (const [name, value] of Object.entries(PermissionFlagsBits)) {
       if (this.has(value)) {
         setPermissions.push(name as keyof typeof PermissionFlagsBits);
       }
     }
-    
+
     return setPermissions;
   }
 }
 
-export { Bitfield, PermissionBitfield };
+export { Bitfield, PermissionsBitfield };
