@@ -11,8 +11,7 @@ import type {
   RESTAPIPartialCurrentUserGuild,
 } from "discord-api-types/v10";
 import type { FlattenMaps } from "mongoose";
-import type { IUserToken } from "supportmail-types";
-import type { PUTPausingObject } from "./routes/api/v1/guilds/[guildid]/config/pausing/[modul]/+server";
+import type { IUserToken, PausedUntil } from "supportmail-types";
 import type { SMErrorCodes } from "$lib/server/constants";
 import type { Socket } from "socket.io-client";
 import type { EventsMap } from "$lib/utils/websocket";
@@ -137,7 +136,7 @@ declare global {
     isConfigured: boolean;
   };
 
-  type APIPausedUntil = PUTPausingObject & {
+  type APIPausedUntil = Omit<PausedUntil, "date"> & {
     /**
      * Whether something is paused.
      */
@@ -191,6 +190,12 @@ declare global {
       totalPages: number;
     };
     error?: string;
+  };
+
+  type TPauseState = {
+    pausedUntil: APIPausedUntil;
+    type: "timed" | "indefinite";
+    enabled: boolean;
   };
 
   namespace ClientAPI {
