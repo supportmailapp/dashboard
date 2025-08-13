@@ -195,7 +195,6 @@ declare global {
   type TPauseState = {
     pausedUntil: APIPausedUntil;
     type: "timed" | "indefinite";
-    enabled: boolean;
   };
 
   namespace ClientAPI {

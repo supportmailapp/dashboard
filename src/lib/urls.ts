@@ -98,6 +98,8 @@ const APIRoutes = {
 
   reports: (guildId: string) => `${API_BASE}/guilds/${guildId}/reports` as const,
   reportsConfig: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/reports` as const,
+
+  blacklist: (guildId: string) => `${API_BASE}/guilds/${guildId}/blacklist` as const,
 };
 
 const LegalLinks = {

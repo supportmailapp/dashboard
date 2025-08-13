@@ -5,14 +5,14 @@
   import { BlacklistScope, EntityType } from "supportmail-types";
 
   type Props = {
-    searchUserId?: string;
-    scope?: BlacklistScope;
+    search?: string;
+    scope?: Exclude<BlacklistScope, BlacklistScope.global>;
     perPage?: number;
     filterType?: Exclude<EntityType, EntityType.guild> | -1;
   };
 
   let {
-    searchUserId = $bindable(""),
+    search = $bindable(""),
     scope = $bindable(BlacklistScope.all),
     perPage = $bindable(20),
     filterType = $bindable(-1),
@@ -35,7 +35,7 @@
 <div class="bg-card flex w-full max-w-3xl flex-wrap gap-3 rounded-lg border p-4">
   <div class="flex w-full max-w-xs flex-col gap-2">
     <Label class="text-sm font-medium">Search</Label>
-    <Input placeholder="User ID" bind:value={searchUserId} class="w-full" />
+    <Input placeholder="User / Role ID" bind:value={search} class="w-full" />
   </div>
 
   <div class="flex flex-col gap-2">

@@ -1,12 +1,12 @@
 import { JsonErrors } from "$lib/constants";
-import { BlacklistEntry, FlattenDocToJSON } from "$lib/server/db/index.js";
-import { safeParseInt } from "$lib/utils";
+import { BlacklistEntry, FlattenDocToJSON } from "$lib/server/db";
+import { safeParseInt } from "$lib/utils.js";
 import type { FilterQuery } from "mongoose";
 import { BlacklistScope, EntityType, type IBlacklistEntry } from "supportmail-types";
 
-export type BlacklistResponse = PaginatedResponse<DocumentWithId<IBlacklistEntry>>;
+export type PaginatedBlacklistResponse = PaginatedResponse<DocumentWithId<IBlacklistEntry>>;
 
-type PossibleFilterTypes = Exclude<EntityType, EntityType.guild> | -1;
+type AllowedEntityType = Exclude<EntityType, EntityType.guild> | -1;
 
 export async function GET({ locals, url }) {
   if (!locals.guildId || !locals.isAuthenticated()) return JsonErrors.unauthorized();
@@ -17,31 +17,38 @@ export async function GET({ locals, url }) {
     const Params = {
       page: safeParseInt(url.searchParams.get("page"), 1, 1),
       pageSize: safeParseInt(url.searchParams.get("pageSize"), 20, 10, 100),
-      searchUserId: url.searchParams.has("search")
+      search: url.searchParams.has("search")
         ? decodeURIComponent(url.searchParams.get("search")!)
         : undefined,
-      searchScope: safeParseInt(
-        url.searchParams.get("scope"),
-        BlacklistScope.all,
-        BlacklistScope.all,
-        BlacklistScope.tags,
-      ) as BlacklistScope,
-      filterType: safeParseInt(url.searchParams.get("etype"), -1, 1, 2) as PossibleFilterTypes,
+      scope: safeParseInt(url.searchParams.get("scope"), BlacklistScope.all, 1, 4) as Exclude<
+        BlacklistScope,
+        BlacklistScope.global
+      >,
+      type: safeParseInt(url.searchParams.get("type"), -1) as AllowedEntityType,
     };
+
+    console.log("Params:", Params);
 
     const skip = (Params.page - 1) * Params.pageSize;
 
     // Build filter query
     const filter: FilterQuery<IBlacklistEntry> = { guildId: guildId };
 
-    if (Params.searchUserId) {
-      filter.id = { $regex: Params.searchUserId, $options: "i" };
+    if (Params.search) {
+      filter.id = { $regex: Params.search, $options: "i" };
+      if (Params.type !== -1) {
+        filter._type = Params.type;
+      }
     }
 
-    // Query blacklist entries for the guild with pagination
-    const [blacklistEntries, totalItems] = await Promise.all([
+    if (Params.scope !== BlacklistScope.all) {
+      filter.scope = Params.scope;
+    }
+
+    // Query tickets for the guild with pagination
+    const [entries, totalItems] = await Promise.all([
       BlacklistEntry.find(filter, null, {
-        sort: { createdAt: -1 },
+        sort: { lastActive: -1 },
         skip: skip,
         limit: Params.pageSize,
       }),
@@ -50,8 +57,8 @@ export async function GET({ locals, url }) {
 
     const totalPages = Math.ceil(totalItems / Params.pageSize);
 
-    const response: BlacklistResponse = {
-      data: blacklistEntries.map((d) => FlattenDocToJSON(d, true)),
+    const response: PaginatedBlacklistResponse = {
+      data: entries.map((d) => FlattenDocToJSON(d, true)),
       pagination: {
         page: Params.page,
         pageSize: Params.pageSize,
@@ -64,7 +71,7 @@ export async function GET({ locals, url }) {
 
     return Response.json(response);
   } catch (error) {
-    const response: BlacklistResponse = {
+    const response: PaginatedBlacklistResponse = {
       data: [],
       pagination: {
         page: 1,
@@ -72,7 +79,7 @@ export async function GET({ locals, url }) {
         totalItems: 0,
         totalPages: 0,
       },
-      error: "Failed to fetch blacklist entries",
+      error: "Failed to fetch tickets",
     };
 
     return Response.json(response, { status: 500 });
