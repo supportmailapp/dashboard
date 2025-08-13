@@ -89,8 +89,6 @@ const APIRoutes = {
   ticketSetup: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/tickets/setup` as const,
   ticketFeedbackSetup: (guildId: string) =>
     `${API_BASE}/guilds/${guildId}/config/tickets/feedback/setup` as const,
-  pausing: (guildId: string, modul: "tickets" | "reports") =>
-    `${API_BASE}/guilds/${guildId}/config/pausing/${modul}` as const,
   memberSearch: (guildId: string, query: string, filter?: "bot") =>
     `${API_BASE}/guilds/${guildId}/member-search?q=${encodeURIComponent(query)}${addFilterParam(filter)}` as const,
   ticketCategories: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/tickets/categories` as const,
