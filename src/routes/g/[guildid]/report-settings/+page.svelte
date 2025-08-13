@@ -17,14 +17,13 @@
   import MentionableSelectCard from "./MentionableSelectCard.svelte";
   import SystemControl from "./SystemControl.svelte";
   import equal from "fast-deep-equal/es6";
-  import { Badge } from "$ui/badge";
 
   const reportsConfig = new ConfigState<DBGuildProjectionReturns["reportSettings"]>();
   const pauseState = new ConfigState<TPauseState>({
-    enabled: false,
     pausedUntil: { date: null, value: false },
     type: "indefinite",
   });
+  let showDateError = $state(false);
 
   let reportChannel = $state<GuildCoreChannel | undefined>();
   let fetchedState = $state<APIPausedUntil>({
@@ -32,16 +31,19 @@
     value: false,
   });
 
+  $inspect("config", reportsConfig.config);
+  $inspect("pauseState", pauseState.config);
+
   function errorHintTimedButNoDate() {
     toast.error("Cannot set timed pause without a date.", {
       description: "Please select a date or change the pause type.",
     });
+    showDateError = true;
   }
 
   function setPauseState(pu: APIPausedUntil) {
     pauseState.saveConfig({
       pausedUntil: pu,
-      enabled: pu.value,
       type: pu.date && pu.value ? "timed" : "indefinite",
     });
   }
@@ -50,18 +52,14 @@
     const snap = _data ?? pauseState.snap();
     return {
       value: !!snap?.pausedUntil.value,
-      date: snap?.pausedUntil.value && snap.type === "timed" ? snap.pausedUntil.date : null,
+      date: !snap?.pausedUntil.value || !snap || snap.type === "indefinite" ? null : snap.pausedUntil.date,
     };
   }
 
   const saveAll: SaveFunction = async function (setLoading, callback) {
+    showDateError = false;
     if (reportsConfig.config) {
       reportsConfig.config.pausedUntil = buildPausedUntil();
-    }
-
-    if (!reportsConfig.evalUnsaved()) {
-      toast.info("Nothing to save.");
-      return;
     }
 
     setLoading(true);
@@ -71,28 +69,41 @@
     const oldPausedUntil = pauseState.snap();
 
     // Store original states for comparison
-    const originalPausedState = deepClone(fetchedState);
+    const originalPausedState = deepClone($state.snapshot(fetchedState));
     const originalConfig = deepClone(reportsConfig.backup);
 
-    if (!current) {
-      toast.error("No report configuration found to save.");
-      setLoading(false);
-      return;
-    }
+    console.log("paused payload", pausedPayload);
 
     if (oldPausedUntil?.type === "timed" && !pausedPayload.date) {
       errorHintTimedButNoDate();
       setLoading(false);
       return;
-    } else if (dayjs(pausedPayload.date).isBefore(new Date())) {
+    } else if (pausedPayload.date && dayjs(pausedPayload.date).isBefore(new Date())) {
       toast.error("Cannot set a pause date in the past.", {
         description: "Please select a future date for the pause.",
       });
+      showDateError = true;
       setLoading(false);
       return;
     }
 
-    const { pausedUntil, ...rest } = current;
+    if (!reportsConfig.evalUnsaved()) {
+      toast.info("Nothing to save.");
+      setLoading(false);
+      return;
+    }
+
+    const { pausedUntil, ...rest } = current ?? {
+      channelId: null,
+      actionsEnabled: false,
+      enabled: false,
+      limits: { opens: 20, perUserCreate: 5, perUserReceive: 1 },
+      pausedUntil: {
+        date: null,
+        value: false,
+      },
+      pings: [],
+    };
 
     try {
       const res = await apiClient.put(APIRoutes.reportsConfig(page.data.guildId!), {
@@ -189,6 +200,7 @@
       bind:enabled={reportsConfig.config.enabled}
       bind:loading={reportsConfig.loading}
       {fetchedState}
+      {showDateError}
       saveAllFn={saveAll}
     />
     <LimitsCard bind:limits={reportsConfig.config.limits} loading={reportsConfig.loading} saveFn={saveAll} />

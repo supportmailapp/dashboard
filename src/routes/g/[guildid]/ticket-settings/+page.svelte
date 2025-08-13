@@ -22,7 +22,6 @@
 
   const generalTicketsConf = new ConfigState<DBGuildProjectionReturns["generalTicketSettings"]>();
   const pauseState = new ConfigState<TPauseState>({
-    enabled: false,
     pausedUntil: { date: null, value: false },
     type: "indefinite",
   });
@@ -30,19 +29,21 @@
     date: null,
     value: false,
   });
+  let showDateError = $state(false);
 
   $inspect("config", generalTicketsConf.config);
+  $inspect("pauseState", pauseState.config);
 
   function errorHintTimedButNoDate() {
     toast.error("Cannot set timed pause without a date.", {
       description: "Please select a date or change the pause type.",
     });
+    showDateError = true;
   }
 
   function setPauseState(pu: APIPausedUntil) {
     pauseState.saveConfig({
       pausedUntil: pu,
-      enabled: pu.value,
       type: pu.date && pu.value ? "timed" : "indefinite", // ? Really && or is just the check for the date enough?
     });
   }
@@ -51,18 +52,14 @@
     const snap = _data ?? pauseState.snap();
     return {
       value: !!snap?.pausedUntil.value,
-      date: snap?.pausedUntil.value && snap.type === "timed" ? snap.pausedUntil.date : null,
+      date: snap?.pausedUntil.value || !snap || snap.type === "indefinite" ? null : snap.pausedUntil.date,
     };
   }
 
   const saveAll: SaveFunction = async function (setLoading, callback) {
+    showDateError = false;
     if (generalTicketsConf.config) {
       generalTicketsConf.config.pausedUntil = buildPausedUntil();
-    }
-
-    if (!generalTicketsConf.evalUnsaved()) {
-      toast.info("Nothing to save.");
-      return;
     }
 
     setLoading(true);
@@ -72,17 +69,26 @@
     const oldPausedUntil = pauseState.snap();
 
     // Store original states for comparison
-    const originalPausedState = deepClone(fetchedState);
+    const originalPausedState = deepClone($state.snapshot(fetchedState));
     const originalConfig = deepClone(generalTicketsConf.backup);
+
+    console.log("paused payload", pausedPayload);
 
     if (oldPausedUntil?.type === "timed" && !pausedPayload.date) {
       errorHintTimedButNoDate();
       setLoading(false);
       return;
-    } else if (dayjs(pausedPayload.date).isBefore(new Date())) {
+    } else if (pausedPayload.date && dayjs(pausedPayload.date).isBefore(new Date())) {
       toast.error("Cannot set a pause date in the past.", {
         description: "Please select a future date for the pause.",
       });
+      showDateError = true;
+      setLoading(false);
+      return;
+    }
+
+    if (!generalTicketsConf.evalUnsaved()) {
+      toast.info("Nothing to save.");
       setLoading(false);
       return;
     }
@@ -175,6 +181,7 @@
       bind:enabled={generalTicketsConf.config.enabled}
       bind:loading={generalTicketsConf.loading}
       {fetchedState}
+      {showDateError}
       saveAllFn={saveAll}
     />
     <MessageHandling

@@ -23,17 +23,6 @@
   }: Props = $props();
 </script>
 
-<!-- 
-ReportLimitsConfig {
-  /** Number of open reports a user can receive @default 1 @maxConfig `10` */
-  perUserReceive?: number;
-  /** Number of open reports a user can create @default 5 @maxConfig `50` */
-  perUserCreate?: number;
-  /** Number of open reports the guild can have @default 20 @maxConfig `100` */
-  opens?: number;
-}
--->
-
 <ConfigCard
   title="Limits"
   description="Set limits for reports"
@@ -55,7 +44,8 @@ ReportLimitsConfig {
   </div>
   <Separator />
   <div class="text-primary grid grid-cols-[auto_1fr] items-center gap-1.5">
-    <Info class="size-5" />
+    <!-- translate-y is because it looks nicer if 2+ lines are there -->
+    <Info class="size-5 -translate-y-0.5 sm:translate-0" />
     <p class="text-sm">
       There are hardcoded limits which cannot be changed. This might change when
       <span class="text-amber-500">Gold</span> is released.

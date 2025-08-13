@@ -37,45 +37,6 @@
   let ticketItems = $state<PaginatedTicketsResponse["data"]>([]);
   let ticketsStatus = $state<"loading" | "loaded" | "error">("loading");
 
-  async function fetchTickets() {
-    if (equal(fetchedData, $state.snapshot(pageData)) && ticketsStatus === "loaded") {
-      toast.info("Nothing changed, not fetching tickets again.");
-      return;
-    }
-
-    try {
-      ticketsStatus = "loading";
-      const searchParams = buildSearchParams(true);
-
-      const res = await apiClient.get<PaginatedTicketsResponse>(APIRoutes.tickets(page.data.guildId!), {
-        searchParams,
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        ticketItems = data.data;
-        pageData.total = data.pagination.totalItems;
-        pageData.perPage = data.pagination.pageSize;
-        pageData.page = data.pagination.page;
-        pageData.totalPages = data.pagination.totalPages;
-        fetchedData = $state.snapshot(pageData);
-        ticketsStatus = "loaded";
-        await goto(buildUrlWithParams(false), { replaceState: true });
-      } else {
-        if (res.headers.get("Content-Type")?.includes("application/json")) {
-          const errorData = await res.json();
-          console.error("Error fetching tickets:", errorData.error!);
-        } else {
-          console.error("Error fetching tickets:", res.statusText);
-        }
-        ticketsStatus = "error";
-      }
-    } catch (error) {
-      console.error("Failed to fetch tickets:", error);
-      return;
-    }
-  }
-
   function stringifyStatus(status: TicketStatus | null) {
     switch (status) {
       case TicketStatus.open:
@@ -103,13 +64,13 @@
     }
   }
 
-  function buildSearchParams(raw = true) {
+  function buildSearchParams() {
     const params = new URLSearchParams();
     params.set("page", pageData.page.toString());
     params.set("count", pageData.perPage.toString());
     params.set("sscope", pageData.searchScope);
     if (pageData.status !== null) {
-      params.set("status", raw ? pageData.status.toString() : stringifyStatus(pageData.status)); // For the api, this is the internal enum value
+      params.set("status", stringifyStatus(pageData.status)); // For the api, this is the internal enum value
     }
     if (pageData.anonym) {
       params.set("anonym", "true");
@@ -120,9 +81,47 @@
     return params;
   }
 
-  function buildUrlWithParams(raw = true) {
-    const params = buildSearchParams(raw);
+  function buildUrlWithParams() {
+    const params = buildSearchParams();
     return `${page.url.origin}${page.url.pathname}?${params.toString()}`;
+  }
+
+  async function fetchTickets() {
+    if (equal(fetchedData, $state.snapshot(pageData)) && ticketsStatus === "loaded") {
+      toast.info("Nothing changed, not fetching tickets again.");
+      return;
+    }
+
+    try {
+      ticketsStatus = "loading";
+
+      const res = await apiClient.get<PaginatedTicketsResponse>(APIRoutes.tickets(page.data.guildId!), {
+        searchParams: buildSearchParams(),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        ticketItems = data.data;
+        pageData.total = data.pagination.totalItems;
+        pageData.perPage = data.pagination.pageSize;
+        pageData.page = data.pagination.page;
+        pageData.totalPages = data.pagination.totalPages;
+        fetchedData = $state.snapshot(pageData);
+        ticketsStatus = "loaded";
+        await goto(buildUrlWithParams(), { replaceState: true });
+      } else {
+        if (res.headers.get("Content-Type")?.includes("application/json")) {
+          const errorData = await res.json();
+          console.error("Error fetching tickets:", errorData.error!);
+        } else {
+          console.error("Error fetching tickets:", res.statusText);
+        }
+        ticketsStatus = "error";
+      }
+    } catch (error) {
+      console.error("Failed to fetch tickets:", error);
+      return;
+    }
   }
 
   onMount(() => {
@@ -145,33 +144,9 @@
     bind:perPage={pageData.perPage}
     bind:searchScope={pageData.searchScope}
   />
-  <div class="grid grid-cols-2 gap-2">
-    <Button variant="default" onclick={fetchTickets}>
-      <span class="text-sm">Fetch</span>
-    </Button>
-    <Tooltip.Provider delayDuration={100}>
-      <Tooltip.Root>
-        <Tooltip.Trigger>
-          {#snippet child({ props })}
-            <Button
-              {...props}
-              variant="outline"
-              size="icon"
-              onclick={() => {
-                navigator.clipboard.writeText(buildUrlWithParams(false));
-                toast.success("Link copied to clipboard!");
-              }}
-            >
-              <Files class="size-4" />
-            </Button>
-          {/snippet}
-        </Tooltip.Trigger>
-        <Tooltip.Content>
-          <p>Copy link</p>
-        </Tooltip.Content>
-      </Tooltip.Root>
-    </Tooltip.Provider>
-  </div>
+  <Button variant="default" onclick={fetchTickets}>
+    <span class="text-sm">Fetch</span>
+  </Button>
 </div>
 
 <div class="flex flex-col items-center">

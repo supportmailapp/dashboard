@@ -16,6 +16,7 @@
     enabled: boolean;
     loading: boolean;
     fetchedState: APIPausedUntil;
+    showDateError: boolean;
     saveAllFn: SaveFunction;
   }
 
@@ -24,11 +25,9 @@
     enabled = $bindable(),
     loading = $bindable(),
     fetchedState = $bindable(),
+    showDateError,
     saveAllFn,
   }: Props = $props();
-
-  let showDateError = $state(false);
-  let savingTicketStatus = $state(false);
 
   const activeTabs = [
     { value: "active", label: "Active" },
@@ -64,7 +63,7 @@
     <!-- Ticket Status Section -->
     <div class="flex flex-col items-start gap-2">
       <Label class="inline-flex w-full items-center gap-2">
-        <Switch variant="success" bind:checked={enabled} disabled={savingTicketStatus} />
+        <Switch variant="success" bind:checked={enabled} disabled={loading} />
         {enabled ? "Enabled" : "Disabled"}
       </Label>
     </div>
@@ -84,7 +83,12 @@
         class="flex flex-row gap-8"
         bind:value={
           () => (pauseState.pausedUntil.value ? "paused" : "active"),
-          (val) => (pauseState.pausedUntil.value = val === "paused")
+          (val) => {
+            pauseState.pausedUntil.value = val === "paused";
+            if (val === "active") {
+              pauseState.pausedUntil.date = null; // Reset date when switching to active
+            }
+          }
         }
       >
         {#each activeTabs as tab}
