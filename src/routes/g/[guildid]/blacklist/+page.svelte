@@ -9,7 +9,6 @@
   import { Button, buttonVariants } from "$ui/button/index.js";
   import * as Dialog from "$ui/dialog/index.js";
   import * as Dropdown from "$ui/dropdown-menu/index.js";
-  import Input from "$ui/input/input.svelte";
   import Label from "$ui/label/label.svelte";
   import * as Select from "$ui/select/index.js";
   import Check from "@lucide/svelte/icons/check";
@@ -22,6 +21,10 @@
   import type { PaginatedBlacklistResponse } from "../../../api/v1/guilds/[guildid]/blacklist/+server";
   import EntriesTable from "./EntriesTable.svelte";
   import FilterControls from "./FilterControls.svelte";
+  import * as Popover from "$ui/popover";
+  import Mention from "$lib/components/discord/Mention.svelte";
+  import MentionableSelect from "$lib/components/MentionableSelect.svelte";
+  import type { APIUser } from "discord-api-types/v10";
 
   let pageStatus = $state<"loading" | "loaded" | "error">("loading");
   const pageData = $state({
@@ -63,10 +66,35 @@
     id = $state("");
     type = $state<Exclude<EntityType, EntityType.guild>>(EntityType.user);
     scopes = new SvelteBitfield(scopeToBit[BlacklistScope.all]);
+    popupOpen = $state(false);
+    customAnchor = $state<HTMLElement | null>(null);
+
+    setRole(role: GuildRole) {
+      this.id = role.id;
+      this.type = EntityType.role;
+      this.popupOpen = false;
+    }
+
+    setUser(user: APIUser) {
+      this.id = user.id;
+      this.type = EntityType.user;
+      this.popupOpen = false;
+    }
+
+    clear() {
+      this.id = "";
+      this.type = EntityType.user;
+      this.scopes.clear();
+      this.popupOpen = false;
+    }
   }
   const newEntry = new NewEntry();
 
-  $inspect("new entry scopes", newEntry.scopes.toBinary());
+  $inspect("new entry", {
+    id: newEntry.id,
+    type: newEntry.type,
+    scopes: newEntry.scopes.toBinary(),
+  });
 
   function buildSearchParams() {
     const params = new URLSearchParams();
@@ -166,9 +194,36 @@
         </Dialog.Header>
         <div class="grid grid-cols-[1fr_4fr] gap-4">
           <Label>ID</Label>
-          <!-- TODO: Make this Input a MentionableSelect -->
-          <!-- TODO: Add save functionality -->
-          <Input bind:value={newEntry.id} />
+          <!-- TODO: Find tf out why it's not working after once selected and cleared -->
+          <Popover.Root bind:open={newEntry.popupOpen} onOpenChange={(op) => console.log("new open", op)}>
+            {#if newEntry.id !== ""}
+              {@const isUser = newEntry.type === EntityType.user}
+              <Mention
+                userId={isUser ? newEntry.id : undefined}
+                roleId={!isUser ? newEntry.id : undefined}
+                onDelete={() => {
+                  newEntry.clear();
+                  return true;
+                }}
+              />
+            {:else}
+              <Popover.Trigger
+                class={cn(buttonVariants({ variant: "outline" }), "w-fit")}
+                disabled={pageStatus === "loading"}
+              >
+                Select User / Role
+              </Popover.Trigger>
+            {/if}
+            <Popover.Content customAnchor={newEntry.customAnchor}>
+              <MentionableSelect
+                excludedRoleIds={newEntry.type === EntityType.role ? [newEntry.id] : []}
+                excludedUserIds={newEntry.type === EntityType.user ? [newEntry.id] : []}
+                onRoleSelect={(role) => newEntry.setRole(role)}
+                onUserSelect={(user) => newEntry.setUser(user)}
+              />
+            </Popover.Content>
+          </Popover.Root>
+
           <Label>Type</Label>
           <Select.Root
             type="single"
