@@ -28,6 +28,8 @@
   description="Set limits for reports"
   rootClass="col-span-full lg:col-span-3"
   class="space-y-2"
+  saveBtnLoading={loading}
+  saveBtnDisabled={loading}
   saveFn={async () => {
     await saveFn((v) => (loading = v));
   }}
