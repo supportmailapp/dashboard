@@ -74,7 +74,7 @@
 
     console.log("paused payload", pausedPayload);
 
-    if (oldPausedUntil?.type === "timed" && !pausedPayload.date) {
+    if (oldPausedUntil?.type === "timed" && !pausedPayload.date && pausedPayload.value) {
       errorHintTimedButNoDate();
       setLoading(false);
       return;
@@ -203,7 +203,7 @@
       {showDateError}
       saveAllFn={saveAll}
     />
-    <LimitsCard bind:limits={reportsConfig.config.limits} loading={reportsConfig.loading} saveFn={saveAll} />
+    <LimitsCard bind:limits={reportsConfig.config.limits} bind:loading={reportsConfig.loading} saveFn={saveAll} />
     <ChannelSelectCard
       bind:channel={
         () => reportChannel ?? undefined,
