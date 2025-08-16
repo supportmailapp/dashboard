@@ -74,7 +74,7 @@
 
     console.log("paused payload", pausedPayload);
 
-    if (oldPausedUntil?.type === "timed" && !pausedPayload.date) {
+    if (oldPausedUntil?.type === "timed" && !pausedPayload.date && pausedPayload.value) {
       errorHintTimedButNoDate();
       setLoading(false);
       return;
