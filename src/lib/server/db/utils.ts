@@ -192,3 +192,20 @@ export function FlattenDocToJSON<T>(
     },
   }) as FlattenDocResult<T, typeof with_Id>;
 }
+
+type FlattenBigIntResult<T> = {
+  [K in keyof T]: T[K] extends bigint ? string : T[K];
+};
+
+/**
+ * Flattens a Mongoose Document even more by stringifying bigint fields.
+ */
+export function FlattenBigIntFields<T extends Record<string, any>>(obj: T): FlattenBigIntResult<T> {
+  const newObj = { ...obj };
+  for (const key in newObj) {
+    if (typeof newObj[key] === "bigint") {
+      newObj[key] = String(newObj[key]) as any;
+    }
+  }
+  return newObj as FlattenBigIntResult<T>;
+}

@@ -99,6 +99,15 @@ const APIRoutes = {
   reports: (guildId: string) => `${API_BASE}/guilds/${guildId}/reports` as const,
   reportsConfig: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/reports` as const,
 
+  /**
+   * Used for every blacklist operation.
+   * - `GET` - Fetch all blacklist entries
+   * - `POST` - Create a new blacklist entry
+   * - `PUT` - Update an existing blacklist entry by `_id`
+   *   - Expects a full blacklist entry object including `_id`
+   * - `DELETE` - Delete one or more blacklist entries by `_id`
+   *   - Expects `{ ids: string[] }` of ObjectIds to delete
+   */
   blacklist: (guildId: string) => `${API_BASE}/guilds/${guildId}/blacklist` as const,
 };
 
