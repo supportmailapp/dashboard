@@ -1,11 +1,14 @@
 <script lang="ts">
-  import type { IBlacklistEntry } from "supportmail-types";
   import { type ColumnDef } from "@tanstack/table-core";
   import DataTable from "$lib/components/data-table.svelte";
+  import type {
+    APIBlacklistEntry,
+    PaginatedBlacklistResponse,
+  } from "../../../api/v1/guilds/[guildid]/blacklist/+server";
 
-  let { entries }: { entries: DocumentWithId<IBlacklistEntry>[] } = $props();
+  let { entries }: { entries: PaginatedBlacklistResponse["data"] } = $props();
 
-  const cols: ColumnDef<IBlacklistEntry>[] = [
+  const cols: ColumnDef<APIBlacklistEntry>[] = [
     {
       accessorKey: "scope",
       header: "Scope",

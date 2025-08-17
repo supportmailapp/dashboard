@@ -1,25 +1,29 @@
 <script lang="ts">
+  import type { SvelteBitfield } from "$lib/utils/reactiveBitfield.svelte";
   import { Input } from "$ui/input/index.js";
   import { Label } from "$ui/label/index.js";
   import * as Select from "$ui/select/index.js";
+  import * as Dropdown from "$ui/dropdown-menu/index.js";
   import { BlacklistScope, EntityType } from "supportmail-types";
+  import Check from "@lucide/svelte/icons/check";
+  import ChevronDown from "@lucide/svelte/icons/chevron-down";
+  import { cn } from "$lib/utils";
 
   type Props = {
-    search?: string;
-    scope?: Exclude<BlacklistScope, BlacklistScope.global>;
-    perPage?: number;
-    filterType?: Exclude<EntityType, EntityType.guild> | -1;
+    search: string;
+    scopes: SvelteBitfield;
+    perPage: number;
+    filterType: Exclude<EntityType, EntityType.guild> | -1;
   };
 
   let {
     search = $bindable(""),
-    scope = $bindable(BlacklistScope.all),
+    scopes = $bindable(),
     perPage = $bindable(20),
     filterType = $bindable(-1),
   }: Props = $props();
 
   const filterScopeOptions: { value: BlacklistScope; label: string }[] = [
-    { value: BlacklistScope.all, label: "All" },
     { value: BlacklistScope.tickets, label: "Tickets" },
     { value: BlacklistScope.reports, label: "Reports" },
     { value: BlacklistScope.tags, label: "Tags" },
@@ -59,18 +63,37 @@
 
   <div class="flex flex-col gap-2">
     <Label class="text-sm font-medium">Filter By Scope</Label>
-    <Select.Root type="single" bind:value={() => scope.toString(), (v) => (scope = parseInt(v, 10))}>
-      <Select.Trigger class="w-32">
-        {filterScopeOptions.find((opt) => opt.value === scope)?.label || "Filter By ..."}
-      </Select.Trigger>
-      <Select.Content align="center">
-        {#each filterScopeOptions as opt}
-          <Select.Item value={opt.value.toString()}>
-            {opt.label}
-          </Select.Item>
-        {/each}
-      </Select.Content>
-    </Select.Root>
+    <Dropdown.Root>
+      <Dropdown.Trigger
+        class={cn(
+          "border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-fit items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none select-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+          "w-full sm:w-50",
+        )}
+      >
+        Select Scopes
+        <ChevronDown class="size-4 opacity-50" />
+      </Dropdown.Trigger>
+      <Dropdown.Content class="w-50">
+        <Dropdown.Group>
+          {#each filterScopeOptions as _scope}
+            <Dropdown.Item
+              closeOnSelect={false}
+              onclick={() => {
+                console.log("toggled scope", _scope.value);
+                scopes.toggle(_scope.value);
+              }}
+            >
+              {#if scopes.has(_scope.value)}
+                <span class="absolute right-2 flex size-3.5 items-center justify-center">
+                  <Check class="size-4" />
+                </span>
+              {/if}
+              {_scope.label}
+            </Dropdown.Item>
+          {/each}
+        </Dropdown.Group>
+      </Dropdown.Content>
+    </Dropdown.Root>
   </div>
 
   <div class="flex flex-col gap-2">

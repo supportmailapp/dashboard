@@ -61,17 +61,11 @@
 <Mounter />
 
 <Sidebar.Provider bind:open={sidebarOpen} class="h-svh">
-  <AppSidebar
-    onClick={() => {
-      if (Sidebar.useSidebar().openMobile) {
-        sidebarOpen = false;
-      }
-    }}
-  />
+  <AppSidebar />
   <Sidebar.Inset class="main-container">
     <header
       class={cn(
-        "bg-background text-sidebar-foreground sticky top-0 z-10 flex h-(--main-header-height) items-center justify-between p-3 shadow-lg border-b-2",
+        "bg-background text-sidebar-foreground sticky top-0 z-10 flex h-(--main-header-height) items-center justify-between border-b-2 p-3 shadow-lg",
         mode.current !== "dark" ? "shadow-accent/40" : "shadow-black/30",
       )}
     >

@@ -10,15 +10,17 @@
   import * as Dialog from "$ui/dialog/index.js";
   import * as Dropdown from "$ui/dropdown-menu/index.js";
   import Label from "$ui/label/label.svelte";
-  import * as Select from "$ui/select/index.js";
   import Check from "@lucide/svelte/icons/check";
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
   import Plus from "@lucide/svelte/icons/plus";
   import equal from "fast-deep-equal/es6";
   import { BlacklistScope, EntityType } from "supportmail-types";
-  import { onMount, untrack } from "svelte";
+  import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
-  import type { PaginatedBlacklistResponse } from "../../../api/v1/guilds/[guildid]/blacklist/+server";
+  import {
+    type APIBlacklistEntry,
+    type PaginatedBlacklistResponse,
+  } from "../../../api/v1/guilds/[guildid]/blacklist/+server";
   import EntriesTable from "./EntriesTable.svelte";
   import FilterControls from "./FilterControls.svelte";
   import * as Popover from "$ui/popover";
@@ -33,7 +35,7 @@
     total: null as number | null,
     totalPages: null as number | null,
     search: "" as string,
-    scope: BlacklistScope.all as Exclude<BlacklistScope, BlacklistScope.global>,
+    scopes: new SvelteBitfield(BlacklistScope.tickets & BlacklistScope.reports & BlacklistScope.tags),
     filterType: -1 as Exclude<EntityType, EntityType.guild> | -1,
   });
   /**
@@ -42,21 +44,12 @@
   let fetchedData = $state.snapshot(pageData);
   let entries = $state<PaginatedBlacklistResponse["data"]>([]);
 
-  // Map BlacklistScope enum values to bit positions
-  const scopeToBit = {
-    [BlacklistScope.all]: 1, // bit 0: 2^0 = 1
-    [BlacklistScope.tickets]: 2, // bit 1: 2^1 = 2
-    [BlacklistScope.reports]: 4, // bit 2: 2^2 = 4
-    [BlacklistScope.tags]: 8, // bit 3: 2^3 = 8
-  };
-
   const addDialog = {
     types: [
       { label: "User", value: EntityType.user },
       { label: "Role", value: EntityType.role },
     ],
     scopes: [
-      { label: "All", value: BlacklistScope.all },
       { label: "Tickets", value: BlacklistScope.tickets },
       { label: "Reports", value: BlacklistScope.reports },
       { label: "Tags", value: BlacklistScope.tags },
@@ -65,10 +58,11 @@
   class NewEntry {
     id = $state("");
     type = $state<Exclude<EntityType, EntityType.guild>>(EntityType.user);
-    scopes = new SvelteBitfield(scopeToBit[BlacklistScope.all]);
+    scopes = new SvelteBitfield();
     popupOpen = $state(false);
     customAnchor = $state<HTMLElement | null>(null);
     readonly canOpenPopup = $derived(this.id === "");
+    loading = $state(false);
 
     setRole(role: GuildRole) {
       this.id = role.id;
@@ -91,17 +85,11 @@
   }
   const newEntry = new NewEntry();
 
-  $inspect("new entry", {
-    id: newEntry.id,
-    type: newEntry.type,
-    scopes: newEntry.scopes.toBinary(),
-  });
-
   function buildSearchParams() {
     const params = new URLSearchParams();
     params.set("page", pageData.page.toString());
     params.set("count", pageData.perPage.toString());
-    params.set("scope", pageData.scope.toString());
+    params.set("scope", pageData.scopes.toString());
 
     if (pageData.search) {
       params.set("search", encodeURIComponent(pageData.search));
@@ -158,17 +146,48 @@
   });
 
   function toggleScope(scopeValue: Exclude<BlacklistScope, BlacklistScope.global>) {
-    const bitValue = scopeToBit[scopeValue];
-
     // Check if this is the only bit set and we're trying to unset it
-    if (newEntry.scopes.has(bitValue) && newEntry.scopes.popCount() === 1) {
+    if (newEntry.scopes.has(scopeValue) && newEntry.scopes.popCount() === 1) {
       toast.error("You cannot do that!", {
         description: "At least one scope is required.",
       });
       return;
     }
 
-    newEntry.scopes.toggle(bitValue);
+    newEntry.scopes.toggle(scopeValue);
+  }
+
+  async function addEntry() {
+    if (!newEntry.id || newEntry.scopes.size === 0) {
+      toast.error("Invalid entry", {
+        description: "Please select a user/role and at least one scope.",
+      });
+      return;
+    }
+
+    newEntry.loading = true;
+    try {
+      const res = await apiClient.post(APIRoutes.blacklist(page.data.guildId!), {
+        json: {
+          id: newEntry.id,
+          scopes: newEntry.scopes.toString(),
+          _type: newEntry.type,
+        },
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json<any>();
+        throw new Error(errorData.message || "Unknown error");
+      }
+      const data = await res.json<APIBlacklistEntry>();
+      entries.push(data);
+      toast.success("Entry added successfully!");
+    } catch (err: any) {
+      console.error("Error adding entry:", err);
+      toast.error("Error adding entry", {
+        description: err.message,
+      });
+    }
   }
 </script>
 
@@ -177,7 +196,7 @@
 <div class="mb-4 flex flex-col items-start justify-start gap-3">
   <FilterControls
     filterType={pageData.filterType}
-    scope={pageData.scope}
+    scopes={pageData.scopes}
     perPage={pageData.perPage}
     search={pageData.search}
   />
@@ -186,16 +205,16 @@
       <span class="text-sm">Fetch</span>
     </Button>
     <Dialog.Root>
-      <Dialog.Trigger class={buttonVariants({ variant: "outline", size: "icon" })}>
+      <Dialog.Trigger class={buttonVariants({ variant: "outline" })}>
         <Plus class="size-5" />
+        Add Entry
       </Dialog.Trigger>
       <Dialog.Content>
         <Dialog.Header>
           <Dialog.Title>Add Entry</Dialog.Title>
         </Dialog.Header>
         <div class="grid grid-cols-[1fr_4fr] gap-4">
-          <Label>ID</Label>
-          <!-- TODO: Find tf out why it's not working after once selected and cleared -->
+          <Label>New Entry</Label>
           <Popover.Root
             bind:open={() => newEntry.canOpenPopup && newEntry.popupOpen, (v) => (newEntry.popupOpen = v)}
           >
@@ -227,23 +246,6 @@
             </Popover.Content>
           </Popover.Root>
 
-          <Label>Type</Label>
-          <Select.Root
-            type="single"
-            name="new-type"
-            bind:value={() => newEntry.type.toString(), (v) => (newEntry.type = parseInt(v))}
-          >
-            <Select.Trigger class="w-full sm:w-50">
-              <span>{addDialog.types.find((t) => t.value === newEntry.type)!.label}</span>
-            </Select.Trigger>
-            <Select.Content>
-              <Select.Group>
-                {#each addDialog.types as _type}
-                  <Select.Item value={_type.value.toString()}>{_type.label}</Select.Item>
-                {/each}
-              </Select.Group>
-            </Select.Content>
-          </Select.Root>
           <Label>Scope</Label>
           <Dropdown.Root>
             <Dropdown.Trigger
@@ -265,7 +267,7 @@
                       toggleScope(_scope.value);
                     }}
                   >
-                    {#if newEntry.scopes.has(scopeToBit[_scope.value])}
+                    {#if newEntry.scopes.has(_scope.value)}
                       <span class="absolute right-2 flex size-3.5 items-center justify-center">
                         <Check class="size-4" />
                       </span>
