@@ -8,8 +8,9 @@ const BlacklistEntrySchema = new Schema<IBlacklistEntry>(
     id: { type: String, required: true }, // id of entity
     _type: { type: Number, required: true },
     guildId: { type: String, required: false },
-    scope: {
-      type: Number,
+    scope: { type: Number, required: true },
+    scopes: {
+      type: Schema.Types.BigInt,
       required: true,
     },
   },
