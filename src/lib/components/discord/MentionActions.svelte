@@ -31,7 +31,8 @@
   }
 </script>
 
-<div class={cn("actions-container", "rounded-md")}>
+<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+<div class={cn("actions-container", "rounded-md")} onclick={(e) => e.stopPropagation()}>
   {#if buttons === "all" || buttons === "delete"}
     <button
       class="text-destructive bg-destructive-foreground"
