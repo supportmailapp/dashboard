@@ -19,7 +19,7 @@
     class="[&::placeholder]:text-foreground/50 rounded-lg"
     autofocus={false}
   />
-  <Command.List class="max-h-auto h-full pt-0.5">
+  <Command.List class="max-h-auto h-full py-0.5">
     <Command.Empty>No servers found.</Command.Empty>
     {#each guildManager.guilds as guild (guild.id)}
       {@const _guildHref = guild.isConfigured
@@ -29,10 +29,7 @@
         href={_guildHref}
         target="_self"
         value="{guild.id}:{guild.name}"
-        class={cn(
-          "transition-all duration-100 aria-selected:-translate-y-0.5",
-          !guild.isConfigured && "text-foreground/70",
-        )}
+        class={cn("transition-all duration-120", !guild.isConfigured && "text-foreground/70")}
         onclick={() => {
           if (!page.url.pathname.startsWith(`/g/${guild.id}`)) {
             clickFn?.();
