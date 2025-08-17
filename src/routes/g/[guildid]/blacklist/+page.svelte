@@ -16,7 +16,7 @@
   import Plus from "@lucide/svelte/icons/plus";
   import equal from "fast-deep-equal/es6";
   import { BlacklistScope, EntityType } from "supportmail-types";
-  import { onMount } from "svelte";
+  import { onMount, untrack } from "svelte";
   import { toast } from "svelte-sonner";
   import type { PaginatedBlacklistResponse } from "../../../api/v1/guilds/[guildid]/blacklist/+server";
   import EntriesTable from "./EntriesTable.svelte";
@@ -68,6 +68,7 @@
     scopes = new SvelteBitfield(scopeToBit[BlacklistScope.all]);
     popupOpen = $state(false);
     customAnchor = $state<HTMLElement | null>(null);
+    readonly canOpenPopup = $derived(this.id === "");
 
     setRole(role: GuildRole) {
       this.id = role.id;
@@ -185,7 +186,7 @@
       <span class="text-sm">Fetch</span>
     </Button>
     <Dialog.Root>
-      <Dialog.Trigger class={buttonVariants({ variant: "secondary", size: "icon" })}>
+      <Dialog.Trigger class={buttonVariants({ variant: "outline", size: "icon" })}>
         <Plus class="size-5" />
       </Dialog.Trigger>
       <Dialog.Content>
@@ -195,25 +196,27 @@
         <div class="grid grid-cols-[1fr_4fr] gap-4">
           <Label>ID</Label>
           <!-- TODO: Find tf out why it's not working after once selected and cleared -->
-          <Popover.Root bind:open={newEntry.popupOpen} onOpenChange={(op) => console.log("new open", op)}>
-            {#if newEntry.id !== ""}
-              {@const isUser = newEntry.type === EntityType.user}
-              <Mention
-                userId={isUser ? newEntry.id : undefined}
-                roleId={!isUser ? newEntry.id : undefined}
-                onDelete={() => {
-                  newEntry.clear();
-                  return true;
-                }}
-              />
-            {:else}
-              <Popover.Trigger
-                class={cn(buttonVariants({ variant: "outline" }), "w-fit")}
-                disabled={pageStatus === "loading"}
-              >
+          <Popover.Root
+            bind:open={() => newEntry.canOpenPopup && newEntry.popupOpen, (v) => (newEntry.popupOpen = v)}
+          >
+            <Popover.Trigger
+              class={cn(newEntry.canOpenPopup && buttonVariants({ variant: "outline" }), "w-fit")}
+              disabled={pageStatus === "loading"}
+            >
+              {#if newEntry.id !== ""}
+                {@const isUser = newEntry.type === EntityType.user}
+                <Mention
+                  userId={isUser ? newEntry.id : undefined}
+                  roleId={!isUser ? newEntry.id : undefined}
+                  onDelete={() => {
+                    newEntry.clear();
+                    return true;
+                  }}
+                />
+              {:else}
                 Select User / Role
-              </Popover.Trigger>
-            {/if}
+              {/if}
+            </Popover.Trigger>
             <Popover.Content customAnchor={newEntry.customAnchor}>
               <MentionableSelect
                 excludedRoleIds={newEntry.type === EntityType.role ? [newEntry.id] : []}
