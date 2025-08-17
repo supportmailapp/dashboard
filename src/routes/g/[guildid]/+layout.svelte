@@ -71,7 +71,7 @@
   <Sidebar.Inset class="main-container">
     <header
       class={cn(
-        "bg-sidebar text-sidebar-foreground sticky top-0 z-10 flex h-(--main-header-height) items-center justify-between p-3 shadow-lg",
+        "bg-background text-sidebar-foreground sticky top-0 z-10 flex h-(--main-header-height) items-center justify-between p-3 shadow-lg border-b-2",
         mode.current !== "dark" ? "shadow-accent/40" : "shadow-black/30",
       )}
     >
