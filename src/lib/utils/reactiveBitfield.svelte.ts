@@ -1,18 +1,17 @@
-// TODO: Figure out, if we can just use a static Bitfield instance and wrap it in a $state to make it reactive.
 /**
  * A reactive implementation of the Bitfield class.
  */
 export class SvelteBitfield {
   private _bits = $state<bigint>(BigInt(0));
 
-  constructor(bits: bigint | number = BigInt(0)) {
+  constructor(bits: bigint | number | string | boolean = BigInt(0)) {
     this._bits = BigInt(bits);
   }
 
   /**
    * Check if a specific bit is set
    */
-  has(bit: bigint | number): boolean {
+  has(bit: bigint | number | string | boolean): boolean {
     const bitValue = BigInt(bit);
     return (this._bits & bitValue) === bitValue;
   }
@@ -20,7 +19,7 @@ export class SvelteBitfield {
   /**
    * Set one or more bits
    */
-  set(...bits: (bigint | number)[]): this {
+  set(...bits: (bigint | number | string | boolean)[]): this {
     for (const bit of bits) {
       this._bits |= BigInt(bit);
     }
@@ -186,5 +185,12 @@ export class SvelteBitfield {
     }
 
     return count;
+  }
+
+  /**
+   * Alias for `popCount()`
+   */
+  get size(): number {
+    return this.popCount();
   }
 }
