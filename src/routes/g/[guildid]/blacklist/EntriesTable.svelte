@@ -26,25 +26,19 @@
   let {
     entries,
     pageStatus = $bindable(),
+    rowSelection = $bindable(),
     saveEntry,
     deleteEntry,
   }: {
     entries: PaginatedBlacklistResponse["data"];
     pageStatus: "loading" | "loaded" | "error";
+    rowSelection: RowSelectionState;
     saveEntry: (entry: BLEntry) => Promise<void>;
     deleteEntry: (_id: string) => Promise<void>;
-    fetchBlacklist: () => Promise<void>;
   } = $props();
 
   let deleteConfirmDialog = $state<string | null>(null);
   let editEntry = new BLEntry();
-
-  $inspect("edit entry", {
-    id: editEntry.id,
-    type: editEntry.type,
-    scopes: editEntry.scopes.bits.toString(),
-    open: editEntry.popupOpen,
-  });
 
   const cols: ColumnDef<APIBlacklistEntry>[] = [
     {
@@ -105,7 +99,7 @@
           _id: row.original._id,
           onEdit: (_id) => {
             editEntry.loadFrom(entries.find((e) => e._id === _id)!);
-            editEntry.popupOpen = true;
+            editEntry.dialogOpen = true;
           },
           onDelete: (_id) => {
             deleteConfirmDialog = _id;
@@ -114,10 +108,6 @@
       },
     },
   ];
-
-  let rowSelection: RowSelectionState = $state<RowSelectionState>({});
-
-  $inspect("row selection", rowSelection);
 </script>
 
 {#if pageStatus === "loaded"}
@@ -125,7 +115,7 @@
     <DataTable columns={cols} data={entries} bind:rowSelection />
   {/key}
 {:else if pageStatus === "loading"}
-  <LoadingSpinner class="mx-auto my-4 h-8 w-8" />
+  <LoadingSpinner class="mx-auto my-4 size-20" />
 {:else if pageStatus === "error"}
   <div class="text-red-500">Error loading entries</div>
 {/if}
@@ -143,8 +133,8 @@
 />
 
 <Dialog.Root
-  open={editEntry.popupOpen}
-  onOpenChange={(_open) => {
+  open={editEntry.dialogOpen}
+  onOpenChangeComplete={(_open) => {
     if (!_open) {
       editEntry.clear();
     }
@@ -152,7 +142,7 @@
 >
   <Dialog.Content>
     <Dialog.Header>
-      <Dialog.Title>Edit Entry</Dialog.Title>
+      <Dialog.Title>Edit {editEntry.type === EntityType.user ? "User" : "Role"} Entry</Dialog.Title>
     </Dialog.Header>
     <div class="grid grid-cols-[1fr_4fr] gap-4">
       <Label>Entry</Label>
@@ -197,10 +187,11 @@
     <Dialog.Footer>
       <Button
         type="submit"
-        onclick={() =>
+        onclick={() => {
           saveEntry(editEntry).then(() => {
             editEntry.clear();
-          })}
+          });
+        }}
         showLoading={editEntry.loading}
         disabled={!editEntry.id || editEntry.scopes.size === 0 || editEntry.loading}
       >
