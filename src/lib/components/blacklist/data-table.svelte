@@ -1,14 +1,23 @@
 <script lang="ts" generics="TData, TValue">
-  import { type ColumnDef, getCoreRowModel } from "@tanstack/table-core";
+  import {
+    getCoreRowModel,
+    type ColumnDef,
+    type RowSelectionState,
+  } from "@tanstack/table-core";
   import { createSvelteTable, FlexRender } from "$lib/components/ui/data-table/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
 
   type DataTableProps<TData, TValue> = {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
+    rowSelection?: RowSelectionState;
   };
 
-  let { data, columns }: DataTableProps<TData, TValue> = $props();
+  let {
+    data,
+    columns,
+    rowSelection = $bindable({}),
+  }: DataTableProps<TData, TValue> = $props();
 
   const table = createSvelteTable({
     get data() {
@@ -16,6 +25,18 @@
     },
     columns,
     getCoreRowModel: getCoreRowModel(),
+    onRowSelectionChange: (updater) => {
+      if (typeof updater === "function") {
+        rowSelection = updater(rowSelection);
+      } else {
+        rowSelection = updater;
+      }
+    },
+    state: {
+      get rowSelection() {
+        return rowSelection;
+      },
+    },
   });
 </script>
 

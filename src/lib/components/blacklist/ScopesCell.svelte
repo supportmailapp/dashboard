@@ -9,7 +9,7 @@
   let scopeField = new SvelteBitfield(scopes);
 </script>
 
-<div class="flex flex-row items-center gap-1 rounded px-1 py-2">
+<div class="flex flex-row items-center gap-1 rounded px-1 py-2 w-fit">
   {#if scopeField.has(BlacklistScope.tickets)}
     <Ticket class="text-blue-500" />
   {/if}
