@@ -1,11 +1,8 @@
 <script lang="ts" generics="TData, TValue">
-  import {
-    getCoreRowModel,
-    type ColumnDef,
-    type RowSelectionState,
-  } from "@tanstack/table-core";
+  import { getCoreRowModel, type ColumnDef, type RowSelectionState } from "@tanstack/table-core";
   import { createSvelteTable, FlexRender } from "$lib/components/ui/data-table/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
+  import { SvelteSet } from "svelte/reactivity";
 
   type DataTableProps<TData, TValue> = {
     columns: ColumnDef<TData, TValue>[];
@@ -13,11 +10,9 @@
     rowSelection?: RowSelectionState;
   };
 
-  let {
-    data,
-    columns,
-    rowSelection = $bindable({}),
-  }: DataTableProps<TData, TValue> = $props();
+  let { data, columns, rowSelection = $bindable({}) }: DataTableProps<TData, TValue> = $props();
+
+  $inspect("rowSelection", rowSelection);
 
   const table = createSvelteTable({
     get data() {
@@ -40,8 +35,8 @@
   });
 </script>
 
-<div class="rounded-md border">
-  <Table.Root>
+<div class="overflow-x-auto rounded-md border">
+  <Table.Root class="min-w-lg">
     <Table.Header>
       {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
         <Table.Row>
