@@ -14,6 +14,7 @@
     description?: string;
     disabled?: boolean;
     children?: Snippet;
+    child?: Snippet;
     open?: boolean;
   }
 
@@ -24,13 +25,16 @@
     disabled = false,
     open = $bindable(false),
     children,
+    child,
   }: Props = $props();
 
   const htmlDescription = description ? new MarkdownFormatter(description).toHTML() : undefined;
 </script>
 
 <AlertDialog.Root bind:open>
-  {#if children}
+  {#if child}
+    {@render child()}
+  {:else if children}
     <AlertDialog.Trigger {disabled}>
       {@render children()}
     </AlertDialog.Trigger>
