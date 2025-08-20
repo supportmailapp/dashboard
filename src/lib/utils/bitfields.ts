@@ -155,7 +155,7 @@ class BitField {
 
   /**
    * Get array of individual bit positions that are set
-   * 
+   *
    * @example
    * const bitfield = new BitField(24) // 0b11000
    * bitfield.getSetBits() // [3, 4] (bit positions from right, 0-indexed)
@@ -192,6 +192,13 @@ class BitField {
   }
 
   /**
+   * Alias for `popCount()`
+   */
+  get size(): number {
+    return this.popCount();
+  }
+
+  /**
    * Ensure the bits are within a certain range.
    * @param min The minimum bit position (inclusive)
    * @param max The maximum bit position (inclusive)
@@ -216,6 +223,13 @@ class BitField {
     // Right shift to align our range to start at bit 0, then apply mask
     this._bits = (this._bits >> BigInt(min)) & mask;
     return this;
+  }
+
+  toJSON(): any {
+    return {
+      bits: this._bits.toString(),
+      size: this.size,
+    };
   }
 }
 

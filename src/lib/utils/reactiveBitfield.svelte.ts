@@ -193,4 +193,11 @@ export class SvelteBitfield {
   get size(): number {
     return this.popCount();
   }
+
+  toJSON(): any {
+    return {
+      bits: this._bits.toString(),
+      size: this.size,
+    };
+  }
 }
