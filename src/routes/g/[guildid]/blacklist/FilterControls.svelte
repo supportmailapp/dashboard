@@ -41,7 +41,15 @@
 <div class="bg-card flex w-full max-w-3xl flex-wrap gap-3 rounded-lg border p-4">
   <div class="flex w-full max-w-xs flex-col gap-2">
     <Label class="text-sm font-medium">Search</Label>
-    <Input placeholder="User / Role ID" bind:value={search} class="w-full" />
+    <Input
+      placeholder={filterType === -1
+        ? "User / Role ID"
+        : filterType === EntityType.user
+          ? "User ID"
+          : "Role ID"}
+      bind:value={search}
+      class="w-full"
+    />
   </div>
 
   <div class="flex flex-col gap-2">
