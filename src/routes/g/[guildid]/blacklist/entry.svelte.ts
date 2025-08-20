@@ -9,6 +9,7 @@ export class BLEntry {
   type = $state<Exclude<EntityType, EntityType.guild>>(EntityType.user);
   scopes = new SvelteBitfield();
   popupOpen = $state(false);
+  dialogOpen = $state(false);
   customAnchor = $state<HTMLElement | null>(null);
   readonly canOpenPopup = $derived(this.id === "");
   loading = $state(false);
@@ -39,6 +40,9 @@ export class BLEntry {
     this.scopes.clear();
     this.popupOpen = false;
     this.loading = false;
+    if (this.dialogOpen) {
+      this.dialogOpen = false;
+    }
   }
 }
 
