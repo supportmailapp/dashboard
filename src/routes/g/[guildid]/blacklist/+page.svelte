@@ -26,7 +26,7 @@
   import * as Popover from "$ui/popover";
   import Mention from "$lib/components/discord/Mention.svelte";
   import MentionableSelect from "$lib/components/MentionableSelect.svelte";
-  import type { APIUser } from "discord-api-types/v10";
+  import { BLEntry, dialogFields, toggleScope } from "./entry.svelte";
 
   let pageStatus = $state<"loading" | "loaded" | "error">("loading");
   const pageData = $state({
@@ -35,8 +35,9 @@
     total: null as number | null,
     totalPages: null as number | null,
     search: "" as string,
-    scopes: new SvelteBitfield(BlacklistScope.tickets & BlacklistScope.reports & BlacklistScope.tags),
+    scopes: new SvelteBitfield(BlacklistScope.tickets | BlacklistScope.reports | BlacklistScope.tags),
     filterType: -1 as Exclude<EntityType, EntityType.guild> | -1,
+    sorting: "newestFirst" as "newestFirst" | "oldestFirst",
   });
   /**
    * Used to determine whether it is allowed to fetch entries again.
@@ -44,46 +45,7 @@
   let fetchedData = $state.snapshot(pageData);
   let entries = $state<PaginatedBlacklistResponse["data"]>([]);
 
-  const addDialog = {
-    types: [
-      { label: "User", value: EntityType.user },
-      { label: "Role", value: EntityType.role },
-    ],
-    scopes: [
-      { label: "Tickets", value: BlacklistScope.tickets },
-      { label: "Reports", value: BlacklistScope.reports },
-      { label: "Tags", value: BlacklistScope.tags },
-    ],
-  } as const;
-  class NewEntry {
-    id = $state("");
-    type = $state<Exclude<EntityType, EntityType.guild>>(EntityType.user);
-    scopes = new SvelteBitfield();
-    popupOpen = $state(false);
-    customAnchor = $state<HTMLElement | null>(null);
-    readonly canOpenPopup = $derived(this.id === "");
-    loading = $state(false);
-
-    setRole(role: GuildRole) {
-      this.id = role.id;
-      this.type = EntityType.role;
-      this.popupOpen = false;
-    }
-
-    setUser(user: APIUser) {
-      this.id = user.id;
-      this.type = EntityType.user;
-      this.popupOpen = false;
-    }
-
-    clear() {
-      this.id = "";
-      this.type = EntityType.user;
-      this.scopes.clear();
-      this.popupOpen = false;
-    }
-  }
-  const newEntry = new NewEntry();
+  const newEntry = new BLEntry();
 
   function buildSearchParams() {
     const params = new URLSearchParams();
@@ -96,6 +58,9 @@
     }
     if (pageData.filterType !== -1) {
       params.set("type", pageData.filterType.toString());
+    }
+    if (pageData.sorting === "oldestFirst") {
+      params.set("sort", "oldest"); // Default is newest first, so we only need to provide it when otherwise
     }
     return params;
   }
@@ -145,18 +110,6 @@
     });
   });
 
-  function toggleScope(scopeValue: Exclude<BlacklistScope, BlacklistScope.global>) {
-    // Check if this is the only bit set and we're trying to unset it
-    if (newEntry.scopes.has(scopeValue) && newEntry.scopes.popCount() === 1) {
-      toast.error("You cannot do that!", {
-        description: "At least one scope is required.",
-      });
-      return;
-    }
-
-    newEntry.scopes.toggle(scopeValue);
-  }
-
   async function addEntry() {
     if (!newEntry.id || newEntry.scopes.size === 0) {
       toast.error("Invalid entry", {
@@ -166,12 +119,23 @@
     }
 
     newEntry.loading = true;
+    await saveEntry(newEntry);
+    newEntry.loading = false;
+  }
+
+  async function saveEntry(entry: BLEntry, action: "edit" | "add" = "add") {
+    console.log("entry fields", {
+      id: entry.id,
+      scopes: entry.scopes.bits.toString(10),
+      _type: entry.type,
+    });
     try {
-      const res = await apiClient.post(APIRoutes.blacklist(page.data.guildId!), {
+      const res = await apiClient.put(APIRoutes.blacklist(page.data.guildId!), {
         json: {
-          id: newEntry.id,
-          scopes: newEntry.scopes.toString(),
-          _type: newEntry.type,
+          id: entry.id,
+          guildId: page.data.guildId!,
+          scopes: entry.scopes.bits.toString(10),
+          _type: entry.type,
         },
       });
 
@@ -179,12 +143,38 @@
         const errorData = await res.json<any>();
         throw new Error(errorData.message || "Unknown error");
       }
+
       const data = await res.json<APIBlacklistEntry>();
-      entries.push(data);
-      toast.success("Entry added successfully!");
+      if (action === "add") {
+        entries = [...entries, data];
+      } else {
+        entries = entries.map((e) => (e._id === data._id ? data : e));
+      }
+      toast.success("Entry saved!");
     } catch (err: any) {
-      console.error("Error adding entry:", err);
-      toast.error("Error adding entry", {
+      console.error("Error saving entry:", err);
+      toast.error("Error saving entry", {
+        description: err.message,
+      });
+    }
+  }
+
+  async function deleteEntry(_id: string) {
+    try {
+      const res = await apiClient.delete(APIRoutes.blacklist(page.data.guildId!), {
+        json: {
+          ids: [_id],
+        },
+      });
+      if (!res.ok) {
+        const errorData = await res.json<any>();
+        throw new Error(errorData.message || "Unknown error");
+      }
+
+      entries = entries.filter((entry) => entry._id !== _id);
+      toast.success("Entry deleted!");
+    } catch (err: any) {
+      toast.error("Error deleting entry", {
         description: err.message,
       });
     }
@@ -195,10 +185,11 @@
 
 <div class="mb-4 flex flex-col items-start justify-start gap-3">
   <FilterControls
-    filterType={pageData.filterType}
-    scopes={pageData.scopes}
-    perPage={pageData.perPage}
-    search={pageData.search}
+    bind:filterType={pageData.filterType}
+    bind:scopes={pageData.scopes}
+    bind:perPage={pageData.perPage}
+    bind:search={pageData.search}
+    bind:sorting={pageData.sorting}
   />
   <div class="flex flex-row items-center gap-2">
     <Button variant="default" onclick={fetchBlacklist}>
@@ -246,7 +237,7 @@
             </Popover.Content>
           </Popover.Root>
 
-          <Label>Scope</Label>
+          <Label>Scopes</Label>
           <Dropdown.Root>
             <Dropdown.Trigger
               class={cn(
@@ -259,12 +250,12 @@
             </Dropdown.Trigger>
             <Dropdown.Content class="w-50">
               <Dropdown.Group>
-                {#each addDialog.scopes as _scope}
+                {#each dialogFields.scopes as _scope}
                   <Dropdown.Item
                     closeOnSelect={false}
                     onclick={() => {
                       console.log("toggled scope", _scope.value);
-                      toggleScope(_scope.value);
+                      toggleScope(newEntry, _scope.value);
                     }}
                   >
                     {#if newEntry.scopes.has(_scope.value)}
@@ -280,11 +271,16 @@
           </Dropdown.Root>
         </div>
         <Dialog.Footer>
-          <Button type="submit">Save</Button>
+          <Button
+            type="submit"
+            onclick={addEntry}
+            showLoading={newEntry.loading}
+            disabled={!newEntry.id || newEntry.scopes.size === 0 || newEntry.loading}>Save</Button
+          >
         </Dialog.Footer>
       </Dialog.Content>
     </Dialog.Root>
   </div>
 </div>
 
-<EntriesTable {entries} />
+<EntriesTable {entries} bind:pageStatus saveEntry={(e) => saveEntry(e, "edit")} {deleteEntry} />
