@@ -34,9 +34,12 @@
   import Mention from "$lib/components/discord/Mention.svelte";
   import MentionableSelect from "$lib/components/MentionableSelect.svelte";
   import { APIRoutes } from "$lib/urls";
-  import { cn } from "$lib/utils";
+  import { cn, safeParseInt } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
   import { SvelteBitfield } from "$lib/utils/reactiveBitfield.svelte.js";
+  import type { RowSelectionState } from "@tanstack/table-core";
+  import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
+  import { AlertDialogTrigger } from "$ui/alert-dialog";
 
   let pageStatus = $state<"loading" | "loaded" | "error">("loading");
   const pageData = $state({
@@ -45,15 +48,29 @@
     total: null as number | null,
     totalPages: null as number | null,
     search: "" as string,
-    scopes: new SvelteBitfield(BlacklistScope.tickets | BlacklistScope.reports | BlacklistScope.tags),
+    scopes: new SvelteBitfield(
+      BlacklistScope.tickets | BlacklistScope.reports | BlacklistScope.tags,
+    ) as SvelteBitfield,
     filterType: -1 as Exclude<EntityType, EntityType.guild> | -1,
     sorting: "newestFirst" as "newestFirst" | "oldestFirst",
   });
   /**
    * Used to determine whether it is allowed to fetch entries again.
    */
-  let fetchedData = $state.snapshot(pageData);
+  let fetchedData = $state($state.snapshot(pageData) as typeof pageData);
   let entries = $state<PaginatedBlacklistResponse["data"]>([]);
+  let rowSelection = $state<RowSelectionState>({});
+  /**
+   * Derived set of selected row IDs.
+   * **Not indexes, `_id[]`.**
+   */
+  const selectedRows = $derived(
+    Object.keys(rowSelection)
+      .map((index) => entries[parseInt(index)]?._id)
+      .filter(Boolean),
+  );
+  const selectedText = $derived(selectedRows.length === 1 ? "1 entry" : `${selectedRows.length} entries`);
+  let bulkDeleteConfirmation = $state(false);
 
   const newEntry = new BLEntry();
 
@@ -61,7 +78,7 @@
     const params = new URLSearchParams();
     params.set("page", pageData.page.toString());
     params.set("count", pageData.perPage.toString());
-    params.set("scope", pageData.scopes.toString());
+    params.set("scopes", pageData.scopes.bits.toString());
 
     if (pageData.search) {
       params.set("search", encodeURIComponent(pageData.search));
@@ -80,8 +97,14 @@
     return `${page.url.origin}${page.url.pathname}?${params.toString()}`;
   }
 
+  function pageDataIsDirty(): boolean {
+    const { scopes, ...rest1 } = $state.snapshot(pageData);
+    const { scopes: _scopes, ...rest2 } = $state.snapshot(fetchedData);
+    return !equal(rest1, rest2) || !equal(scopes, _scopes);
+  }
+
   async function fetchBlacklist() {
-    if (equal(fetchedData, $state.snapshot(pageData)) && pageStatus === "loaded") {
+    if (!pageDataIsDirty() && pageStatus === "loaded") {
       toast.info("Nothing changed, not fetching blacklist again.");
       return;
     }
@@ -130,15 +153,10 @@
 
     newEntry.loading = true;
     await saveEntry(newEntry);
-    newEntry.loading = false;
+    newEntry.clear();
   }
 
   async function saveEntry(entry: BLEntry, action: "edit" | "add" = "add") {
-    console.log("entry fields", {
-      id: entry.id,
-      scopes: entry.scopes.bits.toString(10),
-      _type: entry.type,
-    });
     try {
       const res = await apiClient.put(APIRoutes.blacklist(page.data.guildId!), {
         json: {
@@ -169,11 +187,12 @@
     }
   }
 
-  async function deleteEntry(_id: string) {
+  async function deleteEntries(ids: string[]) {
+    const singleEntry = ids.length === 1;
     try {
       const res = await apiClient.delete(APIRoutes.blacklist(page.data.guildId!), {
         json: {
-          ids: [_id],
+          ids: ids,
         },
       });
       if (!res.ok) {
@@ -181,19 +200,22 @@
         throw new Error(errorData.message || "Unknown error");
       }
 
-      entries = entries.filter((entry) => entry._id !== _id);
-      toast.success("Entry deleted!");
+      entries = entries.filter((entry) => !ids.includes(entry._id));
+      toast.success(`${singleEntry ? "Entry" : "Entries"} deleted!`);
+      rowSelection = {};
     } catch (err: any) {
-      toast.error("Error deleting entry", {
+      toast.error("Error deleting entries", {
         description: err.message,
       });
+    } finally {
+      bulkDeleteConfirmation = false;
     }
   }
 </script>
 
 <SiteHeading title="Blacklist" />
 
-<div class="mb-4 flex flex-col items-start justify-start gap-3">
+<div class="mb-4 flex w-full max-w-3xl flex-col items-start justify-start gap-3">
   <FilterControls
     bind:filterType={pageData.filterType}
     bind:scopes={pageData.scopes}
@@ -201,11 +223,11 @@
     bind:search={pageData.search}
     bind:sorting={pageData.sorting}
   />
-  <div class="flex flex-row items-center gap-2">
+  <div class="flex w-full flex-row items-center gap-2">
     <Button variant="default" onclick={fetchBlacklist}>
       <span class="text-sm">Fetch</span>
     </Button>
-    <Dialog.Root>
+    <Dialog.Root bind:open={newEntry.dialogOpen}>
       <Dialog.Trigger class={buttonVariants({ variant: "outline" })}>
         <Plus class="size-5" />
         Add Entry
@@ -290,66 +312,112 @@
         </Dialog.Footer>
       </Dialog.Content>
     </Dialog.Root>
+    <AreYouSureDialog
+      title="Do you really want to delete {selectedText}?"
+      description="This action cannot be undone."
+      onYes={() => {
+        deleteEntries(selectedRows);
+      }}
+      bind:open={bulkDeleteConfirmation}
+    >
+      {#snippet child()}
+        <AlertDialogTrigger
+          class={cn(buttonVariants({ variant: "destructive" }), "ml-auto")}
+          disabled={selectedRows.length === 0}
+        >
+          Delete
+        </AlertDialogTrigger>
+      {/snippet}
+    </AreYouSureDialog>
   </div>
 </div>
 
 <EntriesTable
   {entries}
   bind:pageStatus
+  bind:rowSelection
   saveEntry={(e) => saveEntry(e, "edit")}
-  {deleteEntry}
-  {fetchBlacklist}
+  deleteEntry={(_id) => deleteEntries([_id])}
 />
 
-<!-- Pagination controls (<<, <, input, >, >>) -->
-<div class="flex w-full flex-row justify-center gap-1">
-  <Button
-    variant="outline"
-    onclick={async () => {
-      if (pageData.page > 1) {
-        pageData.page = 1;
-        await fetchBlacklist();
-      }
-    }}
-    disabled={pageData.page < 2}
-  >
-    <ChevronsLeft class="size-4" />
-  </Button>
-  <Button
-    variant="outline"
-    onclick={async () => {
-      if (pageData.page > 1) {
-        pageData.page--;
-        await fetchBlacklist();
-      }
-    }}
-    disabled={pageData.page < 2}
-  >
-    <ChevronLeft class="size-4" />
-  </Button>
-  <Input type="number" step="1" min="1" bind:value={pageData.page} />
-  <Button
-    variant="outline"
-    onclick={async () => {
-      if (pageData.page < (pageData.totalPages ?? 1)) {
-        pageData.page++;
-        await fetchBlacklist();
-      }
-    }}
-    disabled={pageData.page >= (pageData.totalPages ?? 1)}
-  >
-    <ChevronRight class="size-4" />
-  </Button>
-  <Button
-    variant="outline"
-    onclick={async () => {
-      if (pageData.page < (pageData.totalPages ?? 1)) {
-        pageData.page = pageData.totalPages!;
-        await fetchBlacklist();
-      }
-    }}
-    disabled={pageData.page >= (pageData.totalPages ?? 1)}
-  >
-    <ChevronsRight class="size-4" />
-  </Button>
-</div>
+{#if pageStatus === "loaded" && entries.length > 0}
+  <div class="space-y-3 py-3">
+    {#if (fetchedData.totalPages ?? 1) > pageData.page}
+      <div class="flex w-full flex-row justify-center gap-1">
+        <Button
+          variant="outline"
+          size="icon"
+          onclick={async () => {
+            if (pageData.page > 1) {
+              pageData.page = 1;
+              await fetchBlacklist();
+            }
+          }}
+          disabled={fetchedData.page < 2}
+        >
+          <ChevronsLeft class="size-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          onclick={async () => {
+            if (pageData.page > 1) {
+              pageData.page--;
+              await fetchBlacklist();
+            }
+          }}
+          disabled={fetchedData.page < 2}
+        >
+          <ChevronLeft class="size-4" />
+        </Button>
+        <Input
+          type="text"
+          minlength={1}
+          maxlength={5}
+          bind:value={
+            () => pageData.page.toString(),
+            (v) => {
+              pageData.page = safeParseInt(v, 1);
+              if (v === "") {
+                toast.warning("Page number cannot be empty!");
+              } else if (pageData.page.toString() !== v) {
+                toast.warning("Invalid page number");
+              }
+            }
+          }
+          class="w-18 text-center"
+        />
+        <Button
+          variant="outline"
+          size="icon"
+          onclick={async () => {
+            if (pageData.page < (pageData.totalPages ?? 1)) {
+              pageData.page++;
+              await fetchBlacklist();
+            }
+          }}
+          disabled={fetchedData.page >= (fetchedData.totalPages ?? 1)}
+        >
+          <ChevronRight class="size-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          onclick={async () => {
+            if (pageData.page < (pageData.totalPages ?? 1)) {
+              pageData.page = pageData.totalPages!;
+              await fetchBlacklist();
+            }
+          }}
+          disabled={fetchedData.page >= (fetchedData.totalPages ?? 1)}
+        >
+          <ChevronsRight class="size-4" />
+        </Button>
+      </div>
+    {/if}
+
+    <p class="text-muted-foreground text-center text-sm select-none">
+      Page {fetchedData.page} of {fetchedData.totalPages ?? 1}
+    </p>
+  </div>
+{/if}
