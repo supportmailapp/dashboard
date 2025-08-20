@@ -14,21 +14,22 @@
 </script>
 
 <div data-slot="mention-container" class={cn(className)} data-role-id={role?.id}>
-  <div>
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill={color || "none"}
-      stroke={color ? "none" : "black"}
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      class="lucide lucide-circle-small-icon lucide-circle-small size-5.5"
-    >
-      <circle cx="12" cy="12" r="6" />
-    </svg>
-  </div>
+  {#if color}
+    <div>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill={color}
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="lucide lucide-circle-small-icon lucide-circle-small size-5.5"
+      >
+        <circle cx="12" cy="12" r="6" />
+      </svg>
+    </div>
+  {/if}
   <span class="text-sm font-medium">
     {role?.name || "unknown-role"}
   </span>
