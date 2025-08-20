@@ -52,16 +52,12 @@ export async function GET({ locals, url }) {
     }
 
     if (Params.scopes && /^\d+$/.test(Params.scopes)) {
-      const scopeBitfield = new BitField(Params.scopes, {
-        min: BlacklistScope.tickets,
-        max: BlacklistScope.tags,
-      });
-      filter.scopes = { $bitsAnySet: scopeBitfield.getSetBits() };
+      const scopeBitfield = new BitField(Params.scopes);
+      filter.scopes = { $bitsAnySet: scopeBitfield.bits };
     }
 
     const sort = { updatedAt: Params.sorting === "oldest" ? 1 : -1 };
 
-    // Query tickets for the guild with pagination
     const [entries, totalItems] = await Promise.all([
       BlacklistEntry.find(filter, null, {
         sort,
@@ -87,6 +83,7 @@ export async function GET({ locals, url }) {
 
     return Response.json(response);
   } catch (error) {
+    console.error(error);
     const response: PaginatedBlacklistResponse = {
       data: [],
       pagination: {
@@ -95,7 +92,7 @@ export async function GET({ locals, url }) {
         totalItems: 0,
         totalPages: 0,
       },
-      error: "Failed to fetch tickets",
+      error: "Failed to fetch entries",
     };
 
     return Response.json(response, { status: 500 });
