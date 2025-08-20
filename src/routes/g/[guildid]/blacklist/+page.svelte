@@ -1,32 +1,42 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
-  import { page } from "$app/state";
-  import SiteHeading from "$lib/components/SiteHeading.svelte";
-  import { APIRoutes } from "$lib/urls";
-  import { cn } from "$lib/utils";
-  import apiClient from "$lib/utils/apiClient";
-  import { SvelteBitfield } from "$lib/utils/reactiveBitfield.svelte.js";
-  import { Button, buttonVariants } from "$ui/button/index.js";
-  import * as Dialog from "$ui/dialog/index.js";
-  import * as Dropdown from "$ui/dropdown-menu/index.js";
-  import Label from "$ui/label/label.svelte";
   import Check from "@lucide/svelte/icons/check";
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
+  import ChevronLeft from "@lucide/svelte/icons/chevron-left";
+  import ChevronRight from "@lucide/svelte/icons/chevron-right";
+  import ChevronsLeft from "@lucide/svelte/icons/chevrons-left";
+  import ChevronsRight from "@lucide/svelte/icons/chevrons-right";
   import Plus from "@lucide/svelte/icons/plus";
+
   import equal from "fast-deep-equal/es6";
-  import { BlacklistScope, EntityType } from "supportmail-types";
   import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
+  import { BlacklistScope, EntityType } from "supportmail-types";
+
   import {
     type APIBlacklistEntry,
     type PaginatedBlacklistResponse,
   } from "../../../api/v1/guilds/[guildid]/blacklist/+server";
   import EntriesTable from "./EntriesTable.svelte";
   import FilterControls from "./FilterControls.svelte";
+  import { BLEntry, dialogFields, toggleScope } from "./entry.svelte";
+
+  import { goto } from "$app/navigation";
+  import { page } from "$app/state";
+
+  import { Button, buttonVariants } from "$ui/button/index.js";
+  import * as Dialog from "$ui/dialog/index.js";
+  import * as Dropdown from "$ui/dropdown-menu/index.js";
+  import Input from "$ui/input/input.svelte";
+  import Label from "$ui/label/label.svelte";
   import * as Popover from "$ui/popover";
+
+  import SiteHeading from "$lib/components/SiteHeading.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
   import MentionableSelect from "$lib/components/MentionableSelect.svelte";
-  import { BLEntry, dialogFields, toggleScope } from "./entry.svelte";
+  import { APIRoutes } from "$lib/urls";
+  import { cn } from "$lib/utils";
+  import apiClient from "$lib/utils/apiClient";
+  import { SvelteBitfield } from "$lib/utils/reactiveBitfield.svelte.js";
 
   let pageStatus = $state<"loading" | "loaded" | "error">("loading");
   const pageData = $state({
@@ -283,4 +293,63 @@
   </div>
 </div>
 
-<EntriesTable {entries} bind:pageStatus saveEntry={(e) => saveEntry(e, "edit")} {deleteEntry} />
+<EntriesTable
+  {entries}
+  bind:pageStatus
+  saveEntry={(e) => saveEntry(e, "edit")}
+  {deleteEntry}
+  {fetchBlacklist}
+/>
+
+<!-- Pagination controls (<<, <, input, >, >>) -->
+<div class="flex w-full flex-row justify-center gap-1">
+  <Button
+    variant="outline"
+    onclick={async () => {
+      if (pageData.page > 1) {
+        pageData.page = 1;
+        await fetchBlacklist();
+      }
+    }}
+    disabled={pageData.page < 2}
+  >
+    <ChevronsLeft class="size-4" />
+  </Button>
+  <Button
+    variant="outline"
+    onclick={async () => {
+      if (pageData.page > 1) {
+        pageData.page--;
+        await fetchBlacklist();
+      }
+    }}
+    disabled={pageData.page < 2}
+  >
+    <ChevronLeft class="size-4" />
+  </Button>
+  <Input type="number" step="1" min="1" bind:value={pageData.page} />
+  <Button
+    variant="outline"
+    onclick={async () => {
+      if (pageData.page < (pageData.totalPages ?? 1)) {
+        pageData.page++;
+        await fetchBlacklist();
+      }
+    }}
+    disabled={pageData.page >= (pageData.totalPages ?? 1)}
+  >
+    <ChevronRight class="size-4" />
+  </Button>
+  <Button
+    variant="outline"
+    onclick={async () => {
+      if (pageData.page < (pageData.totalPages ?? 1)) {
+        pageData.page = pageData.totalPages!;
+        await fetchBlacklist();
+      }
+    }}
+    disabled={pageData.page >= (pageData.totalPages ?? 1)}
+  >
+    <ChevronsRight class="size-4" />
+  </Button>
+</div>
