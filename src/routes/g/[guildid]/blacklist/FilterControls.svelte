@@ -14,6 +14,7 @@
     scopes: SvelteBitfield;
     perPage: number;
     filterType: Exclude<EntityType, EntityType.guild> | -1;
+    sorting: "newestFirst" | "oldestFirst";
   };
 
   let {
@@ -21,6 +22,7 @@
     scopes = $bindable(),
     perPage = $bindable(20),
     filterType = $bindable(-1),
+    sorting = $bindable("newestFirst"),
   }: Props = $props();
 
   const filterScopeOptions: { value: BlacklistScope; label: string }[] = [
@@ -104,6 +106,19 @@
         <Select.Item value="20">20</Select.Item>
         <Select.Item value="50">50</Select.Item>
         <Select.Item value="100">100</Select.Item>
+      </Select.Content>
+    </Select.Root>
+  </div>
+
+  <div class="flex flex-col gap-2">
+    <Label class="text-sm font-medium">Sort By</Label>
+    <Select.Root type="single" bind:value={() => sorting, (v) => (sorting = v)}>
+      <Select.Trigger class="w-32">
+        {sorting === "newestFirst" ? "Newest First" : "Oldest First"}
+      </Select.Trigger>
+      <Select.Content>
+        <Select.Item value="newestFirst">Newest First</Select.Item>
+        <Select.Item value="oldestFirst">Oldest First</Select.Item>
       </Select.Content>
     </Select.Root>
   </div>
