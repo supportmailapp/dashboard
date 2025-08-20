@@ -32,7 +32,7 @@ export async function GET({ locals, url }) {
         ? decodeURIComponent(url.searchParams.get("search")!)
         : undefined,
       scopes: url.searchParams.get("scopes"),
-      type: safeParseInt(url.searchParams.get("type"), -1) as AllowedEntityType,
+      type: safeParseInt(url.searchParams.get("type"), -1, -1, 1) as AllowedEntityType, // The min and max have to be passed because safeParseInt defaults to min:0
       sorting: (url.searchParams.get("sorting") || "newest") as "newest" | "oldest",
     };
 
@@ -45,9 +45,10 @@ export async function GET({ locals, url }) {
 
     if (Params.search) {
       filter.id = { $regex: Params.search, $options: "i" };
-      if (Params.type !== -1) {
-        filter._type = Params.type;
-      }
+    }
+
+    if (Params.type > -1) {
+      filter._type = Params.type;
     }
 
     if (Params.scopes && /^\d+$/.test(Params.scopes)) {
