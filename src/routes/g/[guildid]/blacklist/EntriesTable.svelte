@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type ColumnDef } from "@tanstack/table-core";
+  import { type ColumnDef, type PaginationState, type RowSelectionState } from "@tanstack/table-core";
   import DataTable from "$lib/components/blacklist/data-table.svelte";
   import type {
     APIBlacklistEntry,
@@ -21,6 +21,7 @@
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
   import Check from "@lucide/svelte/icons/check";
   import { toast } from "svelte-sonner";
+  import DataTableCheckbox from "$lib/components/blacklist/data-table-checkbox.svelte";
 
   let {
     entries,
@@ -32,6 +33,7 @@
     pageStatus: "loading" | "loaded" | "error";
     saveEntry: (entry: BLEntry) => Promise<void>;
     deleteEntry: (_id: string) => Promise<void>;
+    fetchBlacklist: () => Promise<void>;
   } = $props();
 
   let deleteConfirmDialog = $state<string | null>(null);
@@ -46,10 +48,33 @@
 
   const cols: ColumnDef<APIBlacklistEntry>[] = [
     {
-      accessorKey: "scopes",
-      header: "Scopes",
+      id: "select",
+      header: ({ table }) =>
+        renderComponent(DataTableCheckbox, {
+          checked: table.getIsAllPageRowsSelected(),
+          indeterminate: table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected(),
+          onCheckedChange: (value) => table.toggleAllPageRowsSelected(!!value),
+          "aria-label": "Select all",
+        }),
+      cell: ({ row }) =>
+        renderComponent(DataTableCheckbox, {
+          checked: row.getIsSelected(),
+          onCheckedChange: (value) => row.toggleSelected(!!value),
+          "aria-label": "Select row",
+        }),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "_id",
+      header: "Entry",
       cell: ({ row }) => {
-        return renderComponent(ScopesCell, { scopes: BigInt(row.original.scopes) });
+        const isUser = row.original._type === EntityType.user;
+        return renderComponent(Mention, {
+          userId: isUser ? row.original.id : undefined,
+          roleId: !isUser ? row.original.id : undefined,
+          buttons: "copy",
+        });
       },
     },
     {
@@ -67,15 +92,10 @@
       },
     },
     {
-      accessorKey: "_id",
-      header: "Entry",
+      accessorKey: "scopes",
+      header: "Scopes",
       cell: ({ row }) => {
-        const isUser = row.original._type === EntityType.user;
-        return renderComponent(Mention, {
-          userId: isUser ? row.original.id : undefined,
-          roleId: !isUser ? row.original.id : undefined,
-          buttons: "copy",
-        });
+        return renderComponent(ScopesCell, { scopes: BigInt(row.original.scopes) });
       },
     },
     {
@@ -94,11 +114,15 @@
       },
     },
   ];
+
+  let rowSelection: RowSelectionState = $state<RowSelectionState>({});
+
+  $inspect("row selection", rowSelection);
 </script>
 
 {#if pageStatus === "loaded"}
   {#key entries}
-    <DataTable columns={cols} data={entries} />
+    <DataTable columns={cols} data={entries} bind:rowSelection />
   {/key}
 {:else if pageStatus === "loading"}
   <LoadingSpinner class="mx-auto my-4 h-8 w-8" />
