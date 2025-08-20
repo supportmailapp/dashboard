@@ -13,7 +13,8 @@
      */
     description?: string;
     disabled?: boolean;
-    children: Snippet;
+    children?: Snippet;
+    open?: boolean;
   }
 
   let {
@@ -21,16 +22,19 @@
     title = "Are you absolutely sure?",
     description,
     disabled = false,
+    open = $bindable(false),
     children,
   }: Props = $props();
 
   const htmlDescription = description ? new MarkdownFormatter(description).toHTML() : undefined;
 </script>
 
-<AlertDialog.Root>
-  <AlertDialog.Trigger {disabled}>
-    {@render children()}
-  </AlertDialog.Trigger>
+<AlertDialog.Root bind:open>
+  {#if children}
+    <AlertDialog.Trigger {disabled}>
+      {@render children()}
+    </AlertDialog.Trigger>
+  {/if}
   <AlertDialog.Content>
     <AlertDialog.Header>
       <AlertDialog.Title>{title}</AlertDialog.Title>
