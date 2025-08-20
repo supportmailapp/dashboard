@@ -24,7 +24,9 @@
   let fetchedUsers = $state<APIUser[]>([]);
   let userSearchInput = $state("");
 
-  async function fetchUsers() {
+  async function fetchUsers(e: Event) {
+    e.preventDefault();
+
     if (!userSearchInput) {
       toast.info("Search input empty!");
       return;
