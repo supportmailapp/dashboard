@@ -140,10 +140,10 @@ export class SvelteBitfield {
   }
 
   /**
-   * Convert to decimal string
+   * Shortcut for `this.bits.toString()`
    */
   toString(): string {
-    return this._bits.toString();
+    return this._bits.toString(10);
   }
 
   /**
