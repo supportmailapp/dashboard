@@ -10,11 +10,13 @@ export type PossibleConfig = string | number | bigint | Date | boolean | Array<a
  */
 export class ConfigState<T extends PossibleConfig> {
   private _backup: T | null = null;
+
   /**
-   * Internal state for the configuration.
-   * Initialized to `null` by default.
+   * The current configuration.
+   *
+   * @returns The current configuration, or `null` if no configuration is set.
    */
-  private _config = $state<T | null>(null);
+  public config = $state<T | null>(null);
 
   /**
    * internal state indicating whether the configuration is currently saving.
@@ -49,17 +51,8 @@ export class ConfigState<T extends PossibleConfig> {
    */
   public constructor(initConfig: T | null | undefined = undefined, initLoading: boolean = true) {
     this._backup = !!initConfig ? deepClone(initConfig) : null;
-    this._config = initConfig ?? null;
+    this.config = initConfig ?? null;
     this.loading = initLoading;
-  }
-
-  /**
-   * Retrieves the current configuration.
-   *
-   * @returns The current configuration, or `null` if no configuration is set.
-   */
-  public get config(): T | null {
-    return this._config;
   }
 
   /**
@@ -86,7 +79,7 @@ export class ConfigState<T extends PossibleConfig> {
    * @returns A snapshot of the current config
    */
   public snap(): $state.Snapshot<T> | null {
-    return $state.snapshot(this._config);
+    return $state.snapshot(this.config);
   }
 
   /**
@@ -108,8 +101,8 @@ export class ConfigState<T extends PossibleConfig> {
    * @returns The newly set config value.
    */
   public setConfig(config: T | null): T | null {
-    this._config = config;
-    return this._config;
+    this.config = config;
+    return this.config;
   }
 
   /**
@@ -124,7 +117,7 @@ export class ConfigState<T extends PossibleConfig> {
    * @returns The cloned backup of the new configuration.
    */
   public saveConfig(newConf: T): T {
-    this._config = newConf;
+    this.config = newConf;
     this._backup = deepClone(newConf);
     this.unsaved = false;
     this.saving = false;
@@ -159,7 +152,7 @@ export class ConfigState<T extends PossibleConfig> {
    * When `true`, the instance type is narrowed to include a non-null configuration.
    */
   public isConfigured(): this is ConfigState<T> & { config: NonNullable<T> } {
-    return this._config !== null;
+    return this.config !== null;
   }
 
   /**
@@ -168,7 +161,7 @@ export class ConfigState<T extends PossibleConfig> {
    * @returns A type guard indicating that the instance is now of type `ConfigState<T> & { config: null }`.
    */
   public clear(): this is Omit<ConfigState<T>, "config"> & { config: null } {
-    this._config = null;
+    this.config = null;
     return true;
   }
 }

@@ -1,9 +1,9 @@
 <script lang="ts">
-  import * as Tabs from "$lib/components/ui/tabs/index.js";
+  import { cn } from "$lib/utils";
+  import * as Tabs from "$ui/tabs/index.js";
   import type { APIUser } from "discord-api-types/v10";
   import RoleSelect from "./RoleSelect.svelte";
   import UserSelect from "./UserSelect.svelte";
-  import { cn } from "$lib/utils";
 
   type Props = {
     /**

@@ -2,21 +2,19 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
-  import * as Pagination from "$lib/components/ui/pagination/index.js";
-  import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import { APIRoutes } from "$lib/urls";
   import { safeParseInt } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
   import { Button } from "$ui/button";
+  import * as Pagination from "$ui/pagination/index.js";
   import { Skeleton } from "$ui/skeleton";
-  import Files from "@lucide/svelte/icons/files";
   import equal from "fast-deep-equal/es6";
   import { TicketStatus } from "supportmail-types";
+  import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
   import type { PaginatedTicketsResponse } from "../../../api/v1/guilds/[guildid]/tickets/+server";
   import FilterControls, { type TicketSearchScope } from "./FilterControls.svelte";
   import TicketsTable from "./TicketsTable.svelte";
-  import { onMount } from "svelte";
 
   const pageData = $state({
     page: safeParseInt(page.url.searchParams.get("page"), 1),

@@ -1,21 +1,21 @@
 <script lang="ts">
   import { Avatar } from "@fuxui/base";
 
+  import { goto } from "$app/navigation";
   import { page } from "$app/state";
+  import ConfigCard from "$lib/components/ConfigCard.svelte";
+  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
+  import { LANGUAGES } from "$lib/constants";
   import { ConfigState } from "$lib/stores/ConfigState.svelte";
+  import { APIRoutes } from "$lib/urls";
   import { parseIconToURL } from "$lib/utils";
   import { Button } from "$ui/button";
-  import * as Select from "$lib/components/ui/select/index.js";
-  import { goto } from "$app/navigation";
-  import ConfigCard from "$lib/components/ConfigCard.svelte";
-  import { LANGUAGES } from "$lib/constants";
-  import { APIRoutes } from "$lib/urls";
-  import { toast } from "svelte-sonner";
-  import ky from "ky";
-  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import { Label } from "$ui/label";
-  import ChevronLeft from "@lucide/svelte/icons/chevron-left";
+  import * as Select from "$ui/select/index.js";
   import { Switch } from "$ui/switch";
+  import ChevronLeft from "@lucide/svelte/icons/chevron-left";
+  import ky from "ky";
+  import { toast } from "svelte-sonner";
 
   const user = new ConfigState<{ language: string; autoRedirect: boolean }>(null);
   const dcUser = $derived(page.data.user);

@@ -3,17 +3,17 @@
   import Hash from "@lucide/svelte/icons/hash";
   import { ChannelType } from "discord-api-types/v10";
 
-  import ChannelIcon from "./discord/ChannelIcon.svelte";
-  import * as Command from "$lib/components/ui/command/index.js";
-  import * as Tabs from "$lib/components/ui/tabs/index.js";
-  import { sortChannels } from "$lib/utils/formatting";
-  import { Skeleton } from "$ui/skeleton";
-  import { cn } from "$lib/utils";
-  import { Input } from "$ui/input";
-  import { Button } from "$ui/button";
-  import { toast } from "svelte-sonner";
-  import apiClient from "$lib/utils/apiClient";
   import { APIRoutes } from "$lib/urls";
+  import { cn } from "$lib/utils";
+  import apiClient from "$lib/utils/apiClient";
+  import { sortChannels } from "$lib/utils/formatting";
+  import { Button } from "$ui/button";
+  import * as Command from "$ui/command/index.js";
+  import { Input } from "$ui/input";
+  import { Skeleton } from "$ui/skeleton";
+  import * as Tabs from "$ui/tabs/index.js";
+  import { toast } from "svelte-sonner";
+  import ChannelIcon from "./discord/ChannelIcon.svelte";
 
   type Props = {
     selected?: GuildCoreChannel;

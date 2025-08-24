@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import * as Command from "$lib/components/ui/command/index.js";
+  import * as Command from "$ui/command/index.js";
   import { Skeleton } from "$ui/skeleton";
 
   type Props = {

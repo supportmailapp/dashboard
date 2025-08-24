@@ -1,12 +1,7 @@
 <script lang="ts">
-  import { page } from "$app/state";
   import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
-  import ConfigCard from "$lib/components/ConfigCard.svelte";
-  import { Textarea } from "$lib/components/ui/textarea/index.js";
   import { ConfigState } from "$lib/stores/ConfigState.svelte";
-  import { APIRoutes } from "$lib/urls";
   import { cn } from "$lib/utils";
-  import apiClient from "$lib/utils/apiClient";
   import { Badge } from "$ui/badge/index.js";
   import { Button, buttonVariants } from "$ui/button";
   import * as Card from "$ui/card/index.js";
@@ -16,12 +11,12 @@
   import { Label } from "$ui/label";
   import * as RadioGroup from "$ui/radio-group/index.js";
   import { Switch } from "$ui/switch";
+  import { Textarea } from "$ui/textarea/index.js";
   import Pencil from "@lucide/svelte/icons/pencil";
   import Plus from "@lucide/svelte/icons/plus";
   import Save from "@lucide/svelte/icons/save";
   import Trash from "@lucide/svelte/icons/trash";
   import type { ICustomModalField, IFeedbackConfig } from "supportmail-types";
-  import { toast } from "svelte-sonner";
   import { slide } from "svelte/transition";
 
   type Props = {

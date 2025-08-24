@@ -1,15 +1,15 @@
 <script lang="ts">
+  import { cn } from "$lib/utils";
   import type { SvelteBitfield } from "$lib/utils/reactiveBitfield.svelte";
+  import * as Dropdown from "$ui/dropdown-menu/index.js";
   import { Input } from "$ui/input/index.js";
   import { Label } from "$ui/label/index.js";
   import * as Select from "$ui/select/index.js";
-  import * as Dropdown from "$ui/dropdown-menu/index.js";
-  import { BlacklistScope, EntityType } from "supportmail-types";
+  import * as Tooltip from "$ui/tooltip/index.js";
   import Check from "@lucide/svelte/icons/check";
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
-  import { cn } from "$lib/utils";
-  import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import Info from "@lucide/svelte/icons/info";
+  import { BlacklistScope, EntityType } from "supportmail-types";
 
   type Props = {
     search: string;

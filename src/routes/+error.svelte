@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from "$app/state";
   import { Button, buttonVariants } from "$ui/button";
-  import * as Tooltip from "$lib/components/ui/tooltip/index.js";
+  import * as Tooltip from "$ui/tooltip/index.js";
   import ArrowLeft from "@lucide/svelte/icons/arrow-left";
   import RotateCcw from "@lucide/svelte/icons/rotate-ccw";
 

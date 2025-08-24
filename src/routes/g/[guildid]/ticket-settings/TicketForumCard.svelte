@@ -3,18 +3,15 @@
   import ChannelSelect from "$lib/components/ChannelSelect.svelte";
   import ConfigCard from "$lib/components/ConfigCard.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
-  import * as Dialog from "$lib/components/ui/dialog/index.js";
-  import * as Popover from "$lib/components/ui/popover/index.js";
   import type { DBGuildProjectionReturns } from "$lib/server/db";
   import { ConfigState } from "$lib/stores/ConfigState.svelte";
   import { APIRoutes } from "$lib/urls";
   import apiClient from "$lib/utils/apiClient";
   import { Button, buttonVariants } from "$ui/button/index.js";
-  import * as Card from "$ui/card";
+  import * as Dialog from "$ui/dialog/index.js";
   import { Label } from "$ui/label";
-  import { Separator } from "$ui/separator";
+  import * as Popover from "$ui/popover/index.js";
   import { Skeleton } from "$ui/skeleton";
-  import { Switch } from "$ui/switch";
   import { ChannelType } from "discord-api-types/v10";
   import { toast } from "svelte-sonner";
 

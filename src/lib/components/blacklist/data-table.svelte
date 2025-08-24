@@ -1,8 +1,7 @@
 <script lang="ts" generics="TData, TValue">
+  import { createSvelteTable, FlexRender } from "$ui/data-table/index.js";
+  import * as Table from "$ui/table/index.js";
   import { getCoreRowModel, type ColumnDef, type RowSelectionState } from "@tanstack/table-core";
-  import { createSvelteTable, FlexRender } from "$lib/components/ui/data-table/index.js";
-  import * as Table from "$lib/components/ui/table/index.js";
-  import { SvelteSet } from "svelte/reactivity";
 
   type DataTableProps<TData, TValue> = {
     columns: ColumnDef<TData, TValue>[];

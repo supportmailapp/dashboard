@@ -1,14 +1,14 @@
 <script lang="ts">
-  import CalendarIcon from "@lucide/svelte/icons/calendar";
-  import { CalendarDate, DateFormatter, getLocalTimeZone, today } from "@internationalized/date";
-  import { cn } from "$lib/utils.js";
-  import { buttonVariants } from "$lib/components/ui/button/index.js";
-  import { Calendar } from "$lib/components/ui/calendar/index.js";
-  import * as Popover from "$lib/components/ui/popover/index.js";
-  import * as Select from "$lib/components/ui/select/index.js";
   import { pausePresets } from "$lib/constants";
-  import TimePicker from "./TimePicker.svelte";
+  import { cn } from "$lib/utils.js";
+  import { buttonVariants } from "$ui/button/index.js";
+  import { Calendar } from "$ui/calendar/index.js";
+  import * as Popover from "$ui/popover/index.js";
+  import * as Select from "$ui/select/index.js";
+  import { CalendarDate, DateFormatter, getLocalTimeZone, today } from "@internationalized/date";
+  import CalendarIcon from "@lucide/svelte/icons/calendar";
   import dayjs from "dayjs";
+  import TimePicker from "./TimePicker.svelte";
 
   type Props = {
     value?: CalendarDate;

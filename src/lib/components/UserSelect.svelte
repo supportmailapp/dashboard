@@ -1,11 +1,11 @@
 <script lang="ts">
   import { page } from "$app/state";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
-  import * as Avatar from "$lib/components/ui/avatar/index.js";
   import { users } from "$lib/stores/users.svelte";
   import { APIRoutes } from "$lib/urls";
   import { cn, parseIconToURL } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
+  import * as Avatar from "$ui/avatar/index.js";
   import { Button } from "$ui/button";
   import Input from "$ui/input/input.svelte";
   import Search from "@lucide/svelte/icons/search";

@@ -1,11 +1,11 @@
 <script lang="ts">
   import ConfigCard from "$lib/components/ConfigCard.svelte";
   import DateTimePicker from "$lib/components/DateTimePicker.svelte";
-  import { Label } from "$lib/components/ui/label/index.js";
-  import * as RadioGroup from "$lib/components/ui/radio-group/index.js";
   import { relativeDatetime } from "$lib/utils";
   import { dateToLocalString } from "$lib/utils/formatting";
   import * as Alert from "$ui/alert";
+  import { Label } from "$ui/label/index.js";
+  import * as RadioGroup from "$ui/radio-group/index.js";
   import Separator from "$ui/separator/separator.svelte";
   import { Switch } from "$ui/switch";
   import CircleAlertIcon from "@lucide/svelte/icons/circle-alert";

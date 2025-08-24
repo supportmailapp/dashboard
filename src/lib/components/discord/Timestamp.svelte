@@ -1,6 +1,6 @@
 <script lang="ts">
-  import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import { relativeDatetime } from "$lib/utils";
+  import * as Tooltip from "$ui/tooltip/index.js";
   import dayjs from "dayjs";
 
   export type TimestampFormat = "t" | "T" | "d" | "D" | "f" | "F" | "R";
