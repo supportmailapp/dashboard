@@ -1,33 +1,33 @@
 <script lang="ts">
-  import Home from "@lucide/svelte/icons/home";
-  import Ticket from "@lucide/svelte/icons/ticket";
-  import FolderOpen from "@lucide/svelte/icons/folder-open";
-  import Star from "@lucide/svelte/icons/star";
-  import ShieldUser from "@lucide/svelte/icons/shield-user";
-  import MessagesSquare from "@lucide/svelte/icons/messages-square";
-  import RotateCcw from "@lucide/svelte/icons/rotate-ccw";
-  import LogOut from "@lucide/svelte/icons/log-out";
-  import Settings from "@lucide/svelte/icons/settings";
-  import ReceiptText from "@lucide/svelte/icons/receipt-text";
   import ChevronUp from "@lucide/svelte/icons/chevron-up";
-  import Moon from "@lucide/svelte/icons/moon";
-  import Sun from "@lucide/svelte/icons/sun";
   import Cog from "@lucide/svelte/icons/cog";
+  import FolderOpen from "@lucide/svelte/icons/folder-open";
+  import Home from "@lucide/svelte/icons/home";
+  import LogOut from "@lucide/svelte/icons/log-out";
+  import MessagesSquare from "@lucide/svelte/icons/messages-square";
+  import Moon from "@lucide/svelte/icons/moon";
+  import ReceiptText from "@lucide/svelte/icons/receipt-text";
+  import RotateCcw from "@lucide/svelte/icons/rotate-ccw";
+  import Settings from "@lucide/svelte/icons/settings";
+  import ShieldUser from "@lucide/svelte/icons/shield-user";
+  import Star from "@lucide/svelte/icons/star";
+  import Sun from "@lucide/svelte/icons/sun";
   import Table from "@lucide/svelte/icons/table";
+  import Ticket from "@lucide/svelte/icons/ticket";
 
-  import * as Sidebar from "$ui/sidebar/index.js";
-  import * as Avatar from "$ui/avatar";
-  import * as DropdownMenu from "$ui/dropdown-menu/index.js";
-  import type { Component } from "svelte";
-  import { page } from "$app/state";
   import { goto } from "$app/navigation";
-  import { userDisplayName } from "$lib/utils/formatting";
-  import { buttonVariants } from "$ui/button";
+  import { page } from "$app/state";
+  import VenocixBranding from "$lib/assets/VenocixBranding.svelte";
   import { cdnUrls } from "$lib/urls";
   import { cn } from "$lib/utils";
-  import { toast } from "svelte-sonner";
+  import { userDisplayName } from "$lib/utils/formatting";
+  import * as Avatar from "$ui/avatar";
+  import { buttonVariants } from "$ui/button";
+  import * as DropdownMenu from "$ui/dropdown-menu/index.js";
+  import * as Sidebar from "$ui/sidebar/index.js";
   import { mode, toggleMode } from "mode-watcher";
-  import VenocixBranding from "$lib/assets/VenocixBranding.svelte";
+  import type { Component } from "svelte";
+  import { toast } from "svelte-sonner";
 
   type NavItem = {
     id: string;
@@ -108,9 +108,9 @@
       name: "Content Management",
       items: [
         {
-          id: "custom-messages",
+          id: "snippets",
           name: "Custom Messages",
-          href: page.data.guildHref("/custom-messages"),
+          href: page.data.guildHref("/snippets"),
           icon: MessagesSquare,
         },
       ],
