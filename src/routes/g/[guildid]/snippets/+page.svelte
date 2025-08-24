@@ -8,6 +8,13 @@
   import Plus from "@lucide/svelte/icons/plus";
   import { ReactiveSnippet } from "./snippetClass.svelte";
   import { page } from "$app/state";
+  import apiClient from "$lib/utils/apiClient";
+  import { APIRoutes } from "$lib/urls";
+  import type { APISnippet } from "../../../api/v1/guilds/[guildid]/snippets/+server";
+
+  let { data } = $props();
+
+  $inspect("snippets", data.snippets);
 
   let searchInput = $state("");
   const newSnippetStates = $state({
@@ -29,9 +36,24 @@
     });
   }
 
-  async function createSnippet() {}
+  async function saveSnippet(_data: { name: string; content: string; _id?: string }) {
+    try {
+      const res = await apiClient.put(APIRoutes.snippets(page.data.guildId!), {
+        json: _data,
+      });
 
-  async function saveSnippet() {}
+      if (res.ok) {
+        const json = await res.json<APISnippet>();
+        if (_data._id) {
+          data.snippets = data.snippets.map((s) => (s._id === _data._id ? json : s));
+        } else {
+          data.snippets = [...data.snippets, json];
+        }
+      }
+    } catch (err) {
+      console.error("Error saving snippet:", err);
+    }
+  }
 </script>
 
 <SiteHeading title="Custom Messages" subtitle="Manage your custom messages" />
@@ -93,13 +115,18 @@
       }
     }
     onSave={async () => {
+      const snippetData = {
+        name: snippetModalMode === "create" ? newSnippet.name : selectedSnippet.name,
+        content: snippetModalMode === "create" ? newSnippet.content : selectedSnippet.content,
+        _id: snippetModalMode === "create" ? newSnippet._id : selectedSnippet._id,
+      };
       if (snippetModalMode === "create") {
         newSnippetStates.loading = true;
-        await createSnippet();
+        await saveSnippet(snippetData);
         newSnippetStates.loading = false;
       } else {
         selectedSnippetStates.loading = true;
-        await saveSnippet();
+        await saveSnippet(snippetData);
         selectedSnippetStates.loading = false;
       }
     }}
