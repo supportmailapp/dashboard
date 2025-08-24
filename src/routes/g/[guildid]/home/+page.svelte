@@ -1,20 +1,22 @@
 <script lang="ts">
   import { page } from "$app/state";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
-  import * as Command from "$lib/components/ui/command/index.js";
+  import * as Select from "$ui/select/index.js";
   import { LANGUAGES } from "$lib/constants";
   import { ConfigState } from "$lib/stores/ConfigState.svelte";
   import { APIRoutes, DocsLinks } from "$lib/urls";
   import { cn } from "$lib/utils";
   import { userDisplayName } from "$lib/utils/formatting";
-  import { Button } from "$ui/button";
+  import { Button, buttonVariants } from "$ui/button";
   import * as Card from "$ui/card/index.js";
   import { Skeleton } from "$ui/skeleton";
-  import CheckIcon from "@lucide/svelte/icons/check";
   import ky from "ky";
   import { toast } from "svelte-sonner";
+  import { onMount } from "svelte";
 
   const languageConf = new ConfigState<string>(null);
+
+  $inspect("lang", languageConf.config);
 
   async function saveLanguage() {
     languageConf.saving = true;
@@ -48,7 +50,7 @@
     }
   }
 
-  $effect(() => {
+  onMount(() => {
     fetch(APIRoutes.guildConfig(page.data.guildId!))
       .then((res) => {
         if (!res.ok) {
@@ -58,7 +60,7 @@
           return;
         }
         res.json().then((data: string) => {
-          languageConf.setConfig(data);
+          languageConf.saveConfig(data);
           languageConf.loading = false;
         });
       })
@@ -106,28 +108,26 @@
         </ul>
       </Card.Description>
     </Card.Header>
-    {#if !!languageConf}
+    {#if languageConf.isConfigured()}
       <Card.Content>
-        <Command.Root>
-          <Command.Input placeholder="Search language..." />
-          <Command.List>
-            <Command.Empty>Language not found</Command.Empty>
-            <Command.Group value="languages">
-              {#each LANGUAGES as lang (lang.value)}
-                <Command.Item
-                  value={lang.name}
-                  onSelect={() => {
-                    languageConf.setConfig(lang.value);
-                    languageConf.evalUnsaved();
-                  }}
-                >
-                  <CheckIcon class={cn(languageConf.config !== lang.value && "text-transparent")} />
-                  {lang.name}
-                </Command.Item>
-              {/each}
-            </Command.Group>
-          </Command.List>
-        </Command.Root>
+        <Select.Root
+          type="single"
+          bind:value={languageConf.config}
+          onValueChange={() => {
+            languageConf.evalUnsaved();
+          }}
+        >
+          <Select.Trigger class={cn(buttonVariants({ variant: "outline" }), "w-40 justify-between")}>
+            {LANGUAGES.find((lang) => lang.value === languageConf.config)?.name}
+          </Select.Trigger>
+          <Select.Content>
+            {#each LANGUAGES as lang (lang.value)}
+              <Select.Item value={lang.value} label={lang.name}>
+                {lang.name}
+              </Select.Item>
+            {/each}
+          </Select.Content>
+        </Select.Root>
       </Card.Content>
       <Card.Footer class="flex-col gap-2">
         <Button
