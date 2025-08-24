@@ -1,11 +1,9 @@
 export class ReactiveSnippet {
+  public _id = $state<undefined | string>(undefined);
   private _name = $state("");
   private _content = $state("");
 
-  constructor(name = "", content = "") {
-    this._name = name;
-    this._content = content;
-  }
+  constructor() {}
 
   sanitizeName(str: string) {
     // 1+ spaces -> 1 space + trim
