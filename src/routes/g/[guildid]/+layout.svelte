@@ -117,7 +117,7 @@
   </Sidebar.Inset>
 </Sidebar.Provider>
 
-<ServerSelector bind:open={guildsSelectOpen} bind:switchingPage />
+<ServerSelector bind:open={guildsSelectOpen} />
 
 <style>
   :root {
