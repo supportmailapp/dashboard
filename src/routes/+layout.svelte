@@ -21,6 +21,11 @@
   });
 
   beforeNavigate((nav) => {
+    if (nav.from?.url.pathname === nav.to?.url.pathname) {
+      nav.cancel();
+      return;
+    }
+
     if (nav.to?.url.origin === page.url.origin) {
       site.showLoading = true;
     }

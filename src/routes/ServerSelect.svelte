@@ -27,7 +27,6 @@
         : `/add/${guild.id}`}
       <Command.LinkItem
         href={_guildHref}
-        target="_self"
         value="{guild.id}:{guild.name}"
         class={cn("transition-all duration-120", !guild.isConfigured && "text-foreground/70")}
         onclick={() => {
