@@ -5,10 +5,7 @@
   import ServerSelect from "../../ServerSelect.svelte";
   import { CardContent } from "$ui/card";
 
-  let {
-    open = $bindable(false),
-    switchingPage = $bindable(false),
-  }: { open?: boolean; switchingPage?: boolean } = $props();
+  let { open = $bindable(false) }: { open?: boolean; switchingPage?: boolean } = $props();
 </script>
 
 <Dialog.Root bind:open>
@@ -18,16 +15,7 @@
       <Dialog.Description>Choose a server from the list below.</Dialog.Description>
     </Dialog.Header>
     <CardContent class="flex min-h-0 flex-1 flex-col px-0">
-      {#if switchingPage}
-        <div
-          class="grid h-full w-full place-items-center py-3"
-          transition:slide={{ duration: 200, axis: "x" }}
-        >
-          <LoadingSpinner size="20" />
-        </div>
-      {:else}
-        <ServerSelect />
-      {/if}
+      <ServerSelect />
     </CardContent>
   </Dialog.Content>
 </Dialog.Root>
