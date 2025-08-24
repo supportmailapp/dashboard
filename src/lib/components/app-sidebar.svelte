@@ -12,6 +12,8 @@
   import ChevronUp from "@lucide/svelte/icons/chevron-up";
   import Moon from "@lucide/svelte/icons/moon";
   import Sun from "@lucide/svelte/icons/sun";
+  import Cog from "@lucide/svelte/icons/cog";
+  import Table from "@lucide/svelte/icons/table";
 
   import * as Sidebar from "$ui/sidebar/index.js";
   import * as Avatar from "$ui/avatar";
@@ -61,7 +63,7 @@
           id: "ticket-settings",
           name: "Ticket Settings",
           href: page.data.guildHref("/ticket-settings"),
-          icon: Ticket,
+          icon: Cog,
         },
         {
           id: "ticket-categories",
@@ -85,13 +87,13 @@
           id: "view-reports",
           name: "View Reports",
           href: page.data.guildHref("/reports"),
-          icon: ShieldUser,
+          icon: Table,
         },
         {
           id: "report-settings",
           name: "Report Settings",
           href: page.data.guildHref("/report-settings"),
-          icon: ShieldUser,
+          icon: Cog,
         },
         {
           id: "blacklist",
