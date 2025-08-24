@@ -109,7 +109,7 @@
       items: [
         {
           id: "snippets",
-          name: "Custom Messages",
+          name: "Snippets",
           href: page.data.guildHref("/snippets"),
           icon: MessagesSquare,
         },
