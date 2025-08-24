@@ -151,8 +151,6 @@
 
 <SiteHeading title="Reports" />
 
-<!-- pageData Controls -->
-
 <div class="mb-4 flex flex-col items-start justify-start gap-3">
   <FilterControls
     bind:status={() => stringifyStatus(pageData.status), (v) => (pageData.status = parseStatus(v))}
