@@ -27,7 +27,6 @@
     goto(page.url.pathname + (searchInput !== "" ? `?search=${$state.snapshot(searchInput)}` : ""), {
       replaceState: true,
     });
-    invalidate(page.url);
   }
 
   async function createSnippet() {}
