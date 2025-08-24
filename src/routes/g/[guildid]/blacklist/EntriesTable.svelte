@@ -1,15 +1,15 @@
 <script lang="ts">
   import { type ColumnDef, type PaginationState, type RowSelectionState } from "@tanstack/table-core";
-  import DataTable from "$lib/components/blacklist/data-table.svelte";
+  import DataTable from "$lib/components/blacklist-data-table/data-table.svelte";
   import type {
     APIBlacklistEntry,
     PaginatedBlacklistResponse,
   } from "../../../api/v1/guilds/[guildid]/blacklist/+server";
   import { renderComponent } from "$ui/data-table";
-  import DataTableActions from "$lib/components/blacklist/data-table-actions.svelte";
+  import DataTableActions from "$lib/components/blacklist-data-table/data-table-actions.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
   import { EntityType } from "supportmail-types";
-  import ScopesCell from "$lib/components/blacklist/ScopesCell.svelte";
+  import ScopesCell from "$lib/components/blacklist-data-table/ScopesCell.svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import * as Dialog from "$ui/dialog/index.js";
   import * as Dropdown from "$ui/dropdown-menu/index.js";
@@ -21,7 +21,7 @@
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
   import Check from "@lucide/svelte/icons/check";
   import { toast } from "svelte-sonner";
-  import DataTableCheckbox from "$lib/components/blacklist/data-table-checkbox.svelte";
+  import DataTableCheckbox from "$lib/components/blacklist-data-table/data-table-checkbox.svelte";
 
   let {
     entries,
