@@ -1,6 +1,7 @@
 import { DBTag, FlattenDocToJSON } from "$lib/server/db";
 import type { FilterQuery } from "mongoose";
 import type { ITag } from "supportmail-types";
+import type { APISnippet } from "../../../api/v1/guilds/[guildid]/snippets/+server.js";
 
 export async function load({ locals, url }) {
   const filterFields: FilterQuery<ITag> = {
@@ -13,6 +14,6 @@ export async function load({ locals, url }) {
   const snippets = await DBTag.find(filterFields);
 
   return {
-    snippets: snippets.map((s) => FlattenDocToJSON(s, true)),
+    snippets: snippets.map((s) => FlattenDocToJSON(s, true)) as unknown as APISnippet[],
   };
 }
