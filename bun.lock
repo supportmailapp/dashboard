@@ -39,7 +39,7 @@
         "@tanstack/table-core": "^8.21.3",
         "@types/bun": "latest",
         "@types/jsonwebtoken": "^9.0.9",
-        "bits-ui": "^2.8.11",
+        "bits-ui": "^2.14.3",
         "clsx": "^2.1.1",
         "mode-watcher": "^1.0.8",
         "prettier": "^3.4.2",
