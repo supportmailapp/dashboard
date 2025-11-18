@@ -16,7 +16,7 @@
 <Command.Root class="h-full bg-transparent md:min-w-[450px]">
   <Command.Input
     placeholder="Search a server"
-    class="[&::placeholder]:text-foreground/50 rounded-lg"
+    class="placeholder:text-foreground/50 rounded-lg"
     autofocus={false}
   />
   <Command.List class="max-h-auto h-full py-0.5">
@@ -24,7 +24,7 @@
     {#each guildManager.guilds as guild (guild.id)}
       {@const _guildHref = guild.isConfigured
         ? `/g/${guild.id + getNextPathFromGuildPath(page.url.pathname)}`
-        : `/add/${guild.id}`}
+        : `/invite/${guild.id}`}
       <Command.LinkItem
         href={_guildHref}
         value="{guild.id}:{guild.name}"
