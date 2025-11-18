@@ -37,7 +37,6 @@
   import { cn, safeParseInt } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
   import { SvelteBitfield } from "$lib/utils/reactiveBitfield.svelte.js";
-  import type { RowSelectionState } from "@tanstack/table-core";
   import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
   import { AlertDialogTrigger } from "$ui/alert-dialog";
 
@@ -59,16 +58,12 @@
    */
   let fetchedData = $state($state.snapshot(pageData) as typeof pageData);
   let entries = $state<PaginatedBlacklistResponse["data"]>([]);
-  let rowSelection = $state<RowSelectionState>({});
+  let rowSelection = $state<string[]>([]);
   /**
    * Derived set of selected row IDs.
    * **Not indexes, `_id[]`.**
    */
-  const selectedRows = $derived(
-    Object.keys(rowSelection)
-      .map((index) => entries[parseInt(index)]?._id)
-      .filter(Boolean),
-  );
+  const selectedRows = $derived(rowSelection.map((index) => entries[parseInt(index)]?._id).filter(Boolean));
   const selectedText = $derived(selectedRows.length === 1 ? "1 entry" : `${selectedRows.length} entries`);
   let bulkDeleteConfirmation = $state(false);
 
@@ -202,7 +197,7 @@
 
       entries = entries.filter((entry) => !ids.includes(entry._id));
       toast.success(`${singleEntry ? "Entry" : "Entries"} deleted!`);
-      rowSelection = {};
+      rowSelection = [];
     } catch (err: any) {
       toast.error("Error deleting entries", {
         description: err.message,
@@ -273,7 +268,7 @@
           <Dropdown.Root>
             <Dropdown.Trigger
               class={cn(
-                "border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-fit items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none select-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+                "border-input data-placeholder:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-fit items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none select-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
                 "w-full sm:w-50",
               )}
             >
@@ -333,11 +328,11 @@
 </div>
 
 <EntriesTable
-  {entries}
   bind:pageStatus
   bind:rowSelection
-  saveEntry={(e) => saveEntry(e, "edit")}
-  deleteEntry={(_id) => deleteEntries([_id])}
+  {entries}
+  saveEntry={(e: BLEntry) => saveEntry(e, "edit")}
+  deleteEntry={(_id: string) => deleteEntries([_id])}
 />
 
 {#if pageStatus === "loaded" && entries.length > 0}
