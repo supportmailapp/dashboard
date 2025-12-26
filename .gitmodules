@@ -1,0 +1,3 @@
+[submodule "src/lib/sm-types"]
+	path = src/lib/sm-types
+	url = git@github.com:supportmailapp/global-types.git
