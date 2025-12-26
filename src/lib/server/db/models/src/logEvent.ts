@@ -1,7 +1,6 @@
-import { model, Schema } from "mongoose";
-import pkg from "mongoose";
+import type { LogEventType, TLogEvent } from "$lib/sm-types";
+import pkg, { model, Schema } from "mongoose";
 const { models } = pkg;
-import type { TLogEvent, LogEventType } from "supportmail-types";
 
 const logEventSchema = new Schema<TLogEvent>({
   guildId: { type: String, required: true },

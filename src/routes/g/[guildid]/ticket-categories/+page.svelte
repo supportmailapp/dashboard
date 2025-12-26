@@ -4,6 +4,7 @@
   import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
+  import type { ITicketCategory } from "$lib/sm-types";
   import { ConfigState } from "$lib/stores/ConfigState.svelte";
   import { APIRoutes } from "$lib/urls";
   import { cn } from "$lib/utils";
@@ -18,7 +19,6 @@
   import Plus from "@lucide/svelte/icons/plus";
   import Save from "@lucide/svelte/icons/save";
   import Trash from "@lucide/svelte/icons/trash";
-  import type { ITicketCategory } from "supportmail-types";
   import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
   import { slide } from "svelte/transition";

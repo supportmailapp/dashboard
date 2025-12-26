@@ -5,7 +5,7 @@
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
   import * as Popover from "$ui/popover/index.js";
-  import type { IPartialEmoji } from "supportmail-types";
+  import type { IPartialEmoji } from "$lib/sm-types";
 
   type Props = {
     emoji: IPartialEmoji;

@@ -1,23 +1,23 @@
 <script lang="ts">
-  import * as Card from "$ui/card";
-  import * as Avatar from "$ui/avatar";
   import { page } from "$app/state";
-  import { TicketState, TicketStatus } from "supportmail-types";
-  import Button from "$ui/button/button.svelte";
-  import ChevronLeft from "@lucide/svelte/icons/chevron-left";
   import Mention from "$lib/components/discord/Mention.svelte";
-  import * as Table from "$ui/table";
-  import Separator from "$ui/separator/separator.svelte";
-  import Star from "@lucide/svelte/icons/star";
+  import Timestamp from "$lib/components/discord/Timestamp.svelte";
+  import { TicketState, TicketStatus } from "$lib/sm-types";
+  import { mentionUsers } from "$lib/stores/users.svelte";
+  import { cdnUrls } from "$lib/urls";
   import { cn, makeFallbackInitials } from "$lib/utils.js";
   import { userDisplayName } from "$lib/utils/formatting.js";
-  import { cdnUrls } from "$lib/urls";
-  import { mentionUsers } from "$lib/stores/users.svelte";
-  import Skeleton from "$ui/skeleton/skeleton.svelte";
-  import Timestamp from "$lib/components/discord/Timestamp.svelte";
+  import * as Avatar from "$ui/avatar";
   import Badge from "$ui/badge/badge.svelte";
-  import { toast } from "svelte-sonner";
+  import Button from "$ui/button/button.svelte";
+  import * as Card from "$ui/card";
+  import Separator from "$ui/separator/separator.svelte";
+  import Skeleton from "$ui/skeleton/skeleton.svelte";
+  import * as Table from "$ui/table";
+  import ChevronLeft from "@lucide/svelte/icons/chevron-left";
   import Info from "@lucide/svelte/icons/info";
+  import Star from "@lucide/svelte/icons/star";
+  import { toast } from "svelte-sonner";
 
   let { data } = $props();
   let { ticket, error } = data;

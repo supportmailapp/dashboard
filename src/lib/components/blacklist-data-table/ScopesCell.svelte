@@ -3,7 +3,7 @@
   import MessageSquare from "@lucide/svelte/icons/message-square";
   import ShieldUser from "@lucide/svelte/icons/shield-user";
   import Ticket from "@lucide/svelte/icons/ticket";
-  import { BlacklistScope } from "supportmail-types";
+  import { BlacklistScope } from "$lib/sm-types";
 
   let { scopes }: { scopes: bigint } = $props();
   let scopeField = new SvelteBitfield(scopes);

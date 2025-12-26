@@ -1,6 +1,6 @@
+import { type IReport, ReportStatus } from "$lib/sm-types";
 import pkg, { model, Schema } from "mongoose";
 const { models } = pkg;
-import { type IReport, ReportStatus } from "supportmail-types";
 
 const reportSchema = new Schema<IReport>(
   {

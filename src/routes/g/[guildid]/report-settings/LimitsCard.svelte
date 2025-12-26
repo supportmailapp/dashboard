@@ -1,10 +1,10 @@
 <script lang="ts">
   import ConfigCard from "$lib/components/ConfigCard.svelte";
+  import type { ReportLimitsConfig } from "$lib/sm-types";
   import Input from "$ui/input/input.svelte";
   import Label from "$ui/label/label.svelte";
   import { Separator } from "$ui/separator";
   import Info from "@lucide/svelte/icons/info";
-  import type { ReportLimitsConfig } from "supportmail-types";
 
   type Props = {
     limits: ReportLimitsConfig;

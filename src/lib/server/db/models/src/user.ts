@@ -1,7 +1,6 @@
-import { model, Schema } from "mongoose";
-import pkg from "mongoose";
+import type { IDBUser } from "$lib/sm-types";
+import pkg, { model, Schema } from "mongoose";
 const { models } = pkg;
-import type { IDBUser } from "supportmail-types";
 
 export const userSchema = new Schema<IDBUser>(
   {

@@ -1,9 +1,9 @@
 <script lang="ts">
   import ConfigCard from "$lib/components/ConfigCard.svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
+  import type { IAnonym } from "$lib/sm-types";
   import { Label } from "$ui/label";
   import { Switch } from "$ui/switch";
-  import type { IAnonym } from "supportmail-types";
 
   let {
     anonymSettings = $bindable(),

@@ -2,10 +2,10 @@ import { JsonErrors } from "$lib/constants";
 import { getGuildRoles } from "$lib/server/caches/guilds.js";
 import userGuilds from "$lib/server/caches/userGuilds.js";
 import { getDBGuild, updateDBGuild } from "$lib/server/db/utils.js";
+import type { IFeedbackTags } from "$lib/sm-types";
 import { hasAllKeys } from "$lib/utils";
 import { canManageBot } from "$lib/utils/permissions.js";
 import type { APIGuildForumChannel, APIGuildForumTag } from "discord-api-types/v10";
-import type { IFeedbackTags } from "supportmail-types";
 
 export async function POST({ locals }) {
   if (!locals.token || !locals.user) return JsonErrors.unauthorized();

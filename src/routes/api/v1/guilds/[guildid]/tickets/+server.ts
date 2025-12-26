@@ -1,10 +1,10 @@
 import { JsonErrors } from "$lib/constants";
-import { FlattenDocToJSON, type FlattenDocResult } from "$lib/server/db";
+import { FlattenDocToJSON } from "$lib/server/db";
 import { Ticket } from "$lib/server/db/models/src/ticket";
+import type { ITicket } from "$lib/sm-types";
+import { TicketStatus } from "$lib/sm-types";
 import { safeParseInt } from "$lib/utils.js";
 import type { FilterQuery } from "mongoose";
-import type { ITicket } from "supportmail-types";
-import { TicketStatus } from "supportmail-types";
 import type { TicketSearchScope } from "../../../../../g/[guildid]/tickets/FilterControls.svelte";
 
 export type PaginatedResponseWithError<T> = PaginatedResponse<T> & {

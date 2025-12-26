@@ -1,5 +1,5 @@
+import type { IPartialEmoji } from "$lib/sm-types";
 import { ChannelType, type APIGuildCategoryChannel, type APIUser } from "discord-api-types/v10";
-import type { IPartialEmoji } from "supportmail-types";
 
 /**
  * Sorts an array of items by their position property in ascending order.

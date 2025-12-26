@@ -3,14 +3,14 @@
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import type { DBGuildProjectionReturns } from "$lib/server/db";
+  import type { IFeedbackConfig } from "$lib/sm-types";
   import { ConfigState } from "$lib/stores/ConfigState.svelte";
   import { APIRoutes } from "$lib/urls";
+  import { hasAllKeys } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
   import { toast } from "svelte-sonner";
   import FeedbackConfigPage from "./FeedbackConfigPage.svelte";
   import SetupFeedbackPage from "./SetupFeedbackPage.svelte";
-  import type { IFeedbackConfig } from "supportmail-types";
-  import { hasAllKeys } from "$lib/utils";
 
   const feedback = new ConfigState<DBGuildProjectionReturns["feedback"]>({ isEnabled: false });
   let fetchedStatus = $state<null | boolean>(null);

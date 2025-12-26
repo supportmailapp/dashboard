@@ -1,12 +1,11 @@
-import { Document, Types, type UpdateQuery, type UpdateWithAggregationPipeline } from "mongoose";
 import {
-  V2ComponentsValidator,
-  type IDBGuild,
-  type IDBUser,
-  type ITicketConfig,
-  type PausedUntil,
-  type ReportLimitsConfig,
-} from "supportmail-types";
+    V2ComponentsValidator,
+    type IDBGuild,
+    type IDBUser,
+    type ITicketConfig,
+    type ReportLimitsConfig
+} from "$lib/sm-types";
+import { Document, Types, type UpdateQuery, type UpdateWithAggregationPipeline } from "mongoose";
 import { ValidationError } from "zod-validation-error";
 import { DBGuild, DBUser } from "./models";
 import { TicketCategory } from "./models/src/ticketCategory";

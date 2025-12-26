@@ -1,13 +1,13 @@
 <script lang="ts">
-  import * as Table from "$ui/table";
-  import { TicketState, TicketStatus } from "supportmail-types";
-  import type { PaginatedTicketsResponse } from "../../../api/v1/guilds/[guildid]/tickets/+server";
-  import Mention from "$lib/components/discord/Mention.svelte";
-  import ChevronRight from "@lucide/svelte/icons/chevron-right";
-  import { Button } from "$ui/button";
-  import { cn } from "$lib/utils";
   import { goto } from "$app/navigation";
   import { guildHref } from "$lib";
+  import Mention from "$lib/components/discord/Mention.svelte";
+  import { TicketState, TicketStatus } from "$lib/sm-types";
+  import { cn } from "$lib/utils";
+  import { Button } from "$ui/button";
+  import * as Table from "$ui/table";
+  import ChevronRight from "@lucide/svelte/icons/chevron-right";
+  import type { PaginatedTicketsResponse } from "../../../api/v1/guilds/[guildid]/tickets/+server";
 
   let { items }: { items: PaginatedTicketsResponse["data"] } = $props();
 

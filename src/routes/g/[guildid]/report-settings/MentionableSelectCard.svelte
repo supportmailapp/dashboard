@@ -1,16 +1,16 @@
 <script lang="ts">
-  import equal from "fast-deep-equal/es6";
-  import { EntityType, type MentionableEntity } from "supportmail-types";
-  import * as Card from "$ui/card/index.js";
-  import * as Popover from "$ui/popover/index.js";
-  import { Label } from "$ui/label";
   import Mention from "$lib/components/discord/Mention.svelte";
-  import { Button, buttonVariants } from "$ui/button";
-  import Plus from "@lucide/svelte/icons/plus";
   import MentionableSelect from "$lib/components/MentionableSelect.svelte";
-  import type { APIRole, APIUser } from "discord-api-types/v10";
-  import Save from "@lucide/svelte/icons/save";
+  import { EntityType, type MentionableEntity } from "$lib/sm-types";
   import { MarkdownFormatter } from "$lib/utils/formatting";
+  import { Button, buttonVariants } from "$ui/button";
+  import * as Card from "$ui/card/index.js";
+  import { Label } from "$ui/label";
+  import * as Popover from "$ui/popover/index.js";
+  import Plus from "@lucide/svelte/icons/plus";
+  import Save from "@lucide/svelte/icons/save";
+  import type { APIRole, APIUser } from "discord-api-types/v10";
+  import equal from "fast-deep-equal/es6";
 
   type Props = {
     entities?: MentionableEntity[];

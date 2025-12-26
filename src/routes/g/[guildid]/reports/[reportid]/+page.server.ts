@@ -1,5 +1,5 @@
 import { FlattenDocToJSON, Report, type FlattenDocResult } from "$lib/server/db";
-import type { IReport } from "supportmail-types";
+import type { IReport } from "$lib/sm-types";
 
 export async function load({ params }) {
   const { guildid, reportid } = params;

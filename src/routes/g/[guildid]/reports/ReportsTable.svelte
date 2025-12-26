@@ -1,17 +1,17 @@
 <script lang="ts">
-  import * as Table from "$ui/table/index.js";
-  import * as Tooltip from "$ui/tooltip/index.js";
-  import { ReportStatus } from "supportmail-types";
-  import type { PaginatedReportsResponse } from "../../../api/v1/guilds/[guildid]/reports/+server";
-  import Mention from "$lib/components/discord/Mention.svelte";
-  import ChevronRight from "@lucide/svelte/icons/chevron-right";
-  import { Button } from "$ui/button";
   import { goto } from "$app/navigation";
   import { guildHref } from "$lib";
+  import Mention from "$lib/components/discord/Mention.svelte";
+  import { ReportStatus } from "$lib/sm-types";
+  import { cn } from "$lib/utils";
+  import { Button } from "$ui/button";
+  import * as Table from "$ui/table/index.js";
+  import * as Tooltip from "$ui/tooltip/index.js";
+  import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import MessageSquare from "@lucide/svelte/icons/message-square";
   import UserIcon from "@lucide/svelte/icons/user";
   import type { ClassValue } from "clsx";
-  import { cn } from "$lib/utils";
+  import type { PaginatedReportsResponse } from "../../../api/v1/guilds/[guildid]/reports/+server";
 
   let { items }: { items: PaginatedReportsResponse["data"] } = $props();
 

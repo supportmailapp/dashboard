@@ -1,5 +1,5 @@
+import type { ITicketCategory } from "$lib/sm-types";
 import pkg, { model, Schema } from "mongoose";
-import type { ITicketCategory } from "supportmail-types";
 import { customModalFieldSchema, EntitySchema, partialEmojiSchema } from "./utilSchemas";
 const { models } = pkg;
 

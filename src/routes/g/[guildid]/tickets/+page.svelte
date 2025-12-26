@@ -9,7 +9,7 @@
   import * as Pagination from "$ui/pagination/index.js";
   import { Skeleton } from "$ui/skeleton";
   import equal from "fast-deep-equal/es6";
-  import { TicketStatus } from "supportmail-types";
+  import type { TicketStatus } from "$lib/sm-types";
   import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
   import type { PaginatedTicketsResponse } from "../../../api/v1/guilds/[guildid]/tickets/+server";

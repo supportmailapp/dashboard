@@ -1,27 +1,27 @@
 <script lang="ts">
-  import { type ColumnDef, type PaginationState, type RowSelectionState } from "@tanstack/table-core";
+  import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
+  import DataTableActions from "$lib/components/blacklist-data-table/data-table-actions.svelte";
+  import DataTableCheckbox from "$lib/components/blacklist-data-table/data-table-checkbox.svelte";
   import DataTable from "$lib/components/blacklist-data-table/data-table.svelte";
+  import ScopesCell from "$lib/components/blacklist-data-table/ScopesCell.svelte";
+  import Mention from "$lib/components/discord/Mention.svelte";
+  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
+  import { EntityType } from "$lib/sm-types";
+  import { cn } from "$lib/utils";
+  import { Button } from "$ui/button";
+  import { renderComponent } from "$ui/data-table";
+  import * as Dialog from "$ui/dialog/index.js";
+  import * as Dropdown from "$ui/dropdown-menu/index.js";
+  import Label from "$ui/label/label.svelte";
+  import Check from "@lucide/svelte/icons/check";
+  import ChevronDown from "@lucide/svelte/icons/chevron-down";
+  import { type ColumnDef, type RowSelectionState } from "@tanstack/table-core";
+  import { toast } from "svelte-sonner";
   import type {
     APIBlacklistEntry,
     PaginatedBlacklistResponse,
   } from "../../../api/v1/guilds/[guildid]/blacklist/+server";
-  import { renderComponent } from "$ui/data-table";
-  import DataTableActions from "$lib/components/blacklist-data-table/data-table-actions.svelte";
-  import Mention from "$lib/components/discord/Mention.svelte";
-  import { EntityType } from "supportmail-types";
-  import ScopesCell from "$lib/components/blacklist-data-table/ScopesCell.svelte";
-  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
-  import * as Dialog from "$ui/dialog/index.js";
-  import * as Dropdown from "$ui/dropdown-menu/index.js";
-  import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
-  import { Button } from "$ui/button";
-  import Label from "$ui/label/label.svelte";
-  import { cn } from "$lib/utils";
   import { BLEntry, dialogFields, toggleScope } from "./entry.svelte";
-  import ChevronDown from "@lucide/svelte/icons/chevron-down";
-  import Check from "@lucide/svelte/icons/check";
-  import { toast } from "svelte-sonner";
-  import DataTableCheckbox from "$lib/components/blacklist-data-table/data-table-checkbox.svelte";
 
   let {
     entries,

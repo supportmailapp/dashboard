@@ -1,10 +1,10 @@
 import { JsonErrors } from "$lib/constants";
 import { BlacklistEntry, FlattenBigIntFields, FlattenDocToJSON } from "$lib/server/db";
 import { SnowflakePredicate, ZodValidator } from "$lib/server/validators/index.js";
+import { EntityType, type IBlacklistEntry } from "$lib/sm-types";
 import { safeParseInt } from "$lib/utils.js";
 import { BitField } from "$lib/utils/bitfields.js";
 import type { FilterQuery } from "mongoose";
-import { BlacklistScope, EntityType, type IBlacklistEntry } from "supportmail-types";
 import z from "zod";
 
 export type APIBlacklistEntry = DocumentWithId<Omit<IBlacklistEntry, "scopes" | "scope" | "_type">> & {

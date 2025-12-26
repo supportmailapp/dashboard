@@ -1,10 +1,10 @@
 import { JsonErrors } from "$lib/constants";
 import { DBGuild, FlattenDocToJSON, getDBGuild } from "$lib/server/db/index.js";
 import { CustomModalFieldSchema, ZodValidator } from "$lib/server/validators/index.js";
+import type { IDBGuild } from "$lib/sm-types";
 import { hasAllKeys } from "$lib/utils";
 import { reindexArrayByKey } from "$lib/utils/formatting.js";
 import type { UpdateQuery } from "mongoose";
-import type { IDBGuild } from "supportmail-types";
 import z from "zod";
 
 export async function GET({ locals: { guildId } }) {

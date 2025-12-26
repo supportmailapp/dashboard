@@ -1,6 +1,9 @@
+import type { SMErrorCodes } from "$lib/server/constants";
 import type { DiscordBotAPI, DiscordUserAPI } from "$lib/server/discord";
+import type { IUserToken, PausedUntil } from "$lib/sm-types";
 import type { DataManager } from "$lib/stores/DataManager.svelte";
 import type { GuildsManager } from "$lib/stores/GuildsManager.svelte";
+import type { EventsMap } from "$lib/utils/websocket";
 import type {
   APIChannel,
   APIDMChannel,
@@ -11,10 +14,7 @@ import type {
   RESTAPIPartialCurrentUserGuild,
 } from "discord-api-types/v10";
 import type { FlattenMaps } from "mongoose";
-import type { IUserToken, PausedUntil } from "supportmail-types";
-import type { SMErrorCodes } from "$lib/server/constants";
 import type { Socket } from "socket.io-client";
-import type { EventsMap } from "$lib/utils/websocket";
 
 // for information about these interfaces
 declare global {
@@ -253,4 +253,5 @@ declare global {
   }
 }
 
-export {};
+export { };
+

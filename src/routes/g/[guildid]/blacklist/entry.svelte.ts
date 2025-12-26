@@ -1,6 +1,6 @@
+import { BlacklistScope, EntityType } from "$lib/sm-types";
 import { SvelteBitfield } from "$lib/utils/reactiveBitfield.svelte";
 import type { APIUser } from "discord-api-types/v10";
-import { BlacklistScope, EntityType } from "supportmail-types";
 import { toast } from "svelte-sonner";
 import type { APIBlacklistEntry } from "../../../api/v1/guilds/[guildid]/blacklist/+server";
 

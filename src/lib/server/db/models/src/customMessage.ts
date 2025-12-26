@@ -1,7 +1,6 @@
-import { model, Schema } from "mongoose";
-import pkg from "mongoose";
+import type { ICustomMessage } from "$lib/sm-types";
+import pkg, { model, Schema } from "mongoose";
 const { models } = pkg;
-import type { ICustomMessage } from "supportmail-types";
 
 const customMessageSchema = new Schema<ICustomMessage>({
   guildId: { type: String, required: true },

@@ -1,22 +1,22 @@
 <script lang="ts">
   import ChevronLeft from "@lucide/svelte/icons/chevron-left";
-  import Info from "@lucide/svelte/icons/info";
   import ExternalLink from "@lucide/svelte/icons/external-link";
-  import Users from "@lucide/svelte/icons/users";
   import FileText from "@lucide/svelte/icons/file-text";
+  import Info from "@lucide/svelte/icons/info";
+  import Users from "@lucide/svelte/icons/users";
 
-  import * as Card from "$ui/card";
   import { page } from "$app/state";
-  import { ReportStatus } from "supportmail-types";
-  import Button from "$ui/button/button.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
-  import * as Table from "$ui/table";
-  import { cn } from "$lib/utils.js";
-  import Skeleton from "$ui/skeleton/skeleton.svelte";
   import Timestamp from "$lib/components/discord/Timestamp.svelte";
-  import Badge from "$ui/badge/badge.svelte";
-  import { toast } from "svelte-sonner";
   import Link from "$lib/components/Link.svelte";
+  import { ReportStatus } from "$lib/sm-types";
+  import { cn } from "$lib/utils.js";
+  import Badge from "$ui/badge/badge.svelte";
+  import Button from "$ui/button/button.svelte";
+  import * as Card from "$ui/card";
+  import Skeleton from "$ui/skeleton/skeleton.svelte";
+  import * as Table from "$ui/table";
+  import { toast } from "svelte-sonner";
 
   let { data } = $props();
   let { report, error } = data;

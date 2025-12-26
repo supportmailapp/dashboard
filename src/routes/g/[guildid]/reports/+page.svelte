@@ -2,6 +2,7 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
+  import { ReportStatus } from "$lib/sm-types";
   import { APIRoutes } from "$lib/urls";
   import { safeParseInt } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
@@ -11,7 +12,6 @@
   import * as Tooltip from "$ui/tooltip/index.js";
   import Files from "@lucide/svelte/icons/files";
   import equal from "fast-deep-equal/es6";
-  import { ReportStatus } from "supportmail-types";
   import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
   import type { PaginatedReportsResponse } from "../../../api/v1/guilds/[guildid]/reports/+server";

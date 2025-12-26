@@ -1,14 +1,18 @@
 <script lang="ts">
   import { goto, invalidate } from "$app/navigation";
   import { page } from "$app/state";
+  import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
   import EmojiInput from "$lib/components/EmojiInput.svelte";
   import MentionableSelect from "$lib/components/MentionableSelect.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
+  import { EntityType, type ICustomModalField, type ITicketCategory } from "$lib/sm-types";
   import { ConfigState } from "$lib/stores/ConfigState.svelte";
   import { APIRoutes } from "$lib/urls.js";
   import { cn } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient.js";
+  import { EmojiParser } from "$lib/utils/formatting.js";
+  import { Badge } from "$ui/badge/index.js";
   import { Button, buttonVariants } from "$ui/button";
   import * as Card from "$ui/card/index.js";
   import { Checkbox } from "$ui/checkbox/index.js";
@@ -23,14 +27,10 @@
   import Plus from "@lucide/svelte/icons/plus";
   import Save from "@lucide/svelte/icons/save";
   import Trash from "@lucide/svelte/icons/trash";
+  import XIcon from "@lucide/svelte/icons/x";
   import equal from "fast-deep-equal/es6";
-  import { EntityType, type ICustomModalField, type ITicketCategory } from "supportmail-types";
   import { toast } from "svelte-sonner";
   import { slide } from "svelte/transition";
-  import { Badge } from "$ui/badge/index.js";
-  import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
-  import XIcon from "@lucide/svelte/icons/x";
-  import { EmojiParser } from "$lib/utils/formatting.js";
 
   let { data } = $props();
 

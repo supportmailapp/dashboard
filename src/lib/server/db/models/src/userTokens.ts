@@ -1,9 +1,8 @@
-import { model, Schema } from "mongoose";
-import pkg from "mongoose";
-const { models } = pkg;
-import type { IUserToken } from "supportmail-types";
-import { DB_ENCRYPTION_KEY, DB_ENCRYPTION_IV } from "$env/static/private";
+import { DB_ENCRYPTION_IV, DB_ENCRYPTION_KEY } from "$env/static/private";
+import type { IUserToken } from "$lib/sm-types";
 import { createCipheriv, createDecipheriv } from "crypto";
+import pkg, { model, Schema } from "mongoose";
+const { models } = pkg;
 
 const algorithm = "aes-256-cbc";
 const encKey = Buffer.from(DB_ENCRYPTION_KEY, "utf-8");

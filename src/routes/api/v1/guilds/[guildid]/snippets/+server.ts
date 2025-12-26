@@ -1,10 +1,9 @@
 import { JsonErrors } from "$lib/constants.js";
-import { FlattenDocToJSON } from "$lib/server/db";
-import { DBTag } from "$lib/server/db";
+import { DBTag, FlattenDocToJSON } from "$lib/server/db";
 import { ZodValidator } from "$lib/server/validators/index.js";
+import type { ITag } from "$lib/sm-types";
 import { safeParseInt, sanitizeSnippetName } from "$lib/utils.js";
 import type { FilterQuery } from "mongoose";
-import type { ITag } from "supportmail-types";
 import z from "zod";
 
 export type PaginatedResponseWithError<T> = PaginatedResponse<T> & {

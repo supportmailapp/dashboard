@@ -3,8 +3,8 @@
  * These schemas are not bound to any specific guild, which is why no models are created here.
  */
 
+import type { AnyEntity, ICustomModalField, IPartialEmoji } from "$lib/sm-types";
 import { Schema } from "mongoose";
-import type { AnyEntity, ICustomModalField, IPartialEmoji } from "supportmail-types";
 
 const partialEmojiSchema = new Schema<IPartialEmoji>(
   {
@@ -28,8 +28,8 @@ const EntitySchema = new Schema<AnyEntity>(
 
 const customModalFieldSchema = new Schema<ICustomModalField>(
   {
-    position: { type: Number, default: 1 },
-    label: { type: String, required: true },
+    // position: { type: Number, default: 1 },
+    // label: { type: String, required: true },
     placeholder: { type: String, required: false },
     style: { type: Number, default: 1 },
     minL: { type: Number, default: 0 },
@@ -41,4 +41,12 @@ const customModalFieldSchema = new Schema<ICustomModalField>(
   },
 );
 
-export { customModalFieldSchema, EntitySchema, partialEmojiSchema };
+const labelSchema = new Schema({
+  position: { type: Number, default: 1 },
+  label: { type: String, required: true },
+  description: { type: String, required: false },
+  child: { type: customModalFieldSchema, required: false },
+});
+
+export { customModalFieldSchema, EntitySchema, labelSchema, partialEmojiSchema };
+

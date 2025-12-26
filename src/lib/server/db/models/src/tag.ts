@@ -1,7 +1,6 @@
-import { model, Schema } from "mongoose";
-import pkg from "mongoose";
+import type { ITag } from "$lib/sm-types";
+import pkg, { model, Schema } from "mongoose";
 const { models } = pkg;
-import type { ITag } from "supportmail-types";
 
 const tagSchema = new Schema<ITag>(
   {

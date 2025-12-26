@@ -7,10 +7,10 @@
   import ChevronsRight from "@lucide/svelte/icons/chevrons-right";
   import Plus from "@lucide/svelte/icons/plus";
 
+  import { BlacklistScope, EntityType } from "$lib/sm-types";
   import equal from "fast-deep-equal/es6";
   import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
-  import { BlacklistScope, EntityType } from "supportmail-types";
 
   import {
     type APIBlacklistEntry,
@@ -30,16 +30,16 @@
   import Label from "$ui/label/label.svelte";
   import * as Popover from "$ui/popover";
 
+  import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
+  import MentionableSelect from "$lib/components/MentionableSelect.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
-  import MentionableSelect from "$lib/components/MentionableSelect.svelte";
   import { APIRoutes } from "$lib/urls";
   import { cn, safeParseInt } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
   import { SvelteBitfield } from "$lib/utils/reactiveBitfield.svelte.js";
-  import type { RowSelectionState } from "@tanstack/table-core";
-  import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
   import { AlertDialogTrigger } from "$ui/alert-dialog";
+  import type { RowSelectionState } from "@tanstack/table-core";
 
   let pageStatus = $state<"loading" | "loaded" | "error">("loading");
   const pageData = $state({

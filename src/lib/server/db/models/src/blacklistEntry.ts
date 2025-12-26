@@ -1,7 +1,6 @@
-import { model, Schema } from "mongoose";
-import pkg from "mongoose";
+import type { IBlacklistEntry } from "$lib/sm-types";
+import pkg, { model, Schema } from "mongoose";
 const { models } = pkg;
-import type { IBlacklistEntry } from "supportmail-types";
 
 const BlacklistEntrySchema = new Schema<IBlacklistEntry>(
   {

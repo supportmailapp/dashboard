@@ -1,5 +1,6 @@
 <script lang="ts">
   import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
+  import type { ICustomModalField, IFeedbackConfig } from "$lib/sm-types";
   import { ConfigState } from "$lib/stores/ConfigState.svelte";
   import { cn } from "$lib/utils";
   import { Badge } from "$ui/badge/index.js";
@@ -16,7 +17,6 @@
   import Plus from "@lucide/svelte/icons/plus";
   import Save from "@lucide/svelte/icons/save";
   import Trash from "@lucide/svelte/icons/trash";
-  import type { ICustomModalField, IFeedbackConfig } from "supportmail-types";
   import { slide } from "svelte/transition";
 
   type Props = {

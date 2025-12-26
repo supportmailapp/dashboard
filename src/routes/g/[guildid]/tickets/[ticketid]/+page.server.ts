@@ -1,5 +1,5 @@
 import { FlattenDocToJSON, Ticket, type FlattenDocResult } from "$lib/server/db";
-import type { ITicket } from "supportmail-types";
+import type { ITicket } from "$lib/sm-types";
 
 export async function load({ params }) {
   const { guildid, ticketid } = params;

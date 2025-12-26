@@ -1,12 +1,12 @@
 import { JsonErrors } from "$lib/constants";
 import { FlattenDocToJSON } from "$lib/server/db";
 import { Report } from "$lib/server/db/models";
+import { type IReport, ReportStatus } from "$lib/sm-types";
 import { safeParseInt } from "$lib/utils.js";
 import type { FilterQuery } from "mongoose";
-import { type IReport, ReportStatus } from "supportmail-types";
 import type {
-  ReportSearchScope,
-  ReportSearchType,
+    ReportSearchScope,
+    ReportSearchType,
 } from "../../../../../g/[guildid]/reports/FilterControls.svelte";
 
 export type PaginatedReportsResponse = PaginatedResponse<

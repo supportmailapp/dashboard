@@ -8,6 +8,6 @@ export async function load({ locals }) {
   console.log("User:", locals.user);
   return {
     user: locals.user,
-    wsToken: locals.user ? jwt.sign(locals.user, env.WS_JWT_SECRET) : undefined,
+    wsToken: locals.user && env.WS_JWT_SECRET ? jwt.sign(locals.user, env.WS_JWT_SECRET) : undefined,
   };
 }

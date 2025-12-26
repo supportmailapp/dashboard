@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { BlacklistScope, EntityType } from "$lib/sm-types";
   import { cn } from "$lib/utils";
   import type { SvelteBitfield } from "$lib/utils/reactiveBitfield.svelte";
   import * as Dropdown from "$ui/dropdown-menu/index.js";
@@ -9,7 +10,6 @@
   import Check from "@lucide/svelte/icons/check";
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
   import Info from "@lucide/svelte/icons/info";
-  import { BlacklistScope, EntityType } from "supportmail-types";
 
   type Props = {
     search: string;

@@ -1,12 +1,9 @@
 import { JsonErrors } from "$lib/constants.js";
-import { FlattenDocToJSON, type DBGuildProjectionReturns } from "$lib/server/db/utils.js";
-import { getDBGuild, updateDBGuild } from "$lib/server/db/utils.js";
-import { APIPausedUntilSchema, ZodValidator } from "$lib/server/validators";
-import { SnowflakePredicate } from "$lib/server/validators";
-import { isNotUndefined } from "$lib/utils.js";
+import { FlattenDocToJSON, getDBGuild, updateDBGuild, type DBGuildProjectionReturns } from "$lib/server/db/utils.js";
+import { APIPausedUntilSchema, SnowflakePredicate, ZodValidator } from "$lib/server/validators";
+import type { IDBGuild } from "$lib/sm-types";
 import dayjs from "dayjs";
 import type { UpdateQuery } from "mongoose";
-import type { IDBGuild } from "supportmail-types";
 import z from "zod";
 
 export async function GET({ locals: { guildId } }) {

@@ -1,16 +1,16 @@
-import pkg, { model, Schema } from "mongoose";
 import type {
-  ICustomModalField,
-  IDBGuild,
-  IFeedbackConfig,
-  IFeedbackTags,
-  IGuildFlags,
-  IReportConfig,
-  IStatusTags,
-  ITicketConfig,
-  PausedUntil,
-  ReportLimitsConfig,
-} from "supportmail-types";
+    ICustomModalField,
+    IDBGuild,
+    IFeedbackConfig,
+    IFeedbackTags,
+    IGuildFlags,
+    IReportConfig,
+    IStatusTags,
+    ITicketConfig,
+    PausedUntil,
+    ReportLimitsConfig,
+} from "$lib/sm-types";
+import pkg, { model, Schema } from "mongoose";
 import { EntitySchema } from "./utilSchemas";
 const { models } = pkg;
 
