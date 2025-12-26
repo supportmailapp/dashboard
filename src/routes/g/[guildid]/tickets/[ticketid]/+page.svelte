@@ -196,7 +196,7 @@
             <h2 class="text-muted-foreground text-xl font-semibold">
               {fb.question}
             </h2>
-            <p class="mt-1 border-l-2 pl-3 [&:not(:last-child)]:mb-5">{fb.answer}</p>
+            <p class="mt-1 border-l-2 pl-3 not-last:mb-5">{fb.answer}</p>
           {/each}
         </div>
       </Card.Content>
