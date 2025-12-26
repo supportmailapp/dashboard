@@ -20,7 +20,8 @@
   import { toast } from "svelte-sonner";
 
   let { data } = $props();
-  let { ticket, error } = data;
+  let ticket = $derived(data.ticket);
+  let error = $derived(data.error);
 
   let userMention = $derived(ticket?.userId ? mentionUsers.get(ticket?.userId) : undefined);
 
