@@ -6,7 +6,7 @@ import { fromError } from "zod-validation-error/v4";
 
 type ValidationRes<V extends z.ZodType> =
   | { success: true; data: z.core.output<V> }
-  | { success: false; error: ValidationError };
+  | { success: false; error: string };
 
 export class ZodValidator<V extends z.ZodType> {
   constructor(private validator: V) {}
@@ -20,11 +20,13 @@ export class ZodValidator<V extends z.ZodType> {
         data: result,
       };
     } catch (err) {
-      return {
-        success: false,
-        // ? as of 2025-07-16 the fromError function isn't working and has a critical bug.
-        error: fromError(err as ZodError) as ValidationError,
-      };
+      if (err instanceof z.ZodError) {
+        return {
+          success: false,
+          error: fromZodError(err).toString(),
+        };
+      }
+      throw err;
     }
   }
 

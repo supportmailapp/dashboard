@@ -15,6 +15,11 @@
   import Mounter from "./Mounter.svelte";
   import ServerSelector from "./ServerSelector.svelte";
   import { mode } from "mode-watcher";
+  import { getSavingConfig } from "$lib/utils/saveStuff.svelte";
+
+  let savingCfg = getSavingConfig();
+
+  savingCfg.hasUnsavedChanges = true;
 
   let { children } = $props();
 
@@ -38,6 +43,7 @@
   });
 
   beforeNavigate((nav) => {
+    console.log("beforeNavigate in layout", nav);
     if (nav.from?.url.pathname === nav.to?.url.pathname) {
       nav.cancel();
       return;
@@ -47,15 +53,9 @@
     guildsSelectOpen = false;
   });
 
-  afterNavigate(() => {
-    switchingPage = false;
-  });
-
-  $effect(() => {
-    return () => {
-      console.log("Destroying...");
-    };
-  });
+  // afterNavigate(() => {
+  //   switchingPage = false;
+  // });
 </script>
 
 <Mounter />

@@ -1,10 +1,15 @@
 <script lang="ts">
-  import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
-  import DataTableActions from "$lib/components/blacklist-data-table/data-table-actions.svelte";
-  import DataTableCheckbox from "$lib/components/blacklist-data-table/data-table-checkbox.svelte";
+  import { type ColumnDef, type PaginationState, type RowSelectionState } from "@tanstack/table-core";
   import DataTable from "$lib/components/blacklist-data-table/data-table.svelte";
-  import ScopesCell from "$lib/components/blacklist-data-table/ScopesCell.svelte";
+  import type {
+    APIBlacklistEntry,
+    PaginatedBlacklistResponse,
+  } from "../../../api/v1/guilds/[guildid]/blacklist/+server";
+  import { renderComponent } from "$ui/data-table";
+  import DataTableActions from "$lib/components/blacklist-data-table/data-table-actions.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
+  import { EntityType } from "supportmail-types";
+  import ScopesCell from "$lib/components/blacklist-data-table/ScopesCell.svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import { EntityType } from "$lib/sm-types";
   import { cn } from "$lib/utils";
@@ -17,11 +22,7 @@
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
   import { type ColumnDef, type RowSelectionState } from "@tanstack/table-core";
   import { toast } from "svelte-sonner";
-  import type {
-    APIBlacklistEntry,
-    PaginatedBlacklistResponse,
-  } from "../../../api/v1/guilds/[guildid]/blacklist/+server";
-  import { BLEntry, dialogFields, toggleScope } from "./entry.svelte";
+  import DataTableCheckbox from "$lib/components/blacklist-data-table/data-table-checkbox.svelte";
 
   let {
     entries,
@@ -29,90 +30,15 @@
     rowSelection = $bindable(),
     saveEntry,
     deleteEntry,
-  }: {
-    entries: PaginatedBlacklistResponse["data"];
-    pageStatus: "loading" | "loaded" | "error";
-    rowSelection: RowSelectionState;
-    saveEntry: (entry: BLEntry) => Promise<void>;
-    deleteEntry: (_id: string) => Promise<void>;
-  } = $props();
+  }: Props = $props();
 
   let deleteConfirmDialog = $state<string | null>(null);
   let editEntry = new BLEntry();
-
-  const cols: ColumnDef<APIBlacklistEntry>[] = [
-    {
-      id: "select",
-      header: ({ table }) =>
-        renderComponent(DataTableCheckbox, {
-          checked: table.getIsAllPageRowsSelected(),
-          indeterminate: table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected(),
-          onCheckedChange: (value) => table.toggleAllPageRowsSelected(!!value),
-          "aria-label": "Select all",
-        }),
-      cell: ({ row }) =>
-        renderComponent(DataTableCheckbox, {
-          checked: row.getIsSelected(),
-          onCheckedChange: (value) => row.toggleSelected(!!value),
-          "aria-label": "Select row",
-        }),
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
-      accessorKey: "_id",
-      header: "Entry",
-      cell: ({ row }) => {
-        const isUser = row.original._type === EntityType.user;
-        return renderComponent(Mention, {
-          userId: isUser ? row.original.id : undefined,
-          roleId: !isUser ? row.original.id : undefined,
-          buttons: "copy",
-        });
-      },
-    },
-    {
-      accessorKey: "type",
-      header: "Type",
-      cell: ({ row }) => {
-        switch (row.original._type) {
-          case EntityType.user:
-            return "User";
-          case EntityType.role:
-            return "Role";
-          default:
-            return "Unknown";
-        }
-      },
-    },
-    {
-      accessorKey: "scopes",
-      header: "Scopes",
-      cell: ({ row }) => {
-        return renderComponent(ScopesCell, { scopes: BigInt(row.original.scopes) });
-      },
-    },
-    {
-      id: "actions",
-      cell: ({ row }) => {
-        return renderComponent(DataTableActions, {
-          _id: row.original._id,
-          onEdit: (_id) => {
-            editEntry.loadFrom(entries.find((e) => e._id === _id)!);
-            editEntry.dialogOpen = true;
-          },
-          onDelete: (_id) => {
-            deleteConfirmDialog = _id;
-          },
-        });
-      },
-    },
-  ];
 </script>
 
 {#if pageStatus === "loaded"}
   {#key entries}
-    <DataTable columns={cols} data={entries} bind:rowSelection />
+    <!-- TODO: add table layout -->
   {/key}
 {:else if pageStatus === "loading"}
   <LoadingSpinner class="mx-auto my-4 size-20" />
@@ -155,7 +81,7 @@
       <Dropdown.Root>
         <Dropdown.Trigger
           class={cn(
-            "border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-fit items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none select-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+            "border-input data-placeholder:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-fit items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none select-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
             "w-full sm:w-50",
           )}
         >

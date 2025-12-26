@@ -6,8 +6,12 @@
   import { site } from "$stores/site.svelte";
   import { ModeWatcher } from "mode-watcher";
   import { Toaster } from "$ui/sonner/index.js";
+  import SaveAlert from "$lib/components/SaveAlert.svelte";
+  import { SavingConfig, setSavingConfig } from "$lib/utils/saveStuff.svelte";
 
   let { children, data } = $props();
+
+  setSavingConfig(new SavingConfig());
 
   onMount(async function () {
     if (!data.user) {
@@ -26,9 +30,9 @@
       return;
     }
 
-    if (nav.to?.url.origin === page.url.origin) {
-      site.showLoading = true;
-    }
+    // if (nav.to?.url.origin === page.url.origin) {
+    //   site.showLoading = true;
+    // }
   });
 
   afterNavigate((nav) => {
@@ -49,6 +53,8 @@
 </svelte:head>
 
 <ModeWatcher />
+
+<SaveAlert />
 
 {@render children?.()}
 

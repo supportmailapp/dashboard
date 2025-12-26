@@ -321,4 +321,8 @@
       transform: scaleX(1);
     }
   }
+
+  .bg-warning-subtle {
+    background-color: color-mix(in oklab, var(--color-amber-400) 50%, var(--color-background));
+  }
 }

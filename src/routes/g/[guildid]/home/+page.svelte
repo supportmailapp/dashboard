@@ -78,7 +78,7 @@
   subtitle="Welcome to your SupportMail dashboard! Here you can manage your Discord server's support ticket system and configure settings."
 >
   {#snippet realTitle()}
-    Welcome <span class="from-primary to-secondary mx-0.5 bg-gradient-to-br bg-clip-text text-transparent">
+    Welcome <span class="from-primary to-secondary mx-0.5 bg-linear-to-br bg-clip-text text-transparent">
       {userDisplayName(page.data.user)}
     </span>!
   {/snippet}
