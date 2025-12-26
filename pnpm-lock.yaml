@@ -68,9 +68,6 @@ importers:
       socket.io-client:
         specifier: ^4.8.3
         version: 4.8.3
-      supportmail-types:
-        specifier: github:supportmailapp/global-types
-        version: https://codeload.github.com/supportmailapp/global-types/tar.gz/d4a3c26a259b761e1d0e348f932a116cd24f4d03
       wildcard-match:
         specifier: ^5.1.4
         version: 5.1.4
@@ -2505,10 +2502,6 @@ packages:
   style-to-object@1.0.14:
     resolution: {integrity: sha512-LIN7rULI0jBscWQYaSswptyderlarFkjQ+t79nzty8tcIAceVomEVlLzH5VP4Cmsv6MtKhs7qaAiwlcp+Mgaxw==}
 
-  supportmail-types@https://codeload.github.com/supportmailapp/global-types/tar.gz/d4a3c26a259b761e1d0e348f932a116cd24f4d03:
-    resolution: {tarball: https://codeload.github.com/supportmailapp/global-types/tar.gz/d4a3c26a259b761e1d0e348f932a116cd24f4d03}
-    version: 2.1.10
-
   supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
@@ -2790,12 +2783,6 @@ packages:
     engines: {node: '>=18.0.0'}
     peerDependencies:
       zod: ^3.24.4
-
-  zod-validation-error@4.0.2:
-    resolution: {integrity: sha512-Q6/nZLe6jxuU80qb/4uJ4t5v2VEZ44lzQjPDhYJNztRQ4wyWc6VF3D3Kb/fAuPetZQnhS3hnajCf9CsWesghLQ==}
-    engines: {node: '>=18.0.0'}
-    peerDependencies:
-      zod: ^3.25.0 || ^4.0.0
 
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
@@ -5252,12 +5239,6 @@ snapshots:
     dependencies:
       inline-style-parser: 0.2.7
 
-  supportmail-types@https://codeload.github.com/supportmailapp/global-types/tar.gz/d4a3c26a259b761e1d0e348f932a116cd24f4d03:
-    dependencies:
-      discord-api-types: 0.38.37
-      zod: 4.2.1
-      zod-validation-error: 4.0.2(zod@4.2.1)
-
   supports-preserve-symlinks-flag@1.0.0: {}
 
   svelte-check@4.3.5(picomatch@4.0.3)(svelte@5.46.1)(typescript@5.9.3):
@@ -5478,10 +5459,6 @@ snapshots:
   zimmerframe@1.1.4: {}
 
   zod-validation-error@3.5.4(zod@4.2.1):
-    dependencies:
-      zod: 4.2.1
-
-  zod-validation-error@4.0.2(zod@4.2.1):
     dependencies:
       zod: 4.2.1
 
