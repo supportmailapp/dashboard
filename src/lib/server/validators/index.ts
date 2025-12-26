@@ -1,8 +1,7 @@
 import { EntityType } from "$lib/sm-types";
 import { TextInputStyle } from "discord-api-types/v10";
-import { z, ZodError } from "zod";
-import { type ValidationError } from "zod-validation-error";
-import { fromError } from "zod-validation-error/v4";
+import { z } from "zod";
+import { type ValidationError, fromZodError } from "zod-validation-error";
 
 type ValidationRes<V extends z.ZodType> =
   | { success: true; data: z.core.output<V> }
