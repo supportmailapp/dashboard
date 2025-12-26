@@ -27,7 +27,7 @@
 <Table.Root class="w-full max-w-3xl">
   <Table.Header>
     <Table.Row>
-      <Table.Head class="w-[100px]">ID</Table.Head>
+      <Table.Head class="w-25">ID</Table.Head>
       <Table.Head>Status</Table.Head>
       <Table.Head>User</Table.Head>
       <Table.Head></Table.Head>
