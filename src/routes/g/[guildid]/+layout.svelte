@@ -1,6 +1,6 @@
 <script lang="ts">
   import { browser } from "$app/environment";
-  import { afterNavigate, beforeNavigate } from "$app/navigation";
+  import { beforeNavigate } from "$app/navigation";
   import { page } from "$app/state";
   import AppSidebar from "$lib/components/app-sidebar.svelte";
   import { cdnUrls } from "$lib/urls";
@@ -15,14 +15,10 @@
   import Mounter from "./Mounter.svelte";
   import ServerSelector from "./ServerSelector.svelte";
   import { mode } from "mode-watcher";
-  import { getSavingConfig } from "$lib/utils/saveStuff.svelte";
-
-  let savingCfg = getSavingConfig();
-
-  savingCfg.hasUnsavedChanges = true;
 
   let { children } = $props();
 
+  let hasUnsavedChanges = $state(true);
   let switchingPage = $state(true);
   let sidebarOpen = $state(true);
   let currentGuild = $derived(page.data.guildsManager.currentGuild);
@@ -77,7 +73,7 @@
           disabled={!currentGuild}
           variant="outline"
           size="lg"
-          class={cn("w-[230px] justify-center shadow-md", !currentGuild && "cursor-not-allowed opacity-50")}
+          class={cn("w-57.5 justify-center shadow-md", !currentGuild && "cursor-not-allowed opacity-50")}
           onclick={() => (guildsSelectOpen = true)}
         >
           {#if currentGuild}

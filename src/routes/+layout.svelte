@@ -6,12 +6,8 @@
   import { site } from "$stores/site.svelte";
   import { ModeWatcher } from "mode-watcher";
   import { Toaster } from "$ui/sonner/index.js";
-  import SaveAlert from "$lib/components/SaveAlert.svelte";
-  import { SavingConfig, setSavingConfig } from "$lib/utils/saveStuff.svelte";
 
   let { children, data } = $props();
-
-  setSavingConfig(new SavingConfig());
 
   onMount(async function () {
     if (!data.user) {
