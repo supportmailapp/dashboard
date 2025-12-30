@@ -1,14 +1,29 @@
 <script lang="ts">
   import { beforeNavigate } from "$app/navigation";
   import { cn } from "$lib/utils";
-  import { getSavingConfig } from "$lib/utils/saveStuff.svelte";
   import Button from "$ui/button/button.svelte";
   import { Portal } from "bits-ui";
 
-  let savingCfg = getSavingConfig();
-  let jiggling = $state(false);
+  interface SaveAlertProps {
+    oldCfg: any;
+    currentCfg: any;
+    saving: boolean;
+    unsavedChanges: boolean;
+    reset: () => void;
+    saveData: () => Promise<void>;
+    discardChanges: () => void;
+  }
 
-  $inspect("savingCfg", savingCfg.hasUnsavedChanges);
+  let {
+    oldCfg,
+    currentCfg,
+    saving,
+    unsavedChanges,
+    reset,
+    saveData,
+    discardChanges,
+  }: SaveAlertProps = $props();
+  let jiggling = $state(false);
 
   function shakeAlert() {
     jiggling = true;
@@ -18,22 +33,17 @@
   }
 
   beforeNavigate((nav) => {
-    console.log("beforeNavigate in SaveAlert", nav);
-    if (savingCfg.hasUnsavedChanges) {
-      // Only shake whenthe navigation was triggered by link click or button click; othwise use confirm
-      if (nav.type === "link" || nav.type === "form" || nav.type === "goto") {
-        shakeAlert();
+    if (nav.type === "goto" || nav.type === "link") {
+      shakeAlert();
+      nav.cancel();
+      return;
+    }
+
+    if (unsavedChanges) {
+      const confirmation = confirm("You have unsaved changes. Are you sure you want to leave?");
+      if (!confirmation) {
         nav.cancel();
-        return;
-      } else if (nav.type === "popstate") {
-        const confirmLeave = confirm("You have unsaved changes. Are you sure you want to leave?");
-        if (!confirmLeave) {
-          nav.cancel();
-          return;
-        }
       }
-      savingCfg.discardChanges();
-      savingCfg.reset();
     }
   });
 </script>
@@ -41,7 +51,7 @@
 <Portal>
   <div
     data-type="savealert"
-    data-state={savingCfg.hasUnsavedChanges ? "open" : "closed"}
+    data-state={unsavedChanges ? "open" : "closed"}
     class={cn(
       "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed bottom-4 left-[50%] z-50 flex w-full max-w-[calc(100%-2rem)] translate-x-[-50%] flex-col gap-4 rounded-lg border p-6 shadow-lg ring-0 outline-0 transition-transform sm:max-w-2xl sm:flex-row",
       jiggling ? "bg-destructive" : "bg-background",
@@ -50,8 +60,8 @@
   >
     <p>You got unsaved changes mate.</p>
     <div class="flex flex-1 flex-col gap-2 sm:flex-row sm:justify-end">
-      <Button variant="outline" class="w-1/2 sm:w-33" onclick={savingCfg.discardChanges}>Discard</Button>
-      <Button variant="success" class="w-1/2 sm:w-33" onclick={savingCfg.saveData}>Save</Button>
+      <Button variant="outline" class="w-1/2 sm:w-33" onclick={discardChanges}>Discard</Button>
+      <Button variant="success" class="w-1/2 sm:w-33" onclick={saveData}>Save</Button>
     </div>
   </div>
 </Portal>
