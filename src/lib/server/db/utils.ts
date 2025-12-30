@@ -1,12 +1,10 @@
 import {
-  V2ComponentsValidator,
   type IDBGuild,
   type IDBUser,
   type ITicketConfig,
   type ReportLimitsConfig,
 } from "$lib/sm-types";
 import { Document, Types, type UpdateQuery, type UpdateWithAggregationPipeline } from "mongoose";
-import { ValidationError } from "zod-validation-error";
 import { DBGuild, DBUser } from "./models";
 import { TicketCategory } from "./models/src/ticketCategory";
 
@@ -106,32 +104,17 @@ export function getTicketCategories(guildId: string, label?: string) {
   return TicketCategory.find({ guildId: guildId });
 }
 
-export async function verifyComponentsV2Payload(components: any[]) {
-  try {
-    const res = new V2ComponentsValidator(components).toJSON();
-    return {
-      valid: true,
-      components: res,
-    };
-  } catch (err: any) {
-    if (err instanceof ValidationError) {
-      return {
-        valid: false,
-        error: {
-          message: err.message,
-          details: err,
-        },
-      };
-    }
-    throw err;
-  }
-}
+type ExcludeFields<T, K extends keyof T> = Omit<T, K>;
 
-export type FlattenDocResult<T, IncludeId extends boolean> = IncludeId extends true
-  ? DocumentWithId<Omit<T, "__v" | "_id">>
-  : Omit<T, "__v" | "_id">;
+export type FlattenDocResult<
+  T,
+  IncludeId extends boolean,
+  ExcludedFields extends Exclude<keyof T, "_id" | "__v"> = never,
+> = IncludeId extends true
+  ? DocumentWithId<ExcludeFields<Omit<T, "__v" | "_id">, ExcludedFields>>
+  : ExcludeFields<Omit<T, "__v" | "_id">, ExcludedFields>;
 
-export function FlattenDocToJSON<T>(
+export function FlattenDocToJSON<T, K extends keyof Omit<T, "__v" | "_id"> = never>(
   val: Document<unknown, {}, T, {}> &
     T & {
       _id: Types.ObjectId;
@@ -139,8 +122,9 @@ export function FlattenDocToJSON<T>(
       __v?: number;
     },
   with_Id?: false,
-): FlattenDocResult<T, false>;
-export function FlattenDocToJSON<T>(
+  excludeFields?: K[],
+): FlattenDocResult<T, false, K>;
+export function FlattenDocToJSON<T, K extends keyof Omit<T, "__v" | "_id"> = never>(
   val: Document<unknown, {}, T, {}> &
     T & {
       _id: Types.ObjectId;
@@ -148,7 +132,8 @@ export function FlattenDocToJSON<T>(
       __v?: number;
     },
   with_Id: true,
-): FlattenDocResult<T, true>;
+  excludeFields?: K[],
+): FlattenDocResult<T, true, K>;
 
 /**
  * Converts a Mongoose Document or FlattenMaps object to a plain JSON object.
@@ -169,7 +154,7 @@ export function FlattenDocToJSON<T>(
  * This is an extended implementation of `Document.toJSON()` - one can pass basically anything and
  * option handling is easier.
  */
-export function FlattenDocToJSON<T>(
+export function FlattenDocToJSON<T, K extends keyof Omit<T, "__v" | "_id"> = never>(
   val: Document<unknown, {}, T, {}> &
     T & {
       _id: Types.ObjectId;
@@ -177,19 +162,29 @@ export function FlattenDocToJSON<T>(
       __v?: number;
     },
   with_Id: boolean = false,
-): FlattenDocResult<T, typeof with_Id> {
+  excludeFields?: K[],
+): FlattenDocResult<T, typeof with_Id, K> {
+  excludeFields = excludeFields ?? [];
   return val.toJSON({
     flattenMaps: true,
     flattenObjectIds: true,
     versionKey: false,
     transform: (_, ret) => {
-      delete ret.__v;
-      if (!with_Id) {
-        delete ret._id;
+      const { __v, ...cleanRet } = ret;
+      for (const field of excludeFields!) {
+        delete (cleanRet as any)[field];
       }
-      return ret;
+      if (!with_Id) {
+        const { _id, ...finalRet } = cleanRet;
+        return finalRet;
+      }
+      const { _id, ...finalRet } = cleanRet;
+      if (_id === undefined) {
+        return finalRet;
+      }
+      return { ...finalRet, _id: _id.toString() };
     },
-  }) as FlattenDocResult<T, typeof with_Id>;
+  }) as FlattenDocResult<T, typeof with_Id, K>;
 }
 
 type FlattenBigIntResult<T> = {

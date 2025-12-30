@@ -11,6 +11,7 @@ const config = {
       $lib: "src/lib",
       $stores: "src/lib/stores",
       $db: "src/lib/server/db",
+      $v1Api: "src/routes/api/v1",
     },
   },
   vitePlugin: {

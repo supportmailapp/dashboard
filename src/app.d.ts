@@ -42,10 +42,6 @@ declare global {
       isAdmin?: () => boolean;
       user: APIUser | null;
       token: FlatUserToken | null;
-      /**
-       * Given for every guild-param route.
-       */
-      guildId?: string;
       discordRest: DiscordBotAPI;
       /**
        * User API Client. Given always, if `locals.user` and `locals.token` is set.

@@ -207,8 +207,6 @@ const guildAuthGuard: Handle = async ({ event, resolve }) => {
     return resolve(event);
   }
 
-  event.locals.guildId = guildId;
-
   // Authentication check
   if (!event.locals.token || !event.locals.user) {
     if (pathname.startsWith("/g")) {

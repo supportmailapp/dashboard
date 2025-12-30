@@ -14,6 +14,7 @@ class ApiClient {
       timeout: 5000,
       retry: 2,
       throwHttpErrors: false,
+      credentials: "include",
       ...options,
     });
   }

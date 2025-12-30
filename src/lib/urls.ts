@@ -81,11 +81,9 @@ const APIRoutes = {
   guildChannel: (guildId: string, channelId: string) =>
     `${API_BASE}/guilds/${guildId}/channels/${channelId}` as const,
   guildRoles: (guildId: string) => `${API_BASE}/guilds/${guildId}/roles` as const,
-  /**
-   * Returns the URL for a specific guild's configuration.
-   * @param guildId The ID of the guild.
-   */
-  guildConfig: (guildId: string) => `${API_BASE}/guilds/${guildId}/config` as const,
+
+  overview: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/overview` as const,
+
   tickets: (guildId: string) => `${API_BASE}/guilds/${guildId}/tickets` as const,
   /**
    * Returns the URL for a specific guild's tickets configuration.

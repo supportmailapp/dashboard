@@ -9,7 +9,6 @@
     currentCfg: any;
     saving: boolean;
     unsavedChanges: boolean;
-    reset: () => void;
     saveData: () => Promise<void>;
     discardChanges: () => void;
   }
@@ -17,9 +16,8 @@
   let {
     oldCfg,
     currentCfg,
-    saving,
+    saving = $bindable(false),
     unsavedChanges,
-    reset,
     saveData,
     discardChanges,
   }: SaveAlertProps = $props();

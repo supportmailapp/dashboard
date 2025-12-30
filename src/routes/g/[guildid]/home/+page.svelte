@@ -3,73 +3,70 @@
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import * as Select from "$ui/select/index.js";
   import { LANGUAGES } from "$lib/constants";
-  import { ConfigState } from "$lib/stores/ConfigState.svelte";
   import { APIRoutes, DocsLinks } from "$lib/urls";
   import { cn } from "$lib/utils";
   import { userDisplayName } from "$lib/utils/formatting";
-  import { Button, buttonVariants } from "$ui/button";
+  import { buttonVariants } from "$ui/button";
   import * as Card from "$ui/card/index.js";
   import { Skeleton } from "$ui/skeleton";
-  import ky from "ky";
   import { toast } from "svelte-sonner";
-  import { onMount } from "svelte";
+  import { onDestroy, onMount, untrack } from "svelte";
+  import SaveAlert from "$lib/components/SaveAlert.svelte";
+  import apiClient from "$lib/utils/apiClient";
+  import type { OverviewConfig } from "$v1Api/assertions";
+  import equal from "fast-deep-equal/es6";
 
-  const languageConf = new ConfigState<string>(null);
+  const config = $state({
+    old: null as OverviewConfig | null,
+    current: null as OverviewConfig | null,
+    saving: false,
+    loading: false,
+  });
+  let unsavedChanges = $derived(!equal(untrack(() => config.old), config.current));
 
-  $inspect("lang", languageConf.config);
+  async function saveFn() {
+    if (!config.current) {
+      toast.error("No configuration to save.");
+      return;
+    }
 
-  async function saveLanguage() {
-    languageConf.saving = true;
-    const lang = languageConf.snap();
-    console.log("lang", lang);
-    try {
-      if (!lang) {
-        throw new Error("The language is not set. What da hell?");
-      }
+    config.saving = true;
+    const res = await apiClient.put<OverviewConfig>(
+      APIRoutes.overview(page.params.guildid!),
+      { json: $state.snapshot(config.current) },
+    );
 
-      const res = await ky.patch(APIRoutes.guildConfig(page.data.guildId!), {
-        json: { language: lang },
-      });
+    const _data = await res.json();
+    if (res.ok) {
+      config.old = { ..._data };
+      config.current = { ..._data };
+      toast.success("Configuration saved successfully.");
+    } else {
+      toast.error(`Failed to save configuration: ${(_data as any).message}`);
+    }
+    config.saving = false;
+  }
 
-      if (!res.ok) {
-        const errJson = await res.json<any>();
-        const errText = errJson?.message || "Unknown Error";
-        throw new Error(errText);
-      }
+  onMount(async () => {
+    const initialRes = await apiClient.get<OverviewConfig>(APIRoutes.overview(page.params.guildid!));
 
-      languageConf.saveConfig(lang);
-      toast.success("Guild configuration saved successfully!", {
-        description: "The language has been updated.",
-      });
-    } catch (err: any) {
-      toast.error("Failed to save guild configuration.", {
-        description: err.message,
-      });
-    } finally {
-      languageConf.saving = false;
+    const _data = await initialRes.json();
+    if (initialRes.ok) {
+      config.old = {..._data};
+      config.current = {..._data};
+    } else {
+      toast.error(`Failed to load configuration: ${(_data as any).message}`);
+    }
+    config.loading = false;
+  });
+
+  function resetCfg() {
+    if (config.old && config.current) {
+      config.current = { ...config.old };
     }
   }
 
-  onMount(() => {
-    fetch(APIRoutes.guildConfig(page.data.guildId!))
-      .then((res) => {
-        if (!res.ok) {
-          toast.error("Failed to load guild configuration.", {
-            description: "Please try again later.",
-          });
-          return;
-        }
-        res.json().then((data: string) => {
-          languageConf.saveConfig(data);
-          languageConf.loading = false;
-        });
-      })
-      .catch((err) => {
-        toast.error("Failed to load guild configuration.", {
-          description: err.message,
-        });
-      });
-  });
+  onDestroy(resetCfg);
 </script>
 
 <!-- This page holds the home view for a specific guild; language setting can be changed here -->
@@ -83,6 +80,19 @@
     </span>!
   {/snippet}
 </SiteHeading>
+
+<SaveAlert
+  oldCfg={config.old}
+  currentCfg={config.current}
+  saving={config.saving}
+  unsavedChanges={unsavedChanges}
+  discardChanges={() => {
+    if (config.old && config.current) {
+      config.current = { ...config.old };
+    }
+  }}
+  saveData={saveFn}
+/>
 
 <section class="mt-6">
   <Card.Root class="w-full max-w-xl">
@@ -108,17 +118,14 @@
         </ul>
       </Card.Description>
     </Card.Header>
-    {#if languageConf.isConfigured()}
+    {#if config.current}
       <Card.Content>
         <Select.Root
           type="single"
-          bind:value={languageConf.config}
-          onValueChange={() => {
-            languageConf.evalUnsaved();
-          }}
+          bind:value={config.current.language}
         >
           <Select.Trigger class={cn(buttonVariants({ variant: "outline" }), "w-40 justify-between")}>
-            {LANGUAGES.find((lang) => lang.value === languageConf.config)?.name}
+            {LANGUAGES.find((lang) => lang.value === config.current!.language)?.name}
           </Select.Trigger>
           <Select.Content>
             {#each LANGUAGES as lang (lang.value)}
@@ -129,16 +136,6 @@
           </Select.Content>
         </Select.Root>
       </Card.Content>
-      <Card.Footer class="flex-col gap-2">
-        <Button
-          onclick={saveLanguage}
-          disabled={languageConf.saving || !languageConf.unsaved}
-          showLoading={languageConf.loading}
-          class="w-2xs"
-        >
-          Save
-        </Button>
-      </Card.Footer>
     {:else}
       <div class="flex h-32 flex-col justify-center gap-1 px-6">
         <Skeleton class="h-7 w-full rounded-lg" />
