@@ -1,25 +1,22 @@
 import { dev } from "$app/environment";
 import { env } from "$env/dynamic/private";
-import { PUBLIC_SENTRY_DSN } from "$env/static/public";
 import { JsonErrors } from "$lib/constants.js";
-import { checkUserGuildAccess, SessionManager } from "$lib/server/auth";
-import { dbConnect } from "$lib/server/db";
+import { checkUserGuildAccess } from "$lib/server/auth";
+import guildAccessCache from "$lib/server/caches/guildAccess.js";
+import sessionCache from "$lib/server/caches/sessions.js";
+import { dbConnect, UserToken } from "$lib/server/db";
 import { DiscordBotAPI, DiscordUserAPI } from "$lib/server/discord";
+import type { IUserToken } from "$lib/sm-types/src";
 import arcjet, { detectBot, shield, slidingWindow } from "@arcjet/sveltekit";
 import * as Sentry from "@sentry/sveltekit";
-import { error, redirect, type Handle, type HandleServerError } from "@sveltejs/kit";
+import { error, redirect, type Handle } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
 import dayjs from "dayjs";
+import { type APIUser } from "discord-api-types/v10";
+import { isValidObjectId } from "mongoose";
 import wildcardMatch from "wildcard-match";
-import sessionCache from "$lib/server/caches/sessions.js";
-import guildAccessCache from "$lib/server/caches/guildAccess.js";
 
 const inDevMode = env.NODE_ENV === "development";
-
-Sentry.init({
-  dsn: PUBLIC_SENTRY_DSN,
-  tracesSampleRate: 1.0,
-});
 
 export async function init() {
   await dbConnect();
@@ -45,14 +42,6 @@ const aj = arcjet({
   ],
 });
 
-const devToolsCheck: Handle = async ({ event, resolve }) => {
-  if (event.url.pathname.startsWith("/.well-known/appspecific/com.chrome.devtools")) {
-    console.debug("Serving empty DevTools response");
-    return new Response(null, { status: 404 });
-  }
-  return resolve(event);
-};
-
 const apiRateLimitCheck: Handle = async ({ event, resolve }) => {
   if (event.url.pathname.startsWith("/api")) {
     const rateLimit = await aj.protect(event);
@@ -71,66 +60,69 @@ const apiRateLimitCheck: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
-const authHandler: Handle = async ({ event, resolve }) => {
+const authentification: Handle = async ({ event, resolve }) => {
   event.locals.discordRest = new DiscordBotAPI();
 
-  event.locals.getSafeSession = async () => {
-    // Get session token from cookie or Authorization header
-    const cookieToken = event.cookies.get("session");
-    const authHeader = event.request.headers.get("Authorization");
-    const headerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+  const sessionId = event.cookies.get("session_id");
+  event.locals.user = null;
+  event.locals.token = null;
 
-    const sessionToken = cookieToken || headerToken;
-    if (!sessionToken) {
-      return { user: null, token: null, error: "notfound" };
-    }
-
-    // Check cache first
-    const cached = sessionCache.get(sessionToken);
-    if (cached) {
-      return cached;
-    }
-
-    try {
-      // Find session in database
-      const tokenResult = await SessionManager.getUserTokenBySession(sessionToken);
-
-      if (tokenResult.isExpired()) {
-        const result: SafeSessionResult = { error: "expired", token: tokenResult.token, user: null };
-        sessionCache.set(sessionToken, result);
-        return result;
-      } else if (!tokenResult.isFound()) {
-        return { user: null, token: null, error: "notfound" };
+  if (sessionId) {
+    let tokenData = sessionCache.get(sessionId);
+    if (!tokenData && isValidObjectId(sessionId)) {
+      const dbToken = await UserToken.findById(sessionId);
+      if (!dbToken || dbToken.expiresAt < new Date()) {
+        sessionCache.del(sessionId);
+        event.cookies.delete("session_id", { path: "/" });
+        return redirect(303, "/login?error=invalid_session");
       }
 
-      const { token } = tokenResult;
-
-      // Find user by session's userId
-      const userRes = await new DiscordUserAPI(token.accessToken).getCurrentUser();
-      if (!userRes.isSuccess()) {
-        console.log(userRes);
-        if (userRes.status === null && (userRes.error as any).code === "ENOTFOUND") {
-          return { user: null, token: null, error: "network" };
-        }
-        return { user: null, token: null, error: "other" };
+      const userApi = new DiscordUserAPI(dbToken.accessToken, dbToken.userId);
+      const discordUser = await userApi.getCurrentUser();
+      if (!discordUser.isSuccess()) {
+        sessionCache.del(sessionId);
+        event.cookies.delete("session_id", { path: "/" });
+        return redirect(303, "/login?error=invalid_session");
       }
 
-      const result: SafeSessionResult = { user: userRes.data, token: tokenResult.token };
-      // Cache successful results
-      sessionCache.set(sessionToken, result);
-      return result;
-    } catch (error) {
-      console.error("Session validation error:", error);
-      return { user: null, token: null, error: "other" };
+      tokenData = {
+        user: discordUser.data,
+        token: dbToken.toJSON(),
+      };
+      sessionCache.set(sessionId, tokenData);
+    } else if (!tokenData) {
+      // This happens if the session_id is not a valid object ID, because someone tampered with it
+      event.cookies.delete("session_id", { path: "/" });
+      return redirect(303, "/login?error=invalid_session");
     }
-  };
 
-  event.locals.isAuthenticated = () => Boolean(event.locals.user && event.locals.token);
+    event.locals.token = tokenData.token;
+    event.locals.user = tokenData.user;
+  }
 
-  // Consolidate: Get session data immediately instead of in separate handler
-  const sessionData = await event.locals.getSafeSession();
-  event.locals.user = sessionData.user;
-  event.locals.token = sessionData.token;
+  event.locals.isAuthenticated = () => !!event.locals.user && !!event.locals.token;
+
+  return resolve(event);
+};
+
+const authorization: Handle = async ({ event, resolve }) => {
+  if (event.url.pathname.startsWith("/g") && !event.locals.user) {
+    const next = "/" + event.url.pathname.split("/").slice(2).join("/");
+    const guild = event.params.guildid;
+
+    if (next || guild) {
+      const redirectData: Record<string, string> = {};
+      if (next && next !== "/") redirectData.next = next;
+      if (guild) redirectData.guild = guild;
+      event.cookies.set("login_redirect", JSON.stringify(redirectData), {
+        path: "/",
+        maxAge: 600,
+      });
+    }
+
+    if (next && next !== "/") redirect(303, `/login?next=${encodeURIComponent(next)}`);
+    else redirect(303, `/login`);
+  }
 
   return resolve(event);
 };
@@ -192,7 +184,7 @@ const apiAuthGuard: Handle = async ({ event, resolve }) => {
   }
 
   // Require authentication for all other API routes
-  if (!event.locals.isAuthenticated()) {
+  if (!event.locals.user) {
     error(401, { message: "Authentication required", status: 401 });
   }
 
@@ -253,30 +245,55 @@ const guildAuthGuard: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
+const adminAuthRoutes = ["/api/*/admin/**", "/admin/**"];
+const compiledAdminRoutes = adminAuthRoutes.map((pattern) =>
+  pattern.includes("*") ? wildcardMatch(pattern, { flags: "i" }) : null,
+);
+
+const adminAuthGuard: Handle = async ({ event, resolve }) => {
+  const pathname = event.url.pathname;
+
+  const isAdminRoute = compiledAdminRoutes.some((matcher) =>
+    matcher ? matcher(pathname) : adminAuthRoutes.includes(pathname),
+  );
+
+  if (!isAdminRoute) {
+    return resolve(event);
+  }
+
+  if (!event.locals.token || !event.locals.user) {
+    return JsonErrors.unauthorized();
+  }
+
+  // Require admin clearance
+  if (event.locals.token.clearance !== "admin") {
+    return JsonErrors.forbidden();
+  }
+
+  return resolve(event);
+};
+
 export const handle = sequence(
-  devToolsCheck,
-  authHandler, // Now includes mainAuthGuard functionality
+  Sentry.initCloudflareSentryHandle({
+    dsn: "https://f3539027417a80678d1015bba5b684e5@o4508704165265408.ingest.de.sentry.io/4508704168018000",
+    sendDefaultPii: true,
+    enableLogs: true,
+    tracesSampleRate: 1.0,
+  }),
+  Sentry.sentryHandle(),
+  authentification,
+  authorization,
   apiRateLimitCheck,
   apiAuthGuard,
   guildAuthGuard,
+  adminAuthGuard,
 );
 
-export const handleError: HandleServerError = async ({ error, event, status, message }) => {
-  const errorId =
-    status !== 404 && !dev
-      ? Sentry.captureException(error, {
-          extra: { event, status },
-        })
-      : "development-mode";
-
-  if (dev) {
-    console.error("❌ Something has errored");
-    console.error(error);
-  }
-
-  return {
-    message: message || "Internal server error",
-    id: errorId,
-    status: status,
-  };
-};
+export const handleError = dev
+  ? ({ error }: any) => {
+      console.error("Error occurred:", error);
+      return {
+        message: "An error occurred",
+      };
+    }
+  : Sentry.handleErrorWithSentry();

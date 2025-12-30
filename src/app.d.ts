@@ -31,7 +31,6 @@ declare global {
      * Discord REST API clients for interacting with Discord services.
      */
     interface Locals {
-      getSafeSession: () => Promise<SafeSessionResult>;
       /**
        * @returns Whether the user is authenticated.
        */

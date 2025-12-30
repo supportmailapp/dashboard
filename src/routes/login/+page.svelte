@@ -9,12 +9,19 @@
   import { onMount } from "svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
 
+  const errors = {
+    invalid_session: "Invalid Session. Please try logging in again.",
+    oauth_error: "OAuth Error. Please try logging in again.",
+    access_denied: "Access Denied. You must authorize the application to log in.",
+    unknown: "An unknown error occurred.",
+  };
+
   let showLoading = $state(false);
   let error = $state<string | null>(null);
 
   onMount(async () => {
     if (page.url.searchParams.has("error")) {
-      error = page.url.searchParams.get("error") || "An unknown error occurred.";
+      error = errors[page.url.searchParams.get("error") as keyof typeof errors] || errors.unknown;
       console.error("Login error:", error);
       showLoading = false;
       await goto("/login", { replaceState: true });

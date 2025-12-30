@@ -82,7 +82,7 @@ export async function GET({ url, cookies }) {
   });
 
   // Set session cookie
-  cookies.set("session", sessionToken, {
+  cookies.set("session_id", sessionToken, {
     path: "/",
     sameSite: "lax",
     maxAge: expires_in,

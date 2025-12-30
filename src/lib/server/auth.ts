@@ -44,34 +44,17 @@ class SessionManager {
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
     // Encrpytion happens automatically in the UserToken model
-    const exists = await UserToken.exists({ userId: data.userId });
-    if (exists) {
-      await UserToken.findOneAndUpdate(
-        { userId: data.userId },
-        {
-          expiresAt: expiresAt,
-          accessToken: data.tokens.accessToken,
-          refreshToken: data.tokens.refreshToken ?? null,
-        },
-        { new: true },
-      );
-    } else {
-      await UserToken.create({
-        userId: data.userId,
+    const tokenData = await UserToken.findOneAndUpdate(
+      { userId: data.userId },
+      {
         expiresAt: expiresAt,
         accessToken: data.tokens.accessToken,
         refreshToken: data.tokens.refreshToken ?? null,
-      });
-    }
+      },
+      { new: true, upsert: true },
+    );
 
-    const sessionToken = jwt.sign({ id: data.userId }, env.JWT_SECRET, {
-      algorithm: "HS256",
-      issuer: "supportmail",
-      expiresIn: "7d",
-      encoding: "utf-8",
-    });
-
-    return sessionToken;
+    return tokenData._id.toString();
   }
 
   static decodeToken(_token: string): {

@@ -16,7 +16,12 @@ const discordUrls = {
   tokenRevocation: () => `${RouteBases.api}${Routes.oauth2TokenRevocation()}` as const,
   botAuth: function (
     origin: string,
-    { guildId, state, addBot }: { guildId?: string; state?: string; addBot?: boolean } = {},
+    {
+      guildId,
+      state,
+      addBot,
+      wasLoggedIn,
+    }: { guildId?: string; state?: string; addBot?: boolean; wasLoggedIn?: boolean } = {},
   ) {
     const url = new URL(Routes.oauth2Authorization(), this.base);
     const searchP = new URLSearchParams({
@@ -31,7 +36,7 @@ const discordUrls = {
       searchP.set("scope", "identify guilds guilds.members.read");
       searchP.set("response_type", "code");
       searchP.set("redirect_uri", origin + "/login/callback");
-      searchP.set("prompt", "true");
+      if (wasLoggedIn) searchP.set("prompt", "none");
     }
     if (state) searchP.set("state", state);
     if (guildId) searchP.set("guild_id", guildId);
