@@ -1,11 +1,14 @@
 {
   "css.customData": [".vscode/tailwind.json"],
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.defaultFormatter": "prettier.prettier-vscode",
   "[css]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "prettier.prettier-vscode"
   },
   "[svelte]": {
     "editor.defaultFormatter": "svelte.svelte-vscode"
   },
-  "editor.formatOnSave": false
+  "editor.formatOnSave": false,
+  "[typescript]": {
+    "editor.defaultFormatter": "prettier.prettier-vscode"
+  }
 }
