@@ -253,6 +253,8 @@ const compiledAdminRoutes = adminAuthRoutes.map((pattern) =>
 const adminAuthGuard: Handle = async ({ event, resolve }) => {
   const pathname = event.url.pathname;
 
+  event.locals.isAdmin = () => event.locals.token?.clearance === "admin";
+
   const isAdminRoute = compiledAdminRoutes.some((matcher) =>
     matcher ? matcher(pathname) : adminAuthRoutes.includes(pathname),
   );

@@ -39,7 +39,7 @@ declare global {
        * Not used in the current implementation.
        * @returns Whether the user is an admin.
        */
-      isAdmin?: () => Promise<boolean>;
+      isAdmin?: () => boolean;
       user: APIUser | null;
       token: FlatUserToken | null;
       /**
