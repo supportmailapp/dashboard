@@ -49,4 +49,3 @@ const labelSchema = new Schema({
 });
 
 export { customModalFieldSchema, EntitySchema, labelSchema, partialEmojiSchema };
-

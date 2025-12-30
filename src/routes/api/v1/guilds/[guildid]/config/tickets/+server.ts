@@ -1,5 +1,10 @@
 import { JsonErrors } from "$lib/constants.js";
-import { FlattenDocToJSON, getDBGuild, updateDBGuild, type DBGuildProjectionReturns } from "$lib/server/db/utils.js";
+import {
+  FlattenDocToJSON,
+  getDBGuild,
+  updateDBGuild,
+  type DBGuildProjectionReturns,
+} from "$lib/server/db/utils.js";
 import { APIPausedUntilSchema, SnowflakePredicate, ZodValidator } from "$lib/server/validators";
 import type { IDBGuild } from "$lib/sm-types";
 import dayjs from "dayjs";

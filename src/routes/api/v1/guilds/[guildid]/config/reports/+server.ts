@@ -1,15 +1,15 @@
 import { JsonErrors } from "$lib/constants.js";
 import {
-    FlattenDocToJSON,
-    getDBGuild,
-    updateDBGuild,
-    type DBGuildProjectionReturns,
+  FlattenDocToJSON,
+  getDBGuild,
+  updateDBGuild,
+  type DBGuildProjectionReturns,
 } from "$lib/server/db/utils.js";
 import {
-    APIPausedUntilSchema,
-    MentionableEntityPredicate,
-    SnowflakePredicate,
-    ZodValidator,
+  APIPausedUntilSchema,
+  MentionableEntityPredicate,
+  SnowflakePredicate,
+  ZodValidator,
 } from "$lib/server/validators";
 import { ReportNotificationType, SpecialReportChannelType, type IDBGuild } from "$lib/sm-types";
 import dayjs from "dayjs";

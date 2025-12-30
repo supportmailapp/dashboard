@@ -54,8 +54,6 @@
 
 <ModeWatcher />
 
-<SaveAlert />
-
 {@render children?.()}
 
 <Toaster position={"top-center"} richColors visibleToasts={4} closeButton />

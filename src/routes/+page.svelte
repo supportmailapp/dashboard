@@ -66,19 +66,17 @@
   });
 </script>
 
-<div id="bg" style="background-image: url(https://picsum.photos/1920/1080.webp);"></div>
-<a
-  href="https://picsum.photos/"
-  target="_blank"
-  rel="noopener noreferrer"
+<div id="bg" style="background-image: url(/johannes-plenio-bhCdwWNmXw8-unsplash.jpg);"></div>
+<p
   class="text-muted hover:text-muted-foreground absolute right-3 bottom-3 z-50 text-[0.6rem]"
 >
-  Photo by <b>Picsum Photos</b>
-</a>
+  Foto by <a href="https://unsplash.com/de/@jplenio?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Johannes Plenio</a> on
+  <a href="https://unsplash.com/de/fotos/grune-baume-in-der-nahe-von-gewassern-wahrend-des-tages-bhCdwWNmXw8?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>
+</p>
 
 <div class="flex h-screen flex-col items-center justify-center gap-6 p-3">
   <Card.Root
-    class="flex h-[40rem] w-full max-w-xl flex-col overflow-clip border-none bg-background shadow-xl shadow-black/60 backdrop-blur-md select-none"
+    class="flex h-160 w-full max-w-xl flex-col overflow-clip border-none bg-background shadow-xl shadow-black/60 backdrop-blur-md select-none"
   >
     <Card.Header class="shrink-0 text-center">
       <Branding />

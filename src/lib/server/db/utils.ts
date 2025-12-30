@@ -1,9 +1,9 @@
 import {
-    V2ComponentsValidator,
-    type IDBGuild,
-    type IDBUser,
-    type ITicketConfig,
-    type ReportLimitsConfig
+  V2ComponentsValidator,
+  type IDBGuild,
+  type IDBUser,
+  type ITicketConfig,
+  type ReportLimitsConfig,
 } from "$lib/sm-types";
 import { Document, Types, type UpdateQuery, type UpdateWithAggregationPipeline } from "mongoose";
 import { ValidationError } from "zod-validation-error";

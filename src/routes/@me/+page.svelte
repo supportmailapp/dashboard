@@ -110,13 +110,13 @@
     <div>
       {#if profile.banner}
         <img
-          class="border-base-800 aspect-[3/1] w-full rounded-xl border object-cover"
+          class="border-base-800 aspect-3/1 w-full rounded-xl border object-cover"
           src={profile.banner}
           alt="User Avatar"
         />
       {:else}
         <div
-          class="border-base-800 aspect-[4/1] w-full rounded-xl border object-cover"
+          class="border-base-800 aspect-4/1 w-full rounded-xl border object-cover"
           style="background-color: {profile.accentHex ?? 'var(--color-slate-700)'};"
         ></div>
       {/if}
@@ -167,7 +167,7 @@
           </Select.Content>
         </Select.Root>
         <Label
-          class="hover:bg-accent/50 has-[[aria-checked=true]]:border-accent has-[[aria-checked=true]]:bg-accent/50 flex items-start gap-3 rounded-lg border p-3"
+          class="hover:bg-accent/50 has-aria-checked:border-accent has-aria-checked:bg-accent/50 flex items-start gap-3 rounded-lg border p-3"
         >
           <Switch id="toggle-2" bind:checked={user.config.autoRedirect} variant="success" />
           <div class="grid gap-1.5 font-normal">

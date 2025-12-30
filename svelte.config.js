@@ -13,6 +13,9 @@ const config = {
       $db: "src/lib/server/db",
     },
   },
+  vitePlugin: {
+    inspector: process.env.NODE_ENV === "development",
+  },
 };
 
 export default config;

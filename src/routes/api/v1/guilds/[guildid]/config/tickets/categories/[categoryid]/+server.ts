@@ -1,11 +1,11 @@
 import { JsonErrors } from "$lib/constants";
 import { FlattenDocToJSON, getTicketCategories, TicketCategory } from "$lib/server/db";
 import {
-    CustomModalFieldSchema,
-    MentionableEntityPredicate,
-    PartialEmojiPredicate,
-    SnowflakePredicate,
-    ZodValidator,
+  CustomModalFieldSchema,
+  MentionableEntityPredicate,
+  PartialEmojiPredicate,
+  SnowflakePredicate,
+  ZodValidator,
 } from "$lib/server/validators";
 import { reindexArrayByKey } from "$lib/utils/formatting.js";
 import z from "zod";

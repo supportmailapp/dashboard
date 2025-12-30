@@ -5,8 +5,8 @@ import { type IReport, ReportStatus } from "$lib/sm-types";
 import { safeParseInt } from "$lib/utils.js";
 import type { FilterQuery } from "mongoose";
 import type {
-    ReportSearchScope,
-    ReportSearchType,
+  ReportSearchScope,
+  ReportSearchType,
 } from "../../../../../g/[guildid]/reports/FilterControls.svelte";
 
 export type PaginatedReportsResponse = PaginatedResponse<
