@@ -4,3 +4,9 @@ pnpm-lock.yaml
 yarn.lock
 bun.lock
 bun.lockb
+
+# Build Artifacts
+dist/
+build/
+.svelte-kit/
+src/lib/sm-types/

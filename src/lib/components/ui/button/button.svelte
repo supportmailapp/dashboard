@@ -1,11 +1,10 @@
 <script lang="ts" module>
-  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
 	import { cn, type WithElementRef } from "$lib/utils.js";
 	import type { HTMLAnchorAttributes, HTMLButtonAttributes } from "svelte/elements";
 	import { type VariantProps, tv } from "tailwind-variants";
 
 	export const buttonVariants = tv({
-		base: "duration-120 focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium outline-none transition-all focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0 shadow-xs",
+		base: "focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
 		variants: {
 			variant: {
 				default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs",
@@ -39,7 +38,6 @@
 		WithElementRef<HTMLAnchorAttributes> & {
 			variant?: ButtonVariant;
 			size?: ButtonSize;
-			showLoading?: boolean;
 		};
 </script>
 
@@ -52,7 +50,6 @@
 		href = undefined,
 		type = "button",
 		disabled,
-    showLoading,
 		children,
 		...restProps
 	}: ButtonProps = $props();
@@ -80,12 +77,6 @@
 		{disabled}
 		{...restProps}
 	>
-	  {#if showLoading}
-		  <span class="flex items-center justify-center">
-		    <LoadingSpinner class="size-5" />
-		  </span>
-	  {:else}
-			{@render children?.()}
-		{/if}
+		{@render children?.()}
 	</button>
 {/if}
