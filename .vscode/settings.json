@@ -5,10 +5,13 @@
     "editor.defaultFormatter": "prettier.prettier-vscode"
   },
   "[svelte]": {
-    "editor.defaultFormatter": "svelte.svelte-vscode"
+    "editor.defaultFormatter": "prettier.prettier-vscode"
   },
   "editor.formatOnSave": false,
   "[typescript]": {
+    "editor.defaultFormatter": "prettier.prettier-vscode"
+  },
+  "[javascript]": {
     "editor.defaultFormatter": "prettier.prettier-vscode"
   }
 }
