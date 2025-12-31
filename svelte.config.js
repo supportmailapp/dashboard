@@ -15,7 +15,12 @@ const config = {
     },
   },
   vitePlugin: {
-    inspector: process.env.NODE_ENV === "development",
+    inspector:
+      process.env.NODE_ENV === "development"
+        ? {
+            toggleKeyCombo: "control-shift",
+          }
+        : false,
   },
 };
 
