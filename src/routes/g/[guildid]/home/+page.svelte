@@ -96,28 +96,28 @@
   <Card.Root class="w-full max-w-xl">
     <Card.Header>
       <Card.Title>Language</Card.Title>
-      <Card.Description>
-        <p>The configured language here applies when:</p>
-        <ul class="ml-6 list-disc">
-          <li>
-            To messages the bot sends publicly in the server (user messages are not translated, this only
-            applies to pre-existing messages)
-          </li>
-          <li>
-            To the bot's responses in the support ticket system, <strong
-              >if the user doesn't have a language set</strong
-            >.
-          </li>
-          <li>
-            <a href={DocsLinks.LanguageDeterminationInGuild} target="_blank" class="link link-hover">
-              More information on how the language is determined
-            </a>
-          </li>
-        </ul>
-      </Card.Description>
     </Card.Header>
     {#if config.current}
       <Card.Content>
+        <div class="text-muted-foreground text-sm">
+          <p>The configured language here applies when:</p>
+          <ul class="ml-6 list-disc">
+            <li>
+              To messages the bot sends publicly in the server (user messages are not translated, this only
+              applies to pre-existing messages)
+            </li>
+            <li>
+              To the bot's responses in the support ticket system, <strong
+                >if the user doesn't have a language set</strong
+              >.
+            </li>
+            <li>
+              <a href={DocsLinks.LanguageDeterminationInGuild} target="_blank" class="link link-hover">
+                More information on how the language is determined
+              </a>
+            </li>
+          </ul>
+        </div>
         <Select.Root
           type="single"
           bind:value={config.current.language}

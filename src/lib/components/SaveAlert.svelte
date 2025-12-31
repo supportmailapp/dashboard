@@ -6,8 +6,6 @@
   import { slide, scale } from "svelte/transition";
 
   interface SaveAlertProps {
-    oldCfg: any;
-    currentCfg: any;
     saving: boolean;
     unsavedChanges: boolean;
     saveData: () => Promise<void>;
