@@ -1,5 +1,5 @@
-import { redirectResponse } from "$lib";
 import { SessionManager } from "$lib/server/auth";
+import { redirect } from "@sveltejs/kit";
 
 export async function GET({ cookies, locals }) {
   /*
@@ -15,11 +15,11 @@ export async function GET({ cookies, locals }) {
   }
 
   if (!locals.user) {
-    return redirectResponse(303, "/login");
+    return redirect(303, "/login");
   }
 
   const tokens = await SessionManager.getAndDeleteToken(locals.user.id);
   if (tokens?.accessToken) await SessionManager.revokeToken(tokens.accessToken, "access");
   if (tokens?.refreshToken) await SessionManager.revokeToken(tokens.refreshToken, "refresh");
-  return redirectResponse(303, "/login");
+  return redirect(303, "/login");
 }

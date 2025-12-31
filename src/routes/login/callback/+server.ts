@@ -12,16 +12,21 @@ export async function GET({ url, cookies }) {
   const error = url.searchParams.get("error");
   const urlState = url.searchParams.get("state");
   const cookieState = cookies.get("oauth_state");
-  const stayLoggedIn = cookies.get("keep-refresh-token");
 
   if (error || !code) {
-    return redirectToLoginWithError(error || "Missing authorization code. Try again from here...");
+    return redirectToLoginWithError({
+      errKey: "invalid_session",
+    });
   }
 
   if (!urlState || !cookieState) {
-    return redirectToLoginWithError("Missing state. Try again.");
+    return redirectToLoginWithError({
+      errKey: "invalid_session",
+    });
   } else if (urlState !== cookieState) {
-    return redirectToLoginWithError("State parameter invalid. Try again.");
+    return redirectToLoginWithError({
+      errKey: "invalid_session",
+    });
   }
 
   cookies.delete("state", { path: "/" });
@@ -45,12 +50,16 @@ export async function GET({ url, cookies }) {
 
     if (!tokenResponse.ok) {
       const errorText = await tokenResponse.text();
-      return redirectToLoginWithError(`Token Exchange Failed: ${errorText}`);
+      return new Response(null, {
+        headers: { Location: `/login?error=error4xx&error_description=${encodeURIComponent(errorText)}` },
+      });
     }
     tokenData = (await tokenResponse.json()) as RESTPostOAuth2AccessTokenResult;
   } catch (err: any) {
     Sentry.captureException(err, { mechanism: { handled: true } });
-    return redirectToLoginWithError("Token Exchange Failed");
+    return redirectToLoginWithError({
+      errKey: "token_exchange_failed",
+    });
   }
 
   const { access_token, refresh_token, expires_in } = tokenData as RESTPostOAuth2AccessTokenResult;
@@ -66,7 +75,10 @@ export async function GET({ url, cookies }) {
       errMsg = `HTTPError: ${userRes.error.message}`;
     }
     Sentry.captureException(userRes.error, { mechanism: { handled: true, source: "DiscordUserAPI" } });
-    return redirectToLoginWithError(errMsg);
+    return redirectToLoginWithError({
+      errKey: "user_fetch_failed",
+      description: errMsg,
+    });
   }
 
   const user = userRes.data!;

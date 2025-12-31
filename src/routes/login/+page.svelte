@@ -1,27 +1,37 @@
 <script lang="ts">
+  import { enhance } from "$app/forms";
+  import { goto } from "$app/navigation";
+  import { page } from "$app/state";
+  import Branding from "$lib/assets/Branding.svelte";
+  import BackgroundImage from "$lib/components/BackgroundImage.svelte";
+  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import * as Alert from "$ui/alert/index.js";
   import { Button } from "$ui/button/index.js";
   import * as Card from "$ui/card/index.js";
-  import { enhance } from "$app/forms";
-  import Branding from "$lib/assets/Branding.svelte";
-  import { page } from "$app/state";
-  import { goto } from "$app/navigation";
   import { onMount } from "svelte";
-  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
 
   const errors = {
-    invalid_session: "Invalid Session. Please try logging in again.",
-    oauth_error: "OAuth Error. Please try logging in again.",
+    invalid_session: "Invalid Session or expired.",
+    oauth_error: "OAuth Error.",
     access_denied: "Access Denied. You must authorize the application to log in.",
+    "error4xx": "A client error occurred during login.",
+    token_exchange_failed: "Failed to exchange authorization code for tokens.",
+    user_fetch_failed: "Failed to fetch user information.",
     unknown: "An unknown error occurred.",
   };
 
   let showLoading = $state(false);
-  let error = $state<string | null>(null);
+  let error = $state({
+    msg: "",
+    description: "",
+  });
 
   onMount(async () => {
     if (page.url.searchParams.has("error")) {
-      error = errors[page.url.searchParams.get("error") as keyof typeof errors] || errors.unknown;
+      error = {
+        msg: errors[page.url.searchParams.get("error") as keyof typeof errors] || errors.unknown,
+        description: page.url.searchParams.get("error_description") || "",
+      };
       console.error("Login error:", error);
       showLoading = false;
       await goto("/login", { replaceState: true });
@@ -29,22 +39,14 @@
   });
 </script>
 
-<div id="bg" style="background-image: url(https://picsum.photos/1920/1080.webp);"></div>
-<a
-  href="https://picsum.photos/"
-  target="_blank"
-  rel="noopener noreferrer"
-  class="text-opacity-50 absolute right-3 bottom-3 z-50 text-[0.6rem] text-slate-600 hover:text-slate-400"
->
-  Photo by <b>Picsum Photos</b>
-</a>
+<BackgroundImage />
 
 <div class="flex h-screen flex-col items-center justify-center gap-6 px-3">
   {#if !!error}
     <Alert.Root class="w-full max-w-md" variant="destructive">
-      <Alert.Title>An error occurred!</Alert.Title>
+      <Alert.Title>{error.msg}</Alert.Title>
       <Alert.Description>
-        {error}
+        {error.description}
       </Alert.Description>
     </Alert.Root>
   {/if}
@@ -93,17 +95,3 @@
     </Card.Content>
   </Card.Root>
 </div>
-
-<style>
-  #bg {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    object-fit: cover;
-    box-shadow: 0 0 200px rgba(0, 0, 0, 0.9) inset;
-    z-index: -1;
-  }
-</style>
