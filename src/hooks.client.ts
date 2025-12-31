@@ -1,12 +1,6 @@
 import { dev } from "$app/environment";
-import { PUBLIC_SENTRY_DSN } from "$env/static/public";
 import * as Sentry from "@sentry/sveltekit";
 import type { HandleClientError } from "@sveltejs/kit";
-
-Sentry.init({
-  dsn: PUBLIC_SENTRY_DSN,
-  tracesSampleRate: 1.0,
-});
 
 export const handleError: HandleClientError = async ({ error, event, status, message }) => {
   let id;
@@ -16,6 +10,7 @@ export const handleError: HandleClientError = async ({ error, event, status, mes
     });
   } else {
     id = "development-mode";
+    console.error("Error captured:", { error, event, status });
   }
 
   return {
