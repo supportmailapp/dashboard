@@ -156,7 +156,7 @@
 {/snippet}
 
 {#if allowCustomChannels}
-  <Tabs.Root value="selectChannel" class="w-full max-w-[400px]">
+  <Tabs.Root value="selectChannel" class="w-full max-w-100">
     <Tabs.List>
       <Tabs.Trigger value="selectChannel">Select Channel</Tabs.Trigger>
       <Tabs.Trigger value="customChannel">Custom Channel</Tabs.Trigger>
@@ -168,7 +168,7 @@
       <Input
         bind:value={channelIdInput}
         placeholder="Channel/Thread ID"
-        class="[&::placeholder]:text-muted-foreground [&::placeholder]:text-sm"
+        class="placeholder:text-muted-foreground placeholder:text-sm"
       />
       <Button variant={channelButtonStyle} onclick={findChannelById} disabled={buttonDisabled}>
         Find Channel
