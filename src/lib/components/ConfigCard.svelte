@@ -48,7 +48,7 @@
         variant="default"
         disabled={saveBtnDisabled}
         showLoading={saveBtnLoading}
-        class="w-[100px]"
+        class="w-25"
         onclick={saveFn}
       >
         <Save class="mr-0.5 size-4" />

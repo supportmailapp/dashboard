@@ -14,7 +14,7 @@ export async function GET({ params }) {
   });
 }
 
-export async function PUT({ request, locals, params }) {
+export async function PUT({ request, params }) {
   let body: any;
   try {
     body = await request.json();
@@ -26,4 +26,16 @@ export async function PUT({ request, locals, params }) {
   if (!parsed.success) {
     return JsonErrors.badRequest(ZodValidator.toHumanError(parsed.error));
   }
+
+  const cfg = await DBGuild.findOneAndUpdate(
+    { id: params.guildid },
+    {
+      lang: parsed.data.language,
+    },
+    { new: true },
+  );
+
+  return json({
+    language: cfg?.lang || "en",
+  });
 }

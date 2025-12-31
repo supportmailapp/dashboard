@@ -15,6 +15,8 @@
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-xs",
         ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
+        success: "bg-success text-success-foreground hover:bg-success/90 shadow-xs",
+        warning: "bg-warning text-warning-foreground hover:bg-warning/90 shadow-xs",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
@@ -50,6 +52,7 @@
     href = undefined,
     type = "button",
     disabled,
+    showLoading,
     children,
     ...restProps
   }: ButtonProps = $props();
@@ -60,10 +63,10 @@
     bind:this={ref}
     data-slot="button"
     class={cn(buttonVariants({ variant, size }), className)}
-    href={disabled ? undefined : href}
-    aria-disabled={disabled}
-    role={disabled ? "link" : undefined}
-    tabindex={disabled ? -1 : undefined}
+    href={disabled || showLoading ? undefined : href}
+    aria-disabled={disabled || showLoading}
+    role={disabled || showLoading ? "link" : undefined}
+    tabindex={disabled || showLoading ? -1 : undefined}
     {...restProps}
   >
     {@render children?.()}
@@ -74,9 +77,15 @@
     data-slot="button"
     class={cn(buttonVariants({ variant, size }), className)}
     {type}
-    {disabled}
+    disabled={disabled || showLoading}
     {...restProps}
   >
-    {@render children?.()}
+    {#if showLoading}
+      <span class="flex items-center justify-center">
+        <LoadingSpinner class="size-5" />
+      </span>
+    {:else}
+      {@render children?.()}
+    {/if}
   </button>
 {/if}

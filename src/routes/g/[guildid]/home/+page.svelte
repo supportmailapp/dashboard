@@ -82,8 +82,6 @@
 </SiteHeading>
 
 <SaveAlert
-  oldCfg={config.old}
-  currentCfg={config.current}
   saving={config.saving}
   unsavedChanges={unsavedChanges}
   discardChanges={() => {
