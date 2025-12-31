@@ -1,9 +1,9 @@
 import {
-  type RowData,
-  type TableOptions,
-  type TableOptionsResolved,
-  type TableState,
-  createTable,
+    type RowData,
+    type TableOptions,
+    type TableOptionsResolved,
+    type TableState,
+    createTable,
 } from "@tanstack/table-core";
 
 /**
@@ -22,13 +22,13 @@ import {
  *       <tr>
  *         {#each headerGroup.headers as header}
  *           <th colspan={header.colSpan}>
- *         	   <FlexRender content={header.column.columnDef.header} context={header.getContext()} />
- *         	 </th>
+ *              <FlexRender content={header.column.columnDef.header} context={header.getContext()} />
+ *            </th>
  *         {/each}
  *       </tr>
  *     {/each}
  *   </thead>
- * 	 <!-- ... -->
+ *    <!-- ... -->
  * </table>
  * ```
  */
