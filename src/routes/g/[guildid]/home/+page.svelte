@@ -15,6 +15,7 @@
   import apiClient from "$lib/utils/apiClient";
   import type { OverviewConfig } from "$v1Api/assertions";
   import equal from "fast-deep-equal/es6";
+  import InfoDialog from "$lib/components/InfoDialog.svelte";
 
   const config = $state({
     old: null as OverviewConfig | null,
@@ -95,29 +96,36 @@
 <section class="mt-6">
   <Card.Root class="w-full max-w-xl">
     <Card.Header>
-      <Card.Title>Language</Card.Title>
+      <Card.Title>
+        Language
+        <InfoDialog title="Language Information" description="The configured language here applies when:">
+          <div class="text-muted-foreground text-sm">
+            <ul class="ml-6 list-disc">
+              <li>
+                The bot sends messages publicly in the server (user messages are not translated, this only
+                applies to pre-existing messages)
+              </li>
+              <li>
+                The bot responds in the support (ticket) system, <strong
+                  >if the user doesn't have a language set</strong
+                >.
+              </li>
+              <li>
+                <a href={DocsLinks.LanguageDeterminationInGuild} target="_blank" class="link link-hover">
+                  Read more about how language is determined in a guild
+                </a>
+              </li>
+            </ul>
+          </div>
+        </InfoDialog>
+      </Card.Title>
+      <Card.Description>
+        Select the default language for your server. This will be used for bot messages and
+        communications when a user-specific language is not set.
+      </Card.Description>
     </Card.Header>
     {#if config.current}
       <Card.Content>
-        <div class="text-muted-foreground text-sm">
-          <p>The configured language here applies when:</p>
-          <ul class="ml-6 list-disc">
-            <li>
-              To messages the bot sends publicly in the server (user messages are not translated, this only
-              applies to pre-existing messages)
-            </li>
-            <li>
-              To the bot's responses in the support ticket system, <strong
-                >if the user doesn't have a language set</strong
-              >.
-            </li>
-            <li>
-              <a href={DocsLinks.LanguageDeterminationInGuild} target="_blank" class="link link-hover">
-                More information on how the language is determined
-              </a>
-            </li>
-          </ul>
-        </div>
         <Select.Root
           type="single"
           bind:value={config.current.language}
