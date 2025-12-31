@@ -1,12 +1,28 @@
 import { env } from "$env/dynamic/private";
-import { redirectResponse } from "$lib";
 import { discordUrls } from "$lib/urls";
+import { redirect } from "@sveltejs/kit";
+import jwt from "jsonwebtoken";
 
-export async function load({ parent }) {
+export async function load({ parent, cookies, url }) {
   const { user } = await parent();
+
   if (user) {
-    return redirectResponse(302, "/");
+    return redirect(302, "/");
   }
+
+  cookies.set(
+    "img_token",
+    jwt.sign({ foo: crypto.randomUUID() }, env.JWT_SECRET, {
+      algorithm: "HS512",
+      audience: "supportmail-website",
+      issuer: "supportmail-website/login",
+      subject: "img-access",
+      expiresIn: "1h",
+    }),
+    { path: "/" },
+  );
+
+  return {};
 }
 
 export const actions = {

@@ -3,13 +3,15 @@
   import { beforeNavigate, goto } from "$app/navigation";
   import { page } from "$app/state";
   import Branding from "$lib/assets/Branding.svelte";
+  import BackgroundImage from "$lib/components/BackgroundImage.svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
+  import { site } from "$lib/stores/site.svelte";
   import { LegalLinks } from "$lib/urls";
   import * as Card from "$ui/card/index.js";
   import { Separator } from "$ui/separator/index.js";
+  import { onMount } from "svelte";
   import { slide } from "svelte/transition";
   import ServerSelect from "./ServerSelect.svelte";
-  import { site } from "$lib/stores/site.svelte";
 
   let loading = $derived(site.showLoading);
   let hrefAfterLogin = $state<string | null>(null);
@@ -64,15 +66,13 @@
       page.data.guildsManager.loadGuilds();
     }
   });
+
+  onMount(async () => {
+
+  });
 </script>
 
-<div id="bg" style="background-image: url(/johannes-plenio-bhCdwWNmXw8-unsplash.jpg);"></div>
-<p
-  class="text-muted hover:text-muted-foreground absolute right-3 bottom-3 z-50 text-[0.6rem]"
->
-  Foto by <a href="https://unsplash.com/de/@jplenio?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Johannes Plenio</a> on
-  <a href="https://unsplash.com/de/fotos/grune-baume-in-der-nahe-von-gewassern-wahrend-des-tages-bhCdwWNmXw8?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>
-</p>
+<BackgroundImage />
 
 <div class="flex h-screen flex-col items-center justify-center gap-6 p-3">
   <Card.Root
@@ -103,20 +103,3 @@
     </Card.Footer>
   </Card.Root>
 </div>
-
-<style>
-  #bg {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    object-fit: cover;
-    backdrop-filter: blur(0.75vh);
-    filter: blur(0.75vh);
-    -webkit-filter: blur(0.75vh);
-    box-shadow: 0 0 200px rgba(0, 0, 0, 0.3) inset;
-    z-index: -1;
-  }
-</style>
