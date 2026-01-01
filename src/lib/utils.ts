@@ -1,8 +1,8 @@
 import { clsx, type ClassValue } from "clsx";
 import dayjs from "dayjs";
-import { twMerge } from "tailwind-merge";
 import relativeTime from "dayjs/plugin/relativeTime";
 import equal from "fast-deep-equal/es6";
+import { twMerge } from "tailwind-merge";
 
 dayjs.extend(relativeTime);
 
@@ -190,6 +190,30 @@ export function sanitizeSnippetName(str: string) {
     .slice(0, 50);
 }
 
-export function determineUnsavedChanges(cfg1: any, cfg2: any): boolean {
-  return !equal(cfg1, cfg2);
+/**
+ * Determines if there are unsaved changes by comparing two configuration objects.
+ * 
+ * @param cfg1 - The first configuration object to compare (typically the original/saved state)
+ * @param cfg2 - The second configuration object to compare (typically the current/modified state)
+ * @returns `true` if the configurations differ (unsaved changes exist), `false` if they are equal
+ * 
+ * @remarks
+ * This function performs a deep equality check between two objects using the `fast-deep-equal` library.
+ * It is commonly used to detect when user modifications need to be saved.
+ * 
+ * 
+ * **IMPORTANT**
+ * When using this function, the `oldCfg` MUST be untracked if it's reactive to not cause unnecessary recomputations.
+ * 
+ * @example
+ * ```ts
+ * import { untrack } from "svelte";
+ * import { determineUnsavedChanges } from "$lib/utils";
+ * 
+ * let oldConfig = { ... };
+ * let currentConfig = { ... };
+ * let unsavedChanges = $derived(determineUnsavedChanges(untrack(() => oldConfig), currentConfig));
+ */
+export function determineUnsavedChanges(oldCfg: any, currentCfg: any): boolean {
+  return !equal(oldCfg, currentCfg);
 }
