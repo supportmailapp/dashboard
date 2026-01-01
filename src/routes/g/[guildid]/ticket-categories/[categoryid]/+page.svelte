@@ -32,6 +32,7 @@
   import equal from "fast-deep-equal/es6";
   import { onDestroy, untrack } from "svelte";
   import { toast } from "svelte-sonner";
+  import { fly } from "svelte/transition";
 
   let { data } = $props();
 
@@ -266,7 +267,7 @@
   saveData={saveCategory}
 />
 
-<div class="container max-w-4xl space-y-6">
+<div class="container max-w-4xl space-y-6" in:fly={{ x: -30, duration: 200 }}>
   <div class="flex items-center gap-4">
     <Button variant="ghost" size="sm" onclick={navigateBack}>
       <ArrowLeft class="mr-2 h-4 w-4" />
