@@ -1,4 +1,5 @@
 <script lang="ts" module>
+  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import { cn, type WithElementRef } from "$lib/utils.js";
   import type { HTMLAnchorAttributes, HTMLButtonAttributes } from "svelte/elements";
   import { tv, type VariantProps } from "tailwind-variants";
@@ -40,6 +41,7 @@
     WithElementRef<HTMLAnchorAttributes> & {
       variant?: ButtonVariant;
       size?: ButtonSize;
+      showLoading?: boolean;
     };
 </script>
 
