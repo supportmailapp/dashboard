@@ -19,7 +19,7 @@
   import { toast } from "svelte-sonner";
 
   let { data } = $props();
-  let { report, error } = data;
+  let { report } = $derived(data);
 
   const logMessageUrl = $derived(
     report ? `https://discord.com/channels/${report.guildId}/${report.logMessage?.replace("-", "/")}` : null,
@@ -44,10 +44,6 @@
   <ChevronLeft class="size-4" />
   Back
 </Button>
-
-{#if error}
-  <p>{error}</p>
-{/if}
 
 {#if report}
   <!-- Card 1: Report Overview (Most Important Info) -->
