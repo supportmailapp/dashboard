@@ -68,10 +68,6 @@
       guildsManager.loadGuilds();
     }
   });
-
-  onMount(async () => {
-
-  });
 </script>
 
 <BackgroundImage />
