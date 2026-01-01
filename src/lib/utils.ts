@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from "clsx";
 import dayjs from "dayjs";
 import { twMerge } from "tailwind-merge";
 import relativeTime from "dayjs/plugin/relativeTime";
+import equal from "fast-deep-equal/es6";
 
 dayjs.extend(relativeTime);
 
@@ -187,4 +188,8 @@ export function sanitizeSnippetName(str: string) {
     .toLowerCase()
     .replace(/[^a-z0-9_ ]/g, "")
     .slice(0, 50);
+}
+
+export function determineUnsavedChanges(cfg1: any, cfg2: any): boolean {
+  return !equal(cfg1, cfg2);
 }
