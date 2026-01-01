@@ -1,31 +1,27 @@
 import { JsonErrors } from "$lib/constants";
 import { FlattenDocToJSON, getTicketCategories, TicketCategory } from "$lib/server/db";
-import {
-  CustomModalFieldSchema,
-  MentionableEntityPredicate,
-  PartialEmojiPredicate,
-  SnowflakePredicate,
-  ZodValidator,
-} from "$lib/server/validators";
+import { ZodValidator } from "$lib/server/validators";
 import { reindexArrayByKey } from "$lib/utils/formatting.js";
+import { CustomModalFieldSchema, MentionableEntity, PartialEmoji, SnowflakePredicate } from "$v1Api/assertions.js";
 import z from "zod";
 
 const putSchema = z.object({
   _id: z.string(),
   guildId: SnowflakePredicate,
   label: z.string().min(3).max(45),
-  emoji: PartialEmojiPredicate.optional(),
+  emoji: PartialEmoji.optional(),
   enabled: z.boolean().default(true),
   tag: SnowflakePredicate.optional(),
-  pings: MentionableEntityPredicate.array().optional(),
+  pings: MentionableEntity.array().optional(),
   fields: CustomModalFieldSchema.array().min(0).max(5).optional(),
   customMessageId: z.string().optional(),
 });
 
 // It may be a PUT endpoint, but the index field is not allowed to be passed, because it is managed by the server.
 // To change the index (order) of categories, use the PUT endpoint at /api/v1/guilds/[guildid]/config/tickets/categories
-export async function PUT({ request, locals, params: { categoryid } }) {
-  const guildId = locals.guildId!;
+export async function PUT({ request, locals, params }) {
+  const guildId = params.guildid;
+  const categoryId = params.categoryid;
   if (!locals.isAuthenticated()) {
     return JsonErrors.unauthorized();
   }
@@ -39,7 +35,7 @@ export async function PUT({ request, locals, params: { categoryid } }) {
 
   valRes.data.guildId = guildId;
 
-  if (categoryid !== valRes.data._id) {
+  if (categoryId !== valRes.data._id) {
     return JsonErrors.badRequest("Category ID in the URL does not match the ID in the request body.");
   }
 
@@ -69,9 +65,9 @@ export async function PUT({ request, locals, params: { categoryid } }) {
   });
 }
 
-export async function DELETE({ locals, params: { categoryid } }) {
-  const guildId = locals.guildId!;
-  const categoryId = categoryid;
+export async function DELETE({ locals, params }) {
+  const guildId = params.guildid;
+  const categoryId = params.categoryid;
   if (!locals.isAuthenticated()) {
     return JsonErrors.unauthorized();
   }

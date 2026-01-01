@@ -1,11 +1,12 @@
 import { JsonErrors } from "$lib/constants.js";
 import { FlattenDocToJSON, getTicketCategories, TicketCategory } from "$lib/server/db";
-import { SnowflakePredicate, ZodValidator } from "$lib/server/validators/index.js";
+import { ZodValidator } from "$lib/server/validators/index.js";
 import { reindexArrayByKey } from "$lib/utils/formatting.js";
+import { SnowflakePredicate } from "$v1Api/assertions";
 import z from "zod";
 
-export async function GET({ locals: { guildId } }) {
-  const cats = await getTicketCategories(guildId!);
+export async function GET({ params }) {
+  const cats = await getTicketCategories(params.guildid);
   return Response.json(cats.sort((a, b) => a.index - b.index).map((cat) => FlattenDocToJSON(cat, true)));
 }
 
@@ -13,8 +14,8 @@ const postSchema = z.object({
   label: z.string().min(3).max(45),
 });
 
-export async function POST({ request, locals }) {
-  const guildId = locals.guildId!;
+export async function POST({ request, locals, params }) {
+  const guildId = params.guildid;
   if (!locals.isAuthenticated()) {
     return JsonErrors.unauthorized();
   }
@@ -56,7 +57,7 @@ const putSchema = z
   })
   .array();
 
-export async function PUT({ request, locals }) {
+export async function PUT({ request, locals, params }) {
   // This endpoint accepts an array of ticket categories to reorder.
   // It expects the request body to be an array of objects with the following structure:
   // { _id: string, guildId: string }
@@ -65,7 +66,7 @@ export async function PUT({ request, locals }) {
     return JsonErrors.unauthorized();
   }
 
-  const guildId = locals.guildId!;
+  const guildId = params.guildid;
   const body = await request.json();
 
   const valRes = new ZodValidator(putSchema).validate(body);

@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { goto, invalidate } from "$app/navigation";
+  import { goto } from "$app/navigation";
   import { page } from "$app/state";
   import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
   import EmojiInput from "$lib/components/EmojiInput.svelte";
   import MentionableSelect from "$lib/components/MentionableSelect.svelte";
+  import SaveAlert from "$lib/components/SaveAlert.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import { EntityType, type ICustomModalField, type ITicketCategory } from "$lib/sm-types";
-  import { ConfigState } from "$lib/stores/ConfigState.svelte";
   import { APIRoutes } from "$lib/urls.js";
   import { cn } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient.js";
@@ -22,36 +22,45 @@
   import * as Popover from "$ui/popover/index.js";
   import * as RadioGroup from "$ui/radio-group/index.js";
   import { Switch } from "$ui/switch";
+  import ArrowDown from "@lucide/svelte/icons/arrow-down";
   import ArrowLeft from "@lucide/svelte/icons/arrow-left";
+  import ArrowUp from "@lucide/svelte/icons/arrow-up";
   import Pencil from "@lucide/svelte/icons/pencil";
   import Plus from "@lucide/svelte/icons/plus";
-  import Save from "@lucide/svelte/icons/save";
   import Trash from "@lucide/svelte/icons/trash";
   import XIcon from "@lucide/svelte/icons/x";
   import equal from "fast-deep-equal/es6";
+  import { onDestroy, untrack } from "svelte";
   import { toast } from "svelte-sonner";
-  import { slide } from "svelte/transition";
 
   let { data } = $props();
 
-  const category = new ConfigState(
-    data.category ? { ...data.category, emoji: data.category.emoji ?? { name: "" } } : null,
-    !data.category,
-  );
+  type CategoryData = DocumentWithId<ITicketCategory>;
+
+  const config = $state({
+    old: null as CategoryData | null,
+    current: null as CategoryData | null,
+    saving: false,
+    loading: false,
+  });
+
+  let unsavedChanges = $derived(!equal(untrack(() => config.old), config.current));
+
   const dialogState = $state({
     new: false,
     edit: false,
   });
+
   let highestPos = $derived(
-    category.config
-      ? category.config.fields.reduce((acc, cur) => {
+    config.current
+      ? config.current.fields.reduce((acc, cur) => {
           if (cur.position > acc) return cur.position;
           return acc;
         }, 0) + 1
       : 1,
   );
 
-  const newField = new ConfigState<Required<ICustomModalField>>({
+  const newField = $state<Required<ICustomModalField>>({
     label: "",
     placeholder: "",
     minL: 0,
@@ -60,29 +69,38 @@
     style: 1,
     _required: false,
   });
-  const editField = new ConfigState<ICustomModalField>();
+
+  const editField = $state({
+    data: null as ICustomModalField | null,
+  });
 
   $effect(() => {
-    if (highestPos !== newField.config!.position) {
-      newField.config!.position = highestPos;
+    if (highestPos !== newField.position) {
+      newField.position = highestPos;
     }
   });
 
-  $inspect("cat loading", category.loading);
+  $effect(() => {
+    if (data.category) {
+      const categoryData = { ...data.category, emoji: data.category.emoji ?? { name: "" } };
+      config.old = { ...categoryData };
+      config.current = { ...categoryData };
+    }
+  });
 
   const labelIsValid = $derived(
-    category.config && category.config.label!.length >= 3 && category.config.label!.length <= 45,
+    config.current && config.current.label!.length >= 3 && config.current.label!.length <= 45,
   );
   const pingUsers = $derived(
-    category.config?.pings?.filter((e) => e.typ === EntityType.user).map((e) => e.id) ?? [],
+    config.current?.pings?.filter((e) => e.typ === EntityType.user).map((e) => e.id) ?? [],
   );
   const pingRoles = $derived(
-    category.config?.pings?.filter((e) => e.typ === EntityType.role).map((e) => e.id) ?? [],
+    config.current?.pings?.filter((e) => e.typ === EntityType.role).map((e) => e.id) ?? [],
   );
 
-  async function saveCategory(categoryId: string) {
-    if (!category.evalUnsaved()) {
-      toast.info("No changes to save.");
+  async function saveCategory() {
+    if (!config.current) {
+      toast.error("No configuration to save.");
       return;
     }
 
@@ -91,9 +109,9 @@
       return;
     }
 
-    category.loading = true;
+    config.saving = true;
 
-    const payload = category.snap() as DocumentWithId<ITicketCategory>;
+    const payload = $state.snapshot(config.current);
     if (payload && payload.emoji?.name === "") {
       payload.emoji = undefined;
     }
@@ -102,7 +120,7 @@
     const { index, ...payloadWithoutIndex } = payload;
 
     try {
-      const res = await apiClient.put(APIRoutes.ticketCategory(page.data.guildId!, categoryId), {
+      const res = await apiClient.put(APIRoutes.ticketCategory(page.params.guildid!, config.current._id), {
         json: payloadWithoutIndex,
       });
 
@@ -111,21 +129,24 @@
         throw new Error(error.message || "Failed to save ticket category.");
       }
 
-      await res.json<DocumentWithId<Omit<ITicketCategory, "_id" | "__v">>>();
+      const _data = await res.json<CategoryData>();
+      config.old = { ..._data };
+      config.current = { ..._data };
       toast.success("Ticket category saved.");
-      category.loading = false;
-      invalidate("ticket-category/" + page.params.categoryid);
     } catch (error: any) {
       toast.error(`Failed to save ticket category: ${error.message}`);
-      category.loading = false;
+    } finally {
+      config.saving = false;
     }
   }
 
-  async function deleteCategory(categoryId: string) {
-    category.loading = true;
+  async function deleteCategory() {
+    if (!config.current) return;
+
+    config.loading = true;
 
     try {
-      const res = await apiClient.delete(APIRoutes.ticketCategory(page.data.guildId!, categoryId));
+      const res = await apiClient.delete(APIRoutes.ticketCategory(page.params.guildid!, config.current._id));
 
       if (!res.ok) {
         const error = await res.json<any>();
@@ -137,7 +158,7 @@
     } catch (error: any) {
       toast.error(`Failed to delete ticket category: ${error.message}`);
     } finally {
-      category.loading = false;
+      config.loading = false;
     }
   }
 
@@ -146,29 +167,29 @@
   }
 
   function handlePingDelete(entityToRemove: any) {
-    if (category.config) {
-      category.config.pings = (category.config.pings ?? []).filter((e) => !equal(e, entityToRemove));
+    if (config.current) {
+      config.current.pings = (config.current.pings ?? []).filter((e) => !equal(e, entityToRemove));
       return true;
     }
     return false;
   }
 
   function handleRoleSelect(role: any) {
-    if (category.config) {
-      if (!category.config.pings) {
-        category.config.pings = [{ typ: EntityType.role, id: role.id }];
+    if (config.current) {
+      if (!config.current.pings) {
+        config.current.pings = [{ typ: EntityType.role, id: role.id }];
       } else {
-        category.config.pings = [...category.config.pings, { typ: EntityType.role, id: role.id }];
+        config.current.pings = [...config.current.pings, { typ: EntityType.role, id: role.id }];
       }
     }
   }
 
   function handleUserSelect(user: any) {
-    if (category.config) {
-      if (!category.config.pings) {
-        category.config.pings = [{ typ: EntityType.user, id: user.id }];
+    if (config.current) {
+      if (!config.current.pings) {
+        config.current.pings = [{ typ: EntityType.user, id: user.id }];
       } else {
-        category.config.pings = [...category.config.pings, { typ: EntityType.user, id: user.id }];
+        config.current.pings = [...config.current.pings, { typ: EntityType.user, id: user.id }];
       }
     }
   }
@@ -176,79 +197,74 @@
   // Field stuff
   function saveField(whichOne: "new" | "edit") {
     if (whichOne === "new") {
-      category.config?.fields.push(newField.snap()!);
+      config.current?.fields.push($state.snapshot(newField));
       dialogState.new = false;
-      newField.setConfig(newField.backup);
+      // Reset newField
+      newField.label = "";
+      newField.placeholder = "";
+      newField.minL = 0;
+      newField.maxL = 100;
+      newField.position = highestPos;
+      newField.style = 1;
+      newField._required = false;
     } else {
       // Find and update the existing field by position
-      const fieldIndex = category.config?.fields.findIndex((f) => f.position === editField.config?.position);
-      if (fieldIndex !== undefined && fieldIndex !== -1 && category.config) {
-        category.config.fields[fieldIndex] = editField.snap()!;
+      const fieldIndex = config.current?.fields.findIndex((f) => f.position === editField.data?.position);
+      if (fieldIndex !== undefined && fieldIndex !== -1 && config.current && editField.data) {
+        config.current.fields[fieldIndex] = $state.snapshot(editField.data);
       }
       dialogState.edit = false;
     }
   }
 
-  // Field reordering state
-  let fieldReorderingEnabled = $state(false);
-  let draggedField: ICustomModalField | null = $state(null);
-  let draggedOverIndex = $state(-1);
+  // Field reordering functions
+  function moveFieldUp(index: number) {
+    if (!config.current || index === 0) return;
 
-  // Field reordering handlers
-  type MyDragEvent = DragEvent & {
-    currentTarget: EventTarget & HTMLLIElement;
-  };
+    const newFields = [...config.current.fields];
+    [newFields[index - 1], newFields[index]] = [newFields[index], newFields[index - 1]];
 
-  function handleFieldDragStart(event: MyDragEvent, field: ICustomModalField, index: number) {
-    if (!fieldReorderingEnabled) {
-      event.preventDefault();
-      return;
+    // Update position values to match new order
+    newFields.forEach((field, idx) => {
+      field.position = idx + 1;
+    });
+
+    config.current.fields = newFields;
+  }
+
+  function moveFieldDown(index: number) {
+    if (!config.current || index === config.current.fields.length - 1) return;
+
+    const newFields = [...config.current.fields];
+    [newFields[index], newFields[index + 1]] = [newFields[index + 1], newFields[index]];
+
+    // Update position values to match new order
+    newFields.forEach((field, idx) => {
+      field.position = idx + 1;
+    });
+
+    config.current.fields = newFields;
+  }
+
+  function resetCfg() {
+    if (config.old && config.current) {
+      config.current = { ...config.old };
     }
-    if (!event.dataTransfer) return;
-
-    draggedField = { ...field, position: index };
-    event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setData("text/html", event.currentTarget.outerHTML);
-    event.currentTarget.style.opacity = "0.5";
   }
 
-  function handleFieldDragEnd(event: MyDragEvent) {
-    event.currentTarget.style.opacity = "1";
-    draggedField = null;
-    draggedOverIndex = -1;
-  }
-
-  function handleFieldDragOver(event: any, index: number) {
-    if (!fieldReorderingEnabled) return;
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
-    draggedOverIndex = index;
-  }
-
-  function handleFieldDragLeave() {
-    draggedOverIndex = -1;
-  }
-
-  function handleFieldDrop(event: MyDragEvent, dropIndex: number) {
-    if (!fieldReorderingEnabled || !category.config) return;
-    event.preventDefault();
-
-    if (draggedField && draggedField.position !== dropIndex) {
-      const newFields = [...category.config.fields];
-      const draggedElement = newFields.splice(draggedField.position, 1)[0];
-      newFields.splice(dropIndex, 0, draggedElement);
-
-      // Update position values to match new order
-      newFields.forEach((field, index) => {
-        field.position = index + 1;
-      });
-
-      category.config.fields = newFields;
-    }
-
-    draggedOverIndex = -1;
-  }
+  onDestroy(resetCfg);
 </script>
+
+<SaveAlert
+    saving={config.saving}
+    unsavedChanges={unsavedChanges}
+    discardChanges={() => {
+      if (config.old && config.current) {
+        config.current = { ...config.old };
+      }
+    }}
+  saveData={saveCategory}
+/>
 
 <div class="container max-w-4xl space-y-6">
   <div class="flex items-center gap-4">
@@ -260,7 +276,7 @@
 
   <SiteHeading title="Edit Ticket Category" subtitle={data.category?.label ?? "Unknown Category"} />
 
-  {#if !category.isConfigured()}
+  {#if !config.current}
     <Card.Root>
       <Card.Content class="pt-6">
         <div class="text-center">
@@ -281,9 +297,9 @@
           <div class="space-y-2">
             <Label for="cat-label">Category Name</Label>
             <Input
-              bind:value={category.config.label}
+              bind:value={config.current.label}
               class={cn(
-                !labelIsValid && category.config.label!.length > 0
+                !labelIsValid && config.current.label!.length > 0
                   ? "border-destructive focus:ring-destructive"
                   : "",
               )}
@@ -294,9 +310,9 @@
               minlength={3}
               maxlength={45}
               aria-invalid={!labelIsValid}
-              disabled={category.loading}
+              disabled={config.loading}
             />
-            {#if !labelIsValid && category.config.label!.length > 0}
+            {#if !labelIsValid && config.current.label!.length > 0}
               <p class="text-destructive text-sm">Name must be between 3 and 45 characters</p>
             {/if}
           </div>
@@ -305,21 +321,25 @@
               <Label for="cat-enabled">Enable Category</Label>
               <p class="text-muted-foreground text-sm">Allow users to create tickets in this category</p>
             </div>
-            <Switch variant="success" bind:checked={category.config.enabled} id="cat-enabled" />
+            <Switch variant="success" bind:checked={config.current.enabled} id="cat-enabled" />
           </div>
           <div class="flex items-center justify-start gap-2">
-            <EmojiInput bind:emoji={category.config.emoji} />
-            {#if EmojiParser.isValid(category.config.emoji)}
-              <Button
-                size="icon"
-                variant="destructive"
-                onclick={() => {
-                  category.config.emoji = { name: "", animated: false, id: "" };
-                }}
-                aria-label="Reset "
-              >
-                <XIcon />
-              </Button>
+            {#if config.current.emoji}
+              <EmojiInput bind:emoji={config.current.emoji} />
+              {#if EmojiParser.isValid(config.current.emoji)}
+                <Button
+                  size="icon"
+                  variant="destructive"
+                  onclick={() => {
+                    if (config.current) {
+                      config.current.emoji = { name: "", animated: false, id: "" };
+                    }
+                  }}
+                  aria-label="Reset "
+                >
+                  <XIcon />
+                </Button>
+              {/if}
             {/if}
           </div>
         </Card.Content>
@@ -338,13 +358,13 @@
           <div
             class="bg-input/30 border-input max-h-40 min-h-20 w-full overflow-y-auto rounded-md border p-3"
           >
-            {#if (category.config.pings ?? []).length === 0}
+            {#if (config.current.pings ?? []).length === 0}
               <p class="text-muted-foreground text-sm">
                 No pings configured. Add users or roles to notify when tickets are created.
               </p>
             {:else}
               <div class="flex flex-wrap gap-2">
-                {#each category.config.pings ?? [] as entity}
+                {#each config.current.pings ?? [] as entity}
                   <Mention
                     class="w-max"
                     userId={entity.typ === EntityType.user ? entity.id : undefined}
@@ -355,7 +375,7 @@
                 <Popover.Root>
                   <Popover.Trigger
                     class={buttonVariants({ variant: "outline", size: "icon", class: "size-7" })}
-                    disabled={category.loading}
+                    disabled={config.loading}
                   >
                     <Plus />
                   </Popover.Trigger>
@@ -383,61 +403,60 @@
         </Card.Description>
       </Card.Header>
       <Card.Content class="space-y-2">
-        {#if category.config.fields.length > 0}
-          {#if category.config.fields.length > 1}
-            <div class="mb-4">
-              <Label class="w-fit">
-                <Checkbox bind:checked={fieldReorderingEnabled} />
-                Enable field reordering
-              </Label>
-            </div>
-          {/if}
+        {#if config.current.fields.length > 0}
           <ul class="flex max-w-2xl flex-col gap-1">
-            {#each category.config.fields as field, index (field.position)}
+            {#each config.current.fields as field, index (field.position)}
               <li
                 class={cn(
-                  "bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/70 flex h-16 flex-row items-center gap-3 rounded border p-3 shadow-xs transition duration-100 select-none",
-                  draggedOverIndex === index && "border-primary dark:border-primary scale-101 border-2",
-                  fieldReorderingEnabled ? "cursor-grab hover:-translate-y-0.5" : "cursor-default",
+                  "bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/70 flex h-16 flex-row items-center gap-3 rounded border p-3 shadow-xs transition duration-100",
                 )}
-                draggable={fieldReorderingEnabled}
-                ondragstart={(event) => handleFieldDragStart(event, field, index)}
-                ondragend={handleFieldDragEnd}
-                ondragover={(event) => handleFieldDragOver(event, index)}
-                ondragleave={handleFieldDragLeave}
-                ondrop={(event) => handleFieldDrop(event, index)}
               >
-                {#if fieldReorderingEnabled}
-                  <span
-                    class="drag-handle text-muted-foreground"
-                    transition:slide={{ duration: 150, axis: "x" }}>⋮⋮</span
-                  >
-                {/if}
                 <Badge variant="outline">{field.position}</Badge>
-                <span>{field.label}</span>
-                {#if !fieldReorderingEnabled}
-                  <Button
-                    class="ml-auto"
-                    onclick={() => {
-                      editField.setConfig($state.snapshot(category.config.fields[index]));
-                      dialogState.edit = true;
-                    }}
-                  >
-                    <Pencil />
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onclick={() => {
-                      if (confirm("Do you really want to delete this field?")) {
-                        category.config!.fields = category
-                          .snap()!
-                          .fields.filter((f) => f.position !== field.position);
-                      }
-                    }}
-                  >
-                    <Trash />
-                  </Button>
+                <span class="flex-1">{field.label}</span>
+                
+                {#if config.current.fields.length > 1}
+                  <div class="flex gap-1">
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onclick={() => moveFieldUp(index)}
+                      disabled={index === 0 || config.loading}
+                      title="Move up"
+                    >
+                      <ArrowUp class="size-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onclick={() => moveFieldDown(index)}
+                      disabled={index === config.current.fields.length - 1 || config.loading}
+                      title="Move down"
+                    >
+                      <ArrowDown class="size-4" />
+                    </Button>
+                  </div>
                 {/if}
+                
+                <Button
+                  onclick={() => {
+                    if (config.current) {
+                      editField.data = $state.snapshot(config.current.fields[index]);
+                      dialogState.edit = true;
+                    }
+                  }}
+                >
+                  <Pencil />
+                </Button>
+                <Button
+                  variant="destructive"
+                  onclick={() => {
+                    if (confirm("Do you really want to delete this field?")) {
+                      config.current!.fields = config.current!.fields.filter((f) => f.position !== field.position);
+                    }
+                  }}
+                >
+                  <Trash />
+                </Button>
               </li>
             {/each}
           </ul>
@@ -445,14 +464,19 @@
           <p class="text-muted-foreground mb-3 text-sm">No fields added.</p>
         {/if}
 
-        {#if category.config.fields.length < 5}
+        {#if config.current.fields.length < 5}
           <Dialog.Root
             bind:open={dialogState.new}
             onOpenChangeComplete={(opn) => {
               if (!opn) {
-                newField.saveConfig({
-                  ...newField.backup!,
-                });
+                // Reset newField on close
+                newField.label = "";
+                newField.placeholder = "";
+                newField.minL = 0;
+                newField.maxL = 100;
+                newField.position = highestPos;
+                newField.style = 1;
+                newField._required = false;
               }
             }}
           >
@@ -478,7 +502,7 @@
                     required
                     type="text"
                     id="new-label"
-                    bind:value={newField.config!.label}
+                    bind:value={newField.label}
                     placeholder="The question to ask"
                     minlength={3}
                     maxlength={45}
@@ -490,7 +514,7 @@
                   <Input
                     type="text"
                     id="new-ph"
-                    bind:value={newField.config!.placeholder}
+                    bind:value={newField.placeholder}
                     placeholder="The placeholder to show"
                     minlength={0}
                     maxlength={100}
@@ -501,8 +525,8 @@
                   <Label for="new-style">Style</Label>
                   <RadioGroup.Root
                     bind:value={
-                      () => (newField.config!.style === 1 ? "short" : "long"),
-                      (v: "short" | "long") => (newField.config!.style = v === "short" ? 1 : 2)
+                      () => (newField.style === 1 ? "short" : "long"),
+                      (v: "short" | "long") => (newField.style = v === "short" ? 1 : 2)
                     }
                   >
                     <div class="flex items-center space-x-2">
@@ -519,17 +543,17 @@
                 <div class="flex w-full max-w-sm flex-col gap-1.5">
                   <div class="flex w-full max-w-sm flex-col gap-1">
                     <Label>Minimum Input Length</Label>
-                    <Input type="number" min={0} max={4000} bind:value={newField.config!.minL} />
+                    <Input type="number" min={0} max={4000} bind:value={newField.minL} />
                   </div>
                   <div class="flex w-full max-w-sm flex-col gap-1">
                     <Label>Maximum Input Length</Label>
-                    <Input type="number" min={1} max={4000} bind:value={newField.config!.maxL} />
+                    <Input type="number" min={1} max={4000} bind:value={newField.maxL} />
                   </div>
                 </div>
 
                 <div class="flex w-full max-w-sm flex-col gap-1.5">
                   <Label for="new-required">
-                    <Checkbox bind:checked={newField.config!._required} id="new-required" />
+                    <Checkbox bind:checked={newField._required} id="new-required" />
                     Required
                   </Label>
                   <p class="text-muted-foreground text-sm">
@@ -551,7 +575,7 @@
       bind:open={dialogState.edit}
       onOpenChangeComplete={(opn) => {
         if (!opn) {
-          editField.clear();
+          editField.data = null;
         }
       }}
     >
@@ -560,7 +584,7 @@
           <Dialog.Title>Edit field</Dialog.Title>
         </Dialog.Header>
 
-        {#if editField.config}
+        {#if editField.data}
           <form
             class="flex flex-col gap-6"
             onsubmit={(e) => {
@@ -574,7 +598,7 @@
                 required
                 type="text"
                 id="edit-label"
-                bind:value={editField.config.label}
+                bind:value={editField.data.label}
                 placeholder="The question to ask"
                 minlength={3}
                 maxlength={45}
@@ -586,7 +610,7 @@
               <Input
                 type="text"
                 id="edit-ph"
-                bind:value={editField.config.placeholder}
+                bind:value={editField.data.placeholder}
                 placeholder="The placeholder to show"
                 minlength={0}
                 maxlength={100}
@@ -597,8 +621,8 @@
               <Label for="edit-style">Style</Label>
               <RadioGroup.Root
                 bind:value={
-                  () => (editField.config!.style === 1 ? "short" : "long"),
-                  (v: "short" | "long") => (editField.config!.style = v === "short" ? 1 : 2)
+                  () => (editField.data!.style === 1 ? "short" : "long"),
+                  (v: "short" | "long") => (editField.data!.style = v === "short" ? 1 : 2)
                 }
               >
                 <div class="flex items-center space-x-2">
@@ -615,17 +639,17 @@
             <div class="flex w-full max-w-sm flex-col gap-1.5">
               <div class="flex w-full max-w-sm flex-col gap-1">
                 <Label>Minimum Input Length</Label>
-                <Input type="number" min={0} max={4000} bind:value={editField.config.minL} />
+                <Input type="number" min={0} max={4000} bind:value={editField.data.minL} />
               </div>
               <div class="flex w-full max-w-sm flex-col gap-1">
                 <Label>Maximum Input Length</Label>
-                <Input type="number" min={1} max={4000} bind:value={editField.config.maxL} />
+                <Input type="number" min={1} max={4000} bind:value={editField.data.maxL} />
               </div>
             </div>
 
             <div class="flex w-full max-w-sm flex-col gap-1.5">
               <Label for="edit-required">
-                <Checkbox bind:checked={editField.config._required} id="edit-required" />
+                <Checkbox bind:checked={editField.data._required} id="edit-required" />
                 Required
               </Label>
               <p class="text-muted-foreground text-sm">
@@ -650,10 +674,10 @@
         <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
           <AreYouSureDialog
             title="Are you absolutely sure?"
-            description="Are you sure you want to delete **{category.config
+            description="Are you sure you want to delete **{config.current
               .label}**? This action cannot be undone."
-            onYes={() => deleteCategory(category.config._id)}
-            disabled={category.loading}
+            onYes={deleteCategory}
+            disabled={config.loading}
           >
             <div
               class={buttonVariants({
@@ -665,22 +689,6 @@
               Delete Category
             </div>
           </AreYouSureDialog>
-
-          <Button
-            onclick={() => saveCategory(category.config._id)}
-            disabled={category.loading || !labelIsValid}
-            class="sm:w-auto"
-          >
-            {#if category.loading}
-              <div
-                class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-              ></div>
-              Saving...
-            {:else}
-              <Save class="mr-0.5 size-4" />
-              Save Changes
-            {/if}
-          </Button>
         </div>
       </Card.Content>
     </Card.Root>

@@ -1,31 +1,38 @@
 <script lang="ts">
-  import { invalidate } from "$app/navigation";
   import { page } from "$app/state";
   import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
+  import SaveAlert from "$lib/components/SaveAlert.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
-  import type { ITicketCategory } from "$lib/sm-types";
-  import { ConfigState } from "$lib/stores/ConfigState.svelte";
+  import type { APITicketCategory, ITicketCategory } from "$lib/sm-types";
   import { APIRoutes } from "$lib/urls";
   import { cn } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
+  import { receive, send } from "$lib/utils/transition";
   import { Badge } from "$ui/badge/index.js";
   import { Button, buttonVariants } from "$ui/button";
-  import { Checkbox } from "$ui/checkbox";
   import * as Dialog from "$ui/dialog/index.js";
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
+  import ArrowDown from "@lucide/svelte/icons/arrow-down";
+  import ArrowUp from "@lucide/svelte/icons/arrow-up";
   import Pencil from "@lucide/svelte/icons/pencil";
   import Plus from "@lucide/svelte/icons/plus";
-  import Save from "@lucide/svelte/icons/save";
   import Trash from "@lucide/svelte/icons/trash";
-  import { onMount } from "svelte";
+  import equal from "fast-deep-equal/es6";
+  import { onDestroy, onMount, untrack } from "svelte";
   import { toast } from "svelte-sonner";
-  import { slide } from "svelte/transition";
+  import { flip } from "svelte/animate";
+  import { cubicOut } from "svelte/easing";
 
-  let { data } = $props();
+  const config = $state({
+    old: null as APITicketCategory[] | null,
+    current: null as APITicketCategory[] | null,
+    saving: false,
+    loading: true,
+  });
 
-  const categories = new ConfigState(data.categories, false);
+  let unsavedChanges = $derived(!equal(untrack(() => config.old), config.current));
 
   class NewCategory {
     open = $state(false);
@@ -41,61 +48,47 @@
   }
   const newCategory = new NewCategory();
 
-  async function createCategory() {
+  function createCategory() {
     if (!newCategory.isValid) {
       toast.error("Category Name must be between 3 and 45 characters long");
       return;
     }
 
-    categories.loading = true;
+    
+    config.current = [
+      ...(config.current ?? []),
+      {
+        local: true,
+        _id: new Date().toISOString(),
+        guildId: page.params.guildid!,
+        label: newCategory.label,
+        index: (config.current?.length ?? 0) + 1,
+        fields: [],
+        enabled: true,
+      },
+    ];
+    config.current.sort((a, b) => a.index - b.index);
 
-    try {
-      const res = await apiClient.post(APIRoutes.ticketCategories(page.data.guildId!), {
-        json: {
-          label: $state.snapshot(newCategory.label),
-        },
-      });
-
-      if (!res.ok) {
-        const error = await res.json<any>();
-        throw new Error(error.message || "Failed to save ticket configuration.");
-      }
-
-      const json = await res.json<DocumentWithId<Omit<ITicketCategory, "_id" | "__v">>>();
-      categories.saveConfig([...(categories.config ?? []), json]);
-      newCategory.reset();
-      toast.success("Ticket category created.");
-      categories.loading = false;
-      // invalidate("ticket-categories");
-    } catch (error: any) {
-      toast.error(`Failed to save ticket configuration: ${error.message}`);
-      return;
-    } finally {
-      categories.loading = false;
-    }
+    newCategory.reset();
+    toast.success(`Category "${newCategory.label}" created.`);
   }
 
   async function saveCategories() {
-    const current = categories.snap();
-    const currentOrder = current?.map((c) => c._id).join() ?? "";
-    const oldOrder = categories.backup?.map((c) => c._id).join() ?? "";
-
-    if (currentOrder === oldOrder) {
-      toast.info("Nothing to save.");
+    if (!config.current) {
+      toast.error("No configuration to save.");
       return;
     }
 
-    categories.loading = true;
+    config.saving = true;
 
     try {
-      const res = await apiClient.put(APIRoutes.ticketCategories(page.data.guildId!), {
-        json:
-          current
-            ?.sort((a, b) => a.index - b.index)
-            .map((cat) => ({
-              _id: cat._id,
-              guildId: cat.guildId,
-            })) ?? [],
+      const res = await apiClient.put(APIRoutes.ticketCategories(page.params.guildid!), {
+        json: config.current
+          .sort((a, b) => a.index - b.index)
+          .map((cat) => ({
+            _id: cat._id,
+            guildId: cat.guildId,
+          })),
       });
 
       if (!res.ok) {
@@ -103,201 +96,190 @@
         throw new Error(error.message || "Failed to save ticket categories.");
       }
 
+      const _data = await res.json<APITicketCategory[]>();
+      config.old = [..._data];
+      config.current = [..._data];
       toast.success("Ticket categories saved.");
-      categories.loading = false;
-      invalidate("ticket-categories");
     } catch (error: any) {
       toast.error(`Failed to save ticket categories: ${error.message}`);
-      categories.loading = false;
+    } finally {
+      config.saving = false;
     }
   }
 
   async function deleteCategory(categoryId: string) {
-    categories.loading = true;
+    config.loading = true;
 
     try {
-      const res = await apiClient.delete(APIRoutes.ticketCategory(page.data.guildId!, categoryId));
+      const res = await apiClient.delete(APIRoutes.ticketCategory(page.params.guildid!, categoryId));
 
       if (!res.ok) {
         const error = await res.json<any>();
         throw new Error(error.message || "Failed to delete ticket category.");
       }
 
+      if (config.current) {
+        config.current = config.current.filter((cat) => cat._id !== categoryId);
+        config.old = [...config.current];
+      }
       toast.success("Ticket category deleted.");
-      categories.loading = false;
-      invalidate("ticket-categories");
     } catch (error: any) {
       toast.error(`Failed to delete ticket category: ${error.message}`);
     } finally {
-      categories.loading = false;
+      config.loading = false;
     }
   }
 
-  // Dragging utils //
+  // Reordering functions //
 
-  let draggedItem: DocumentWithId<Omit<ITicketCategory, "_id" | "__v">> | null = $state(null);
-  let draggedOverIndex = $state(-1);
-  let reorderingEnabled = $state(false);
+  function moveUp(index: number) {
+    if (!config.current || index === 0) return;
 
-  type MyDragEvent = DragEvent & {
-    currentTarget: EventTarget & HTMLLIElement;
-  };
+    const newItems = [...config.current];
+    [newItems[index - 1], newItems[index]] = [newItems[index], newItems[index - 1]];
 
-  function handleDragStart(
-    event: MyDragEvent,
-    item: DocumentWithId<Omit<ITicketCategory, "_id" | "__v">>,
-    index: number,
-  ) {
-    if (!reorderingEnabled) {
-      event.preventDefault();
-      return;
-    }
-    if (!event.dataTransfer) return;
+    // Update index values to match new order
+    newItems.forEach((item, idx) => {
+      item.index = idx + 1;
+    });
 
-    draggedItem = { ...item, index };
-    event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setData("text/html", event.currentTarget.outerHTML);
-    event.currentTarget.style.opacity = "0.5";
+    config.current = newItems;
   }
 
-  function handleDragEnd(event: MyDragEvent) {
-    event.currentTarget.style.opacity = "1";
-    draggedItem = null;
-    draggedOverIndex = -1;
-  }
+  function moveDown(index: number) {
+    if (!config.current || index === config.current.length - 1) return;
 
-  function handleDragOver(event: any, index: number) {
-    if (!reorderingEnabled) return;
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
-    draggedOverIndex = index;
-  }
+    const newItems = [...config.current];
+    [newItems[index], newItems[index + 1]] = [newItems[index + 1], newItems[index]];
 
-  function handleDragLeave() {
-    draggedOverIndex = -1;
-  }
+    // Update index values to match new order
+    newItems.forEach((item, idx) => {
+      item.index = idx + 1;
+    });
 
-  function handleDrop(event: MyDragEvent, dropIndex: number) {
-    if (!reorderingEnabled || !categories.isConfigured()) return;
-    event.preventDefault();
-
-    if (draggedItem && draggedItem.index !== dropIndex) {
-      const newItems = [...categories.config];
-      const draggedElement = newItems.splice(draggedItem.index, 1)[0];
-      newItems.splice(dropIndex, 0, draggedElement);
-
-      // Update position values to match new order
-      newItems.forEach((item, index) => {
-        item.index = index + 1;
-      });
-
-      categories.setConfig(newItems);
-    }
-
-    draggedOverIndex = -1;
+    config.current = newItems;
   }
 
   $effect(() => {
     const labels = new Set();
-    for (const cat of categories.config ?? []) {
+    for (const cat of config.current ?? []) {
       if (!labels.has(cat.label)) {
         labels.add(cat.label);
       } else {
         toast.error(`Category label "${cat.label}" already exists.`);
-        categories.loading = false;
+        config.loading = false;
         return;
       }
     }
   });
 
-  onMount(() => {
-    fetch(APIRoutes.ticketCategories(page.data.guildId!))
-      .then((res) => {
-        if (!res.ok) {
-          toast.error("Failed to load ticket categories.", {
-            description: "Please try again later.",
-          });
-          return;
-        }
-        res.json().then((data: DocumentWithId<ITicketCategory>[]) => {
-          categories.saveConfig(data);
-        });
-      })
-      .catch((err) => {
-        toast.error("Failed to load ticket categories.", {
-          description: err.message,
-        });
-      });
+  onMount(async () => {
+    try {
+      const res = await apiClient.get<APITicketCategory[]>(
+        APIRoutes.ticketCategories(page.params.guildid!),
+      );
 
-    return () => {
-      console.log("Cleaning up ticket categories state");
-      categories.clear();
-    };
+      if (!res.ok) {
+        const error = await res.json<any>();
+        throw new Error(error.message || "Failed to load ticket categories.");
+      }
+
+      const data = await res.json();
+      config.old = [...data];
+      config.current = [...data];
+    } catch (err: any) {
+      toast.error("Failed to load ticket categories.", {
+        description: err.message,
+      });
+    } finally {
+      config.loading = false;
+    }
   });
+
+  function resetCfg() {
+    if (config.old && config.current) {
+      config.current = [...config.old];
+    }
+  }
+
+  onDestroy(resetCfg);
 </script>
 
 <SiteHeading title="Ticket Categories" />
 
-{#if categories.isConfigured()}
+<SaveAlert
+  saving={config.saving}
+  unsavedChanges={unsavedChanges}
+  discardChanges={() => {
+    if (config.old && config.current) {
+      config.current = [...config.old];
+    }
+  }}
+  saveData={saveCategories}
+/>
+
+{#if config.current}
   <div class="flex w-full max-w-2xl flex-col justify-start gap-1.5">
-    {#if categories.config && categories.config.length > 1}
-      <div class="pb-4">
-        <Label class="w-fit">
-          <Checkbox bind:checked={reorderingEnabled} />
-          Enable reordering
-        </Label>
-      </div>
-    {/if}
     <ul class="flex w-full flex-col gap-1">
-      {#each categories.config as cat, index (cat.index)}
+      {#each config.current as cat, index (cat._id)}
         <li
           class={cn(
-            "bg-background hover:text-accent-foreground dark:bg-input/30  flex h-16 flex-row items-center gap-3 rounded-lg border p-3 shadow-xs transition duration-100 select-none",
-            draggedOverIndex === index && "border-primary dark:border-primary scale-101 border-2",
-            reorderingEnabled
-              ? "hover:bg-accent dark:hover:bg-input/50 cursor-grab hover:-translate-y-0.5"
-              : "cursor-default",
+            "bg-background hover:text-accent-foreground dark:bg-input/30 flex h-16 flex-row items-center gap-3 rounded-lg border p-3 shadow-xs transition duration-100",
           )}
-          draggable={reorderingEnabled}
-          ondragstart={(event) => handleDragStart(event, cat, index)}
-          ondragend={handleDragEnd}
-          ondragover={(event) => handleDragOver(event, index)}
-          ondragleave={handleDragLeave}
-          ondrop={(event) => handleDrop(event, index)}
+          animate:flip={{ duration: 200, easing: cubicOut }}
         >
-          {#if reorderingEnabled}
-            <span class="drag-handle" transition:slide={{ duration: 150, axis: "x" }}>⋮⋮</span>
-          {/if}
           <Badge variant="outline">{cat.index}</Badge>
-          <span>{cat.label}</span>
-          {#if !reorderingEnabled}
-            <Button class="ml-auto" href={page.data.guildHref(`/ticket-categories/${cat._id}`)}>
-              <Pencil />
-            </Button>
-            <AreYouSureDialog
-              title="Are you absolutely sure?"
-              description="Are you sure you want to delete **{cat.label}**? This action cannot be undone."
-              onYes={() => deleteCategory(cat._id)}
-              disabled={categories.loading}
-            >
-              <div
-                class={buttonVariants({
-                  variant: "destructive",
-                  class: "sm:w-auto",
-                })}
+          <span class="flex-1">{cat.label}</span>
+          
+          {#if config.current.length > 1}
+            <div class="flex gap-1">
+              <Button
+                size="icon"
+                variant="outline"
+                onclick={() => moveUp(index)}
+                disabled={index === 0 || config.loading}
+                title="Move up"
               >
-                <Trash />
-              </div>
-            </AreYouSureDialog>
+                <ArrowUp class="size-4" />
+              </Button>
+              <Button
+                size="icon"
+                variant="outline"
+                onclick={() => moveDown(index)}
+                disabled={index === config.current.length - 1 || config.loading}
+                title="Move down"
+              >
+                <ArrowDown class="size-4" />
+              </Button>
+            </div>
           {/if}
+          
+          <Button href={page.data.guildHref(`/ticket-categories/${cat._id}`)}>
+            <Pencil />
+          </Button>
+          <AreYouSureDialog
+            title="Are you absolutely sure?"
+            description="Are you sure you want to delete **{cat.label}**? This action cannot be undone."
+            onYes={() => deleteCategory(cat._id)}
+            disabled={config.loading}
+          >
+            <div
+              class={buttonVariants({
+                variant: "destructive",
+                class: "sm:w-auto",
+              })}
+            >
+              <Trash />
+            </div>
+          </AreYouSureDialog>
         </li>
       {/each}
-      {#if categories.config.length === 0}
+      {#if config.current.length === 0}
         <li class="text-muted-foreground my-2 text-sm">No categories configured.</li>
       {/if}
     </ul>
     <div class="flex gap-2">
-      {#if categories.config.length < 10}
+      {#if config.current.length < 10}
         <Dialog.Root bind:open={newCategory.open}>
           <Dialog.Trigger class={buttonVariants({ variant: "outline", class: "flex-1" })}>
             <Plus class="size-7" />
@@ -309,9 +291,10 @@
             </Dialog.Header>
             <form
               class="flex w-full flex-col gap-1.5"
-              onsubmit={async (e) => {
+              onsubmit={(e) => {
                 e.preventDefault();
-                await createCategory();
+                createCategory();
+                
               }}
             >
               <Label for="new-cat-name">Category Name</Label>
@@ -322,6 +305,7 @@
                     ? "border-destructive-foreground ring-destructive-foreground"
                     : "border-success-foreground ring-success-foreground",
                 )}
+                required
                 type="text"
                 autocomplete="off"
                 id="new-cat-name"
@@ -336,17 +320,6 @@
             </form>
           </Dialog.Content>
         </Dialog.Root>
-      {/if}
-      {#if categories.config.length > 0}
-        <Button
-          class="flex-1"
-          onclick={saveCategories}
-          disabled={categories.loading}
-          showLoading={categories.loading}
-        >
-          <Save class="mr-0.5 size-4" />
-          Save
-        </Button>
       {/if}
     </div>
   </div>

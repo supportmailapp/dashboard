@@ -9,4 +9,3 @@ bun.lockb
 dist/
 build/
 .svelte-kit/
-src/lib/sm-types/
