@@ -9,7 +9,6 @@
   import apiClient from "$lib/utils/apiClient";
   import Separator from "$ui/separator/separator.svelte";
   import dayjs from "dayjs";
-  import equal from "fast-deep-equal/es6";
   import { onDestroy, onMount, untrack } from "svelte";
   import { toast } from "svelte-sonner";
   import type { TicketsPUTFields } from "../../../api/v1/guilds/[guildid]/config/tickets/+server";
@@ -18,6 +17,7 @@
   import ResetStuff from "./ResetStuff.svelte";
   import SystemControl from "./SystemControl.svelte";
   import TicketForumCard from "./TicketForumCard.svelte";
+  import { determineUnsavedChanges } from "$lib/utils";
 
   type TicketConfig = DBGuildProjectionReturns["generalTicketSettings"];
 
@@ -34,7 +34,7 @@
   });
 
   let showDateError = $state(false);
-  let unsavedChanges = $derived(!equal(untrack(() => config.old), config.current));
+  let unsavedChanges = $derived(determineUnsavedChanges(untrack(() => config.old), config.current));
 
   async function saveFn() {
     if (!config.current) {
