@@ -7,9 +7,10 @@
   "bracketSpacing": true,
   "printWidth": 110,
   "plugins": ["prettier-plugin-svelte", "prettier-plugin-tailwindcss"],
+  "bracketSameLine": false,
   "overrides": [
     {
-      "files": "*.svelte",
+      "files": ["*.svelte"],
       "options": {
         "parser": "svelte"
       }
