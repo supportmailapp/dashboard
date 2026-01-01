@@ -6,8 +6,12 @@
   import { site } from "$stores/site.svelte";
   import { ModeWatcher } from "mode-watcher";
   import { Toaster } from "$ui/sonner/index.js";
+  import { getManager, setManager } from "$lib/stores/GuildsManager.svelte";
 
   let { children, data } = $props();
+
+  setManager();
+  const guildsManager = getManager();
 
   onMount(async function () {
     if (!data.user) {
@@ -17,6 +21,11 @@
         goto("/login");
       }
       return;
+    }
+
+    
+    if (!guildsManager.loaded) {
+      guildsManager.loadGuilds();
     }
   });
 

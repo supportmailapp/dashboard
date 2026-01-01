@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
+  import { getManager } from "$lib/stores/GuildsManager.svelte";
   import { cn } from "$lib/utils";
   import type { Snippet } from "svelte";
   import { onMount } from "svelte";
@@ -30,6 +31,7 @@
 
   let h1Element: HTMLHeadingElement;
   let hasBeenViewed = $state(false);
+  const guildsManager = getManager();
 
   onMount(() => {
     const observer = new IntersectionObserver(
@@ -54,7 +56,7 @@
 </script>
 
 <svelte:head>
-  <title>{title} | {page.data.guildsManager.currentGuild?.name ?? "..."}</title>
+  <title>{title} | {guildsManager.currentGuild?.name ?? "..."}</title>
 </svelte:head>
 
 <section class="mb-6 h-fit w-full max-w-2xl space-y-3" class:text-center={centered}>

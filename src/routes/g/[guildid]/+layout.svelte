@@ -1,6 +1,6 @@
 <script lang="ts">
   import { browser } from "$app/environment";
-  import { afterNavigate, beforeNavigate } from "$app/navigation";
+  import { beforeNavigate } from "$app/navigation";
   import { page } from "$app/state";
   import AppSidebar from "$lib/components/app-sidebar.svelte";
   import { cdnUrls } from "$lib/urls";
@@ -15,11 +15,14 @@
   import Mounter from "./Mounter.svelte";
   import ServerSelector from "./ServerSelector.svelte";
   import { mode } from "mode-watcher";
+  import { untrack } from "svelte";
+  import { getManager } from "$lib/stores/GuildsManager.svelte";
 
   let { children } = $props();
 
   let sidebarOpen = $state(true);
-  let currentGuild = $derived(page.data.guildsManager.currentGuild);
+  let guildsManager = getManager();
+  let currentGuild = $derived(guildsManager.currentGuild);
   let guildsSelectOpen = $state(false);
 
   const isMobile = new IsMobile();
@@ -28,12 +31,18 @@
     if (browser && innerWidth.current) {
       sidebarOpen = innerWidth.current >= 768;
     }
-    if (!page.data.guildsManager.loaded) page.data.guildsManager.loadGuilds();
 
     return () => {
       console.log("Clearing current guild...");
       sidebarOpen = false;
     };
+  });
+
+   $effect(() => {
+    if (guildsManager.loaded) {
+      untrack(() => guildsManager.loadChannels());
+      untrack(() => guildsManager.loadRoles());
+    }
   });
 
   beforeNavigate((nav) => {

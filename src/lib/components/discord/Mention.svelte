@@ -1,11 +1,13 @@
 <script lang="ts">
   import "./mentions.css";
-  import type { ClassValue } from "clsx";
+  import type { ClassValue } from "svelte/elements";
   import Channel from "./Channel.svelte";
   import Role from "./Role.svelte";
-  import User from "./User.svelte";
   import MentionActions from "./MentionActions.svelte";
   import { toast } from "svelte-sonner";
+  import "./mentions.css";
+  import User from "./User.svelte";
+  import type { APIRole, APIUser } from "discord-api-types/v10";
 
   // Component wrapper for colors and copy & delete button
   type Props = {
@@ -16,14 +18,14 @@
      * This function should return a boolean or a Promise that resolves to a boolean,
      * indicating whether the deletion was successful or not.
      */
-    onDelete?: (id: string) => boolean | Promise<boolean>;
+    onDelete?: (id: string) => any;
     channel?: GuildCoreChannel;
     /**
      * Channel ID as a fallback.
      */
     channelId?: string;
-    userId?: string;
     roleId?: string;
+    userId?: string;
     /**
      * Whether to display a fallback.
      *
@@ -43,9 +45,9 @@
 
   let {
     roleId,
+    userId,
     channel,
     channelId,
-    userId,
     class: className,
     onDelete = () => !!toast.error("This function is not set, please report this bug."),
     fallback = false,
@@ -75,7 +77,7 @@
     <Channel {channel} class={className} {channelId} />
   {/if}
 
-  {#if roleId || channel || userId || channelId}
-    <MentionActions bind:hovered id={roleId ?? channel?.id ?? userId ?? channelId} {onDelete} {buttons} />
+  {#if (userId || roleId || channel || channelId) && buttons !== "none"}
+    <MentionActions bind:hovered id={userId ?? roleId ?? channel?.id ?? channelId} {onDelete} {buttons} />
   {/if}
 </div>

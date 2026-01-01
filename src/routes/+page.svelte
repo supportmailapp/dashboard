@@ -5,6 +5,7 @@
   import Branding from "$lib/assets/Branding.svelte";
   import BackgroundImage from "$lib/components/BackgroundImage.svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
+  import { getManager } from "$lib/stores/GuildsManager.svelte";
   import { site } from "$lib/stores/site.svelte";
   import { LegalLinks } from "$lib/urls";
   import * as Card from "$ui/card/index.js";
@@ -16,9 +17,10 @@
   let loading = $derived(site.showLoading);
   let hrefAfterLogin = $state<string | null>(null);
   let hrefAfterSelection = $state<string>("/home");
+  const guildsManager = getManager();
 
   $effect(() => {
-    if (page.data.guildsManager.loaded) {
+    if (guildsManager.loaded) {
       site.showLoading = false;
     } else {
       site.showLoading = true;
@@ -61,9 +63,9 @@
 
   let mounted = false;
   $effect(() => {
-    if (!page.data.guildsManager.guilds.length && !mounted) {
+    if (!guildsManager.guilds.length && !mounted) {
       mounted = true;
-      page.data.guildsManager.loadGuilds();
+      guildsManager.loadGuilds();
     }
   });
 
@@ -82,7 +84,7 @@
       <Branding />
     </Card.Header>
     <Card.Content class="flex min-h-0 flex-1 flex-col">
-      {#if loading || page.data.guildsManager.guilds.length === 0}
+      {#if loading || guildsManager.guilds.length === 0}
         <div
           class="grid h-full w-full place-items-center py-3"
           transition:slide={{ duration: 200, axis: "x" }}

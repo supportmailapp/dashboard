@@ -28,7 +28,7 @@
     child,
   }: Props = $props();
 
-  const htmlDescription = description ? new MarkdownFormatter(description).toHTML() : undefined;
+  let htmlDescription = $derived(description ? new MarkdownFormatter(description).toHTML() : undefined);
 </script>
 
 <AlertDialog.Root bind:open>

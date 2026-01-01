@@ -12,6 +12,7 @@
   let { userId, class: className }: Props = $props();
 
   let userMention = $derived(mentionUsers.get(userId));
+  let displayName = $derived(userMention?.global_name || userMention?.username || "Unknown User");
   let triggeredUserFetch = false;
 
   $inspect("m user", userMention);
@@ -25,9 +26,7 @@
   });
 </script>
 
-<div data-slot="mention-container" class={cn(className)} data-user-id={userId}>
+<div data-slot="mention-container" class={cn("flex items-center gap-1", className)} data-user-id={userId}>
   <AtSign class="size-3.5" />
-  <span class="text-sm font-medium">
-    {userMention?.global_name ?? userMention?.username ?? "unknown-user"}
-  </span>
+  <span class="text-sm font-medium">{displayName}</span>
 </div>

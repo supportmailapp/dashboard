@@ -4,7 +4,6 @@
   import SettingsGrid from "$lib/components/SettingsGrid.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import type { DBGuildProjectionReturns } from "$lib/server/db";
-  import { ConfigState } from "$lib/stores/ConfigState.svelte";
   import { APIRoutes } from "$lib/urls";
   import { deepClone } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
@@ -17,7 +16,9 @@
   import MentionableSelectCard from "./MentionableSelectCard.svelte";
   import SystemControl from "./SystemControl.svelte";
   import equal from "fast-deep-equal/es6";
+  import { getManager } from "$lib/stores/GuildsManager.svelte";
 
+  const guildsManager = getManager();
   const reportsConfig = new ConfigState<DBGuildProjectionReturns["reportSettings"]>();
   const pauseState = new ConfigState<TPauseState>({
     pausedUntil: { date: null, value: false },
@@ -152,7 +153,7 @@
   };
 
   function setChannel(channelId?: string) {
-    reportChannel = channelId ? page.data.guildsManager.channels?.find((c) => c.id === channelId) : undefined;
+    reportChannel = channelId ? guildsManager.channels?.find((c) => c.id === channelId) : undefined;
   }
 
   onMount(() => {

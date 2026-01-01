@@ -14,6 +14,7 @@
   import * as Tabs from "$ui/tabs/index.js";
   import { toast } from "svelte-sonner";
   import ChannelIcon from "./discord/ChannelIcon.svelte";
+  import { getManager } from "$lib/stores/GuildsManager.svelte";
 
   type Props = {
     selected?: GuildCoreChannel;
@@ -48,13 +49,14 @@
   // This not only covers the case where the input is the same, but also when empty
   let buttonDisabled = $derived(oldFetchInput == $state.snapshot(channelIdInput));
   let channelButtonStyle = $state<"success" | "default">("default");
+  const guildsManager = getManager();
 
   function isChannelExcluded(channel: GuildCoreChannel): boolean {
     return excludedChannelIds !== undefined && excludedChannelIds.includes(channel.id);
   }
 
   let filteredChannels = $derived<GuildCoreChannel[]>(
-    page.data.guildsManager.channels?.filter(
+    guildsManager.channels?.filter(
       (channel) => (allowAllChannels || channelTypes.includes(channel.type)) && !isChannelExcluded(channel),
     ) ?? [],
   );
@@ -121,20 +123,20 @@
     <Command.Input placeholder="Search channels..." />
     <Command.List>
       <Command.Empty>No channels found.</Command.Empty>
-      {#if !page.data.guildsManager.channelsLoaded}
+      {#if !guildsManager.channelsLoaded}
         {#each new Array(3) as _}
           <Command.Item disabled>
             <Hash />
             <Skeleton class="h-4 w-full" />
           </Command.Item>
         {/each}
-      {:else if page.data.guildsManager.channelsLoaded && selectCategories && channelTypes.includes(ChannelType.GuildCategory)}
+      {:else if guildsManager.channelsLoaded && selectCategories && channelTypes.includes(ChannelType.GuildCategory)}
         <!-- The logic for selecting everything BUT categories -->
         {@const joinedChannels = filteredChannels}
         {#each joinedChannels as channel}
           {@render channelItem(channel)}
         {/each}
-      {:else if page.data.guildsManager.channelsLoaded && selectCategories && channelTypes.includes(ChannelType.GuildCategory)}
+      {:else if guildsManager.channelsLoaded && selectCategories && channelTypes.includes(ChannelType.GuildCategory)}
         <!-- The logic for selecting ONLY categories -->
         {#each groupedChannels.categories as { cat, channels }}
           {@render channelItem(cat)}

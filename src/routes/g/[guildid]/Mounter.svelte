@@ -1,19 +1,20 @@
 <script lang="ts">
   import { afterNavigate } from "$app/navigation";
-  import { page } from "$app/state";
+  import { getManager } from "$lib/stores/GuildsManager.svelte";
   import { useSidebar } from "$ui/sidebar";
   import { onMount } from "svelte";
 
   let sidebar = $derived(useSidebar());
+  const guildsManager = getManager();
 
   $inspect("sidebar", sidebar);
 
   onMount(() => {
-    page.data.guildsManager.loadChannels().then(() => {
+    guildsManager.loadChannels().then(() => {
       console.log("Channels loaded");
     });
 
-    page.data.guildsManager.loadRoles().then(() => {
+    guildsManager.loadRoles().then(() => {
       console.log("Roles loaded");
     });
   });

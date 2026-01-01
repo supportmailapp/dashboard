@@ -28,6 +28,7 @@
   import { mode, toggleMode } from "mode-watcher";
   import type { Component } from "svelte";
   import { toast } from "svelte-sonner";
+  import { getManager } from "$lib/stores/GuildsManager.svelte";
 
   type NavItem = {
     id: string;
@@ -117,6 +118,7 @@
     },
   ];
 
+  const guildsManager = getManager();
   let reloadBtnDisabled = $state(false);
   let atMeHref = $derived(`/@me?back=${page.url.pathname}`);
   let isCurrentPage = $derived(page.data.isCurrentPage);
@@ -124,8 +126,8 @@
   async function reloadGuildData() {
     if (reloadBtnDisabled) return;
     reloadBtnDisabled = true;
-    await page.data.guildsManager.loadChannels();
-    await page.data.guildsManager.loadRoles();
+    await guildsManager.loadChannels();
+    await guildsManager.loadRoles();
 
     toast.success("Channels and roles reloaded!");
 

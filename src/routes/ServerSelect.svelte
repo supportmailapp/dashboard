@@ -7,13 +7,14 @@
   import { cn } from "$lib/utils";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
   import Plus from "@lucide/svelte/icons/plus";
+  import { getManager } from "$lib/stores/GuildsManager.svelte";
 
   let { clickFn }: { clickFn?: () => any } = $props();
 
-  let guildManager = $derived(page.data.guildsManager);
+  const guildsManager = getManager();
 </script>
 
-<Command.Root class="h-full bg-transparent md:min-w-[450px]">
+<Command.Root class="h-full bg-transparent md:min-w-md">
   <Command.Input
     placeholder="Search a server"
     class="placeholder:text-foreground/50 rounded-lg"
@@ -21,7 +22,7 @@
   />
   <Command.List class="max-h-auto h-full py-0.5">
     <Command.Empty>No servers found.</Command.Empty>
-    {#each guildManager.guilds as guild (guild.id)}
+    {#each guildsManager.guilds as guild (guild.id)}
       {@const _guildHref = guild.isConfigured
         ? `/g/${guild.id + getNextPathFromGuildPath(page.url.pathname)}`
         : `/invite/${guild.id}`}

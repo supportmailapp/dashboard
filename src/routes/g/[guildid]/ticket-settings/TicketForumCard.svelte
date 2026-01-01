@@ -4,6 +4,7 @@
   import ConfigCard from "$lib/components/ConfigCard.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
   import type { DBGuildProjectionReturns } from "$lib/server/db";
+  import { getManager } from "$lib/stores/GuildsManager.svelte";
   import { APIRoutes } from "$lib/urls";
   import apiClient from "$lib/utils/apiClient";
   import { Button, buttonVariants } from "$ui/button/index.js";
@@ -27,9 +28,10 @@
   };
   let { forumId: fetchedForumId, wholeConfig }: Props = $props();
 
+  const guildsManager = getManager();
   let forum = $state<GuildCoreChannel | null>(null);
-  let channelsLoaded = $derived(page.data.guildsManager.channelsLoaded);
-  let channels = $derived(channelsLoaded ? page.data.guildsManager.channels! : []);
+  let channelsLoaded = $derived(guildsManager.channelsLoaded);
+  let channels = $derived(channelsLoaded ? guildsManager.channels : []);
   let newCategoryId = $state<string | null>(null);
   let newCategory = $derived<GuildCoreChannel | undefined>(
     newCategoryId ? (channels.find((c) => c.id === newCategoryId) ?? undefined) : undefined,

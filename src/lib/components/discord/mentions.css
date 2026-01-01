@@ -10,7 +10,6 @@
   overflow: clip;
   position: relative;
   color: white;
-  min-width: 50px;
 }
 
 .actions-container {
@@ -29,7 +28,7 @@
   }
 
   > button {
-    --action-radius: calc(var(--radius) /* 0.25rem = 4px */ - 2px);
+    --action-radius: calc(var(--radius-md) - 2px);
     transform: scale(1);
     display: flex;
     align-items: center;

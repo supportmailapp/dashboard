@@ -52,7 +52,6 @@ declare global {
     interface PageData {
       wsToken?: string;
       ws?: Socket<EventsMap>;
-      guildsManager: GuildsManager;
       manager: DataManager;
       user: APIUser | null;
       guildId?: string;
