@@ -4,7 +4,6 @@
   import ConfigCard from "$lib/components/ConfigCard.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
   import type { DBGuildProjectionReturns } from "$lib/server/db";
-  import { ConfigState } from "$lib/stores/ConfigState.svelte";
   import { APIRoutes } from "$lib/urls";
   import apiClient from "$lib/utils/apiClient";
   import { Button, buttonVariants } from "$ui/button/index.js";
@@ -15,14 +14,20 @@
   import { ChannelType } from "discord-api-types/v10";
   import { toast } from "svelte-sonner";
 
+  type TicketConfig = DBGuildProjectionReturns["generalTicketSettings"];
+
   type Props = {
     forumId: string | null;
-    wholeConfig: ConfigState<DBGuildProjectionReturns["generalTicketSettings"]>;
-    saveAllFn: SaveFunction;
+    wholeConfig: {
+      old: TicketConfig | null;
+      current: TicketConfig | null;
+      saving: boolean;
+      loading: boolean;
+    };
   };
-  let { forumId: fetchedForumId, wholeConfig, saveAllFn }: Props = $props();
+  let { forumId: fetchedForumId, wholeConfig }: Props = $props();
 
-  const forum = new ConfigState<GuildCoreChannel>(null);
+  let forum = $state<GuildCoreChannel | null>(null);
   let channelsLoaded = $derived(page.data.guildsManager.channelsLoaded);
   let channels = $derived(channelsLoaded ? page.data.guildsManager.channels! : []);
   let newCategoryId = $state<string | null>(null);
@@ -54,9 +59,10 @@
 
       toast.info("Setup in progress", { description: "This may take a few seconds" });
 
-      const json = await res.json<DBGuildProjectionReturns["generalTicketSettings"]>();
+      const json = await res.json<TicketConfig>();
 
-      wholeConfig.saveConfig(json);
+      wholeConfig.old = { ...json };
+      wholeConfig.current = { ...json };
       fetchedForumId = json.forumId!;
 
       toast.success("Config updated");
@@ -71,9 +77,9 @@
 
   $effect(() => {
     if (channelsLoaded) {
-      forum.setConfig(channels.find((channel) => channel.id === fetchedForumId) || null);
+      forum = channels.find((channel) => channel.id === fetchedForumId) || null;
     } else {
-      forum.clear();
+      forum = null;
     }
   });
 </script>
@@ -81,17 +87,17 @@
 <ConfigCard
   title="Ticket Forum"
   description="Configure the forum where tickets will be created."
-  saveBtnDisabled={!forum.config}
+  saveBtnDisabled={!forum}
   rootClass="col-span-full lg:col-span-3"
 >
   <div class="flex flex-col gap-2">
     <Label>Ticket Forum</Label>
     {#if channelsLoaded}
       <div class="flex w-full items-center justify-between">
-        <Mention channel={forum.config ?? undefined} fallback buttons="copy" />
+        <Mention channel={forum ?? undefined} fallback buttons="copy" />
         <Dialog.Root>
           <Dialog.Trigger class={buttonVariants({ variant: "outline" })}>Setup New Forum</Dialog.Trigger>
-          <Dialog.Content class="sm:max-w-[525px]">
+          <Dialog.Content class="sm:max-w-130">
             <Dialog.Header>
               <Dialog.Title>Setup Ticket Forum</Dialog.Title>
               <Dialog.Description>

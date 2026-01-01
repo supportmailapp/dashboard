@@ -16,19 +16,15 @@
   interface Props {
     pausedUntil: APIPausedUntil;
     enabled: boolean;
-    loading: boolean;
     fetchedState: APIPausedUntil;
     showDateError: boolean;
-    saveAllFn: SaveFunction;
   }
 
   let {
     pausedUntil = $bindable(),
     enabled = $bindable(),
-    loading,
     fetchedState,
     showDateError,
-    saveAllFn,
   }: Props = $props();
 
   // Internal state for pause type (timed vs indefinite)
@@ -88,14 +84,11 @@
     class="flex flex-col gap-4"
     title="System Control"
     description="Control the ticket system status and pausing settings."
-    saveFn={async () => await saveAllFn((v) => (loading = v))}
-    saveBtnDisabled={loading}
-    saveBtnLoading={loading}
   >
     <!-- Ticket Status Section -->
     <div class="flex flex-col items-start gap-2">
       <Label class="inline-flex w-full items-center gap-2">
-        <Switch variant="success" bind:checked={enabled} disabled={loading} />
+        <Switch variant="success" bind:checked={enabled} />
         {enabled ? "Enabled" : "Disabled"}
       </Label>
     </div>

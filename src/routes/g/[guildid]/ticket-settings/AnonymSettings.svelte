@@ -7,22 +7,19 @@
 
   let {
     anonymSettings = $bindable(),
-    saveAllFn,
-  }: { anonymSettings: IAnonym | undefined; saveAllFn: SaveFunction } = $props();
-  let saving = $state(false);
+  }: { anonymSettings: IAnonym | undefined } = $props();
 </script>
 
 <ConfigCard
   rootClass="col-span-full lg:col-span-3"
   title="Anonym Settings"
-  saveFn={async () => await saveAllFn((v: boolean) => (saving = v))}
   class="space-y-2"
 >
   {#if !anonymSettings}
     <LoadingSpinner />
   {:else}
     <Label
-      class="hover:bg-accent/50 has-[[aria-checked=true]]:border-accent has-[[aria-checked=true]]:bg-accent/50 flex items-start gap-3 rounded-lg border p-3"
+      class="hover:bg-accent/50 has-aria-checked=true:border-accent has-aria-checked=true:bg-accent/50 flex items-start gap-3 rounded-lg border p-3"
     >
       <Switch id="toggle-2" bind:checked={anonymSettings.enabled} variant="success" />
       <div class="grid gap-1.5 font-normal">
@@ -37,7 +34,7 @@
       </div>
     </Label>
     <Label
-      class="hover:bg-accent/50 has-[[aria-checked=true]]:border-accent has-[[aria-checked=true]]:bg-accent/50 flex items-start gap-3 rounded-lg border p-3"
+      class="hover:bg-accent/50 has-aria-checked=true:border-accent has-aria-checked=true:bg-accent/50 flex items-start gap-3 rounded-lg border p-3"
     >
       <Switch id="toggle-2" bind:checked={anonymSettings.user} variant="success" />
       <div class="grid gap-1.5 font-normal">

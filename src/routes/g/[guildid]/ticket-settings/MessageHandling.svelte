@@ -11,17 +11,11 @@
 
   let { 
     allowedBots = $bindable(), 
-    autoForward = $bindable(), 
-    saveAllFn 
+    autoForward = $bindable()
   }: { 
     allowedBots: string[]; 
-    autoForward: boolean; 
-    saveAllFn: SaveFunction 
+    autoForward: boolean;
   } = $props();
-
-  const loading = $state({
-    saving: false,
-  });
 
   function addBot(user: APIUser) {
     if (!allowedBots.includes(user.id)) {
@@ -35,9 +29,6 @@
   class="flex flex-col gap-6"
   title="Message Handling"
   description="Configure how messages are handled in tickets, including bot permissions and automatic forwarding."
-  saveFn={async () => await saveAllFn((v: boolean) => (loading.saving = v))}
-  saveBtnDisabled={loading.saving}
-  saveBtnLoading={loading.saving}
 >
   <div class="space-y-4">
     <div>
@@ -68,7 +59,7 @@
           >
             <Plus />
           </Popover.Trigger>
-          <Popover.Content class="w-[400px]">
+          <Popover.Content class="w-100">
             <UserSelect botsOnly={true} excludedUserIds={allowedBots} onSelect={addBot} />
           </Popover.Content>
         </Popover.Root>
