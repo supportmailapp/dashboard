@@ -3,7 +3,7 @@
   import { cn } from "$lib/utils";
   import Button from "$ui/button/button.svelte";
   import { Portal } from "bits-ui";
-  import { slide, scale } from "svelte/transition";
+  import { Spring } from "svelte/motion";
 
   interface SaveAlertProps {
     saving: boolean;
@@ -18,17 +18,23 @@
     saveData,
     discardChanges,
   }: SaveAlertProps = $props();
+  
+  const jiggleSpring = new Spring(0, { stiffness: 0.6, damping: 0.5, precision: 0.1 });
   let jiggling = $state(false);
 
-  function shakeAlert() {
+  async function shakeAlert() {
+    if (jiggling) return;
     jiggling = true;
-    setTimeout(() => {
-      jiggling = false;
-    }, 300);
+    for (let i = 0; i < 6; i++) {
+      jiggleSpring.target = i % 2 === 0 ? 15 : -15;
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+    jiggleSpring.target = 0;
+    jiggling = false;
   }
 
   beforeNavigate((nav) => {
-    if (nav.type === "goto" || nav.type === "link") {
+    if ((nav.type === "goto" || nav.type === "link") && unsavedChanges) {
       shakeAlert();
       nav.cancel();
       return;
@@ -49,13 +55,11 @@
     <div
       data-type="savealert"
       data-state={unsavedChanges ? "open" : "closed"}
+      style="transform: translate(calc(-50% + {jiggleSpring.current}px), 0);"
       class={cn(
-        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed bottom-4 left-[50%] z-50 flex w-full max-w-[calc(100%-2rem)] translate-x-[-50%] flex-col gap-4 rounded-lg border p-6 shadow-lg ring-0 outline-0 transition-transform sm:max-w-2xl sm:flex-row",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed bottom-4 left-[50%] z-50 flex w-full max-w-[calc(100%-2rem)] flex-col gap-4 rounded-lg border p-6 shadow-lg ring-0 outline-0 transition-all duration-200 sm:max-w-2xl sm:flex-row",
         jiggling ? "bg-destructive" : "bg-background",
       )}
-      class:shaking={jiggling}
-      in:scale={{ duration: 200, delay: 0, start: 0.8 }}
-      out:slide={{ duration: 200, delay: 0, axis: "y" }}
     >
       <p>You got unsaved changes mate.</p>
       <div class="flex flex-1 flex-col gap-2 sm:flex-row sm:justify-end">
@@ -67,30 +71,8 @@
 </Portal>
 
 <style>
-  @keyframes jiggle {
-    0% {
-      transform: translateX(0);
-    }
-    25% {
-      transform: translateX(12px);
-    }
-    50% {
-      transform: translateX(-12px);
-    }
-    75% {
-      transform: translateX(12px);
-    }
-    100% {
-      transform: translateX(0);
-    }
-  }
-
-  .shaking {
-    animation: jiggle 250ms ease-in-out infinite;
-  }
-
   [data-type="savealert"] {
-    transition-property: background-color, transform;
-    transition-duration: 100ms, 100ms;
+    transition-property: background-color;
+    transition-duration: 100ms;
   }
 </style>
