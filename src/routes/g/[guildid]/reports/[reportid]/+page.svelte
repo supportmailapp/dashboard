@@ -19,7 +19,7 @@
   import { toast } from "svelte-sonner";
 
   let { data } = $props();
-  let { report } = $derived(data);
+  let report = $derived(data.report);
 
   const logMessageUrl = $derived(
     report ? `https://discord.com/channels/${report.guildId}/${report.logMessage?.replace("-", "/")}` : null,
