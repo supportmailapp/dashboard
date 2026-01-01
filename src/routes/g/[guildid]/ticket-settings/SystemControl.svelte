@@ -11,8 +11,10 @@
   import CircleAlertIcon from "@lucide/svelte/icons/circle-alert";
   import dayjs from "dayjs";
 
+  // TODO: make paused until a dialog instead of inline in system control. The system control should just display the current pause state and have a button to open the dialog
+
   interface Props {
-    pauseState: TPauseState;
+    pausedUntil: APIPausedUntil;
     enabled: boolean;
     loading: boolean;
     fetchedState: APIPausedUntil;
@@ -21,18 +23,48 @@
   }
 
   let {
-    pauseState = $bindable(),
+    pausedUntil = $bindable(),
     enabled = $bindable(),
-    loading = $bindable(),
-    fetchedState = $bindable(),
+    loading,
+    fetchedState,
     showDateError,
     saveAllFn,
   }: Props = $props();
+
+  // Internal state for pause type (timed vs indefinite)
+  let pauseType = $state<"timed" | "indefinite">(
+    pausedUntil.date && pausedUntil.value ? "timed" : "indefinite"
+  );
+
+  // Track if paused (for the active/paused toggle)
+  let isPaused = $derived(pausedUntil.value);
 
   const activeTabs = [
     { value: "active", label: "Active" },
     { value: "paused", label: "Paused" },
   ];
+
+  function setActiveState(val: string) {
+    pausedUntil.value = val === "paused";
+    if (val === "active") {
+      pausedUntil.date = null;
+      pauseType = "indefinite";
+    }
+  }
+
+  function setPauseType(val: "timed" | "indefinite") {
+    pauseType = val;
+    if (val === "indefinite") {
+      pausedUntil.date = null;
+    }
+  }
+
+  function setDate(val: string) {
+    const djs = dayjs(val);
+    if (djs.isValid()) {
+      pausedUntil.date = val;
+    }
+  }
 </script>
 
 {#if fetchedState?.value}
@@ -81,15 +113,8 @@
       <RadioGroup.Root
         orientation="horizontal"
         class="flex flex-row gap-8"
-        bind:value={
-          () => (pauseState.pausedUntil.value ? "paused" : "active"),
-          (val) => {
-            pauseState.pausedUntil.value = val === "paused";
-            if (val === "active") {
-              pauseState.pausedUntil.date = null; // Reset date when switching to active
-            }
-          }
-        }
+        value={isPaused ? "paused" : "active"}
+        onValueChange={setActiveState}
       >
         {#each activeTabs as tab}
           <div class="inline-flex cursor-pointer items-center gap-2 py-1 *:cursor-pointer">
@@ -98,7 +123,7 @@
           </div>
         {/each}
       </RadioGroup.Root>
-      {#if !pauseState.pausedUntil.value}
+      {#if !isPaused}
         <div class="flex-1 space-y-4 outline-none">
           <p>Tickets are <strong>active</strong>, users can create tickets.</p>
         </div>
@@ -107,15 +132,8 @@
           <p>Tickets are <strong>paused</strong>, users <strong>cannot</strong> create new tickets.</p>
           <!-- Radio group controls 'pauseType' -->
           <RadioGroup.Root
-            bind:value={
-              () => pauseState.type,
-              (val) => {
-                pauseState.type = val;
-                if (val === "indefinite") {
-                  pauseState.pausedUntil.date = null;
-                }
-              }
-            }
+            value={pauseType}
+            onValueChange={(val) => setPauseType(val as "timed" | "indefinite")}
           >
             <div class="flex items-center space-x-2">
               <RadioGroup.Item value="indefinite" id="indefinite" class="size-5" />
@@ -126,20 +144,12 @@
               <Label for="timed" class="text-base">Until Date/Time</Label>
             </div>
           </RadioGroup.Root>
-          {#if pauseState?.type === "timed"}
+          {#if pauseType === "timed"}
             <div class="flex flex-col gap-1">
               <Label>Until when?</Label>
               <DateTimePicker
                 showError={showDateError}
-                onChange={(val: string) => {
-                  const djs = dayjs(val);
-                  console.log(djs.toString());
-                  if (djs.isValid()) {
-                    pauseState.pausedUntil.date = val; // val is an ISOString
-                  } else if (!pauseState) {
-                    console.warn("Pause State not initialized???");
-                  }
-                }}
+                onChange={setDate}
               />
             </div>
           {/if}

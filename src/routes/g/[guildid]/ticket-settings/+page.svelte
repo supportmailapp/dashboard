@@ -4,12 +4,13 @@
   import SettingsGrid from "$lib/components/SettingsGrid.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import type { DBGuildProjectionReturns } from "$lib/server/db";
-  import { ConfigState } from "$lib/stores/ConfigState.svelte";
   import { APIRoutes } from "$lib/urls";
+  import { deepClone } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
   import Separator from "$ui/separator/separator.svelte";
+  import dayjs from "dayjs";
   import equal from "fast-deep-equal/es6";
-  import { onMount } from "svelte";
+  import { onDestroy, onMount, untrack } from "svelte";
   import { toast } from "svelte-sonner";
   import type { TicketsPUTFields } from "../../../api/v1/guilds/[guildid]/config/tickets/+server";
   import AnonymSettings from "./AnonymSettings.svelte";
@@ -17,22 +18,23 @@
   import ResetStuff from "./ResetStuff.svelte";
   import SystemControl from "./SystemControl.svelte";
   import TicketForumCard from "./TicketForumCard.svelte";
-  import { deepClone } from "$lib/utils";
-  import dayjs from "dayjs";
 
-  const generalTicketsConf = new ConfigState<DBGuildProjectionReturns["generalTicketSettings"]>();
-  const pauseState = new ConfigState<TPauseState>({
-    pausedUntil: { date: null, value: false },
-    type: "indefinite",
+  type TicketConfig = DBGuildProjectionReturns["generalTicketSettings"];
+
+  const config = $state({
+    old: null as TicketConfig | null,
+    current: null as TicketConfig | null,
+    saving: false,
+    loading: true,
   });
-  let fetchedState = $state<APIPausedUntil>({
+
+  let fetchedPauseState = $state<APIPausedUntil>({
     date: null,
     value: false,
   });
-  let showDateError = $state(false);
 
-  $inspect("config", generalTicketsConf.config);
-  $inspect("pauseState", pauseState.config);
+  let showDateError = $state(false);
+  let unsavedChanges = $derived(!equal(untrack(() => config.old), config.current));
 
   function errorHintTimedButNoDate() {
     toast.error("Cannot set timed pause without a date.", {
@@ -41,43 +43,23 @@
     showDateError = true;
   }
 
-  function setPauseState(pu: APIPausedUntil) {
-    pauseState.saveConfig({
-      pausedUntil: pu,
-      type: pu.date && pu.value ? "timed" : "indefinite", // ? Really && or is just the check for the date enough?
-    });
-  }
-
-  function buildPausedUntil(_data?: TPauseState): APIPausedUntil {
-    const snap = _data ?? pauseState.snap();
-    return {
-      value: !!snap?.pausedUntil.value,
-      date: snap?.pausedUntil.value || !snap || snap.type === "indefinite" ? null : snap.pausedUntil.date,
-    };
-  }
-
   const saveAll: SaveFunction = async function (setLoading, callback) {
     showDateError = false;
-    if (generalTicketsConf.config) {
-      generalTicketsConf.config.pausedUntil = buildPausedUntil();
-    }
 
     setLoading(true);
 
-    const current = $state.snapshot(generalTicketsConf.config);
-    const pausedPayload = buildPausedUntil();
-    const oldPausedUntil = pauseState.snap();
+    const current = $state.snapshot(config.current);
+    const pausedPayload = current?.pausedUntil ?? { date: null, value: false };
 
     // Store original states for comparison
-    const originalPausedState = deepClone($state.snapshot(fetchedState));
-    const originalConfig = deepClone(generalTicketsConf.backup);
+    const originalPausedState = deepClone($state.snapshot(fetchedPauseState));
+    const originalConfig = deepClone(config.old);
 
     console.log("paused payload", pausedPayload);
 
-    if (oldPausedUntil?.type === "timed" && !pausedPayload.date && pausedPayload.value) {
-      errorHintTimedButNoDate();
-      setLoading(false);
-      return;
+    // Check for timed pause without a date
+    if (pausedPayload.value && !pausedPayload.date) {
+      // This is fine - it means indefinite pause
     } else if (pausedPayload.date && dayjs(pausedPayload.date).isBefore(new Date())) {
       toast.error("Cannot set a pause date in the past.", {
         description: "Please select a future date for the pause.",
@@ -87,7 +69,7 @@
       return;
     }
 
-    if (!generalTicketsConf.evalUnsaved()) {
+    if (!unsavedChanges) {
       toast.info("Nothing to save.");
       setLoading(false);
       return;
@@ -112,10 +94,10 @@
         throw new Error(error.message || "Failed to save ticket configuration.");
       }
 
-      const json = await res.json<DBGuildProjectionReturns["generalTicketSettings"]>();
-      generalTicketsConf.saveConfig(json);
-      setPauseState(json.pausedUntil);
-      fetchedState = json.pausedUntil;
+      const json = await res.json<TicketConfig>();
+      config.old = { ...json };
+      config.current = { ...json };
+      fetchedPauseState = json.pausedUntil;
 
       // Determine what actually changed
       const pauseStatusChanged = originalPausedState.value !== json.pausedUntil.value;
@@ -144,57 +126,62 @@
     }
   };
 
-  onMount(() => {
-    fetch(APIRoutes.ticketsConfig(page.data.guildId!))
-      .then((res) => {
-        if (!res.ok) {
-          toast.error("Failed to load ticket configuration.", {
-            description: "Please try again later.",
-          });
-          return;
-        }
-        res.json().then((jsonRes: DBGuildProjectionReturns["generalTicketSettings"]) => {
-          generalTicketsConf.saveConfig(jsonRes);
-          setPauseState(jsonRes.pausedUntil);
-          fetchedState = jsonRes.pausedUntil;
-        });
-      })
-      .catch((err) => {
-        toast.error("Failed to load ticket configuration.", {
-          description: err.message,
-        });
-      });
+  function resetConfig() {
+    if (config.old) {
+      config.current = { ...config.old };
+    }
+  }
 
-    return () => {
-      console.log("Cleaning up ticket configuration state");
-      generalTicketsConf.clear();
-    };
+  onMount(async () => {
+    try {
+      const res = await fetch(APIRoutes.ticketsConfig(page.data.guildId!));
+
+      if (!res.ok) {
+        toast.error("Failed to load ticket configuration.", {
+          description: "Please try again later.",
+        });
+        return;
+      }
+
+      const jsonRes: TicketConfig = await res.json();
+      config.old = { ...jsonRes };
+      config.current = { ...jsonRes };
+      fetchedPauseState = jsonRes.pausedUntil;
+    } catch (err: any) {
+      toast.error("Failed to load ticket configuration.", {
+        description: err.message,
+      });
+    } finally {
+      config.loading = false;
+    }
   });
+
+  onDestroy(resetConfig);
 </script>
 
 <SiteHeading title="Ticket Settings" />
 
 <SettingsGrid class="mt-6">
-  {#if generalTicketsConf.isConfigured() && pauseState.isConfigured()}
+  {#if config.current}
     <SystemControl
-      bind:pauseState={pauseState.config}
-      bind:enabled={generalTicketsConf.config.enabled}
-      bind:loading={generalTicketsConf.loading}
-      {fetchedState}
+      bind:pausedUntil={config.current.pausedUntil}
+      bind:enabled={config.current.enabled}
+      loading={config.saving}
+      fetchedState={fetchedPauseState}
       {showDateError}
       saveAllFn={saveAll}
     />
     <MessageHandling
-      bind:allowedBots={generalTicketsConf.config.allowedBots}
-      bind:autoForward={generalTicketsConf.config.autoForwarding}
+      bind:allowedBots={config.current.allowedBots}
+      bind:autoForward={config.current.autoForwarding}
       saveAllFn={saveAll}
     />
     <TicketForumCard
-      forumId={generalTicketsConf.config.forumId ?? null}
-      wholeConfig={generalTicketsConf}
+      forumId={config.current.forumId ?? null}
+      wholeConfig={config}
       saveAllFn={saveAll}
     />
-    <AnonymSettings bind:anonymSettings={generalTicketsConf.config.anonym} saveAllFn={saveAll} />
+    <AnonymSettings bind:anonymSettings={config.current.anonym} saveAllFn={saveAll} />
     <Separator class="col-span-full my-5" />
     <ResetStuff />
   {:else}
