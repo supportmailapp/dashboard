@@ -4,7 +4,7 @@
 
   let statusText = $derived(
     page.status === 404
-      ? "Page Not Found"
+      ? "Not Found"
       : page.status === 500
         ? "Server Error"
         : page.status === 403
