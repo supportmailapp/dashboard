@@ -1,13 +1,11 @@
 import { JsonErrors } from "$lib/constants";
 import { getGuildChannels, setGuildCache } from "$lib/server/caches/guilds.js";
 
-export async function GET({ locals, url, setHeaders }) {
-  if (!locals.guildId) return JsonErrors.badRequest();
-
+export async function GET({ locals, params, url, setHeaders }) {
   const bypassCache = url.searchParams.get("cache") === "false";
 
   if (!bypassCache) {
-    const cachedChannels = getGuildChannels(locals.guildId);
+    const cachedChannels = getGuildChannels(params.guildid);
     if (cachedChannels) {
       console.log("GET /api/v1/guilds/[guildid]/channels - Cache hit");
       setHeaders({ "Cache-Status": "HIT" });
@@ -19,7 +17,7 @@ export async function GET({ locals, url, setHeaders }) {
 
   setHeaders({ "Cache-Status": "MISS" });
 
-  const res = await locals.discordRest.getGuildChannels(locals.guildId);
+  const res = await locals.discordRest.getGuildChannels(params.guildid);
 
   console.log("GET /api/v1/guilds/[guildid]/channels", res);
 
@@ -30,7 +28,7 @@ export async function GET({ locals, url, setHeaders }) {
     });
   }
 
-  setGuildCache(locals.guildId, {
+  setGuildCache(params.guildid, {
     channels: res.data ?? [],
   });
 

@@ -3,7 +3,7 @@ import { DBTag, FlattenDocToJSON } from "$lib/server/db";
 import { ZodValidator } from "$lib/server/validators/index.js";
 import type { ITag } from "$lib/sm-types";
 import { safeParseInt, sanitizeSnippetName } from "$lib/utils.js";
-import type { FilterQuery } from "mongoose";
+import type { QueryFilter } from "mongoose";
 import z from "zod";
 
 export type PaginatedResponseWithError<T> = PaginatedResponse<T> & {
@@ -19,9 +19,7 @@ export type APISnippet = DocumentWithId<
 
 export type PaginatedSnippetsResponse = PaginatedResponse<APISnippet>;
 
-export async function GET({ locals, url }) {
-  const guildId = locals.guildId!;
-
+export async function GET({ locals, url, params }) {
   const Params = {
     search: url.searchParams.get("search") ?? undefined,
     page: safeParseInt(url.searchParams.get("page"), 1, 1, 9999),
@@ -30,20 +28,20 @@ export async function GET({ locals, url }) {
       return (this.page - 1) * this.pageSize;
     },
   };
-  const filterQuery: FilterQuery<ITag> = { guildId: guildId };
+  const QueryFilter: QueryFilter<ITag> = { guildId: params.guildid };
 
   if (Params.search) {
-    filterQuery.name = { $regex: Params.search, $options: "i" };
+    QueryFilter.name = { $regex: Params.search, $options: "i" };
   }
 
   try {
-    const snippets = await DBTag.find(filterQuery, null, {
+    const snippets = await DBTag.find(QueryFilter, null, {
       limit: Params.pageSize,
       skip: Params.offset(),
       sort: { createdAt: -1 },
     });
 
-    const totalSnippets = await DBTag.countDocuments(filterQuery);
+    const totalSnippets = await DBTag.countDocuments(QueryFilter);
 
     const response: PaginatedSnippetsResponse = {
       data: snippets.map((d) => FlattenDocToJSON(d, true)) as any[], // mongoose types...
@@ -82,9 +80,7 @@ const snippetSchema = z.object({
   content: z.string().min(1).max(4000).trim(),
 });
 
-export async function PUT({ locals, request }) {
-  const guildId = locals.guildId!;
-
+export async function PUT({ locals, request, params }) {
   try {
     const body = await request.json();
     const valRes = new ZodValidator(snippetSchema).validate(body);
@@ -98,7 +94,7 @@ export async function PUT({ locals, request }) {
       dbSnippet = await DBTag.findOneAndUpdate(
         {
           _id: valRes.data._id,
-          guildId,
+          guildId: params.guildid,
         },
         {
           name: valRes.data.name,
@@ -111,7 +107,7 @@ export async function PUT({ locals, request }) {
       );
     } else {
       dbSnippet = await DBTag.create({
-        guildId,
+        guildId: params.guildid,
         name: valRes.data.name,
         content: valRes.data.content,
       });

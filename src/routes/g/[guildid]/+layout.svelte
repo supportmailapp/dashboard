@@ -18,7 +18,6 @@
 
   let { children } = $props();
 
-  let hasUnsavedChanges = $state(true);
   let switchingPage = $state(true);
   let sidebarOpen = $state(true);
   let currentGuild = $derived(page.data.guildsManager.currentGuild);
@@ -40,7 +39,7 @@
 
   beforeNavigate((nav) => {
     console.log("beforeNavigate in layout", nav);
-    if (nav.from?.url.pathname === nav.to?.url.pathname) {
+    if (nav.from?.route === nav.to?.route) {
       nav.cancel();
       return;
     }

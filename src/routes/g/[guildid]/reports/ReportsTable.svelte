@@ -64,8 +64,8 @@
 <Table.Root class="w-full max-w-3xl">
   <Table.Header>
     <Table.Row>
-      <Table.Head class="w-[50px]">Type</Table.Head>
-      <Table.Head class="w-[52px] px-1">Status</Table.Head>
+      <Table.Head class="w-13">Type</Table.Head>
+      <Table.Head class="w-13 px-1">Status</Table.Head>
       <Table.Head>User</Table.Head>
       <Table.Head></Table.Head>
     </Table.Row>
@@ -77,7 +77,7 @@
         <Table.Cell class="font-mono font-medium">
           <div class="grid size-8 place-items-center rounded border p-1">
             <Tooltip.Provider>
-              <Tooltip.Root delayDuration={100}>
+              <Tooltip.Root delayDuration={0}>
                 <Tooltip.Trigger>
                   {#if reportType === "message"}
                     <MessageSquare class="size-5 text-blue-600" />

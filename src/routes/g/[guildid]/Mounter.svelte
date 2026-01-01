@@ -20,6 +20,6 @@
 
   // TODO: Find out why sidebar is always undefined...
   afterNavigate(() => {
-    sidebar.setOpenMobile(false);
+    sidebar?.setOpenMobile(false);
   });
 </script>

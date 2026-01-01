@@ -4,7 +4,7 @@ import { Ticket } from "$lib/server/db/models/src/ticket";
 import type { ITicket } from "$lib/sm-types";
 import { TicketStatus } from "$lib/sm-types";
 import { safeParseInt } from "$lib/utils.js";
-import type { FilterQuery } from "mongoose";
+import type { QueryFilter } from "mongoose";
 import type { TicketSearchScope } from "../../../../../g/[guildid]/tickets/FilterControls.svelte";
 
 export type PaginatedResponseWithError<T> = PaginatedResponse<T> & {
@@ -20,9 +20,8 @@ function sanitizeTicketData(ticket: DocumentWithId<ITicket>): DocumentWithId<ITi
   } as Partial<ITicket>);
 }
 
-export async function GET({ locals, url }) {
-  if (!locals.guildId || !locals.isAuthenticated()) return JsonErrors.unauthorized();
-  const guildId = locals.guildId;
+export async function GET({ locals, url, params }) {
+  if (!locals.isAuthenticated()) return JsonErrors.unauthorized();
 
   try {
     // Parse pagination parameters
@@ -46,7 +45,7 @@ export async function GET({ locals, url }) {
     const skip = (Params.page - 1) * Params.pageSize;
 
     // Build filter query
-    const filter: FilterQuery<ITicket> = { guildId: guildId };
+    const filter: QueryFilter<ITicket> = { guildId: params.guildid };
 
     if (Params.anonym) {
       filter.alias = { $exists: true, $ne: null };

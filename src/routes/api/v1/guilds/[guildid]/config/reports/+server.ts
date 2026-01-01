@@ -6,20 +6,16 @@ import {
   type DBGuildProjectionReturns,
 } from "$lib/server/db/utils.js";
 import {
-  APIPausedUntilSchema,
-  MentionableEntityPredicate,
-  SnowflakePredicate,
   ZodValidator,
 } from "$lib/server/validators";
 import { ReportNotificationType, SpecialReportChannelType, type IDBGuild } from "$lib/sm-types";
+import { APIPausedUntilSchema, MentionableEntity, SnowflakePredicate } from "$v1Api/assertions";
 import dayjs from "dayjs";
 import type { UpdateQuery } from "mongoose";
 import z from "zod";
 
-export async function GET({ locals: { guildId } }) {
-  if (!guildId) {
-    return JsonErrors.badRequest();
-  }
+export async function GET({ params }) {
+  const guildId = params.guildid;
 
   try {
     const config = await getDBGuild(guildId, "reportSettings");
@@ -67,9 +63,9 @@ const putSchema = z
       setting: "EX",
       ids: [],
     }),
-    pings: MentionableEntityPredicate.array().default([]),
-    immune: MentionableEntityPredicate.array().default([]),
-    mods: MentionableEntityPredicate.array().default([]),
+    pings: MentionableEntity.array().default([]),
+    immune: MentionableEntity.array().default([]),
+    mods: MentionableEntity.array().default([]),
     limits: limitSchema.default({
       perUserReceive: 1,
       perUserCreate: 5,
@@ -95,8 +91,8 @@ export type PutFields = z.infer<typeof putSchema>;
 
 // Currently, this endpoint only supports updating the language setting,
 // since it's the only "global" setting that can be changed per guild.
-export async function PUT({ request, locals }) {
-  if (!locals.guildId || !locals.token) {
+export async function PUT({ request, locals, params }) {
+  if (!locals.token) {
     return JsonErrors.badRequest();
   }
 
@@ -114,7 +110,7 @@ export async function PUT({ request, locals }) {
     return JsonErrors.badRequest(ZodValidator.toHumanError(validationRes.error));
   }
 
-  const guild = await getDBGuild(locals.guildId, "full");
+  const guild = await getDBGuild(params.guildid, "full");
   if (!guild) {
     return JsonErrors.notFound();
   }
@@ -149,7 +145,7 @@ export async function PUT({ request, locals }) {
   console.log("Update Fields", updateFields);
 
   try {
-    const newGuild = await updateDBGuild(locals.guildId, updateFields);
+    const newGuild = await updateDBGuild(params.guildid, updateFields);
     if (!newGuild) {
       return JsonErrors.notFound("Guild not found");
     }

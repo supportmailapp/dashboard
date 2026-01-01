@@ -1,11 +1,11 @@
 import { JsonErrors } from "$lib/constants.js";
 import userCache from "$lib/server/caches/users.js";
-import { SnowflakePredicate } from "$lib/server/validators/index.js";
+import { SnowflakePredicate } from "$v1Api/assertions";
 import * as Sentry from "@sentry/sveltekit";
 import type { APIGuildMember, APIUser } from "discord-api-types/v10";
 
-export async function GET({ url, locals }) {
-  const guildId = locals.guildId;
+export async function GET({ url, locals, params }) {
+  const guildId = params.guildid;
   if (!locals.isAuthenticated() || !guildId) return JsonErrors.badRequest();
 
   const searchQuery = url.searchParams.get("q");

@@ -1,10 +1,10 @@
 import { DBTag, FlattenDocToJSON } from "$lib/server/db";
 import type { ITag } from "$lib/sm-types";
-import type { FilterQuery } from "mongoose";
+import type { QueryFilter } from "mongoose";
 import type { APISnippet } from "../../../api/v1/guilds/[guildid]/snippets/+server.js";
 
 export async function load({ locals, url }) {
-  const filterFields: FilterQuery<ITag> = {
+  const filterFields: QueryFilter<ITag> = {
     guildId: locals.guildId!,
   };
   if (url.searchParams.get("search")) {

@@ -1,13 +1,10 @@
-import { JsonErrors } from "$lib/constants";
 import { getGuildRoles, setGuildCache } from "$lib/server/caches/guilds.js";
 
-export async function GET({ locals, url, setHeaders }) {
-  if (!locals.guildId) return JsonErrors.badRequest();
-
+export async function GET({ locals, params, url, setHeaders }) {
   const bypassCache = url.searchParams.get("cache") === "false";
 
   if (!bypassCache) {
-    const cachedChannels = getGuildRoles(locals.guildId);
+    const cachedChannels = getGuildRoles(params.guildid);
     if (cachedChannels) {
       console.log("GET /api/v1/guilds/[guildid]/roles - Cache hit");
       setHeaders({ "Cache-Status": "HIT" });
@@ -19,7 +16,7 @@ export async function GET({ locals, url, setHeaders }) {
 
   setHeaders({ "Cache-Status": "MISS" });
 
-  const res = await locals.discordRest.getGuildRoles(locals.guildId);
+  const res = await locals.discordRest.getGuildRoles(params.guildid);
 
   console.log("GET /api/v1/guilds/[guildid]/roles", res);
 
@@ -30,7 +27,7 @@ export async function GET({ locals, url, setHeaders }) {
     });
   }
 
-  setGuildCache(locals.guildId, {
+  setGuildCache(params.guildid, {
     roles: res.data,
   });
 

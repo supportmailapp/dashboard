@@ -1,87 +1,63 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import { Button, buttonVariants } from "$ui/button";
-  import * as Tooltip from "$ui/tooltip/index.js";
-  import ArrowLeft from "@lucide/svelte/icons/arrow-left";
-  import RotateCcw from "@lucide/svelte/icons/rotate-ccw";
 
-  let errorDescription = $derived(getErrorDescription(page.error?.status));
+  let statusText = $derived(
+    page.status === 404
+      ? "Page Not Found"
+      : page.status === 500
+        ? "Server Error"
+        : page.status === 403
+          ? "Forbidden"
+          : "Error",
+  );
 
-  function getErrorDescription(status: number | undefined): string {
-    switch (status) {
-      case 404:
-        return "The page you're looking for doesn't exist or has been moved.";
-      case 403:
-        return "You don't have permission to access this resource.";
-      case 401:
-        return "You need to be logged in to access this resource.";
-      case 410:
-        return "The resource you are looking for has been permanently removed.";
-      case 500:
-        return "Something went wrong on our end. We're working to fix it.";
-      case 502:
-      case 503:
-        return "The service is temporarily unavailable. Please try again later.";
-      default:
-        return "An unexpected error occurred. The developer has been notified.";
-    }
-  }
+  let errorDescription = $derived(
+    page.status === 404
+      ? "The page you are looking for does not exist."
+      : page.status === 500
+        ? "Something went wrong on our end. Please try again later."
+        : page.status === 403
+          ? "You do not have permission to access this page."
+          : "An unexpected error occurred.",
+  );
 </script>
 
-<div class="error-container">
-  <h1 class="text-xl font-semibold">You found an error!</h1>
-  <p class="text-sm">{errorDescription}</p>
-
-  <div class="w-full max-w-[900px] text-center text-lg text-white">
-    <div class="text-warning text-base">
-      Error {page.error?.status || "Unknown"}: {page.error?.message || "An error occurred"}
-    </div>
-    {#if page.error?.id}
-      <Tooltip.Provider>
-        <Tooltip.Root>
-          <Tooltip.Trigger
-            class={buttonVariants({ variant: "ghost", class: "h-fit p-1" })}
-            onclick={() => {
-              navigator.clipboard
-                .writeText(page.error!.id!)
-                .then(() => alert("✅ Error ID copied to clipboard!"));
-            }}
-          >
-            ID: {page.error.id}
-          </Tooltip.Trigger>
-          <Tooltip.Content>
-            <p>Copy Error ID</p>
-          </Tooltip.Content>
-        </Tooltip.Root>
-      </Tooltip.Provider>
-      <p class="mt-2 text-xs text-gray-400">Please include this error ID when reporting the issue.</p>
+<div class="bg-linear-to-br from-primary/70 to-base-300/20 flex min-h-screen items-center justify-center p-8">
+  <div class="text-base-content max-w-2xl text-center">
+    <h1 class="text-9xl font-bold text-white drop-shadow-lg md:text-[10rem]">
+      {page.status}
+    </h1>
+    <h2 class="mt-4 text-3xl font-semibold text-white md:text-4xl">
+      {statusText}
+    </h2>
+    <p class="mt-6 text-lg text-white/90 md:text-xl">
+      {page.error?.message || errorDescription}
+    </p>
+    {#if page.error?.status}
+      <p class="mt-3 text-sm text-white/70">Error code: {page.error.status}</p>
     {/if}
-  </div>
-
-  <div class="flex flex-row gap-2">
-    <Button onclick={() => history.back()} class="btn btn-error btn-wide">
-      <ArrowLeft />
-      Go Back
-    </Button>
-    <Button variant="secondary" onclick={() => location.reload()} class="btn btn-primary btn-wide">
-      <RotateCcw />
-      Reload Page
-    </Button>
+    <div class="mt-8 flex flex-col justify-center gap-3">
+      <a href="/" class="btn btn-primary btn-lg transition hover:-translate-y-1">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path
+            d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"
+          />
+        </svg>
+        Go to Homepage
+      </a>
+      <button
+        class="btn btn-primary btn-lg transition hover:-translate-y-1"
+        onclick={() => location.reload()}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path
+            fill-rule="evenodd"
+            d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        Try Again
+      </button>
+    </div>
   </div>
 </div>
-
-<style>
-  .error-container {
-    display: flex;
-    flex-direction: column;
-    text-align: center;
-    margin: auto;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-    padding: 1.5rem 1rem;
-    max-width: fit-content;
-    width: auto;
-    min-height: 100vh;
-  }
-</style>

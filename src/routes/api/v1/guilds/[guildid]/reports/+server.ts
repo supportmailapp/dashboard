@@ -3,7 +3,7 @@ import { FlattenDocToJSON } from "$lib/server/db";
 import { Report } from "$lib/server/db/models";
 import { type IReport, ReportStatus } from "$lib/sm-types";
 import { safeParseInt } from "$lib/utils.js";
-import type { FilterQuery } from "mongoose";
+import type { QueryFilter } from "mongoose";
 import type {
   ReportSearchScope,
   ReportSearchType,
@@ -13,9 +13,8 @@ export type PaginatedReportsResponse = PaginatedResponse<
   DocumentWithId<Pick<IReport, "authorId" | "userId" | "guildId" | "createdAt" | "status" | "message">>
 >;
 
-export async function GET({ locals, url }) {
-  if (!locals.guildId || !locals.isAuthenticated()) return JsonErrors.unauthorized();
-  const guildId = locals.guildId;
+export async function GET({ locals, url, params }) {
+  if (!params.guildid || !locals.isAuthenticated()) return JsonErrors.unauthorized();
 
   try {
     // Parse pagination parameters
@@ -37,7 +36,7 @@ export async function GET({ locals, url }) {
     const skip = (Params.page - 1) * Params.pageSize;
 
     // Build filter query
-    const filter: FilterQuery<IReport> = { guildId: guildId };
+    const filter: QueryFilter<IReport> = { guildId: params.guildid };
 
     if (Params.status !== undefined) {
       filter.status = Params.status;

@@ -1,10 +1,11 @@
 import { JsonErrors } from "$lib/constants";
 import { BlacklistEntry, FlattenBigIntFields, FlattenDocToJSON } from "$lib/server/db";
-import { SnowflakePredicate, ZodValidator } from "$lib/server/validators/index.js";
+import { ZodValidator } from "$lib/server/validators/index.js";
 import { EntityType, type IBlacklistEntry } from "$lib/sm-types";
 import { safeParseInt } from "$lib/utils.js";
 import { BitField } from "$lib/utils/bitfields.js";
-import type { FilterQuery } from "mongoose";
+import { SnowflakePredicate } from "$v1Api/assertions.js";
+import type { QueryFilter } from "mongoose";
 import z from "zod";
 
 export type APIBlacklistEntry = DocumentWithId<Omit<IBlacklistEntry, "scopes" | "scope" | "_type">> & {
@@ -19,9 +20,9 @@ export type PaginatedBlacklistResponse = PaginatedResponse<APIBlacklistEntry>;
 
 type AllowedEntityType = Exclude<EntityType, EntityType.guild> | -1;
 
-export async function GET({ locals, url }) {
-  if (!locals.guildId || !locals.isAuthenticated()) return JsonErrors.unauthorized();
-  const guildId = locals.guildId;
+export async function GET({ locals, params, url }) {
+  if (!locals.isAuthenticated()) return JsonErrors.unauthorized();
+  const guildId = params.guildid;
 
   try {
     // Parse pagination parameters
@@ -41,19 +42,19 @@ export async function GET({ locals, url }) {
     const skip = (Params.page - 1) * Params.pageSize;
 
     // Build filter query
-    const filter: FilterQuery<IBlacklistEntry> = { guildId: guildId };
+    const filter: QueryFilter<IBlacklistEntry> = { guildId: guildId };
 
     if (Params.search) {
       filter.id = { $regex: Params.search, $options: "i" };
     }
 
     if (Params.type > -1) {
-      filter._type = Params.type;
+      filter._type = Params.type as Exclude<typeof Params.type, -1>;
     }
 
     if (Params.scopes && /^\d+$/.test(Params.scopes)) {
       const scopeBitfield = new BitField(Params.scopes);
-      filter.scopes = { $bitsAnySet: scopeBitfield.bits };
+      filter.scopes = { $bitsAnySet: Number(scopeBitfield.bits) };
     }
 
     const sort = { updatedAt: Params.sorting === "oldest" ? 1 : -1 };
@@ -112,7 +113,7 @@ const entrySchema = z.object({
   }),
 });
 
-export async function PUT({ locals, request }) {
+export async function PUT({ locals, request, params }) {
   if (!locals.isAuthenticated()) return JsonErrors.unauthorized();
 
   const body = await request.json();
@@ -130,15 +131,15 @@ export async function PUT({ locals, request }) {
     const entry = await BlacklistEntry.findOneAndUpdate(
       {
         id: data.id,
-        guildId: locals.guildId!,
+        guildId: params.guildid,
       },
       {
         id: data.id,
-        guildId: locals.guildId!,
+        guildId: params.guildid,
         _type: data._type,
         scopes: scopes.bits,
       },
-      { upsert: true, new: true },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
     );
 
     return Response.json(FlattenBigIntFields(FlattenDocToJSON(entry, true)), { status: 200 });
@@ -155,10 +156,8 @@ const deleteSchema = z.object({
     .transform((ids) => ids.map((id) => id.trim())),
 });
 
-export async function DELETE({ locals, request }) {
+export async function DELETE({ locals, request, params }) {
   if (!locals.isAuthenticated()) return JsonErrors.unauthorized();
-
-  const guildId = locals.guildId!;
 
   const body = await request.json();
   const valRes = new ZodValidator(deleteSchema).validate(body);
@@ -171,7 +170,7 @@ export async function DELETE({ locals, request }) {
   try {
     const result = await BlacklistEntry.deleteMany({
       _id: { $in: data.ids },
-      guildId: guildId,
+      guildId: params.guildid,
     });
     return Response.json({ success: true, deletedCount: result.deletedCount });
   } catch (error) {
