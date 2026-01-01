@@ -5,19 +5,16 @@ import {
   updateDBGuild,
   type DBGuildProjectionReturns,
 } from "$lib/server/db/utils.js";
-import { APIPausedUntilSchema, SnowflakePredicate, ZodValidator } from "$lib/server/validators";
+import { ZodValidator } from "$lib/server/validators";
 import type { IDBGuild } from "$lib/sm-types";
+import { APIPausedUntilSchema, SnowflakePredicate } from "$v1Api/assertions.js";
 import dayjs from "dayjs";
 import type { UpdateQuery } from "mongoose";
 import z from "zod";
 
-export async function GET({ locals: { guildId } }) {
-  if (!guildId) {
-    return JsonErrors.badRequest();
-  }
-
+export async function GET({ params }) {
   try {
-    const config = await getDBGuild(guildId, "generalTicketSettings");
+    const config = await getDBGuild(params.guildid, "generalTicketSettings");
     if (!config) {
       return JsonErrors.notFound();
     }
@@ -54,11 +51,7 @@ const patchSchema = z.object({
 
 export type TicketsPUTFields = z.infer<typeof patchSchema>;
 
-export async function PUT({ request, locals }) {
-  if (!locals.guildId || !locals.token) {
-    return JsonErrors.badRequest();
-  }
-
+export async function PUT({ request, params }) {
   const body = await request.json();
   if (!body) {
     return JsonErrors.badRequest("Missing body?");
@@ -71,7 +64,7 @@ export async function PUT({ request, locals }) {
     return JsonErrors.badRequest(validationRes.error.message);
   }
 
-  const guild = await getDBGuild(locals.guildId, "full");
+  const guild = await getDBGuild(params.guildid, "full");
   if (!guild) {
     return JsonErrors.notFound();
   }
@@ -105,7 +98,7 @@ export async function PUT({ request, locals }) {
   console.log("Update Fields", updateFields);
 
   try {
-    const newGuild = await updateDBGuild(locals.guildId, updateFields);
+    const newGuild = await updateDBGuild(params.guildid, updateFields);
     if (!newGuild) {
       return JsonErrors.notFound("Guild not found");
     }
