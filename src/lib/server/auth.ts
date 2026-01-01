@@ -2,10 +2,10 @@
 import { env } from "$env/dynamic/private";
 import { discordUrls } from "$lib/urls";
 import { canManageBot } from "$lib/utils/permissions";
-import * as Sentry from "@sentry/sveltekit";
 import jwt from "jsonwebtoken";
 import userGuildsCache from "./caches/userGuilds";
 import { discord } from "./constants";
+import { DBGuild } from "./db";
 import { UserToken } from "./db/models/src/userTokens";
 import { DiscordUserAPI } from "./discord";
 
@@ -121,8 +121,8 @@ class SessionManager {
         "Content-Type": "application/x-www-form-urlencoded",
       },
       body: new URLSearchParams({
-        client_id: discord.clientId,
-        client_secret: discord.clientSecret,
+        client_id: discord.clientId!,
+        client_secret: discord.clientSecret!,
         token: token,
         token_type_hint: type + "_token",
       }).toString(),
@@ -173,7 +173,7 @@ export async function checkUserGuildAccess(
           case 404:
             return 404;
           default: {
-            Sentry.captureMessage("Odd status code from User API when checking guild access", {
+            console.error("Odd status code from User API when checking guild access", {
               extra: {
                 guildId,
                 userId,
@@ -194,6 +194,19 @@ export async function checkUserGuildAccess(
       return 404;
     }
 
+    console.log("User guild found:", targetGuild);
+
+    // Check if the guild exists in DB and is not marked for deletion
+    const guildExists = await DBGuild.exists({
+      id: guildId,
+      $or: [{ "flags.deleteAfter": { $exists: false } }, { "flags.deleteAfter": null }],
+    }).then((res) => !!res);
+
+    if (!guildExists) {
+      return 404;
+    }
+
+    console.log("User guild found:", targetGuild);
     // 3. Check for at least manager permissions for that guild
     return canManageBot(targetGuild.permissions) ? 200 : 403;
   } catch (error) {
