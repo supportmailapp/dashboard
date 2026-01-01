@@ -1,6 +1,6 @@
 <script lang="ts">
   import { browser } from "$app/environment";
-  import { beforeNavigate } from "$app/navigation";
+  import { afterNavigate, beforeNavigate } from "$app/navigation";
   import { page } from "$app/state";
   import AppSidebar from "$lib/components/app-sidebar.svelte";
   import { cdnUrls } from "$lib/urls";
@@ -18,7 +18,6 @@
 
   let { children } = $props();
 
-  let switchingPage = $state(true);
   let sidebarOpen = $state(true);
   let currentGuild = $derived(page.data.guildsManager.currentGuild);
   let guildsSelectOpen = $state(false);
@@ -44,13 +43,8 @@
       return;
     }
 
-    switchingPage = true;
     guildsSelectOpen = false;
   });
-
-  // afterNavigate(() => {
-  //   switchingPage = false;
-  // });
 </script>
 
 <Mounter />

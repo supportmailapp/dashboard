@@ -2,19 +2,24 @@ import type { IPartialEmoji } from "$lib/sm-types";
 import { ChannelType, type APIGuildCategoryChannel, type APIUser } from "discord-api-types/v10";
 
 /**
- * Sorts an array of items by their position property in ascending order.
- * If two items have the same position, they are sorted by their id property in lexicographical order.
+ * Sorts an array of items by their position property in ascending order using Discord's sorting approach.
+ * If two items have the same position, they are sorted by their id property as BigInt.
  *
  * @template T - The type of the objects, which must include `id` and `position` properties.
  * @param {T[]} items - The array of items to be sorted.
  * @returns {T[]} A new array of items sorted by position and id.
  */
-export function sortByPositionAndId<T extends { id: string; position: number }>(items: T[]): T[] {
+export function sortByPositionAndId<T extends { id: string; position: number }>(
+  items: T[],
+  highestFirst: boolean = true,
+): T[] {
   return items.slice().sort((a, b) => {
-    if (a.position === b.position) {
-      return b.id.localeCompare(a.id);
+    if (a.position !== b.position) {
+      return highestFirst ? b.position - a.position : a.position - b.position;
     }
-    return b.position - a.position;
+    // Use BigInt for accurate large number comparison
+    if (highestFirst) return Number(BigInt(b.id) - BigInt(a.id));
+    else return Number(BigInt(a.id) - BigInt(b.id));
   });
 }
 
