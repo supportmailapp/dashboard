@@ -1,5 +1,6 @@
 <script lang="ts">
   import { browser } from "$app/environment";
+  import { onMount } from "svelte";
   import dayjs from "dayjs";
 
   interface Props {
@@ -289,14 +290,14 @@
     }
   }
 
-  $effect(() => {
+  onMount(async () => {
     if (browser && screenDimensions.width && screenDimensions.height && !imageData && !usingFallback) {
       const cached = getRandomCachedImage();
       if (cached && dayjs(cached.timestamp).isValid() && dayjs().diff(dayjs(cached.timestamp), "minutes") < cacheExpiryMinutes) {
         useCachedImage(cached);
         return;
       }
-      fetchBackgroundImage(screenDimensions.width, screenDimensions.height);
+      await fetchBackgroundImage(screenDimensions.width, screenDimensions.height);
     }
   });
 </script>
