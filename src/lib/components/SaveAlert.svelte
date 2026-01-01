@@ -49,7 +49,6 @@
   });
 </script>
 
-<!-- TODO: Center that shit properly on mobile -->
 <Portal>
   {#if unsavedChanges}
     <div
@@ -61,6 +60,7 @@
         jiggling ? "bg-destructive" : "bg-background",
       )}
     >
+      <!-- TODO: Center that shit properly on mobile -->
       <p>You got unsaved changes mate.</p>
       <div class="flex flex-1 flex-col gap-2 sm:flex-row sm:justify-end">
         <Button variant="outline" class="w-1/2 sm:w-33" onclick={discardChanges}>Discard</Button>
