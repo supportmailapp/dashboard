@@ -24,10 +24,10 @@
 
   let { date: nonReactiveDate, format = "f" }: Props = $props();
 
-  let parsedDate = $state(dayjs(nonReactiveDate));
+  let parsedDate = $derived(dayjs(nonReactiveDate));
 
   const formatTimestamp = () => {
-    const d = parsedDate;
+    const d = dayjs($state.snapshot(parsedDate.toISOString())); // fuckery
 
     const formatMap = {
       t: d.toDate().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
@@ -62,7 +62,7 @@
     <Tooltip.Trigger class="bg-card-foreground/20 rounded-[calc(var(--radius)-2px)] px-1 py-0.5">
       {formattedDate}
     </Tooltip.Trigger>
-    <Tooltip.Content class="bg-accent select-none" arrowClasses="bg-accent">
+    <Tooltip.Content class="bg-slate-400 select-none" arrowClasses="bg-slate-400">
       <p>
         {parsedDate.toDate().toLocaleDateString([], {
           weekday: "long",
