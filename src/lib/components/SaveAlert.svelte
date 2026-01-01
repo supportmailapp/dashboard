@@ -4,6 +4,7 @@
   import Button from "$ui/button/button.svelte";
   import { Portal } from "bits-ui";
   import { Spring } from "svelte/motion";
+  import { fly } from "svelte/transition";
 
   interface SaveAlertProps {
     saving: boolean;
@@ -56,9 +57,10 @@
       data-state={unsavedChanges ? "open" : "closed"}
       style="transform: translate(calc(-50% + {jiggleSpring.current}px), 0);"
       class={cn(
-        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed bottom-4 left-[50%] z-50 flex w-full max-w-[calc(100%-2rem)] flex-col gap-4 rounded-lg border p-6 shadow-lg ring-0 outline-0 transition-all duration-200 sm:max-w-2xl sm:flex-row",
+        "fixed bottom-4 left-[50%] z-50 flex w-full max-w-[calc(100%-2rem)] flex-col gap-4 rounded-lg border p-6 shadow-lg ring-0 outline-0 transition-all duration-200 sm:max-w-2xl sm:flex-row",
         jiggling ? "bg-destructive" : "bg-background",
       )}
+      transition:fly={{ y: 50, duration: 200, opacity: 0.5 }}
     >
       <!-- TODO: Center that shit properly on mobile -->
       <p>You got unsaved changes mate.</p>
