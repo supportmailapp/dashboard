@@ -1,5 +1,6 @@
 import { FlattenDocToJSON, Ticket, type FlattenDocResult } from "$lib/server/db";
 import type { ITicket } from "$lib/sm-types";
+import { error } from "@sveltejs/kit";
 
 export async function load({ params }) {
   const { guildid, ticketid } = params;
@@ -10,10 +11,9 @@ export async function load({ params }) {
   });
 
   if (!ticket) {
-    return {
-      ticket: null,
-      error: "Ticket not found",
-    };
+    error(404, {
+      message: "Ticket not found",
+    });
   }
 
   const sanitizedTicket: FlattenDocResult<ITicket & { userId?: string }, true> = FlattenDocToJSON(
