@@ -21,7 +21,7 @@
 </script>
 
 <DialogPortal {...portalProps}>
-  <Dialog.Overlay />
+  <Dialog.Overlay class="backdrop-blur-xs" />
   <DialogPrimitive.Content
     bind:ref
     data-slot="dialog-content"
