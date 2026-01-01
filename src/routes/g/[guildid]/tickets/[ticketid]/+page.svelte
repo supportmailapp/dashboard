@@ -21,7 +21,6 @@
 
   let { data } = $props();
   let ticket = $derived(data.ticket);
-  let error = $derived(data.error);
 
   let userMention = $derived(ticket?.userId ? mentionUsers.get(ticket?.userId) : undefined);
 
@@ -42,10 +41,6 @@
   <ChevronLeft class="size-4" />
   Back
 </Button>
-
-{#if error}
-  <p>{error}</p>
-{/if}
 
 {#if ticket}
   <Card.Root>
