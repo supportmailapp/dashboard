@@ -1,9 +1,9 @@
 import { JsonErrors } from "$lib/constants";
 import { FlattenDocToJSON, getTicketCategories, TicketCategory } from "$lib/server/db";
 import { ZodValidator } from "$lib/server/validators";
-import { MentionableEntity, PartialEmoji, SnowflakePredicate } from "$v1Api/assertions.js";
+import { MentionableEntity, NormalFormComponentSchema, PartialEmoji, SnowflakePredicate } from "$v1Api/assertions.js";
 import z from "zod";
-import { FormComponentsSchema } from "./forms.zod";
+import { FormComponentsSchema } from "$v1Api/assertions";
 
 const putSchema = z.object({
   _id: z.string(),
@@ -13,7 +13,7 @@ const putSchema = z.object({
   enabled: z.boolean().default(true),
   tag: SnowflakePredicate.optional(),
   pings: MentionableEntity.array().optional(),
-  components: FormComponentsSchema,
+  components: FormComponentsSchema(NormalFormComponentSchema),
   customMessageId: z.string().optional(),
 });
 

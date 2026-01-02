@@ -1,6 +1,8 @@
 import { EntityType } from "$lib/sm-types/src";
-import { TextInputStyle } from "discord-api-types/v10";
 import z from "zod";
+
+export * from "./forms.zod.js";
+import { FeedbackComponentSchema, FormComponentsSchema } from "./forms.zod.js";
 
 export const overview = z.object({
   language: z.union([z.literal("en"), z.literal("de"), z.literal("fr")]),
@@ -41,21 +43,19 @@ export const PartialEmoji = z
 
 export type PartialEmoji = z.infer<typeof PartialEmoji>;
 
-export const CustomModalFieldSchema = z.object({
-  position: z.number().int().min(1).max(5),
-  label: z.string().min(1).max(100),
-  placeholder: z.string().min(0).max(100).optional(),
-  _required: z.boolean().default(false),
-  style: z.enum(TextInputStyle).default(TextInputStyle.Short),
-  minL: z.int().min(0).max(4000).optional(),
-  maxL: z.int().min(1).max(4000).optional(),
-});
-
-export type CustomModalField = z.infer<typeof CustomModalFieldSchema>;
-
 export const APIPausedUntilSchema = z.object({
   value: z.boolean(),
   date: z.iso.datetime({ offset: true, local: true, abort: true }).nullable(),
 });
 
 export type APIPausedUntil = z.infer<typeof APIPausedUntilSchema>;
+
+export const FeedbackConfigSchema = z.object({
+  guildId: SnowflakePredicate,
+  channelId: SnowflakePredicate.optional(),
+  isEnabled: z.boolean().default(false),
+  thankYou: z.string().optional(),
+  components: FormComponentsSchema(FeedbackComponentSchema),
+});
+
+export type FeedbackConfig = z.infer<typeof FeedbackConfigSchema>;

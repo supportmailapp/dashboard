@@ -3,25 +3,6 @@ import dayjs from "dayjs";
 import pkg, { model, Schema } from "mongoose";
 const { models } = pkg;
 
-const feedbackAnswerSchema = new Schema<IFeedbackAnswer>(
-  {
-    question: { type: String, required: true },
-    answer: { type: String, required: true },
-  },
-  { _id: false },
-);
-
-const feedbackSchema = new Schema<IFeedback>(
-  {
-    stars: { type: Number, required: true, enum: [1, 2, 3, 4, 5] }, // 1-5
-    questionAnswers: {
-      type: [feedbackAnswerSchema],
-      default: [],
-    },
-  },
-  { _id: false },
-);
-
 const TicketSchema = new Schema<ITicket>(
   {
     id: { type: String, required: true, unique: true },
@@ -35,7 +16,6 @@ const TicketSchema = new Schema<ITicket>(
     stateTag: { type: Number, required: false },
     closeComment: { type: String, default: null },
     lastActive: { type: String, default: dayjs().toISOString() },
-    feedback: { type: feedbackSchema, required: false },
   },
   { timestamps: true },
 );

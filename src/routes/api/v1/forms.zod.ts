@@ -1,7 +1,12 @@
 import { SnowflakeUtil } from "$lib/utils";
-import { SnowflakePredicate } from "$v1Api/assertions";
 import { ComponentType } from "discord-api-types/v10";
 import { z } from "zod";
+
+// We can't have a circular import from the assertions file
+// So we redefine SnowflakePredicate here
+const SnowflakePredicate = z.string().regex(/^\d{17,23}$/, {
+  error: "Invalid Snowflake format",
+});
 
 export const StringSelectOptionSchema = z.object({
   id: SnowflakePredicate.default(() => SnowflakeUtil.generate().toString()),
@@ -72,36 +77,46 @@ export const FileUploadComponentSchema = BaseFormComponentSchema.safeExtend({
   error: "minValues must be less than or equal to maxValues",
 });
 
-export const FormComponentSchema = z.discriminatedUnion("type", [
+export const NormalFormComponentSchema = z.discriminatedUnion("type", [
   TextDisplayComponentSchema,
   TextInputComponentSchema,
   StringSelectComponentSchema,
   FileUploadComponentSchema,
 ]);
 
-export const FormComponentsSchema = z
-  .array(FormComponentSchema)
-  .min(0)
-  .max(5)
-  .refine(
-    (fields) => {
-      const ids = fields.map((field) => field.id);
-      return ids.length === new Set(ids).size;
-    },
-    { error: "IDs must be unique. How did we get here?" },
-  )
-  .default([])
-  .transform((fields) => {
-    fields.forEach((field) => {
-      // remove _id from fields if local is true
-      if (field.local === true && "_id" in field) {
-        delete field._id;
-      }
-      //Set id field if local is true or id is missing
-      if (field.local === true || !field.id) {
-        delete (field as any).id;
-        field.id = SnowflakeUtil.generate().toString();
-      }
+export const FeedbackComponentSchema = z.discriminatedUnion("type", [
+  TextDisplayComponentSchema,
+  TextInputComponentSchema,
+  StringSelectComponentSchema,
+]);
+
+const AnyFormComponentSchema = z.union([NormalFormComponentSchema, FeedbackComponentSchema]);
+type AnyFormComponent = z.infer<typeof AnyFormComponentSchema>;
+
+export const FormComponentsSchema = <T extends AnyFormComponent>(schema: z.ZodType<T>) =>
+  z
+    .array(schema)
+    .min(0)
+    .max(5)
+    .refine(
+      (fields) => {
+        const ids = fields.map((field) => field.id);
+        return ids.length === new Set(ids).size;
+      },
+      { error: "IDs must be unique. How did we get here?" },
+    )
+    .default([])
+    .transform((fields) => {
+      fields.forEach((field) => {
+        // remove _id from fields if local is true
+        if (field.local === true && "_id" in field) {
+          delete field._id;
+        }
+        //Set id field if local is true or id is missing
+        if (field.local === true || !field.id) {
+          delete (field as any).id;
+          field.id = SnowflakeUtil.generate().toString();
+        }
+      });
+      return fields;
     });
-    return fields;
-  });

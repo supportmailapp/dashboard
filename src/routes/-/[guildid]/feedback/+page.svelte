@@ -1,38 +1,55 @@
 <script lang="ts">
   import { page } from "$app/state";
+  import FieldDialog from "$lib/components/forms/FieldDialog.svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
+  import SaveAlert from "$lib/components/SaveAlert.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
-  import type { DBGuildProjectionReturns } from "$lib/server/db";
-  import type { IFeedbackConfig } from "$lib/sm-types";
-  import { ConfigState } from "$lib/stores/ConfigState.svelte";
+  import type { AnyAPIFeedbackFormComponent, APIFeedbackConfig } from "$lib/sm-types";
   import { APIRoutes } from "$lib/urls";
-  import { hasAllKeys } from "$lib/utils";
+  import { cn, SnowflakeUtil } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
+  import { Badge } from "$ui/badge/index.js";
+  import { Button } from "$ui/button";
+  import * as Card from "$ui/card/index.js";
+  import { Label } from "$ui/label";
+  import { Switch } from "$ui/switch";
+  import { Textarea } from "$ui/textarea";
+  import ArrowDown from "@lucide/svelte/icons/arrow-down";
+  import ArrowUp from "@lucide/svelte/icons/arrow-up";
+  import Pencil from "@lucide/svelte/icons/pencil";
+  import Plus from "@lucide/svelte/icons/plus";
+  import Trash from "@lucide/svelte/icons/trash";
+  import { ComponentType } from "discord-api-types/v10";
+  import equal from "fast-deep-equal/es6";
+  import { onDestroy, onMount } from "svelte";
   import { toast } from "svelte-sonner";
-  import FeedbackConfigPage from "./FeedbackConfigPage.svelte";
-  import SetupFeedbackPage from "./SetupFeedbackPage.svelte";
+  import { flip } from "svelte/animate";
+  import { fly } from "svelte/transition";
 
-  const feedback = new ConfigState<DBGuildProjectionReturns["feedback"]>({ isEnabled: false });
+  // Local reactive config (replaces the old ConfigState usage)
+  let feedbackConfig = $state<APIFeedbackConfig | null>(null);
+  let backupFeedback = $state<APIFeedbackConfig | null>(null);
+  let loading = $state(true);
+  let saving = $state(false);
   let fetchedStatus = $state<null | boolean>(null);
 
-  $inspect("feedback", feedback.config);
+  let editDialogOpen = $state(false);
+  let editField = $state<AnyAPIFeedbackFormComponent | null>(null);
 
-  const saveFn: SaveFunction = async function () {
-    const current = feedback.snap();
-    if (!feedback.evalUnsaved() || !current) {
+  let unsavedChanges = $derived(!equal(backupFeedback, feedbackConfig));
+
+  const saveFn = async function () {
+    const current = $state.snapshot(feedbackConfig);
+    if (!current || (backupFeedback && equal(backupFeedback, current))) {
       toast.info("Nothing to save.");
       return;
     }
 
-    feedback.saving = true;
+    saving = true;
 
     try {
-      const res = await apiClient.put(APIRoutes.ticketFeedback(page.data.guildId!), {
-        json: {
-          isEnabled: current.isEnabled,
-          thankYou: current.thankYou || "",
-          questions: current.questions || [],
-        } as Omit<IFeedbackConfig, "tags">,
+      const res = await apiClient.put(APIRoutes.ticketFeedback(page.params.guildid!), {
+        json: current,
       });
 
       if (!res.ok) {
@@ -40,94 +57,278 @@
         throw new Error(error.message || "Failed to save ticket feedback configuration.");
       }
 
-      const json = await res.json<DBGuildProjectionReturns["feedback"]>();
+      const json = await res.json<APIFeedbackConfig>();
 
-      fetchedStatus = hasAllKeys(json.tags, ["one", "two", "three", "four", "five"]);
-      feedback.saveConfig(json);
+      backupFeedback = { ...json };
+      feedbackConfig = { ...json };
+      toast.success("Feedback configuration saved.");
     } catch (err: any) {
       console.error("Failed to save ticket feedback configuration:", err);
       toast.error("Failed to save ticket feedback configuration.", {
         description: err.message,
       });
-      feedback.saving = false;
+    } finally {
+      saving = false;
     }
   };
 
   async function resetFn() {
     try {
-      const current = feedback.snap();
-      feedback.saving = true;
-      const res = await apiClient.delete(APIRoutes.ticketFeedbackSetup(page.data.guildId!));
+      const current = feedbackConfig;
+      saving = true;
+      const res = await apiClient.delete(APIRoutes.ticketFeedbackSetup(page.params.guildid!));
 
       if (!res.ok) {
         const error = await res.json<any>();
-        throw new Error(error.message || "Failed to save ticket feedback configuration.");
+        throw new Error(error.message || "Failed to reset ticket feedback configuration.");
       }
 
       toast.success("Feedback configuration reset.");
-      feedback.saving = false;
-      feedback.saveConfig({
+      saving = false;
+      feedbackConfig = {
         isEnabled: false,
         thankYou: current?.thankYou || "",
-        questions: current?.questions || [],
-      });
+        components: current?.components || [],
+      } as APIFeedbackConfig;
+      backupFeedback = { ...feedbackConfig };
     } catch (error: any) {
       console.error("Error resetting feedback config:", error);
       toast.error("Failed to reset feedback configuration.", {
         description: error.message || undefined,
       });
-      feedback.saving = false;
+      saving = false;
     }
   }
 
-  $effect(() => {
-    console.log("Hello from feedback");
-    fetch(APIRoutes.ticketFeedback(page.data.guildId!))
-      .then((res) => {
-        if (!res.ok) {
-          toast.error("Failed to load ticket configuration.", {
-            description: "Please try again later.",
-          });
-          return;
-        }
+  onMount(async () => {
+    try {
+      const res = await apiClient.get<APIFeedbackConfig>(APIRoutes.ticketFeedback(page.params.guildid!));
+      if (!res.ok) {
+        const err = await res.json<any>();
+        toast.error("Failed to load ticket configuration.", { description: err.message || "Please try again later." });
+        fetchedStatus = false;
+        loading = false;
+        return;
+      }
 
-        res.json().then((data: DBGuildProjectionReturns["feedback"]) => {
-          feedback.setConfig(data);
-          feedback.setBackup(data);
-          feedback.saving = false; // Loading is also set with this one
-          feedback.unsaved = false;
-          fetchedStatus = hasAllKeys(data.tags, ["one", "two", "three", "four", "five"]);
-          console.log("Feedback config loaded:", data);
-        });
-      })
-      .catch((err) => {
-        toast.error("Failed to load ticket configuration.", {
-          description: err.message,
-        });
-      });
-    return () => {
-      console.log("Bye from feedback");
-      feedback.clear();
-    };
+      const data = await res.json<APIFeedbackConfig>();
+      backupFeedback = { ...data };
+      feedbackConfig = { ...data };
+      fetchedStatus = true;
+    } catch (err: any) {
+      toast.error("Failed to load ticket configuration.", { description: String(err?.message || err) });
+      fetchedStatus = false;
+    } finally {
+      loading = false;
+      saving = false;
+    }
   });
+
+  onDestroy(() => {
+    backupFeedback = null;
+    feedbackConfig = null;
+  });
+
+  // Field manipulation functions
+  function addField() {
+    if (!feedbackConfig) return;
+
+    const newField: AnyAPIFeedbackFormComponent = {
+      local: true,
+      id: SnowflakeUtil.generate().toString(),
+      type: ComponentType.TextDisplay,
+      content: "Thank you for your feedback!",
+    };
+
+    feedbackConfig.components = [...(feedbackConfig.components || []), newField];
+  }
+
+  function moveFieldUp(index: number) {
+    if (!feedbackConfig || index === 0) return;
+
+    const newFields = [...(feedbackConfig.components || [])];
+    [newFields[index - 1], newFields[index]] = [newFields[index], newFields[index - 1]];
+
+    feedbackConfig.components = newFields;
+  }
+
+  function moveFieldDown(index: number) {
+    if (!feedbackConfig || index === (feedbackConfig.components || []).length - 1) return;
+
+    const newFields = [...(feedbackConfig.components || [])];
+    [newFields[index], newFields[index + 1]] = [newFields[index + 1], newFields[index]];
+
+    feedbackConfig.components = newFields;
+  }
 </script>
 
-<SiteHeading title="Ticket Feedback" />
+<SaveAlert
+  {saving}
+  {unsavedChanges}
+  discardChanges={() => {
+    if (backupFeedback && feedbackConfig) {
+      feedbackConfig = { ...backupFeedback };
+    }
+  }}
+  saveData={saveFn}
+/>
 
-{#if feedback.loading || fetchedStatus === null}
-  <div class="h-full w-full">
-    <LoadingSpinner />
-  </div>
-{:else if !!fetchedStatus && feedback.isConfigured()}
-  <FeedbackConfigPage
-    bind:feedback={feedback.config}
-    {saveFn}
-    {resetFn}
-    loading={feedback.loading}
-    saving={feedback.saving}
-  />
-{:else}
-  <div class="w-full max-w-3xl">
-    <SetupFeedbackPage />
-  </div>
-{/if}
+<div class="container max-w-4xl space-y-6" in:fly={{ x: -30, duration: 200 }}>
+  <SiteHeading title="Ticket Feedback" subtitle="Configure feedback collection for closed tickets" />
+
+  {#if loading}
+    <Card.Root>
+      <Card.Content class="flex items-center justify-center py-12">
+        <LoadingSpinner />
+      </Card.Content>
+    </Card.Root>
+  {:else if !feedbackConfig}
+    <Card.Root>
+      <Card.Content class="pt-6">
+        <div class="text-center">
+          <p class="text-muted-foreground">Failed to load feedback configuration.</p>
+        </div>
+      </Card.Content>
+    </Card.Root>
+  {:else}
+    <!-- Basic Settings -->
+    <Card.Root>
+      <Card.Header>
+        <Card.Title>Basic Settings</Card.Title>
+        <Card.Description>Configure whether feedback is enabled and customize the thank you message.</Card.Description>
+      </Card.Header>
+      <Card.Content class="space-y-5">
+        <div class="flex items-center justify-between">
+          <div class="space-y-0.5">
+            <Label for="feedback-enabled">Enable Feedback</Label>
+            <p class="text-muted-foreground text-sm">Collect feedback when tickets are closed</p>
+          </div>
+          <Switch variant="success" bind:checked={feedbackConfig.isEnabled} id="feedback-enabled" disabled={saving} />
+        </div>
+        
+        <div class="space-y-2">
+          <Label for="thank-you">Thank You Message</Label>
+          <Textarea
+            bind:value={feedbackConfig.thankYou}
+            id="thank-you"
+            placeholder="Thank you for your feedback!"
+            maxlength={2000}
+            disabled={saving}
+            class="min-h-24"
+          />
+          <p class="text-muted-foreground text-xs">
+            This message is shown after users submit their feedback.
+          </p>
+        </div>
+      </Card.Content>
+    </Card.Root>
+
+    <!-- Custom Questions -->
+    <Card.Root>
+      <Card.Header>
+        <Card.Title>Custom Feedback Questions</Card.Title>
+        <Card.Description>
+          Add up to 5 custom questions to collect additional feedback. File uploads are not supported.
+        </Card.Description>
+      </Card.Header>
+      <Card.Content class="space-y-2 w-auto">
+        {#if feedbackConfig.components && feedbackConfig.components.length > 0}
+          <div class="flex max-w-2xl flex-col gap-1 overflow-y-auto w-auto">
+            {#each feedbackConfig.components as field, index (field.id)}
+              <div
+                class={cn(
+                  "bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/70 flex h-16 flex-row items-center gap-3 rounded border p-3 shadow-xs transition duration-100 w-full",
+                )}
+                animate:flip={{ duration: 250 }}
+              >
+                <Badge variant="outline">{index + 1}</Badge>
+                <span class="flex-1">
+                  {field.type !== ComponentType.TextDisplay ? field.label : field.content.slice(0, 100)}
+                </span>
+
+                {#if feedbackConfig.components.length > 1}
+                  <div class="flex gap-1">
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onclick={() => moveFieldUp(index)}
+                      disabled={index === 0 || saving}
+                      title="Move up"
+                    >
+                      <ArrowUp class="size-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onclick={() => moveFieldDown(index)}
+                      disabled={index === feedbackConfig.components.length - 1 || saving}
+                      title="Move down"
+                    >
+                      <ArrowDown class="size-4" />
+                    </Button>
+                  </div>
+                {/if}
+                
+                <Button
+                  size="icon"
+                  variant="outline"
+                  onclick={() => {
+                    if (feedbackConfig) {
+                      editField = $state.snapshot(feedbackConfig.components![index]);
+                      editDialogOpen = true;
+                    }
+                  }}
+                  disabled={saving}
+                >
+                  <Pencil class="size-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="destructive"
+                  onclick={() => {
+                    if (confirm("Do you really want to delete this field?")) {
+                      feedbackConfig!.components = feedbackConfig!.components!.filter((f) => f.id !== field.id);
+                    }
+                  }}
+                  disabled={saving}
+                >
+                  <Trash class="size-4" />
+                </Button>
+              </div>
+            {/each}
+          </div>
+        {:else}
+          <p class="text-muted-foreground mb-3 text-sm">No custom questions added.</p>
+        {/if}
+
+        {#if (feedbackConfig.components?.length || 0) < 5}
+          <Button
+            variant="outline"
+            class="mt-2"
+            onclick={() => addField()}
+            disabled={saving}
+          >
+            <Plus class="mr-2 h-4 w-4" />
+            Add Question
+          </Button>
+        {/if}
+      </Card.Content>
+    </Card.Root>
+
+    <FieldDialog
+      bind:field={editField}
+      bind:open={editDialogOpen}
+      saveBtnLabel="Save"
+      availableTypes={[ComponentType.TextDisplay, ComponentType.TextInput, ComponentType.StringSelect]}
+      onSave={(f) => {
+        if (feedbackConfig && f) {
+          feedbackConfig.components = feedbackConfig.components!.map((field) =>
+            field.id === f.id ? f : field,
+          ) as AnyAPIFeedbackFormComponent[];
+        }
+        editDialogOpen = false;
+        editField = null;
+      }}
+    />
+  {/if}
+</div>

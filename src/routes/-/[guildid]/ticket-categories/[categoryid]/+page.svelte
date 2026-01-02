@@ -32,7 +32,7 @@
   import { toast } from "svelte-sonner";
   import { flip } from "svelte/animate";
   import { fly } from "svelte/transition";
-  import FieldDialog from "./FieldDialog.svelte";
+  import FieldDialog from "$lib/components/forms/FieldDialog.svelte";
 
   let { data } = $props();
 
