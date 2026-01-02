@@ -1,12 +1,12 @@
 <script lang="ts">
   import type {
-    AnyAPIFormComponent,
     APIFormComponent,
     FormComponentKeys,
     IStringSelectOption,
-    ModalComponentType,
+    ModalComponentType
   } from "$lib/sm-types";
   import { SnowflakeUtil } from "$lib/utils";
+  import Badge from "$ui/badge/badge.svelte";
   import { Button } from "$ui/button/index.js";
   import Checkbox from "$ui/checkbox/checkbox.svelte";
   import * as Dialog from "$ui/dialog/index.js";
@@ -21,12 +21,30 @@
   import Plus from "@lucide/svelte/icons/plus";
   import Trash from "@lucide/svelte/icons/trash";
   import { ComponentType, TextInputStyle } from "discord-api-types/v10";
-  import OptionDialog from "./OptionDialog.svelte";
   import { flip } from "svelte/animate";
-  import Badge from "$ui/badge/badge.svelte";
+  import OptionDialog from "./OptionDialog.svelte";
 
+  type Props<T extends ModalComponentType = ModalComponentType> = {
+    field: APIFormComponent<T> | null;
+    open: boolean;
+    saveBtnLabel?: string;
+    availableTypes?: T[];
+    onSave?: (_field: APIFormComponent<T>) => void;
+  }
+
+  let { field = $bindable(null), open = $bindable(false), saveBtnLabel = "Save", availableTypes, onSave }: Props = $props();
   let optionDialogOpen = $state(false);
   let editingOption = $state<IStringSelectOption | null>(null);
+
+  // Default to all types if not specified
+  const allTypes: ModalComponentType[] = [
+    ComponentType.TextDisplay,
+    ComponentType.TextInput,
+    ComponentType.StringSelect,
+    ComponentType.File,
+  ];
+
+  const effectiveAvailableTypes = $derived(availableTypes ?? allTypes);
 
   function addOption() {
     if (!field) return;
@@ -72,14 +90,6 @@
       (field as any).options[idx] = option;
     }
   }
-  interface Props {
-    field: APIFormComponent<ModalComponentType> | null;
-    open: boolean;
-    saveBtnLabel?: string;
-    onSave?: (_field: AnyAPIFormComponent) => void;
-  }
-
-  let { field = $bindable(null), open = $bindable(false), saveBtnLabel = "Save", onSave }: Props = $props();
 
   const fieldLabels = {
     [ComponentType.TextDisplay]: "Text Display",
@@ -88,7 +98,7 @@
     [ComponentType.File]: "File Upload",
   };
 
-  function switchFieldType<NewType extends ModalComponentType>(newType: NewType): APIFormComponent<NewType> {
+  function switchFieldType<NewType extends ModalComponentType>(newType: NewType): NonNullable<Props["field"]> {
     const oldField = $state.snapshot(field as any);
     // preserve id/local (or generate an id if this is a fresh field) so parent can identify the field after switching types
     const base = {
@@ -106,7 +116,7 @@
           ...base,
           type: newType,
           content: "Hello World",
-        } as APIFormComponent<ComponentType.TextDisplay>;
+        };
       case ComponentType.TextInput:
         return {
           ...base,
@@ -117,7 +127,7 @@
           required: getOldOrDefault<boolean>("required", false),
           minLength: 0,
           maxLength: 4000,
-        } as APIFormComponent<ComponentType.TextInput>;
+        };
       case ComponentType.StringSelect:
         return {
           ...base,
@@ -128,7 +138,7 @@
           minValues: getOldOrDefault<number>("minValues", 0),
           maxValues: getOldOrDefault<number>("maxValues", 1),
           options: [],
-        } as APIFormComponent<ComponentType.StringSelect>;
+        };
       case ComponentType.File:
         return {
           ...base,
@@ -137,7 +147,7 @@
           required: getOldOrDefault<boolean>("required", false),
           minValues: getOldOrDefault<number>("minValues", 0),
           maxValues: getOldOrDefault<number>("maxValues", 1),
-        } as APIFormComponent<ComponentType.File>;
+        };
     }
 
     throw new Error("Unsupported field type. How tf did you get here?");
@@ -145,9 +155,19 @@
 
   function handleFieldTypeChange(newTypeValue: string) {
     const newType = Number(newTypeValue) as ModalComponentType;
+    // prevent switching to a type that's not available
+    if (!effectiveAvailableTypes.includes(newType)) return;
     const newField = switchFieldType(newType);
     field = { ...newField };
   }
+
+  // Filter field labels to only show available types, or include current field type if editing
+  let selectableTypes = $derived(
+    Object.entries(fieldLabels).filter(([typeValue]) => {
+      const t = Number(typeValue) as ModalComponentType;
+      return effectiveAvailableTypes.includes(t) || (field && field.type === t);
+    })
+  );
 
   let fieldTypeSelectOpen = $state(false);
 </script>
@@ -172,7 +192,7 @@
           <Select.Root type="single" bind:open={fieldTypeSelectOpen} bind:value={() => field!.type.toString(), (v) => handleFieldTypeChange(v)}>
             <Select.Trigger id="edit-type" class="w-full">{fieldLabels[field.type]}</Select.Trigger>
             <Select.Content class="max-h-60 w-full overflow-y-auto">
-              {#each Object.entries(fieldLabels) as [typeValue, typeLabel]}
+              {#each selectableTypes as [typeValue, typeLabel]}
                 <Select.Item value={typeValue} class="cursor-pointer" onselect={() => {
                   const newField = switchFieldType(Number(typeValue) as ModalComponentType);
                   field = { ...newField };
