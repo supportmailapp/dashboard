@@ -1,8 +1,8 @@
 <script lang="ts">
-  import * as Tabs from "$lib/components/ui/tabs/index.js";
-  import { Textarea } from "$ui/textarea";
   import "$lib/assets/markup.css";
   import { MarkupParser } from "$lib/utils/markup";
+  import * as Tabs from "$ui/tabs/index.js";
+  import { Textarea } from "$ui/textarea";
 
   let { content = $bindable("") } = $props();
   let parsedContent = $derived(new MarkupParser().parse(content));
