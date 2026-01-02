@@ -125,6 +125,7 @@ const LegalLinks = {
 
 const DocsLinks = {
   LanguageDeterminationInGuild: "https://docs.supportmail.dev/f/preferences#language-determination-and-usage",
+  TicketCategories: "https://docs.supportmail.dev/features/ticket-categories",
 };
 
 export { APIRoutes, cdnUrls, DISCORD_CDN_BASE, discordUrls, DocsLinks, LegalLinks };
