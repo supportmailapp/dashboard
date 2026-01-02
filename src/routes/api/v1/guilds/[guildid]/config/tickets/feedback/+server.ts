@@ -2,7 +2,6 @@ import { JsonErrors } from "$lib/constants";
 import { FeedbackConfig, FlattenDocToJSON } from "$lib/server/db/index.js";
 import { ZodValidator } from "$lib/server/validators/index.js";
 import type { IFeedbackConfig } from "$lib/sm-types";
-import { hasAllKeys } from "$lib/utils";
 import { FeedbackConfigSchema } from "$v1Api/assertions.js";
 import { json } from "@sveltejs/kit";
 import type { UpdateQuery } from "mongoose";
