@@ -7,10 +7,13 @@
   import { ModeWatcher } from "mode-watcher";
   import { Toaster } from "$ui/sonner/index.js";
   import { getManager, setManager } from "$lib/stores/GuildsManager.svelte";
+  import { getSnowflakes, setSnowflakes } from "$lib/stores/SnowflakeControls.svelte";
+  import Snowflakes from "./Snowflakes.svelte";
 
   let { children, data } = $props();
 
   setManager();
+  setSnowflakes();
   const guildsManager = getManager();
 
   onMount(async function () {
@@ -57,8 +60,11 @@
   <meta property="og:site_name" content="SupportMail" />
 </svelte:head>
 
+
 <ModeWatcher />
 
 {@render children?.()}
 
 <Toaster position={"top-center"} richColors visibleToasts={4} closeButton />
+
+<Snowflakes />

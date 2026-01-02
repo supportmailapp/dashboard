@@ -25,10 +25,13 @@
   import { buttonVariants } from "$ui/button";
   import * as DropdownMenu from "$ui/dropdown-menu/index.js";
   import * as Sidebar from "$ui/sidebar/index.js";
+  import * as Dialog from "$ui/dialog/index.js";
   import { mode, toggleMode } from "mode-watcher";
   import type { Component } from "svelte";
   import { toast } from "svelte-sonner";
   import { getManager } from "$lib/stores/GuildsManager.svelte";
+  import Slider from "$ui/slider/slider.svelte";
+  import { getSnowflakes } from "$lib/stores/SnowflakeControls.svelte";
 
   type NavItem = {
     id: string;
@@ -118,9 +121,11 @@
     },
   ];
 
+  const snowflakes = getSnowflakes();
   const guildsManager = getManager();
   let reloadBtnDisabled = $state(false);
-  let atMeHref = $derived(`/@me?back=${page.url.pathname}`);
+  let snowflakeControlsOpen = $state(false);
+  let atMeHref = $derived(`/@me?back=${encodeURIComponent(page.url.pathname)}`);
   let isCurrentPage = $derived(page.data.isCurrentPage);
 
   async function reloadGuildData() {
@@ -228,6 +233,9 @@
               {/if}
               <span>Toggle Theme</span>
             </DropdownMenu.Item>
+            <DropdownMenu.Item onSelect={() => (snowflakeControlsOpen = true)}>
+              Snowflake Controls
+            </DropdownMenu.Item>
             <DropdownMenu.Item variant="destructive" onclick={() => goto("/logout")}>
               <LogOut />
               <span>Logout</span>
@@ -238,3 +246,12 @@
     </Sidebar.Menu>
   </Sidebar.Footer>
 </Sidebar.Root>
+
+<Dialog.Root bind:open={snowflakeControlsOpen}>
+  <Dialog.Content>
+    <Dialog.Header>
+      <Dialog.Title>Snowflake Intensity</Dialog.Title>
+    </Dialog.Header>
+    <Slider type="single" bind:value={snowflakes.intensity} min={0} max={10} step={1} />
+  </Dialog.Content>
+</Dialog.Root>
