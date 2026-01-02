@@ -278,7 +278,7 @@ export const handle = sequence(
     dsn: "https://f3539027417a80678d1015bba5b684e5@o4508704165265408.ingest.de.sentry.io/4508704168018000",
     sendDefaultPii: true,
     enableLogs: true,
-    tracesSampleRate: 1.0,
+    tracesSampleRate: dev ? 1.0 : 0.5,
   }),
   Sentry.sentryHandle(),
   authentification,
