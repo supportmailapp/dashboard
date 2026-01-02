@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import equal from "fast-deep-equal/es6";
 import { twMerge } from "tailwind-merge";
+import { DiscordSnowflake } from "@sapphire/snowflake";
 
 dayjs.extend(relativeTime);
 
@@ -192,24 +193,24 @@ export function sanitizeSnippetName(str: string) {
 
 /**
  * Determines if there are unsaved changes by comparing two configuration objects.
- * 
+ *
  * @param cfg1 - The first configuration object to compare (typically the original/saved state)
  * @param cfg2 - The second configuration object to compare (typically the current/modified state)
  * @returns `true` if the configurations differ (unsaved changes exist), `false` if they are equal
- * 
+ *
  * @remarks
  * This function performs a deep equality check between two objects using the `fast-deep-equal` library.
  * It is commonly used to detect when user modifications need to be saved.
- * 
- * 
+ *
+ *
  * **IMPORTANT**
  * When using this function, the `oldCfg` MUST be untracked if it's reactive to not cause unnecessary recomputations.
- * 
+ *
  * @example
  * ```ts
  * import { untrack } from "svelte";
  * import { determineUnsavedChanges } from "$lib/utils";
- * 
+ *
  * let oldConfig = { ... };
  * let currentConfig = { ... };
  * let unsavedChanges = $derived(determineUnsavedChanges(untrack(() => oldConfig), currentConfig));
@@ -217,3 +218,10 @@ export function sanitizeSnippetName(str: string) {
 export function determineUnsavedChanges(oldCfg: any, currentCfg: any): boolean {
   return !equal(oldCfg, currentCfg);
 }
+
+/**
+ * A class for parsing snowflake ids using Discord's snowflake epoch
+ *
+ * Which is 2015-01-01 at 00:00:00.000 UTC+0, {@linkplain https://discord.com/developers/docs/reference#snowflakes}
+ */
+export const SnowflakeUtil = DiscordSnowflake as typeof DiscordSnowflake;
