@@ -4,14 +4,14 @@
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import SaveAlert from "$lib/components/SaveAlert.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
-  import type { APITicketCategory, ITicketCategory } from "$lib/sm-types";
-  import { APIRoutes } from "$lib/urls";
-  import { cn, SnowflakeUtil } from "$lib/utils";
+  import type { APITicketCategory } from "$lib/sm-types";
+  import { APIRoutes, DocsLinks } from "$lib/urls";
+  import { cn } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
-  import { receive, send } from "$lib/utils/transition";
   import { Badge } from "$ui/badge/index.js";
   import { Button, buttonVariants } from "$ui/button";
   import * as Dialog from "$ui/dialog/index.js";
+  import * as Empty from "$lib/components/ui/empty/index.js";
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
   import ArrowDown from "@lucide/svelte/icons/arrow-down";
@@ -19,6 +19,8 @@
   import Pencil from "@lucide/svelte/icons/pencil";
   import Plus from "@lucide/svelte/icons/plus";
   import Trash from "@lucide/svelte/icons/trash";
+  import FolderOpen from "@lucide/svelte/icons/folder-open";
+  import ArrowUpRightIcon from "@lucide/svelte/icons/arrow-up-right";
   import equal from "fast-deep-equal/es6";
   import { onDestroy, onMount, untrack } from "svelte";
   import { toast } from "svelte-sonner";
@@ -219,7 +221,7 @@
 />
 
 {#if config.current}
-  <div class="flex w-full max-w-2xl flex-col justify-start gap-1.5">
+  <div class="flex w-full flex-col justify-start gap-1.5" class:max-w-3xl={config.current.length > 0}>
     <ul class="flex w-full flex-col gap-1">
       {#each config.current as cat, index (cat._id)}
         <li
@@ -275,51 +277,34 @@
         </li>
       {/each}
       {#if config.current.length === 0}
-        <li class="text-muted-foreground my-2 text-sm">No categories configured.</li>
+       <Empty.Root>
+        <Empty.Header>
+          <Empty.Media variant="icon">
+            <FolderOpen />
+          </Empty.Media>
+          <Empty.Title>No categories</Empty.Title>
+          <Empty.Description>You need at least <b>two</b> categories for categories to work.</Empty.Description>
+        </Empty.Header>
+        <Empty.Content>
+          <Button onclick={() => (newCategory.open = true)}>Create Category</Button>
+        </Empty.Content>
+        <Button
+          variant="link"
+          href={DocsLinks.TicketCategories}
+          class="text-muted-foreground"
+        >
+          Learn more
+          <ArrowUpRightIcon class="inline" />
+        </Button>
+      </Empty.Root>
       {/if}
     </ul>
     <div class="flex gap-2">
-      {#if config.current.length < 10}
-        <Dialog.Root bind:open={newCategory.open}>
-          <Dialog.Trigger class={buttonVariants({ variant: "outline", class: "flex-1" })}>
-            <Plus class="size-7" />
-            Add Category
-          </Dialog.Trigger>
-          <Dialog.Content class="space-y-4">
-            <Dialog.Header>
-              <Dialog.Title>Create Ticket Category</Dialog.Title>
-            </Dialog.Header>
-            <form
-              class="flex w-full flex-col gap-1.5"
-              onsubmit={(e) => {
-                e.preventDefault();
-                createCategory();
-                
-              }}
-            >
-              <Label for="new-cat-name">Category Name</Label>
-              <Input
-                bind:value={newCategory.label}
-                class={cn(
-                  !newCategory.isValid
-                    ? "border-destructive-foreground ring-destructive-foreground"
-                    : "border-success-foreground ring-success-foreground",
-                )}
-                required
-                type="text"
-                autocomplete="off"
-                id="new-cat-name"
-                placeholder="Support, Bug, etc."
-                minlength={3}
-                maxlength={45}
-                aria-invalid={!newCategory.isValid}
-              />
-              <Dialog.Footer>
-                <Button type="submit">Create</Button>
-              </Dialog.Footer>
-            </form>
-          </Dialog.Content>
-        </Dialog.Root>
+      {#if config.current.length < 10 && config.current.length > 0}
+        <Button variant="outline" class="flex-1" onclick={() => (newCategory.open = true)}>
+          <Plus class="size-7" />
+          Add Category
+        </Button>
       {/if}
     </div>
   </div>
@@ -328,3 +313,40 @@
     <LoadingSpinner />
   </div>
 {/if}
+
+<Dialog.Root bind:open={newCategory.open}>
+  <Dialog.Content class="space-y-4">
+    <Dialog.Header>
+      <Dialog.Title>Create Ticket Category</Dialog.Title>
+    </Dialog.Header>
+    <form
+      class="flex w-full flex-col gap-1.5"
+      onsubmit={(e) => {
+        e.preventDefault();
+        createCategory();
+        
+      }}
+    >
+      <Label for="new-cat-name">Category Name</Label>
+      <Input
+        bind:value={newCategory.label}
+        class={cn(
+          !newCategory.isValid
+            ? "border-destructive-foreground ring-destructive-foreground"
+            : "border-success-foreground ring-success-foreground",
+        )}
+        required
+        type="text"
+        autocomplete="off"
+        id="new-cat-name"
+        placeholder="Support, Bug, etc."
+        minlength={3}
+        maxlength={45}
+        aria-invalid={!newCategory.isValid}
+      />
+      <Dialog.Footer>
+        <Button type="submit">Create</Button>
+      </Dialog.Footer>
+    </form>
+  </Dialog.Content>
+</Dialog.Root>
