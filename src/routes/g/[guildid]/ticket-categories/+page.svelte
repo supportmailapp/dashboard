@@ -6,7 +6,7 @@
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import type { APITicketCategory, ITicketCategory } from "$lib/sm-types";
   import { APIRoutes } from "$lib/urls";
-  import { cn } from "$lib/utils";
+  import { cn, SnowflakeUtil } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
   import { receive, send } from "$lib/utils/transition";
   import { Badge } from "$ui/badge/index.js";
@@ -63,11 +63,11 @@
         guildId: page.params.guildid!,
         label: newCategory.label,
         index: (config.current?.length ?? 0) + 1,
-        fields: [],
         enabled: true,
+        components: [],
       },
     ];
-    config.current.sort((a, b) => a.index - b.index);
+    config.current!.sort((a, b) => a.index - b.index);
 
     newCategory.reset();
     toast.success(`Category "${newCategory.label}" created.`);

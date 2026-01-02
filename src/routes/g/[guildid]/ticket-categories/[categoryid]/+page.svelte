@@ -7,20 +7,17 @@
   import MentionableSelect from "$lib/components/MentionableSelect.svelte";
   import SaveAlert from "$lib/components/SaveAlert.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
-  import { EntityType, type ICustomModalField, type ITicketCategory } from "$lib/sm-types";
+  import { EntityType, type AnyAPIFormComponent, type ITicketCategory } from "$lib/sm-types";
   import { APIRoutes } from "$lib/urls.js";
-  import { cn } from "$lib/utils";
+  import { cn, SnowflakeUtil } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient.js";
   import { EmojiParser } from "$lib/utils/formatting.js";
   import { Badge } from "$ui/badge/index.js";
   import { Button, buttonVariants } from "$ui/button";
   import * as Card from "$ui/card/index.js";
-  import { Checkbox } from "$ui/checkbox/index.js";
-  import * as Dialog from "$ui/dialog/index.js";
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
   import * as Popover from "$ui/popover/index.js";
-  import * as RadioGroup from "$ui/radio-group/index.js";
   import { Switch } from "$ui/switch";
   import ArrowDown from "@lucide/svelte/icons/arrow-down";
   import ArrowLeft from "@lucide/svelte/icons/arrow-left";
@@ -29,10 +26,13 @@
   import Plus from "@lucide/svelte/icons/plus";
   import Trash from "@lucide/svelte/icons/trash";
   import XIcon from "@lucide/svelte/icons/x";
+  import { ComponentType } from "discord-api-types/v10";
   import equal from "fast-deep-equal/es6";
-  import { onDestroy, untrack } from "svelte";
+  import { onDestroy, onMount, untrack } from "svelte";
   import { toast } from "svelte-sonner";
+  import { flip } from "svelte/animate";
   import { fly } from "svelte/transition";
+  import FieldDialog from "./FieldDialog.svelte";
 
   let { data } = $props();
 
@@ -47,43 +47,14 @@
 
   let unsavedChanges = $derived(!equal(untrack(() => config.old), config.current));
 
-  const dialogState = $state({
-    new: false,
-    edit: false,
-  });
+  let editDialogOpen = $state(false);
+  let editField = $state<AnyAPIFormComponent | null>(null);
 
-  let highestPos = $derived(
-    config.current
-      ? config.current.fields.reduce((acc, cur) => {
-          if (cur.position > acc) return cur.position;
-          return acc;
-        }, 0) + 1
-      : 1,
-  );
+  $inspect("edit field", editField);
 
-  const newField = $state<Required<ICustomModalField>>({
-    label: "",
-    placeholder: "",
-    minL: 0,
-    maxL: 100,
-    position: 1,
-    style: 1,
-    _required: false,
-  });
-
-  const editField = $state({
-    data: null as ICustomModalField | null,
-  });
-
-  $effect(() => {
-    if (highestPos !== newField.position) {
-      newField.position = highestPos;
-    }
-  });
-
-  $effect(() => {
+  onMount(() => {
     if (data.category) {
-      const categoryData = { ...data.category, emoji: data.category.emoji ?? { name: "" } };
+      const categoryData: any = { ...data.category, emoji: data.category.emoji ?? { name: "" } };
       config.old = { ...categoryData };
       config.current = { ...categoryData };
     }
@@ -196,55 +167,36 @@
   }
 
   // Field stuff
-  function saveField(whichOne: "new" | "edit") {
-    if (whichOne === "new") {
-      config.current?.fields.push($state.snapshot(newField));
-      dialogState.new = false;
-      // Reset newField
-      newField.label = "";
-      newField.placeholder = "";
-      newField.minL = 0;
-      newField.maxL = 100;
-      newField.position = highestPos;
-      newField.style = 1;
-      newField._required = false;
-    } else {
-      // Find and update the existing field by position
-      const fieldIndex = config.current?.fields.findIndex((f) => f.position === editField.data?.position);
-      if (fieldIndex !== undefined && fieldIndex !== -1 && config.current && editField.data) {
-        config.current.fields[fieldIndex] = $state.snapshot(editField.data);
-      }
-      dialogState.edit = false;
-    }
+  function addField() {
+    if (!config.current) return;
+
+    const newField: AnyAPIFormComponent = {
+      local: true,
+      id: SnowflakeUtil.generate().toString(),
+      type: ComponentType.TextDisplay,
+      content: "Hello World",
+    };
+
+    config.current.components = [...config.current.components, newField];
   }
 
   // Field reordering functions
   function moveFieldUp(index: number) {
     if (!config.current || index === 0) return;
 
-    const newFields = [...config.current.fields];
+    const newFields = [...config.current.components];
     [newFields[index - 1], newFields[index]] = [newFields[index], newFields[index - 1]];
 
-    // Update position values to match new order
-    newFields.forEach((field, idx) => {
-      field.position = idx + 1;
-    });
-
-    config.current.fields = newFields;
+    config.current.components = newFields;
   }
 
   function moveFieldDown(index: number) {
-    if (!config.current || index === config.current.fields.length - 1) return;
+    if (!config.current || index === config.current.components.length - 1) return;
 
-    const newFields = [...config.current.fields];
+    const newFields = [...config.current.components];
     [newFields[index], newFields[index + 1]] = [newFields[index + 1], newFields[index]];
 
-    // Update position values to match new order
-    newFields.forEach((field, idx) => {
-      field.position = idx + 1;
-    });
-
-    config.current.fields = newFields;
+    config.current.components = newFields;
   }
 
   function resetCfg() {
@@ -403,19 +355,22 @@
           Have up to 5 questions, the user is asked before creating a ticket.
         </Card.Description>
       </Card.Header>
-      <Card.Content class="space-y-2">
-        {#if config.current.fields.length > 0}
-          <ul class="flex max-w-2xl flex-col gap-1">
-            {#each config.current.fields as field, index (field.position)}
-              <li
+      <Card.Content class="space-y-2 w-auto">
+        {#if config.current.components.length > 0}
+          <div class="flex max-w-2xl flex-col gap-1 overflow-y-auto w-auto">
+            {#each config.current.components as field, index (field.id)}
+              <div
                 class={cn(
-                  "bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/70 flex h-16 flex-row items-center gap-3 rounded border p-3 shadow-xs transition duration-100",
+                  "bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/70 flex h-16 flex-row items-center gap-3 rounded border p-3 shadow-xs transition duration-100 w-full",
                 )}
+                animate:flip={{ duration: 250 }}
               >
-                <Badge variant="outline">{field.position}</Badge>
-                <span class="flex-1">{field.label}</span>
-                
-                {#if config.current.fields.length > 1}
+                <Badge variant="outline">{index + 1}</Badge>
+                <span class="flex-1">
+                  {field.type !== ComponentType.TextDisplay ? field.label : field.content.slice(0, 100)}
+                </span>
+
+                {#if config.current.components.length > 1}
                   <div class="flex gap-1">
                     <Button
                       size="icon"
@@ -430,7 +385,7 @@
                       size="icon"
                       variant="outline"
                       onclick={() => moveFieldDown(index)}
-                      disabled={index === config.current.fields.length - 1 || config.loading}
+                      disabled={index === config.current.components.length - 1 || config.loading}
                       title="Move down"
                     >
                       <ArrowDown class="size-4" />
@@ -441,8 +396,9 @@
                 <Button
                   onclick={() => {
                     if (config.current) {
-                      editField.data = $state.snapshot(config.current.fields[index]);
-                      dialogState.edit = true;
+                      editField = $state.snapshot(config.current.components[index]);
+                      console.log("Editing field:", $state.snapshot(editField));
+                      editDialogOpen = true;
                     }
                   }}
                 >
@@ -452,219 +408,48 @@
                   variant="destructive"
                   onclick={() => {
                     if (confirm("Do you really want to delete this field?")) {
-                      config.current!.fields = config.current!.fields.filter((f) => f.position !== field.position);
+                      config.current!.components = config.current!.components.filter((f) => f.id !== field.id);
                     }
                   }}
                 >
                   <Trash />
                 </Button>
-              </li>
+              </div>
             {/each}
-          </ul>
+          </div>
         {:else}
           <p class="text-muted-foreground mb-3 text-sm">No fields added.</p>
         {/if}
 
-        {#if config.current.fields.length < 5}
-          <Dialog.Root
-            bind:open={dialogState.new}
-            onOpenChangeComplete={(opn) => {
-              if (!opn) {
-                // Reset newField on close
-                newField.label = "";
-                newField.placeholder = "";
-                newField.minL = 0;
-                newField.maxL = 100;
-                newField.position = highestPos;
-                newField.style = 1;
-                newField._required = false;
-              }
-            }}
+        {#if config.current.components.length < 5}
+          <Button
+            variant="outline"
+            class="mt-2"
+            onclick={() => addField()}
+            disabled={config.loading}
           >
-            <Dialog.Trigger class={buttonVariants({ variant: "outline" })}>
-              <Plus />
-              Add Field
-            </Dialog.Trigger>
-            <Dialog.Content class="gap-6">
-              <Dialog.Header>
-                <Dialog.Title>Add new field</Dialog.Title>
-              </Dialog.Header>
-
-              <form
-                class="flex flex-col gap-6"
-                onsubmit={(e) => {
-                  e.preventDefault();
-                  saveField("new");
-                }}
-              >
-                <div class="flex w-full max-w-sm flex-col gap-1.5">
-                  <Label for="new-label">Label</Label>
-                  <Input
-                    required
-                    type="text"
-                    id="new-label"
-                    bind:value={newField.label}
-                    placeholder="The question to ask"
-                    minlength={3}
-                    maxlength={45}
-                  />
-                </div>
-
-                <div class="flex w-full max-w-sm flex-col gap-1.5">
-                  <Label for="new-ph">Placeholder</Label>
-                  <Input
-                    type="text"
-                    id="new-ph"
-                    bind:value={newField.placeholder}
-                    placeholder="The placeholder to show"
-                    minlength={0}
-                    maxlength={100}
-                  />
-                </div>
-
-                <div class="flex w-full max-w-sm flex-col gap-1.5">
-                  <Label for="new-style">Style</Label>
-                  <RadioGroup.Root
-                    bind:value={
-                      () => (newField.style === 1 ? "short" : "long"),
-                      (v: "short" | "long") => (newField.style = v === "short" ? 1 : 2)
-                    }
-                  >
-                    <div class="flex items-center space-x-2">
-                      <RadioGroup.Item value="short" id="new-style-short" />
-                      <Label for="new-style-short">Short (One Line)</Label>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                      <RadioGroup.Item value="long" id="new-style-long" />
-                      <Label for="new-style-long">Paragraph (Multiline)</Label>
-                    </div>
-                  </RadioGroup.Root>
-                </div>
-
-                <div class="flex w-full max-w-sm flex-col gap-1.5">
-                  <div class="flex w-full max-w-sm flex-col gap-1">
-                    <Label>Minimum Input Length</Label>
-                    <Input type="number" min={0} max={4000} bind:value={newField.minL} />
-                  </div>
-                  <div class="flex w-full max-w-sm flex-col gap-1">
-                    <Label>Maximum Input Length</Label>
-                    <Input type="number" min={1} max={4000} bind:value={newField.maxL} />
-                  </div>
-                </div>
-
-                <div class="flex w-full max-w-sm flex-col gap-1.5">
-                  <Label for="new-required">
-                    <Checkbox bind:checked={newField._required} id="new-required" />
-                    Required
-                  </Label>
-                  <p class="text-muted-foreground text-sm">
-                    When enabled, users must fill out this field before they can submit their ticket. Required
-                    fields cannot be left empty.
-                  </p>
-                </div>
-                <Dialog.Footer>
-                  <Button type="submit">Save</Button>
-                </Dialog.Footer>
-              </form>
-            </Dialog.Content>
-          </Dialog.Root>
+            <Plus />
+            Add Field
+          </Button>
         {/if}
       </Card.Content>
     </Card.Root>
 
-    <Dialog.Root
-      bind:open={dialogState.edit}
-      onOpenChangeComplete={(opn) => {
-        if (!opn) {
-          editField.data = null;
+    <FieldDialog
+      bind:field={editField}
+      bind:open={editDialogOpen}
+      saveBtnLabel="Save"
+      onSave={(f) => {
+        // Only update the component list when a field is saved
+        if (config.current && f) {
+          config.current.components = config.current.components.map((field) =>
+            field.id === f.id ? f : field,
+          );
         }
+        editDialogOpen = false;
+        editField = null;
       }}
-    >
-      <Dialog.Content class="gap-6">
-        <Dialog.Header>
-          <Dialog.Title>Edit field</Dialog.Title>
-        </Dialog.Header>
-
-        {#if editField.data}
-          <form
-            class="flex flex-col gap-6"
-            onsubmit={(e) => {
-              e.preventDefault();
-              saveField("edit");
-            }}
-          >
-            <div class="flex w-full max-w-sm flex-col gap-1.5">
-              <Label for="edit-label">Label</Label>
-              <Input
-                required
-                type="text"
-                id="edit-label"
-                bind:value={editField.data.label}
-                placeholder="The question to ask"
-                minlength={3}
-                maxlength={45}
-              />
-            </div>
-
-            <div class="flex w-full max-w-sm flex-col gap-1.5">
-              <Label for="edit-ph">Placeholder</Label>
-              <Input
-                type="text"
-                id="edit-ph"
-                bind:value={editField.data.placeholder}
-                placeholder="The placeholder to show"
-                minlength={0}
-                maxlength={100}
-              />
-            </div>
-
-            <div class="flex w-full max-w-sm flex-col gap-1.5">
-              <Label for="edit-style">Style</Label>
-              <RadioGroup.Root
-                bind:value={
-                  () => (editField.data!.style === 1 ? "short" : "long"),
-                  (v: "short" | "long") => (editField.data!.style = v === "short" ? 1 : 2)
-                }
-              >
-                <div class="flex items-center space-x-2">
-                  <RadioGroup.Item value="short" id="edit-style-short" />
-                  <Label for="edit-style-short">Short (One Line)</Label>
-                </div>
-                <div class="flex items-center space-x-2">
-                  <RadioGroup.Item value="long" id="edit-style-long" />
-                  <Label for="edit-style-long">Paragraph (Multiline)</Label>
-                </div>
-              </RadioGroup.Root>
-            </div>
-
-            <div class="flex w-full max-w-sm flex-col gap-1.5">
-              <div class="flex w-full max-w-sm flex-col gap-1">
-                <Label>Minimum Input Length</Label>
-                <Input type="number" min={0} max={4000} bind:value={editField.data.minL} />
-              </div>
-              <div class="flex w-full max-w-sm flex-col gap-1">
-                <Label>Maximum Input Length</Label>
-                <Input type="number" min={1} max={4000} bind:value={editField.data.maxL} />
-              </div>
-            </div>
-
-            <div class="flex w-full max-w-sm flex-col gap-1.5">
-              <Label for="edit-required">
-                <Checkbox bind:checked={editField.data._required} id="edit-required" />
-                Required
-              </Label>
-              <p class="text-muted-foreground text-sm">
-                When enabled, users must fill out this field before they can submit their ticket. Required
-                fields cannot be left empty.
-              </p>
-            </div>
-            <Dialog.Footer>
-              <Button type="submit">Save</Button>
-            </Dialog.Footer>
-          </form>
-        {/if}
-      </Dialog.Content>
-    </Dialog.Root>
+    />
 
     <!-- Action Buttons -->
     <Card.Root>

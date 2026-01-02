@@ -1,6 +1,6 @@
 import type { ITicketCategory } from "$lib/sm-types";
 import pkg, { model, Schema } from "mongoose";
-import { customModalFieldSchema, EntitySchema, partialEmojiSchema } from "./utilSchemas";
+import { customModalFieldSchema, EntitySchema, FormComponentSchema, partialEmojiSchema } from "./utilSchemas";
 const { models } = pkg;
 
 const ticketCategorySchema = new Schema<ITicketCategory>({
@@ -21,10 +21,21 @@ const ticketCategorySchema = new Schema<ITicketCategory>({
     type: [customModalFieldSchema],
     required: false,
     validate: {
-      validator: function (_) {
-        return Array.isArray(this.fields) && this.fields.length <= 5;
+      validator: (def: ITicketCategory["fields"]) => {
+        return Array.isArray(def) && def.length <= 5;
       },
       message: (props: any) => `${props.value} exceeds the limit of 5 fields`,
+    },
+  },
+  components: {
+    type: [FormComponentSchema],
+    default: [],
+    max: 5,
+    validate: {
+      validator: (def: ITicketCategory["components"]) => {
+        return Array.isArray(def) && def.length <= 5;
+      },
+      message: (props: any) => `${props.value} exceeds the limit of 5 components`,
     },
   },
   customMessageId: { type: String, required: false },

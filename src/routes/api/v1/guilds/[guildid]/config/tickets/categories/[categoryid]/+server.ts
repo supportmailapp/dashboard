@@ -1,9 +1,9 @@
 import { JsonErrors } from "$lib/constants";
 import { FlattenDocToJSON, getTicketCategories, TicketCategory } from "$lib/server/db";
 import { ZodValidator } from "$lib/server/validators";
-import { reindexArrayByKey } from "$lib/utils/formatting.js";
-import { CustomModalFieldSchema, MentionableEntity, PartialEmoji, SnowflakePredicate } from "$v1Api/assertions.js";
+import { MentionableEntity, PartialEmoji, SnowflakePredicate } from "$v1Api/assertions.js";
 import z from "zod";
+import { FormComponentsSchema } from "./forms.zod";
 
 const putSchema = z.object({
   _id: z.string(),
@@ -13,7 +13,7 @@ const putSchema = z.object({
   enabled: z.boolean().default(true),
   tag: SnowflakePredicate.optional(),
   pings: MentionableEntity.array().optional(),
-  fields: CustomModalFieldSchema.array().min(0).max(5).optional(),
+  components: FormComponentsSchema,
   customMessageId: z.string().optional(),
 });
 
@@ -30,7 +30,7 @@ export async function PUT({ request, locals, params }) {
 
   const valRes = new ZodValidator(putSchema).validate(body);
   if (!valRes.success) {
-    return JsonErrors.badRequest(valRes.error.message);
+    return JsonErrors.badRequest(ZodValidator.toHumanError(valRes.error));
   }
 
   valRes.data.guildId = guildId;
@@ -39,8 +39,9 @@ export async function PUT({ request, locals, params }) {
     return JsonErrors.badRequest("Category ID in the URL does not match the ID in the request body.");
   }
 
-  const existing = await getTicketCategories(guildId, valRes.data.label);
-  if (existing.length > 1) {
+  const existing = (await getTicketCategories(guildId, valRes.data.label)) ?? [];
+  // If any existing category with the same label has a different id, it's a conflict
+  if (existing.some((c) => String(c._id) !== String(valRes.data._id))) {
     return JsonErrors.conflict(`A ticket category with the label "${valRes.data.label}" already exists.`);
   }
 
@@ -49,15 +50,10 @@ export async function PUT({ request, locals, params }) {
     Object.entries(valRes.data).filter(([key]) => key !== "_id"),
   ) as Omit<typeof valRes.data, "_id">;
 
-  // Ensure fields are ordered by position and re-index them
-  sanitizedData.fields = reindexArrayByKey(
-    sanitizedData.fields?.sort((a, b) => a.position - b.position),
-    "position",
-  );
-
   const cat = await TicketCategory.findOneAndUpdate({ guildId, _id: valRes.data._id }, sanitizedData, {
     upsert: true,
     new: true,
+    setDefaultsOnInsert: true,
   });
 
   return Response.json(FlattenDocToJSON(cat, true), {
