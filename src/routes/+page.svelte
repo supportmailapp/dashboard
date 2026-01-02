@@ -32,7 +32,7 @@
 
     site.showLoading = true;
     const nextUrl = page.url.searchParams.get("next");
-    if (nextUrl?.startsWith("/g/")) {
+    if (nextUrl?.startsWith("/-/")) {
       goto(nextUrl);
     } else if (nextUrl?.startsWith("/")) {
       hrefAfterSelection = nextUrl;

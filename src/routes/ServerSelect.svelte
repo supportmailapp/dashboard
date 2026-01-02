@@ -24,14 +24,14 @@
     <Command.Empty>No servers found.</Command.Empty>
     {#each guildsManager.guilds as guild (guild.id)}
       {@const _guildHref = guild.isConfigured
-        ? `/g/${guild.id + getNextPathFromGuildPath(page.url.pathname)}`
+        ? `/-/${guild.id + getNextPathFromGuildPath(page.url.pathname)}`
         : `/invite/${guild.id}`}
       <Command.LinkItem
         href={_guildHref}
         value="{guild.id}:{guild.name}"
         class={cn("transition-all duration-120", !guild.isConfigured && "text-foreground/70")}
         onclick={() => {
-          if (!page.url.pathname.startsWith(`/g/${guild.id}`)) {
+          if (!page.url.pathname.startsWith(`/-/${guild.id}`)) {
             clickFn?.();
           }
         }}

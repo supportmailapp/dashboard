@@ -62,7 +62,7 @@
         method="POST"
         use:enhance={() => {
           const nextHref = page.url.searchParams.get("next");
-          if (nextHref?.startsWith("/g/")) {
+          if (nextHref?.startsWith("/-/")) {
             localStorage.setItem("urlAfterLogin", nextHref);
           } else if (nextHref?.startsWith("/")) {
             localStorage.setItem("urlAfterServerSelection", nextHref);

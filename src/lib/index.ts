@@ -38,16 +38,16 @@ export function isCurrentPage(url: URL, check: string, partial = true) {
  *
  * @param guildId - The unique identifier of the guild
  * @param nextPath - Optional additional path to append after the guild ID
- * @returns The constructed URL path in the format `/g/{guildId}{nextPath}`
+ * @returns The constructed URL path in the format `/-/{guildId}{nextPath}`
  *
  * @example
  * ```typescript
- * guildHref("123456789") // Returns "/g/123456789"
- * guildHref("123456789", "/settings") // Returns "/g/123456789/settings"
+ * guildHref("123456789") // Returns "/-/123456789"
+ * guildHref("123456789", "/settings") // Returns "/-/123456789/settings"
  * ```
  */
 export function guildHref(guildId: string, nextPath?: string) {
-  return `/g/${guildId}${nextPath ? nextPath : ""}`;
+  return `/-/${guildId}${nextPath ? nextPath : ""}`;
 }
 
 export function getNextPathFromGuildPath(pathname: string) {

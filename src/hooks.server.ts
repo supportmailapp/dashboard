@@ -191,7 +191,7 @@ const apiAuthGuard: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
-const GUILD_ROUTES = ["/api/*/guilds/**", "/g/**"];
+const GUILD_ROUTES = ["/api/*/guilds/**", "/-/**"];
 
 // Compile guild route patterns once
 const compiledGuildRoutes = GUILD_ROUTES.map((pattern) =>

@@ -7,7 +7,7 @@ import type { QueryFilter } from "mongoose";
 import type {
   ReportSearchScope,
   ReportSearchType,
-} from "../../../../../g/[guildid]/reports/FilterControls.svelte";
+} from "../../../../../-/[guildid]/reports/FilterControls.svelte";
 
 export type PaginatedReportsResponse = PaginatedResponse<
   DocumentWithId<Pick<IReport, "authorId" | "userId" | "guildId" | "createdAt" | "status" | "message">>
