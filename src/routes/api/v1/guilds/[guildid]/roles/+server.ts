@@ -18,8 +18,6 @@ export async function GET({ locals, params, url, setHeaders }) {
 
   const res = await locals.discordRest.getGuildRoles(params.guildid);
 
-  console.log("GET /api/v1/guilds/[guildid]/roles", res);
-
   if (!res.isSuccess()) {
     return new Response(JSON.stringify(res.error), {
       status: res.status ?? 500,

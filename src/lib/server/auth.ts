@@ -194,8 +194,6 @@ export async function checkUserGuildAccess(
       return 404;
     }
 
-    console.log("User guild found:", targetGuild);
-
     // Check if the guild exists in DB and is not marked for deletion
     const guildExists = await DBGuild.exists({
       id: guildId,
@@ -206,7 +204,6 @@ export async function checkUserGuildAccess(
       return 404;
     }
 
-    console.log("User guild found:", targetGuild);
     // 3. Check for at least manager permissions for that guild
     return canManageBot(targetGuild.permissions) ? 200 : 403;
   } catch (error) {
