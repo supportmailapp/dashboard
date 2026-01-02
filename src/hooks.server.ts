@@ -106,7 +106,7 @@ const authentification: Handle = async ({ event, resolve }) => {
 };
 
 const authorization: Handle = async ({ event, resolve }) => {
-  if (event.url.pathname.startsWith("/g") && !event.locals.user) {
+  if (event.url.pathname.startsWith("/-") && !event.locals.user) {
     const next = "/" + event.url.pathname.split("/").slice(2).join("/");
     const guild = event.params.guildid;
 
@@ -203,13 +203,13 @@ const guildAuthGuard: Handle = async ({ event, resolve }) => {
   const guildId = event.params.guildid;
 
   // Early returns for non-guild routes
-  if (!guildId || (!pathname.startsWith("/api/") && !pathname.startsWith("/g"))) {
+  if (!guildId || (!pathname.startsWith("/api/") && !pathname.startsWith("/-"))) {
     return resolve(event);
   }
 
   // Authentication check
   if (!event.locals.token || !event.locals.user) {
-    if (pathname.startsWith("/g")) {
+    if (pathname.startsWith("/-")) {
       redirect(303, `/login` + (pathname.length > 1 ? `?next=${pathname}` : ""));
     }
     return JsonErrors.unauthorized();
