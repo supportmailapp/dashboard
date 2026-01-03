@@ -11,6 +11,8 @@ import type {
   APIRole,
   APIThreadChannel,
   APIUser,
+  GuildChannelType,
+  GuildTextChannelType,
   RESTAPIPartialCurrentUserGuild,
 } from "discord-api-types/v10";
 import type { FlattenMaps } from "mongoose";
@@ -95,11 +97,18 @@ declare global {
     | { user: null; token: null; error: "other" | "notfound" | "network" };
 
   /**
-   * An API guild channel which is not a thread.
+   * A guild channel from the Discord API. Can be anything.
    */
-  type GuildCoreChannel = Exclude<APIChannel, APIDMChannel | APIGroupDMChannel | APIThreadChannel>;
-
+  type APIGuildChannel = Extract<APIChannel, { type: GuildChannelType }>;
+  /**
+   * An API guild channel which is not a thread. Not all channels are sendable (forum, category, media).
+   */
+  type GuildCoreChannel = Exclude<APIGuildChannel, APIThreadChannel>;
   type GuildCoreChannelType = GuildCoreChannel["type"];
+  /**
+   * A guild channel that can be sent messages to.
+   */
+  type GuildSendableChannel = Extract<APIGuildChannel, { type: GuildTextChannelType }>;
 
   type GuildRole = APIRole;
 
