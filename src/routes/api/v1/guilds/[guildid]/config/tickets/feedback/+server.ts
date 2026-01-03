@@ -14,6 +14,7 @@ export async function GET({ params }) {
         guildId: params.guildid,
         isEnabled: false,
         components: [],
+        thankYou: "",
       });
     }
 
