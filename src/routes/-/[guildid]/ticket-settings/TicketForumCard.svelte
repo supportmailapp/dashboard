@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import ChannelSelect from "$lib/components/ChannelSelect.svelte";
+  import ChannelSelect from "$lib/components/discord/ChannelSelect.svelte";
   import ConfigCard from "$lib/components/ConfigCard.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
   import type { DBGuildProjectionReturns } from "$lib/server/db";
