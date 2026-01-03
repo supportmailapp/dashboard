@@ -12,8 +12,9 @@
   import { Input } from "$ui/input";
   import { Skeleton } from "$ui/skeleton";
   import * as Tabs from "$ui/tabs/index.js";
+  import * as Field from "$ui/field/index.js";
   import { toast } from "svelte-sonner";
-  import ChannelIcon from "./discord/ChannelIcon.svelte";
+  import ChannelIcon from ".//ChannelIcon.svelte";
   import { getManager } from "$lib/stores/GuildsManager.svelte";
 
   type Props = {
@@ -167,11 +168,25 @@
       {@render channelsCommand()}
     </Tabs.Content>
     <Tabs.Content value="customChannel" class="flex flex-col gap-2">
-      <Input
-        bind:value={channelIdInput}
-        placeholder="Channel/Thread ID"
-        class="placeholder:text-muted-foreground placeholder:text-sm"
-      />
+      <Field.Set>
+        <Field.Group>
+          <Field.Field class="gap-0.5">
+            <Input
+              bind:value={channelIdInput}
+              placeholder="Channel/Thread ID or Link"
+              class="placeholder:text-muted-foreground placeholder:text-sm"
+            />
+            <Field.Description>
+              <a href="http://dis.gd/findmyid?utm_source=supportmail"
+                target="_blank"
+                class="underline hover:text-accent"
+              >
+                Where to find a Channel/Thread ID
+              </a>
+            </Field.Description>
+          </Field.Field>
+        </Field.Group>
+      </Field.Set>
       <Button variant={channelButtonStyle} onclick={findChannelById} disabled={buttonDisabled}>
         Find Channel
       </Button>

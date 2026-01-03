@@ -4,6 +4,7 @@
   import type { APIUser } from "discord-api-types/v10";
   import RoleSelect from "./RoleSelect.svelte";
   import UserSelect from "./UserSelect.svelte";
+  import { onMount } from "svelte";
 
   type Props = {
     /**
@@ -27,7 +28,7 @@
     /**
      * Callback when a role is selected.
      */
-    onRoleSelect?: (role: GuildRole) => void;
+    onRoleSelect?: (roleid: string) => void;
     /**
      * Callback when a user is selected.
      */
@@ -48,7 +49,11 @@
     class: className,
   }: Props = $props();
 
-  let searchMode = $state<"users" | "roles">(defaultTab);
+  let searchMode = $state<"users" | "roles">();
+
+  onMount(() => {
+    searchMode = defaultTab;
+  });
 </script>
 
 <Tabs.Root bind:value={searchMode} class={cn("h-full w-full max-w-xs", className)}>

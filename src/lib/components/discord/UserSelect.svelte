@@ -43,7 +43,7 @@
 
     try {
       const res = await apiClient.get<APIUser[]>(
-        APIRoutes.memberSearch(page.params.guildid, userSearchInput, botsOnly ? "bot" : undefined),
+        APIRoutes.memberSearch(page.params.guildid!, userSearchInput, botsOnly ? "bot" : undefined),
       );
 
       const users = await res.json();
@@ -81,7 +81,7 @@
   </form>
 
   <div class={cn("flex flex-col gap-1", loading.fetching && "pointer-events-none opacity-70 select-none")}>
-    <div class="flex max-h-[300px] min-h-20 w-full flex-col gap-1 overflow-y-auto rounded-md border p-2">
+    <div class="flex max-h-75 min-h-20 w-full flex-col gap-1 overflow-y-auto rounded-md border p-2">
       {#if !fetchedUsers.length && !loading.fetching}
         <p class="bg-muted text-muted-foreground rounded-md p-3 text-center text-sm">
           {userSearchInput ? "No users found." : `Search for ${botsOnly ? "bots" : "users"} above.`}

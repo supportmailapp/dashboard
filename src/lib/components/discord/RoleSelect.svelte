@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { page } from "$app/state";
   import { getManager } from "$lib/stores/GuildsManager.svelte";
   import * as Command from "$ui/command/index.js";
   import { Skeleton } from "$ui/skeleton";
   import type { APIRole } from "discord-api-types/v10";
-  import Role from "./discord/Role.svelte";
+  import Role from "./Role.svelte";
 
   type Props = {
     excludedRoleIds?: string[];
