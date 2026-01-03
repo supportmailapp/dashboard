@@ -1,17 +1,16 @@
 // Server Discord API integration
 
 import { discordBotToken } from "$env/static/private";
+import UserGuildsCache from "$lib/server/caches/userGuilds.js";
 import {
   Routes,
-  type APIChannel,
   type APIGuildMember,
   type APIRole,
   type APIUser,
   type RESTAPIPartialCurrentUserGuild,
   type RESTPatchAPIChannelJSONBody,
 } from "discord-api-types/v10";
-import { DiscordAPIError, REST, HTTPError, RateLimitError, type RESTOptions } from "discord.js";
-import UserGuildsCache from "$lib/server/caches/userGuilds.js";
+import { DiscordAPIError, HTTPError, RateLimitError, REST, type RESTOptions } from "discord.js";
 
 type SafeError = DiscordAPIError | HTTPError | RateLimitError | Error | string;
 type DefinitelyHasError<E extends SafeError> = Omit<SafeResponse<null>, "error" | "data"> & {
@@ -122,11 +121,11 @@ class DiscordBotAPI extends BaseDiscordAPI {
     return this.doSafeRequest(() => this.rest.get(Routes.guildChannels(guildId)) as any);
   }
 
-  public async getGuildChannel<T extends APIChannel>(channelId: string): Promise<SafeResponse<T>> {
+  public async getGuildChannel<T extends APIGuildChannel>(channelId: string): Promise<SafeResponse<T>> {
     return this.doSafeRequest(() => this.rest.get(Routes.channel(channelId)) as any);
   }
 
-  public async editGuildChannel<T extends APIChannel>(
+  public async editGuildChannel<T extends APIGuildChannel>(
     channelId: string,
     data: RESTPatchAPIChannelJSONBody,
   ): Promise<SafeResponse<T>> {
