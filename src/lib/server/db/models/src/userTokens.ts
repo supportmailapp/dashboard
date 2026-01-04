@@ -1,37 +1,36 @@
-import { DB_ENCRYPTION_IV, DB_ENCRYPTION_KEY } from "$env/static/private";
+import { DB_ENCRYPTION_KEY } from "$env/static/private";
 import type { IUserToken } from "$lib/sm-types";
-import { createCipheriv, createDecipheriv } from "crypto";
+import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
 import pkg, { model, Schema } from "mongoose";
 const { models } = pkg;
 
-const algorithm = "aes-256-cbc";
-const encKey = Buffer.from(DB_ENCRYPTION_KEY, "utf-8");
-const encIV = Buffer.from(DB_ENCRYPTION_IV, "utf-8");
+function encrypt(text: string): string {
+  const iv = randomBytes(16);
+  const cipher = createCipheriv("aes-256-gcm", DB_ENCRYPTION_KEY, iv);
 
-export function encrypt(text: string): string {
-  try {
-    const cipher = createCipheriv(algorithm, encKey, encIV);
-    let encrypted = cipher.update(text, "utf-8", "hex");
-    encrypted += cipher.final("hex");
-    console.log("Encrypted:", encrypted);
-    return encrypted;
-  } catch (error) {
-    console.error("Encryption error:", error);
-    throw new Error("Failed to encrypt token");
-  }
+  let encrypted = cipher.update(text, "utf8", "hex");
+  encrypted += cipher.final("hex");
+  const authTag = cipher.getAuthTag();
+
+  // Combine IV + authTag + encrypted data and encode as base64
+  const combined = Buffer.concat([iv, authTag, Buffer.from(encrypted, "hex")]);
+
+  return combined.toString("base64");
 }
 
-export function decrypt(encryptedText: string): string {
-  try {
-    const decipher = createDecipheriv(algorithm, encKey, encIV);
-    let decrypted = decipher.update(encryptedText, "hex", "utf-8");
-    decrypted += decipher.final("utf-8");
-    console.log("Decrypted:", decrypted);
-    return decrypted;
-  } catch (error) {
-    console.error("Decryption error:", error);
-    throw new Error("Failed to decrypt token");
-  }
+function decrypt(encryptedBase64: string): string {
+  const combined = Buffer.from(encryptedBase64, "base64");
+  const iv = combined.subarray(0, 16);
+  const authTag = combined.subarray(16, 32);
+  const encrypted = combined.subarray(32);
+
+  const decipher = createDecipheriv("aes-256-gcm", DB_ENCRYPTION_KEY, iv);
+  decipher.setAuthTag(authTag);
+
+  let decrypted = decipher.update(encrypted.toString("hex"), "hex", "utf8");
+  decrypted += decipher.final("utf8");
+
+  return decrypted;
 }
 
 const userTokenSchema = new Schema<IUserToken>(
