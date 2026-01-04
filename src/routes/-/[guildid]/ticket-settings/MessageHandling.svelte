@@ -1,7 +1,7 @@
 <script lang="ts">
   import ConfigCard from "$lib/components/ConfigCard.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
-  import UserSelect from "$lib/components/UserSelect.svelte";
+  import UserSelect from "$lib/components/discord/UserSelect.svelte";
   import { buttonVariants } from "$ui/button";
   import { Label } from "$ui/label";
   import * as Popover from "$ui/popover/index.js";

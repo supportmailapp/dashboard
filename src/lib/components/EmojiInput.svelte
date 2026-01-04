@@ -33,7 +33,7 @@
       Enter Emoji Data
     {/if}
   </Popover.Trigger>
-  <Popover.Content class="h-full w-[300px] space-y-4">
+  <Popover.Content class="h-full w-75 space-y-4">
     <div class="flex flex-col gap-2">
       <Label for="emoji-input-name">Emoji</Label>
       <Input

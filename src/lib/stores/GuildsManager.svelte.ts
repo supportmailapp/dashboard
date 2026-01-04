@@ -1,10 +1,10 @@
 import { page } from "$app/state";
 import { APIRoutes } from "$lib/urls";
+import apiClient from "$lib/utils/apiClient";
 import { sortByPositionAndId } from "$lib/utils/formatting.js";
 import type { APIRole } from "discord-api-types/v10";
-import { SvelteMap } from "svelte/reactivity";
 import { createContext } from "svelte";
-import apiClient from "$lib/utils/apiClient";
+import { SvelteMap } from "svelte/reactivity";
 
 export class GuildsManager {
   public guildId = $derived<string | undefined>(page.params.guildid);
@@ -16,6 +16,10 @@ export class GuildsManager {
    * The channels of the current guild.
    */
   channels = $state<GuildCoreChannel[]>([]);
+  /**
+   * Fetched Custom Channels for the current guild.
+   */
+  readonly customChannels = new SvelteMap<string, APIGuildChannel>();
   /**
    * The roles of the current guild.
    */
@@ -32,9 +36,7 @@ export class GuildsManager {
    */
   rolesLoaded: boolean = $state(false);
 
-  constructor() {}
-
-  async loadGuilds(clearCache = false) {
+  async loadGuilds() {
     this.loaded = false;
     const guildsRes = await apiClient.get(APIRoutes.userGuilds(true));
 
@@ -100,6 +102,9 @@ export class GuildsManager {
     // Since currentGuild is derived from guilds, we can't reset it directly.
     this.channels = [];
     this.roles.clear();
+    this.customChannels.clear();
+    this.channelsLoaded = false;
+    this.rolesLoaded = false;
   }
 }
 

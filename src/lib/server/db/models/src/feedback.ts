@@ -17,6 +17,7 @@ const FeedbackTagsSchema = new Schema<IFeedbackTags>(
 const FeedbackConfigSchema = new Schema<IFeedbackConfig>(
   {
     guildId: { type: String, required: true, unique: true },
+    channelId: { type: String, required: false, unique: true }, // A channel can only be used for one guild's feedback
     isEnabled: { type: Boolean, default: false },
     thankYou: { type: String, required: false },
     tags: { type: FeedbackTagsSchema, required: false },

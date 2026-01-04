@@ -3,29 +3,29 @@
   import Hash from "@lucide/svelte/icons/hash";
   import { ChannelType } from "discord-api-types/v10";
 
+  import { getManager } from "$lib/stores/GuildsManager.svelte";
   import { APIRoutes } from "$lib/urls";
   import { cn } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
-  import { sortChannels } from "$lib/utils/formatting";
+  import { parseDiscordLink, sortChannels } from "$lib/utils/formatting";
   import { Button } from "$ui/button";
   import * as Command from "$ui/command/index.js";
+  import * as Field from "$ui/field/index.js";
   import { Input } from "$ui/input";
   import { Skeleton } from "$ui/skeleton";
   import * as Tabs from "$ui/tabs/index.js";
-  import * as Field from "$ui/field/index.js";
   import { toast } from "svelte-sonner";
   import ChannelIcon from ".//ChannelIcon.svelte";
-  import { getManager } from "$lib/stores/GuildsManager.svelte";
 
   type Props = {
-    selected?: GuildCoreChannel;
+    selectedId?: string;
     excludedChannelIds?: string[];
     /**
      * The channel types to filter by.
      *
      * If empty, all channels will be allowed.
      */
-    channelTypes?: GuildCoreChannelType[];
+    channelTypes?: APIGuildChannel["type"][];
     /**
      * Whether to allow selecting categories too instead of channels.
      *
@@ -33,11 +33,15 @@
      */
     selectCategories?: boolean;
     allowCustomChannels?: boolean;
-    onSelect?: (channel: GuildCoreChannel) => void;
+    /**
+     * Callback when a channel is selected. When custom channels are allowed,
+     * the channel can be anything. Otherwise, it will always be a guild core channel (category depends on `selectCategories`).
+     */
+    onSelect?: (channel: APIGuildChannel | GuildCoreChannel, isCustom?: boolean) => void;
   };
 
   let {
-    selected = $bindable(),
+    selectedId = $bindable(),
     channelTypes = [],
     excludedChannelIds,
     selectCategories = false,
@@ -49,6 +53,7 @@
   let oldFetchInput = "";
   // This not only covers the case where the input is the same, but also when empty
   let buttonDisabled = $derived(oldFetchInput == $state.snapshot(channelIdInput));
+  let buttonLoading = $state(false);
   let channelButtonStyle = $state<"success" | "default">("default");
   const guildsManager = getManager();
 
@@ -56,43 +61,69 @@
     return excludedChannelIds !== undefined && excludedChannelIds.includes(channel.id);
   }
 
-  let filteredChannels = $derived<GuildCoreChannel[]>(
-    guildsManager.channels?.filter(
+  let groupedChannels = $derived.by(() => {
+    const sorted = sortChannels(
+        $state.snapshot(guildsManager.channels),
+        true,
+        (arg) => console.log("Sorted Channels:", arg),
+      );
+    
+    // filter
+    const uncategorizedFiltered = sorted.uncategorized.filter(
       (channel) => (allowAllChannels || channelTypes.includes(channel.type)) && !isChannelExcluded(channel),
-    ) ?? [],
-  );
+    );
+    const groupedFiltered = sorted.categories
+      .map(({ cat, channels }) => ({
+        cat,
+        channels: channels.filter(
+          (channel) => (allowAllChannels || channelTypes.includes(channel.type)) && !isChannelExcluded(channel),
+        ),
+      }))
+      .filter(({ channels }) => channels.length > 0); // remove empty categories
+    
+    return {
+      uncategorized: uncategorizedFiltered,
+      categories: groupedFiltered,
+    }
+  });
 
-  let groupedChannels = $derived.by(() =>
-    sortChannels(
-      filteredChannels.map((c) => c),
-      true,
-    ),
-  );
-
-  function channelClick(channelId: string) {
-    return () => onSelect?.(filteredChannels.find((c) => c.id === channelId)!);
-  }
-
-  async function findChannelById() {
+  async function findChannelByIdOrLink() {
     if (channelIdInput === "") {
       toast.warning("Channel ID input empty.", { description: "What are you trying to do?" });
       return;
     }
 
+    const currentInput = $state.snapshot(channelIdInput);
+    const parsedLink = parseDiscordLink(currentInput);
+
+    if (!/^\d{17,23}$/.test(channelIdInput)) {
+      if (parsedLink?.channelId) {
+        channelIdInput = parsedLink.channelId;
+      } else {
+        toast.error("Invalid Channel/Thread ID or Link.", { description: "Please provide a valid input." });
+        return;
+      }
+    }
+
+    buttonLoading = true;
+
     oldFetchInput = $state.snapshot(channelIdInput);
+
+    let channel: APIGuildChannel | undefined = guildsManager.customChannels.get(oldFetchInput) || guildsManager.channels.find((c) => c.id === oldFetchInput);
 
     try {
       const res = await apiClient.get(APIRoutes.guildChannel(page.data.guildId!, oldFetchInput));
 
       if (!res.ok) {
+        buttonLoading = false;
         throw new Error(`Failed to find channel with ID ${oldFetchInput}`);
       }
 
-      const data = await res.json<GuildCoreChannel>();
-      console.log("Fetched Channel:", data);
-      selected = data;
+      channel = await res.json<APIGuildChannel>();
+      guildsManager.customChannels.set(channel.id, channel);
     } catch (err: any) {
       buttonDisabled = true;
+      buttonLoading = false;
       toast.error("Failed to find channel", { description: String(err.message ?? err) });
       await new Promise((r) =>
         setTimeout(() => {
@@ -100,7 +131,28 @@
           r(true);
         }, 4000),
       );
+      return;
     }
+
+    if (isChannelExcluded(channel as GuildCoreChannel)) {
+      toast.error("Channel is excluded.", { description: "Please select a different channel." });
+      buttonLoading = false;
+      return;
+    }
+    if (!allowAllChannels && !channelTypes.includes(channel.type as any)) {
+      toast.error("Invalid channel type.", { description: "Please select a different channel." });
+      buttonLoading = false;
+      return;
+    }
+    if (selectCategories === false && channel.type === ChannelType.GuildCategory) {
+      toast.error("Categories cannot be selected.", { description: "Please select a different channel." });
+      buttonLoading = false;
+      return;
+    }
+
+    buttonLoading = false;
+    selectedId = channel.id;
+    onSelect?.(channel, true);
   }
 </script>
 
@@ -109,10 +161,10 @@
     value="{channel.id}:{channel.name}"
     class={cn(
       "cursor-pointer transition duration-80 active:scale-[99%]",
-      selected?.id === channel.id && "bg-accent-foreground text-accent transform-none",
+      selectedId === channel.id && "bg-muted text-muted-foreground transform-none",
     )}
-    onSelect={channelClick(channel.id)}
-    disabled={selected?.id === channel.id}
+    onSelect={() => onSelect?.(channel, false)}
+    disabled={selectedId === channel.id}
   >
     <ChannelIcon type={channel.type} />
     {channel.name}
@@ -123,34 +175,32 @@
   <Command.Root class="w-full rounded-lg border shadow-md">
     <Command.Input placeholder="Search channels..." />
     <Command.List>
-      <Command.Empty>No channels found.</Command.Empty>
+      {#if guildsManager.channelsLoaded}
+        <Command.Empty>No channels found.</Command.Empty>
+      {/if}
+
       {#if !guildsManager.channelsLoaded}
-        {#each new Array(3) as _}
+        {#each new Array(5) as _}
           <Command.Item disabled>
             <Hash />
             <Skeleton class="h-4 w-full" />
           </Command.Item>
         {/each}
       {:else if guildsManager.channelsLoaded && selectCategories && channelTypes.includes(ChannelType.GuildCategory)}
-        <!-- The logic for selecting everything BUT categories -->
-        {@const joinedChannels = filteredChannels}
-        {#each joinedChannels as channel}
-          {@render channelItem(channel)}
-        {/each}
-      {:else if guildsManager.channelsLoaded && selectCategories && channelTypes.includes(ChannelType.GuildCategory)}
         <!-- The logic for selecting ONLY categories -->
-        {#each groupedChannels.categories as { cat, channels }}
+        {#each groupedChannels.categories as { cat }}
           {@render channelItem(cat)}
         {/each}
       {:else}
+        <!-- The logic for selecting normal channels -->
         {#each groupedChannels.uncategorized as channel}
           {@render channelItem(channel)}
         {/each}
         {#each groupedChannels.categories as { cat, channels }}
           <Command.Group heading={cat.name}>
-            {#each channels as channel}
-              {@render channelItem(channel)}
-            {/each}
+        {#each channels as channel}
+          {@render channelItem(channel)}
+        {/each}
           </Command.Group>
         {/each}
       {/if}
@@ -187,7 +237,7 @@
           </Field.Field>
         </Field.Group>
       </Field.Set>
-      <Button variant={channelButtonStyle} onclick={findChannelById} disabled={buttonDisabled}>
+      <Button variant={channelButtonStyle} onclick={findChannelByIdOrLink} disabled={buttonDisabled} showLoading={buttonLoading}>
         Find Channel
       </Button>
     </Tabs.Content>

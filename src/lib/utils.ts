@@ -4,6 +4,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import equal from "fast-deep-equal/es6";
 import { twMerge } from "tailwind-merge";
 import { DiscordSnowflake } from "@sapphire/snowflake";
+import { ChannelType } from "discord-api-types/v10";
 
 dayjs.extend(relativeTime);
 
@@ -137,9 +138,17 @@ export function deepClone<T>(obj: T): T {
     return obj;
   }
 
-  // Handle primitives (string, number, boolean, bigint)
-  if (typeof obj !== "object") {
-    return obj;
+  if (typeof obj === "string") {
+    return new String(obj) as unknown as T;
+  }
+  if (typeof obj === "number") {
+    return new Number(obj) as unknown as T;
+  }
+  if (typeof obj === "boolean") {
+    return new Boolean(obj) as unknown as T;
+  }
+  if (typeof obj === "bigint") {
+    return BigInt(obj.toString()) as unknown as T;
   }
 
   // Handle Date objects
@@ -149,7 +158,7 @@ export function deepClone<T>(obj: T): T {
 
   // Handle Arrays
   if (Array.isArray(obj)) {
-    return obj.map((item) => deepClone(item)) as T;
+    return obj.map((item) => deepClone(item)) as T; // a little bit of that recursion
   }
 
   // Try structuredClone first for complex objects
@@ -225,3 +234,17 @@ export function determineUnsavedChanges(oldCfg: any, currentCfg: any): boolean {
  * Which is 2015-01-01 at 00:00:00.000 UTC+0, {@linkplain https://discord.com/developers/docs/reference#snowflakes}
  */
 export const SnowflakeUtil = DiscordSnowflake as typeof DiscordSnowflake;
+
+/**
+ * Type guard to check if a channel is sendable (i.e., can send messages)
+ */
+export function isChannelSendable(channel: APIGuildChannel): channel is GuildSendableChannel {
+  return (
+    channel.type === ChannelType.GuildCategory ||
+    channel.type === ChannelType.GuildStageVoice ||
+    channel.type === ChannelType.AnnouncementThread ||
+    channel.type === ChannelType.PublicThread ||
+    channel.type === ChannelType.PrivateThread ||
+    channel.type === ChannelType.GuildAnnouncement
+  );
+}

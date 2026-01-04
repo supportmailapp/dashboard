@@ -19,7 +19,7 @@
      * indicating whether the deletion was successful or not.
      */
     onDelete?: (id: string) => any;
-    channel?: GuildCoreChannel;
+    channel?: APIGuildChannel;
     /**
      * Channel ID as a fallback.
      */

@@ -4,7 +4,7 @@
 
   type Props = {
     channelId?: string;
-    channel?: GuildCoreChannel;
+    channel?: APIGuildChannel;
     class?: ClassValue;
   };
 

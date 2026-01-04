@@ -23,10 +23,37 @@ export function sortByPositionAndId<T extends { id: string; position: number }>(
   });
 }
 
-export function sortChannels<T extends GuildCoreChannel>(channels: T[], preserveCategoryGroups?: false): T[];
+/**
+ * Sorts channels within a category by organizing them with text channels first, followed by voice channels.
+ *
+ * @template T - A channel object type that extends `{ type: ChannelType; id: string; position: number }`
+ * @param channels - Array of channels to sort
+ * @returns A new array of sorted channels with text/other channels before voice and stage voice channels
+ */
+function sortChannelsInCategory<T extends { type: ChannelType; id: string; position: number }>(
+  channels: T[],
+) {
+  // Sort channels within a category by position and id
+  const sorted1 = sortByPositionAndId(channels);
+  // Move voice channels to the end
+  const voiceChannels = sorted1.filter((c) =>
+    [ChannelType.GuildVoice, ChannelType.GuildStageVoice].includes(c.type),
+  );
+  const otherChannels = sorted1.filter(
+    (c) => ![ChannelType.GuildVoice, ChannelType.GuildStageVoice].includes(c.type),
+  );
+  return [...otherChannels, ...voiceChannels];
+}
+
+export function sortChannels<T extends GuildCoreChannel>(
+  channels: T[],
+  preserveCategoryGroups?: false,
+  logFn?: (arg: any) => any,
+): T[];
 export function sortChannels<T extends GuildCoreChannel>(
   channels: T[],
   preserveCategoryGroups: true,
+  logFn?: (arg: any) => any,
 ): {
   uncategorized: Exclude<T, APIGuildCategoryChannel>[];
   categories: { cat: APIGuildCategoryChannel; channels: Exclude<T, APIGuildCategoryChannel>[] }[];
@@ -39,41 +66,46 @@ export function sortChannels<T extends GuildCoreChannel>(
 export function sortChannels<T extends GuildCoreChannel>(
   channels: T[],
   preserveCategoryGroups: boolean = false,
+  logFn?: (arg: any) => any,
 ): any {
-  const sorted = sortByPositionAndId(channels);
-
+  const sortedCategories = sortByPositionAndId(
+    channels.filter((c) => c.type === ChannelType.GuildCategory) as APIGuildCategoryChannel[],
+  );
   if (!preserveCategoryGroups) {
     const grouped: T[] = [];
     // First all uncategorized channels
-    for (const channel of sorted) {
-      if (channel.parent_id === null && channel.type !== ChannelType.GuildCategory) {
-        grouped.push(channel);
-      }
-    }
+    grouped.push(
+      ...sortChannelsInCategory(
+        channels.filter((c) => c.parent_id === null && c.type !== ChannelType.GuildCategory),
+      ),
+    );
 
-    const categories = sorted.filter((c) => c.type === ChannelType.GuildCategory);
-    for (const cat of categories) {
-      grouped.push(cat, ...channels.filter((c) => c.parent_id === cat.id));
+    for (const cat of sortedCategories) {
+      grouped.push(cat as T, ...(channels.filter((c) => c.parent_id === cat.id) as T[]));
     }
     return grouped;
   }
 
   // Group channels by category
-  const categories = sorted.filter((c) => c.type === ChannelType.GuildCategory) as APIGuildCategoryChannel[];
   const result: {
     uncategorized: T[];
     categories: { cat: APIGuildCategoryChannel; channels: Exclude<T, APIGuildCategoryChannel>[] }[];
   } = {
-    uncategorized: sorted.filter((c) => c.parent_id === null && c.type !== ChannelType.GuildCategory) as T[],
-    categories: categories.map((cat) => ({
+    uncategorized: sortChannelsInCategory(
+      channels.filter((c) => !c.parent_id && c.type !== ChannelType.GuildCategory) as T[],
+    ),
+    categories: sortedCategories.map((cat) => ({
       cat,
-      channels: sorted.filter(
-        (c) => c.parent_id === cat.id && c.type !== ChannelType.GuildCategory,
-      ) as Exclude<T, APIGuildCategoryChannel>[],
+      channels: sortChannelsInCategory(
+        channels.filter((c) => c.parent_id === cat.id && c.type !== ChannelType.GuildCategory) as Exclude<
+          T,
+          APIGuildCategoryChannel
+        >[],
+      ),
     })),
   };
 
-  console.log("Sorted channels:", result);
+  logFn?.(result);
 
   return result;
 }
@@ -238,4 +270,24 @@ export function dateToLocalString(date: Date | string): string {
     minute: "2-digit",
     second: "2-digit",
   });
+}
+
+export function parseDiscordLink(
+  url: string,
+): { guildId: string; channelId?: string; messageId?: string } | null {
+  let _url: URL;
+  try {
+    _url = new URL(url);
+  } catch {
+    return null;
+  }
+  const path = _url.pathname;
+  const pathRegex = /^\/channels\/(\d+)(?:\/(\d+)(?:\/(\d+))?)?$/;
+  const match = path.match(pathRegex);
+  if (!match) return null;
+  return {
+    guildId: match[1],
+    channelId: match[2],
+    messageId: match[3],
+  };
 }

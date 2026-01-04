@@ -1,17 +1,22 @@
 <script lang="ts">
   import { page } from "$app/state";
+  import ChannelSelect from "$lib/components/discord/ChannelSelect.svelte";
+  import Mention from "$lib/components/discord/Mention.svelte";
   import FieldDialog from "$lib/components/forms/FieldDialog.svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import SaveAlert from "$lib/components/SaveAlert.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import type { AnyAPIFeedbackFormComponent, APIFeedbackConfig } from "$lib/sm-types";
+  import { getManager } from "$lib/stores/GuildsManager.svelte";
   import { APIRoutes } from "$lib/urls";
-  import { cn, SnowflakeUtil } from "$lib/utils";
+  import { cn, isChannelSendable, SnowflakeUtil } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
   import { Badge } from "$ui/badge/index.js";
-  import { Button } from "$ui/button";
+  import { Button, buttonVariants } from "$ui/button/index.js";
   import * as Card from "$ui/card/index.js";
+  import * as Field from "$ui/field/index.js";
   import { Label } from "$ui/label";
+  import * as Popover from "$ui/popover/index.js";
   import { Switch } from "$ui/switch";
   import { Textarea } from "$ui/textarea";
   import ArrowDown from "@lucide/svelte/icons/arrow-down";
@@ -19,22 +24,24 @@
   import Pencil from "@lucide/svelte/icons/pencil";
   import Plus from "@lucide/svelte/icons/plus";
   import Trash from "@lucide/svelte/icons/trash";
-  import { ComponentType } from "discord-api-types/v10";
+  import { ChannelType, ComponentType } from "discord-api-types/v10";
   import equal from "fast-deep-equal/es6";
   import { onDestroy, onMount } from "svelte";
   import { toast } from "svelte-sonner";
   import { flip } from "svelte/animate";
   import { fly } from "svelte/transition";
 
-  // Local reactive config (replaces the old ConfigState usage)
+  const guildsManager = getManager();
+  const channels = $derived(guildsManager.channels);
+
   let feedbackConfig = $state<APIFeedbackConfig | null>(null);
   let backupFeedback = $state<APIFeedbackConfig | null>(null);
   let loading = $state(true);
   let saving = $state(false);
-  let fetchedStatus = $state<null | boolean>(null);
 
   let editDialogOpen = $state(false);
   let editField = $state<AnyAPIFeedbackFormComponent | null>(null);
+  let channelSelectOpen = $state(false);
 
   let unsavedChanges = $derived(!equal(backupFeedback, feedbackConfig));
 
@@ -72,41 +79,12 @@
     }
   };
 
-  async function resetFn() {
-    try {
-      const current = feedbackConfig;
-      saving = true;
-      const res = await apiClient.delete(APIRoutes.ticketFeedbackSetup(page.params.guildid!));
-
-      if (!res.ok) {
-        const error = await res.json<any>();
-        throw new Error(error.message || "Failed to reset ticket feedback configuration.");
-      }
-
-      toast.success("Feedback configuration reset.");
-      saving = false;
-      feedbackConfig = {
-        isEnabled: false,
-        thankYou: current?.thankYou || "",
-        components: current?.components || [],
-      } as APIFeedbackConfig;
-      backupFeedback = { ...feedbackConfig };
-    } catch (error: any) {
-      console.error("Error resetting feedback config:", error);
-      toast.error("Failed to reset feedback configuration.", {
-        description: error.message || undefined,
-      });
-      saving = false;
-    }
-  }
-
   onMount(async () => {
     try {
       const res = await apiClient.get<APIFeedbackConfig>(APIRoutes.ticketFeedback(page.params.guildid!));
       if (!res.ok) {
         const err = await res.json<any>();
         toast.error("Failed to load ticket configuration.", { description: err.message || "Please try again later." });
-        fetchedStatus = false;
         loading = false;
         return;
       }
@@ -114,10 +92,8 @@
       const data = await res.json<APIFeedbackConfig>();
       backupFeedback = { ...data };
       feedbackConfig = { ...data };
-      fetchedStatus = true;
     } catch (err: any) {
       toast.error("Failed to load ticket configuration.", { description: String(err?.message || err) });
-      fetchedStatus = false;
     } finally {
       loading = false;
       saving = false;
@@ -159,6 +135,48 @@
     [newFields[index], newFields[index + 1]] = [newFields[index + 1], newFields[index]];
 
     feedbackConfig.components = newFields;
+  }
+
+  async function fetchFeedbackChannel(): Promise<GuildSendableChannel> {
+    if (!feedbackConfig || !feedbackConfig.channelId) {
+      throw new Error("No feedback channel configured."); // Should never happen
+    }
+
+    // Check cache first for custom channels
+    const cached = guildsManager.customChannels.get(feedbackConfig.channelId);
+    if (cached && isChannelSendable(cached)) {
+      return cached;
+    }
+
+    const coreChannel = channels.find((c) => c.id === feedbackConfig!.channelId);
+    if (
+      coreChannel &&
+      ![
+        ChannelType.GuildCategory,
+        ChannelType.GuildForum,
+        ChannelType.GuildMedia
+      ].includes(coreChannel.type)
+    ) {
+      return coreChannel as GuildSendableChannel;
+    }
+
+    const res = await apiClient.get<APIGuildChannel>(APIRoutes.guildChannel(page.params.guildid!, feedbackConfig.channelId));
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch feedback channel.");
+    }
+
+    const data = await res.json();
+
+    if (isChannelSendable(data)) {
+      // Cache the fetched channel
+      guildsManager.customChannels.set(data.id, data);
+      return data;
+    }
+    toast.error("Invalid feedback channel", {
+      description: "Channel is not a sendable channel.",
+    });
+    throw new Error("Feedback channel is not a sendable channel.");
   }
 </script>
 
@@ -205,21 +223,82 @@
           </div>
           <Switch variant="success" bind:checked={feedbackConfig.isEnabled} id="feedback-enabled" disabled={saving} />
         </div>
-        
-        <div class="space-y-2">
-          <Label for="thank-you">Thank You Message</Label>
-          <Textarea
-            bind:value={feedbackConfig.thankYou}
-            id="thank-you"
-            placeholder="Thank you for your feedback!"
-            maxlength={2000}
-            disabled={saving}
-            class="min-h-24"
-          />
-          <p class="text-muted-foreground text-xs">
-            This message is shown after users submit their feedback.
-          </p>
+
+        <div class="flex items-center justify-between">
+          <div class="space-y-0.5">
+            <Label for="feedback-channel">Feedback Channel</Label>
+            <p class="text-muted-foreground text-sm">
+              The channel where feedback submissions will be sent to.
+            </p>
+          </div>
+          <div>
+            {#if !!feedbackConfig?.channelId}
+              {#await fetchFeedbackChannel() then channel}
+                <Mention channel={channel} onDelete={() => { if (feedbackConfig) delete feedbackConfig.channelId; }} />
+              {:catch error}
+                <span
+                  {@attach () => {
+                    toast.error("Failed to load channel", {
+                      description: String(error),
+                    });
+                    if (feedbackConfig) delete feedbackConfig.channelId;
+                  }}
+                  class="text-destructive"
+                >
+                  Failed to load channel
+                </span>
+              {/await}
+            {/if}
+            <Popover.Root bind:open={() => channelSelectOpen, (v) => (channelSelectOpen = v)}>
+              <Popover.Trigger class={cn(!feedbackConfig.channelId ? buttonVariants({ variant: "outline" }) : "hidden")}>
+                  Choose a category
+              </Popover.Trigger>
+              <Popover.Content class="w-80">
+                <ChannelSelect
+                  allowCustomChannels
+                  channelTypes={[
+                    ChannelType.GuildText,
+                    ChannelType.GuildVoice,
+                    ChannelType.GuildAnnouncement,
+                    ChannelType.GuildStageVoice,
+                    ChannelType.AnnouncementThread,
+                    ChannelType.PublicThread,
+                    ChannelType.PrivateThread,
+                  ]}
+                  selectedId={feedbackConfig.channelId}
+                  onSelect={(channel, isCustom) => {
+                    if (!feedbackConfig) return;
+                    // Cache custom channels to prevent duplicate fetches
+                    if (isCustom && isChannelSendable(channel)) {
+                      guildsManager.customChannels.set(channel.id, channel);
+                    }
+                    feedbackConfig.channelId = channel.id;
+                    channelSelectOpen = false;
+                  }}
+                />
+              </Popover.Content>
+            </Popover.Root>
+          </div>
         </div>
+
+        <Field.Set>
+          <Field.Group>
+            <Field.Field>
+              <Field.Label for="thank-you">Thank You Message</Field.Label>
+              <Textarea
+                bind:value={feedbackConfig.thankYou}
+                id="thank-you"
+                placeholder="Thank you for your feedback!"
+                maxlength={2000}
+                disabled={saving}
+                rows={4}
+              />
+              <Field.Description>
+                This message is shown after users submit their feedback.
+              </Field.Description>
+            </Field.Field>
+          </Field.Group>
+        </Field.Set>
       </Card.Content>
     </Card.Root>
 
