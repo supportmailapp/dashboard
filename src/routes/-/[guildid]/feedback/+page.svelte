@@ -251,7 +251,7 @@
             {/if}
             <Popover.Root bind:open={() => channelSelectOpen, (v) => (channelSelectOpen = v)}>
               <Popover.Trigger class={cn(!feedbackConfig.channelId ? buttonVariants({ variant: "outline" }) : "hidden")}>
-                  Choose a category
+                  Choose a channel
               </Popover.Trigger>
               <Popover.Content class="w-80">
                 <ChannelSelect

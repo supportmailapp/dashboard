@@ -50,8 +50,9 @@
       <Dialog.Title>Select Alert Channel</Dialog.Title>
     </Dialog.Header>
     <div class="h-100 w-full max-w-100">
+      <!-- TODO -->
       <ChannelSelect
-        selected={channel}
+        selectedId={channel}
         channelTypes={[
           ChannelType.GuildText,
           ChannelType.GuildVoice,

@@ -33,9 +33,6 @@
   let channelsLoaded = $derived(guildsManager.channelsLoaded);
   let channels = $derived(channelsLoaded ? guildsManager.channels : []);
   let newCategoryId = $state<string | null>(null);
-  let newCategory = $derived<GuildCoreChannel | undefined>(
-    newCategoryId ? (channels.find((c) => c.id === newCategoryId) ?? undefined) : undefined,
-  );
   let categorySelectOpen = $state(false);
   let loading = $state({
     setup: false,
@@ -115,7 +112,7 @@
                   newCategoryId = null;
                   return true;
                 }}
-                <Mention channel={newCategory} fallback onDelete={deleteHandler} />
+                <Mention channelId={newCategoryId} fallback onDelete={deleteHandler} />
                 <Button
                   variant="destructive"
                   class={buttonVariants({ variant: "destructive" })}
@@ -135,7 +132,7 @@
               </Popover.Trigger>
               <Popover.Content class="w-80">
                 <ChannelSelect
-                  selected={newCategory}
+                  selectedId={newCategoryId || undefined}
                   channelTypes={[ChannelType.GuildCategory]}
                   selectCategories
                   onSelect={(c) => {
