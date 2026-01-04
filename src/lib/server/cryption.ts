@@ -1,4 +1,5 @@
 import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
+import { DB_ENCRYPTION_KEY } from "$env/static/private";
 
 export class Cryption {
   private key: Buffer;
@@ -45,6 +46,5 @@ export class Cryption {
   }
 }
 
-export const makeCryptor = () =>
-  new Cryption(process.env.ENCRYPTION_KEY || "default_fallback_encryption_key_1234");
+export const cryptor = new Cryption(DB_ENCRYPTION_KEY || "default_fallback_encryption_key_1234");
 // If this default is used, I'm going to be very sad

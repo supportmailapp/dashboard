@@ -1,2 +1,4 @@
 onlyBuiltDependencies:
+  - '@sentry/cli'
+  - core-js
   - esbuild
