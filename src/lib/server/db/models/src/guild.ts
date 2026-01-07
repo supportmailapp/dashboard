@@ -91,7 +91,7 @@ const reportConfigSchema = new Schema<IReportConfig>({
       opens: 20,
     },
   },
-  notifications: { type: Number, default: [] },
+  notifications: { type: [Number], default: [] },
 });
 
 const GuildFlagsSchema = new Schema<IGuildFlags>(
@@ -114,7 +114,7 @@ const DBGuildSchema = new Schema<IDBGuild>(
     ticketConfig: { type: ticketConfigSchema, default: { enabled: false } },
     reportConfig: { type: reportConfigSchema, default: { enabled: false } },
     blacklistImmune: { type: [[Number, String]], required: false },
-    flags: { type: GuildFlagsSchema, default: {} },
+    flags: { type: GuildFlagsSchema, default: () => ({}) },
   },
   { timestamps: true },
 );

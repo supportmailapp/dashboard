@@ -1,10 +1,11 @@
 import { dev } from "$app/environment";
 import { env } from "$env/dynamic/private";
+import { PUBLIC_SupportServer } from "$env/static/public";
 import { JsonErrors } from "$lib/constants.js";
 import { checkUserGuildAccess } from "$lib/server/auth";
 import guildAccessCache from "$lib/server/caches/guildAccess.js";
 import sessionCache from "$lib/server/caches/sessions.js";
-import { dbConnect, UserToken } from "$lib/server/db";
+import { dbConnect, DBGuild, UserToken } from "$lib/server/db";
 import { DiscordBotAPI, DiscordUserAPI } from "$lib/server/discord";
 import type { IUserToken } from "$lib/sm-types/src";
 import arcjet, { detectBot, shield, slidingWindow } from "@arcjet/sveltekit";
@@ -12,7 +13,6 @@ import * as Sentry from "@sentry/sveltekit";
 import { error, redirect, type Handle } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
 import dayjs from "dayjs";
-import { type APIUser } from "discord-api-types/v10";
 import { isValidObjectId } from "mongoose";
 import wildcardMatch from "wildcard-match";
 
@@ -22,6 +22,12 @@ export async function init() {
   await dbConnect();
   console.log("Environment:", env.NODE_ENV);
   console.log("Server started at", dayjs().toString());
+
+  // Seed data
+  const testGuilds = ["1114825999155200101", PUBLIC_SupportServer];
+  for (const guildId of testGuilds) {
+    await DBGuild.updateOne({ id: guildId, name: "Test" }, { id: guildId }, { upsert: true, setDefaultsOnInsert: true });
+  }
 }
 
 // 100 requests per minute for all routes (Live)

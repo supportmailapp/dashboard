@@ -1,8 +1,8 @@
 import { JsonErrors } from "$lib/constants";
 import { BlacklistEntry, FlattenBigIntFields, FlattenDocToJSON } from "$lib/server/db";
 import { ZodValidator } from "$lib/server/validators/index.js";
-import { EntityType, type IBlacklistEntry } from "$lib/sm-types";
-import { safeParseInt } from "$lib/utils.js";
+import { EntityType, MaxBlacklistScope, MinBlacklistScope, type IBlacklistEntry } from "$lib/sm-types";
+import { safeParseInt, zem } from "$lib/utils.js";
 import { BitField } from "$lib/utils/bitfields.js";
 import { SnowflakePredicate } from "$v1Api/assertions.js";
 import type { QueryFilter } from "mongoose";
@@ -10,7 +10,7 @@ import z from "zod";
 
 export type APIBlacklistEntry = DocumentWithId<Omit<IBlacklistEntry, "scopes" | "scope" | "_type">> & {
   /**
-   * A string representation of the bitfield for the scopes.
+   * An stringified int64 representing the scopes (bitfield) this entry is applied to.
    */
   scopes: string;
   _type: Exclude<EntityType, EntityType.guild>;
@@ -104,18 +104,14 @@ const entrySchema = z.object({
   id: SnowflakePredicate,
   guildId: SnowflakePredicate.optional(), // optional because we get this one from the route - the field itself is just for validation
   // scopes is a bitfield
-  scopes: z.string().regex(/^\d+$/, {
-    error: "Invalid bitfield format (must only be numbers)",
-  }),
+  scopes: z.string().regex(/^\d+$/, zem("Invalid bitfield format (must only be numbers)")),
   _type: z.enum({
     role: EntityType.role,
     user: EntityType.user,
   }),
 });
 
-export async function PUT({ locals, request, params }) {
-  if (!locals.isAuthenticated()) return JsonErrors.unauthorized();
-
+export async function PUT({ request, params }) {
   const body = await request.json();
 
   const valRes = new ZodValidator(entrySchema).validate(body);
@@ -149,16 +145,10 @@ export async function PUT({ locals, request, params }) {
 }
 
 const deleteSchema = z.object({
-  ids: z
-    .string()
-    .array()
-    .min(1, { error: "At least one ID is required" })
-    .transform((ids) => ids.map((id) => id.trim())),
+  ids: z.string().trim().array().min(1, zem("At least one ID is required")),
 });
 
-export async function DELETE({ locals, request, params }) {
-  if (!locals.isAuthenticated()) return JsonErrors.unauthorized();
-
+export async function DELETE({ request, params }) {
   const body = await request.json();
   const valRes = new ZodValidator(deleteSchema).validate(body);
   if (!valRes.success) {

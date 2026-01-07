@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { mongoUri, NODE_ENV } from "$env/static/private";
+import { MONGO_URI, NODE_ENV } from "$env/static/private";
 
 /**
  * Connection ready state
@@ -30,9 +30,10 @@ export async function dbConnect() {
     await mongoose.disconnect();
   }
   mongoConnection.isConnected = 2;
-  await mongoose.connect(mongoUri);
+  await mongoose.connect(MONGO_URI);
+  await mongoose.connection.db?.command({ ping: 1 });
   mongoConnection.isConnected = 1;
-  console.log("Connected to MongoDB");
+  console.log("Connected to MongoDB at " + new Date().toISOString());
 }
 
 export async function dbDisconnect() {
@@ -42,5 +43,5 @@ export async function dbDisconnect() {
   mongoConnection.isConnected = 3;
   await mongoose.disconnect();
   mongoConnection.isConnected = 0;
-  console.log("Disconnected from MongoDB");
+  console.log("Disconnected from MongoDB at " + new Date().toISOString());
 }

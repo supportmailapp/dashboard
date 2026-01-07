@@ -3,7 +3,7 @@ import { Document, Types, type UpdateQuery, type UpdateWithAggregationPipeline }
 import { DBGuild, DBUser } from "./models";
 import { TicketCategory } from "./models/src/ticketCategory";
 
-type DBGuildProjection = "full" | "generalTicketSettings" | "language" | "feedback" | "reportSettings";
+type DBGuildProjection = "full" | "generalTicketSettings" | "language" | "reportSettings";
 
 export interface DBGuildProjectionReturns {
   full: IDBGuild;
@@ -12,7 +12,6 @@ export interface DBGuildProjectionReturns {
     allowedBots: string[];
   };
   language: string;
-  feedback: NonNullable<ITicketConfig["feedback"]>;
   reportSettings: Omit<IDBGuild["reportConfig"], "pausedUntil" | "limits"> & {
     pausedUntil: APIPausedUntil;
     limits: ReportLimitsConfig;
@@ -47,8 +46,6 @@ export async function getDBGuild<T extends DBGuildProjection>(
       } as DBGuildProjectionReturns[T];
     case "language":
       return jsonConfig.lang as DBGuildProjectionReturns[T];
-    case "feedback":
-      return (jsonConfig.ticketConfig.feedback ?? { enabled: false }) as DBGuildProjectionReturns[T];
     case "reportSettings":
       return {
         ...jsonConfig.reportConfig,
@@ -187,7 +184,7 @@ type FlattenBigIntResult<T> = {
 };
 
 /**
- * Flattens a Mongoose Document even more by stringifying bigint fields.
+ * Flattens a Mongoose Document even more by turning bigint fields into strings.
  */
 export function FlattenBigIntFields<T extends Record<string, any>>(obj: T): FlattenBigIntResult<T> {
   const newObj = { ...obj };

@@ -1,44 +1,135 @@
 <script lang="ts">
-  import { type ColumnDef, type PaginationState, type RowSelectionState } from "@tanstack/table-core";
-  import DataTable from "$lib/components/blacklist-data-table/data-table.svelte";
-  import type {
-    APIBlacklistEntry,
-    PaginatedBlacklistResponse,
-  } from "../../../api/v1/guilds/[guildid]/blacklist/+server";
-  import { renderComponent } from "$ui/data-table";
-  import DataTableActions from "$lib/components/blacklist-data-table/data-table-actions.svelte";
+  import type { APIBlacklistEntry } from "../../../api/v1/guilds/[guildid]/blacklist/+server";
   import Mention from "$lib/components/discord/Mention.svelte";
-  import { EntityType } from "supportmail-types";
-  import ScopesCell from "$lib/components/blacklist-data-table/ScopesCell.svelte";
+  import { EntityType, BlacklistScope } from "$lib/sm-types";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
-  import { EntityType } from "$lib/sm-types";
   import { cn } from "$lib/utils";
   import { Button } from "$ui/button";
-  import { renderComponent } from "$ui/data-table";
   import * as Dialog from "$ui/dialog/index.js";
   import * as Dropdown from "$ui/dropdown-menu/index.js";
+  import * as Table from "$ui/table/index.js";
   import Label from "$ui/label/label.svelte";
   import Check from "@lucide/svelte/icons/check";
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
-  import { type ColumnDef, type RowSelectionState } from "@tanstack/table-core";
+  import Pencil from "@lucide/svelte/icons/pencil";
+  import Trash from "@lucide/svelte/icons/trash";
   import { toast } from "svelte-sonner";
-  import DataTableCheckbox from "$lib/components/blacklist-data-table/data-table-checkbox.svelte";
+  import { BLEntry, dialogFields, toggleScope } from "./entry.svelte";
+  import { SvelteBitfield } from "$lib/utils/reactiveBitfield.svelte";
+  import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
+  import type { SvelteSet } from "svelte/reactivity";
+  import Checkbox from "$ui/checkbox/checkbox.svelte";
+
+  interface Props {
+    entries: APIBlacklistEntry[];
+    pageStatus: "loading" | "loaded" | "error";
+    saveEntry: (entry: BLEntry) => Promise<void>;
+    deleteEntry: (entryId: string) => Promise<void>;
+    toggleSelectedRow: (_id: string, selected: boolean) => void;
+    selectedRows: string[];
+  }
 
   let {
     entries,
     pageStatus = $bindable(),
-    rowSelection = $bindable(),
     saveEntry,
     deleteEntry,
+    toggleSelectedRow,
+    selectedRows,
   }: Props = $props();
 
   let deleteConfirmDialog = $state<string | null>(null);
   let editEntry = new BLEntry();
+
+  function getScopeNames(scopesBigint: string): string[] {
+    const bitfield = new SvelteBitfield(BigInt(scopesBigint));
+    return Object.entries(BlacklistScope)
+      .filter(([key, value]) => typeof value === "number" && bitfield.has(value))
+      .map(([key]) => key);
+  }
 </script>
 
 {#if pageStatus === "loaded"}
   {#key entries}
-    <!-- TODO: add table layout -->
+    <Table.Root>
+      <Table.Header>
+        <Table.Row>
+          <Table.Head class="w-10"></Table.Head>
+          <Table.Head class="w-25">Type</Table.Head>
+          <Table.Head>Entity</Table.Head>
+          <Table.Head>Scopes</Table.Head>
+          <Table.Head class="text-end">Actions</Table.Head>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {#each entries as entry (entry.id)}
+          {@const isSelected = !!selectedRows.find((id) => id === entry._id)}
+          <Table.Row class={cn(isSelected && "bg-destructive/20")}>
+            <Table.Cell>
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={(checked) => {
+                  toggleSelectedRow(entry._id, checked);
+                }}
+              />
+            </Table.Cell>
+            <Table.Cell class="font-medium">
+              {entry._type === EntityType.user ? "User" : "Role"}
+            </Table.Cell>
+            <Table.Cell>
+              <Mention
+                userId={entry._type === EntityType.user ? entry.id : undefined}
+                roleId={entry._type === EntityType.role ? entry.id : undefined}
+                buttons="copy"
+              />
+            </Table.Cell>
+            <Table.Cell>
+              {#each getScopeNames(entry.scopes) as scopeName}
+                <span
+                  class={cn(
+                    "inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary",
+                    "mr-1 last:mr-0",
+                  )}
+                >
+                  {scopeName.charAt(0).toUpperCase() + scopeName.slice(1)}
+                </span>
+              {/each}
+            </Table.Cell>
+            <Table.Cell class="text-end">
+              <div class="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onclick={() => {
+                    editEntry.id = entry.id;
+                    editEntry.type = entry._type;
+                    editEntry.scopes.bits = BigInt(entry.scopes);
+                    editEntry.dialogOpen = true;
+                  }}
+                >
+                  <Pencil class="size-4" />
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  onclick={() => {
+                    deleteConfirmDialog = entry._id;
+                  }}
+                >
+                  <Trash class="size-4" />
+                </Button>
+              </div>
+            </Table.Cell>
+          </Table.Row>
+        {:else}
+          <Table.Row>
+            <Table.Cell colspan={4} class="text-center text-muted-foreground">
+              No entries found
+            </Table.Cell>
+          </Table.Row>
+        {/each}
+      </Table.Body>
+    </Table.Root>
   {/key}
 {:else if pageStatus === "loading"}
   <LoadingSpinner class="mx-auto my-4 size-20" />
@@ -52,7 +143,7 @@
   onYes={async () => {
     if (deleteConfirmDialog) {
       await deleteEntry(deleteConfirmDialog);
-      deleteConfirmDialog = null; // Clear the dialog after deletion
+      deleteConfirmDialog = null;
     } else toast.error("No entry selected for deletion");
   }}
   bind:open={() => !!deleteConfirmDialog, (v) => (deleteConfirmDialog = !v ? null : deleteConfirmDialog)}

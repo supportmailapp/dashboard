@@ -31,7 +31,6 @@
   import * as Popover from "$ui/popover";
 
   import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
-  import MentionableSelect from "$lib/components/MentionableSelect.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
   import { APIRoutes } from "$lib/urls";
@@ -39,8 +38,13 @@
   import apiClient from "$lib/utils/apiClient";
   import { SvelteBitfield } from "$lib/utils/reactiveBitfield.svelte.js";
   import { AlertDialogTrigger } from "$ui/alert-dialog";
-  import type { RowSelectionState } from "@tanstack/table-core";
+  import { getManager } from "$lib/stores/GuildsManager.svelte";
+  import MentionableSelect from "$lib/components/discord/MentionableSelect.svelte";
+  import { SvelteSet } from "svelte/reactivity";
+  import Trash from "@lucide/svelte/icons/trash";
 
+  const guildsManager = getManager();
+  const roles = guildsManager.roles;
   let pageStatus = $state<"loading" | "loaded" | "error">("loading");
   const pageData = $state({
     page: 1 as number,
@@ -59,13 +63,9 @@
    */
   let fetchedData = $state($state.snapshot(pageData) as typeof pageData);
   let entries = $state<PaginatedBlacklistResponse["data"]>([]);
-  let rowSelection = $state<string[]>([]);
-  /**
-   * Derived set of selected row IDs.
-   * **Not indexes, `_id[]`.**
-   */
-  const selectedRows = $derived(rowSelection.map((index) => entries[parseInt(index)]?._id).filter(Boolean));
-  const selectedText = $derived(selectedRows.length === 1 ? "1 entry" : `${selectedRows.length} entries`);
+  let rowSelection = new SvelteSet<string>();
+
+  const selectedText = $derived(rowSelection.size === 1 ? "1 entry" : `${rowSelection.size} entries`);
   let bulkDeleteConfirmation = $state(false);
 
   const newEntry = new BLEntry();
@@ -154,11 +154,16 @@
 
   async function saveEntry(entry: BLEntry, action: "edit" | "add" = "add") {
     try {
+      if (entry.scopes.size === 0) {
+        toast.error("At least one scope is required.");
+        return;
+      }
+
       const res = await apiClient.put(APIRoutes.blacklist(page.data.guildId!), {
         json: {
           id: entry.id,
           guildId: page.data.guildId!,
-          scopes: entry.scopes.bits.toString(10),
+          scopes: entry.scopes.toString(),
           _type: entry.type,
         },
       });
@@ -183,7 +188,8 @@
     }
   }
 
-  async function deleteEntries(ids: string[]) {
+  async function deleteEntries(id?: string) {
+    const ids = id ? [id] : Array.from(rowSelection.values());
     const singleEntry = ids.length === 1;
     try {
       const res = await apiClient.delete(APIRoutes.blacklist(page.data.guildId!), {
@@ -198,7 +204,8 @@
 
       entries = entries.filter((entry) => !ids.includes(entry._id));
       toast.success(`${singleEntry ? "Entry" : "Entries"} deleted!`);
-      rowSelection = [];
+      if (!id) rowSelection.clear();
+      else rowSelection.delete(id);
     } catch (err: any) {
       toast.error("Error deleting entries", {
         description: err.message,
@@ -259,7 +266,12 @@
               <MentionableSelect
                 excludedRoleIds={newEntry.type === EntityType.role ? [newEntry.id] : []}
                 excludedUserIds={newEntry.type === EntityType.user ? [newEntry.id] : []}
-                onRoleSelect={(role) => newEntry.setRole(role)}
+                onRoleSelect={(roleId) => {
+                  const newRole = roles.get(roleId);
+                  if (newRole) {
+                    newEntry.setRole(newRole);
+                  }
+                }}
                 onUserSelect={(user) => newEntry.setUser(user)}
               />
             </Popover.Content>
@@ -312,16 +324,21 @@
       title="Do you really want to delete {selectedText}?"
       description="This action cannot be undone."
       onYes={() => {
-        deleteEntries(selectedRows);
+        deleteEntries();
       }}
       bind:open={bulkDeleteConfirmation}
     >
       {#snippet child()}
         <AlertDialogTrigger
-          class={cn(buttonVariants({ variant: "destructive" }), "ml-auto")}
-          disabled={selectedRows.length === 0}
+          class={cn(buttonVariants({ variant: !rowSelection.size ? "outline" : "destructive" }), "ml-auto")}
+          disabled={rowSelection.size === 0}
         >
-          Delete
+          <Trash class="size-5" />
+          {#if !!rowSelection.size}
+            Delete {rowSelection.size}
+          {:else}
+            Delete
+          {/if}
         </AlertDialogTrigger>
       {/snippet}
     </AreYouSureDialog>
@@ -330,10 +347,17 @@
 
 <EntriesTable
   bind:pageStatus
-  bind:rowSelection
+  selectedRows={Array.from(rowSelection.values())}
   {entries}
-  saveEntry={(e: BLEntry) => saveEntry(e, "edit")}
-  deleteEntry={(_id: string) => deleteEntries([_id])}
+  saveEntry={(e) => saveEntry(e, "edit")}
+  deleteEntry={(_id) => deleteEntries(_id)}
+  toggleSelectedRow={(_id, selected) => {
+    if (selected) {
+      rowSelection.add(_id);
+    } else {
+      rowSelection.delete(_id);
+    }
+  }}
 />
 
 {#if pageStatus === "loaded" && entries.length > 0}

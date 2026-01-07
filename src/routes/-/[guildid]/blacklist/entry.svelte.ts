@@ -1,7 +1,6 @@
 import { BlacklistScope, EntityType } from "$lib/sm-types";
 import { SvelteBitfield } from "$lib/utils/reactiveBitfield.svelte";
 import type { APIUser } from "discord-api-types/v10";
-import { toast } from "svelte-sonner";
 import type { APIBlacklistEntry } from "../../../api/v1/guilds/[guildid]/blacklist/+server";
 
 export class BLEntry {
@@ -31,7 +30,7 @@ export class BLEntry {
     this.id = entry.id;
     this.type = entry._type;
     this.scopes.clear();
-    this.scopes.set(entry.scopes);
+    this.scopes.bits = BigInt(entry.scopes);
   }
 
   clear() {
@@ -59,14 +58,5 @@ export const dialogFields = {
 } as const;
 
 export function toggleScope(entryObj: BLEntry, scopeValue: Exclude<BlacklistScope, BlacklistScope.global>) {
-  // Check if this is the only bit set and we're trying to unset it
-  if (entryObj.scopes.has(scopeValue) && entryObj.scopes.popCount() === 1) {
-    toast.error("You cannot do that!", {
-      description: "At least one scope is required.",
-      closeButton: false,
-    });
-    return;
-  }
-
   entryObj.scopes.toggle(scopeValue);
 }
