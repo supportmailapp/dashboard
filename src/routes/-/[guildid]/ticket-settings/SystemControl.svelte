@@ -2,7 +2,8 @@
   import ConfigCard from "$lib/components/ConfigCard.svelte";
   import { relativeDatetime } from "$lib/utils";
   import { dateToLocalString } from "$lib/utils/formatting";
-  import * as Alert from "$ui/alert";
+  import * as Alert from "$ui/alert/index.js";
+  import * as Tooltip from "$ui/tooltip/index.js";
   import { Button } from "$ui/button";
   import { Label } from "$ui/label/index.js";
   import Separator from "$ui/separator/separator.svelte";
@@ -15,6 +16,7 @@
     enabled: boolean;
     fetchedState: APIPausedUntil;
     showDateError: boolean;
+    ticketForumSet: boolean;
   }
 
   let {
@@ -22,6 +24,7 @@
     enabled = $bindable(),
     fetchedState,
     showDateError,
+    ticketForumSet,
   }: Props = $props();
 
   let dialogOpen = $state(false);
@@ -51,10 +54,17 @@
   >
     <!-- Ticket Status Section -->
     <div class="flex flex-col items-start gap-2">
-      <Label class="inline-flex w-full items-center gap-2">
-        <Switch variant="success" bind:checked={enabled} />
-        {enabled ? "Enabled" : "Disabled"}
-      </Label>
+      <Tooltip.Root disabled={ticketForumSet} disableCloseOnTriggerClick={true}>
+        <Tooltip.Trigger>
+          <Label class="inline-flex w-full items-center gap-2">
+            <Switch variant="success" bind:checked={enabled} disabled={!ticketForumSet}/>
+            {enabled ? "Enabled" : "Disabled"}
+          </Label>
+        </Tooltip.Trigger>
+        <Tooltip.Content>
+          Setup a ticket forum first, before enabling the ticket system.
+        </Tooltip.Content>
+      </Tooltip.Root>
     </div>
 
     <Separator class="my-3" />

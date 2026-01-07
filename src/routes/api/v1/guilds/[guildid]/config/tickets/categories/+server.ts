@@ -24,6 +24,7 @@ export async function POST({ request, locals, params }) {
 
   const valRes = new ZodValidator(postSchema).validate(body);
   if (!valRes.success) {
+    console.log("Validation error:", valRes.error);
     return JsonErrors.badRequest(valRes.error.message);
   }
 
@@ -72,6 +73,7 @@ export async function PUT({ request, locals, params }) {
   const valRes = new ZodValidator(putSchema).validate(body);
 
   if (!valRes.success) {
+    console.log("Validation error:", valRes.error);
     return JsonErrors.badRequest(valRes.error.message);
   }
 

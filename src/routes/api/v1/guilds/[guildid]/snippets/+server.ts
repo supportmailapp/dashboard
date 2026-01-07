@@ -86,7 +86,7 @@ export async function PUT({ locals, request, params }) {
     const valRes = new ZodValidator(snippetSchema).validate(body);
 
     if (!valRes.success) {
-      return JsonErrors.badRequest(ZodValidator.toHumanError(valRes.error));
+      return JsonErrors.badRequest(valRes.error.message);
     }
 
     let dbSnippet: any; // mongoose types are ass

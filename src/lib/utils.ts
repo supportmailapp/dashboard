@@ -248,3 +248,8 @@ export function isChannelSendable(channel: APIGuildChannel): channel is GuildSen
     channel.type === ChannelType.GuildAnnouncement
   );
 }
+
+/**
+ * Zod Error Message helper
+ */
+export const zem = (msg: string) => ({ error: msg });

@@ -22,15 +22,15 @@ export async function PUT({ request, params }) {
     return JsonErrors.badRequest("Invalid JSON");
   }
 
-  const parsed = validator.validate(body);
-  if (!parsed.success) {
-    return JsonErrors.badRequest(ZodValidator.toHumanError(parsed.error));
+  const valRes = validator.validate(body);
+  if (!valRes.success) {
+    return JsonErrors.badRequest(valRes.error.message);
   }
 
   const cfg = await DBGuild.findOneAndUpdate(
     { id: params.guildid },
     {
-      lang: parsed.data.language,
+      lang: valRes.data.language,
     },
     { new: true },
   );

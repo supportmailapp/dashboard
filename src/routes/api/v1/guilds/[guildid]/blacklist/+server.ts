@@ -120,7 +120,7 @@ export async function PUT({ locals, request, params }) {
 
   const valRes = new ZodValidator(entrySchema).validate(body);
   if (!valRes.success) {
-    return JsonErrors.badRequest(ZodValidator.toHumanError(valRes.error));
+    return JsonErrors.badRequest(valRes.error.message);
   }
 
   const { data } = valRes;
@@ -162,7 +162,7 @@ export async function DELETE({ locals, request, params }) {
   const body = await request.json();
   const valRes = new ZodValidator(deleteSchema).validate(body);
   if (!valRes.success) {
-    return JsonErrors.badRequest(ZodValidator.toHumanError(valRes.error));
+    return JsonErrors.badRequest(valRes.error.message);
   }
 
   const { data } = valRes;

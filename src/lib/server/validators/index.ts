@@ -14,24 +14,10 @@ export class ZodValidator<V extends z.ZodType> {
     if (!result.success) {
       return {
         success: false,
-        error: new ValidationError(result.error.message, {
-          cause: result.error,
-        }),
+        error: fromZodError(result.error),
       };
     }
 
     return { success: true, data: result.data };
-  }
-
-  static toHumanError(eror: ValidationError) {
-    const { details } = eror;
-    const errors: string[] = [];
-
-    for (let err of details) {
-      const pathLabel = err.path.length > 0 ? err.path.join(".") : "root";
-      errors.push(`${pathLabel}: ${err.message}`);
-    }
-
-    return errors.join("\n");
   }
 }

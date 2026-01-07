@@ -101,11 +101,11 @@ export async function PUT({ request, locals, params }) {
   }
 
   // Validation
-  const validationRes = new ZodValidator(putSchema).validate(body);
+  const valRes = new ZodValidator(putSchema).validate(body);
 
-  if (!validationRes.success) {
-    console.error(validationRes.error);
-    return JsonErrors.badRequest(ZodValidator.toHumanError(validationRes.error));
+  if (!valRes.success) {
+    console.error(valRes.error);
+    return JsonErrors.badRequest(valRes.error.message);
   }
 
   const guild = await getDBGuild(params.guildid, "full");
@@ -113,7 +113,7 @@ export async function PUT({ request, locals, params }) {
     return JsonErrors.notFound();
   }
 
-  const { data } = validationRes;
+  const { data } = valRes;
 
   const pauseDjs = data.pausedUntil.date ? dayjs(data.pausedUntil.date) : null;
   if (pauseDjs && !pauseDjs.isValid()) {

@@ -4,7 +4,6 @@
   import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
   import EmojiInput from "$lib/components/EmojiInput.svelte";
-  import MentionableSelect from "$lib/components/MentionableSelect.svelte";
   import SaveAlert from "$lib/components/SaveAlert.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import { EntityType, type AnyAPIFormComponent, type ITicketCategory } from "$lib/sm-types";
@@ -33,6 +32,7 @@
   import { flip } from "svelte/animate";
   import { fly } from "svelte/transition";
   import FieldDialog from "$lib/components/forms/FieldDialog.svelte";
+  import MentionableSelect from "$lib/components/discord/MentionableSelect.svelte";
 
   let { data } = $props();
 

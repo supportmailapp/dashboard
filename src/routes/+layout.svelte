@@ -67,4 +67,4 @@
 
 <Toaster position={"top-center"} richColors visibleToasts={4} closeButton />
 
-<Snowflakes />
+<!-- <Snowflakes /> -->

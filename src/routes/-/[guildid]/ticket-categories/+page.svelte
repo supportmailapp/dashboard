@@ -291,6 +291,7 @@
         <Button
           variant="link"
           href={DocsLinks.TicketCategories}
+          target="_blank"
           class="text-muted-foreground"
         >
           Learn more

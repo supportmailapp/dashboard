@@ -42,7 +42,7 @@
 <BackgroundImage />
 
 <div class="flex h-screen flex-col items-center justify-center gap-6 px-3">
-  {#if !!error}
+  {#if !!error.msg}
     <Alert.Root class="w-full max-w-md" variant="destructive">
       <Alert.Title>{error.msg}</Alert.Title>
       <Alert.Description>

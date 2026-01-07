@@ -1,21 +1,7 @@
 import { JsonErrors } from "$lib/constants";
 import { FlattenDocToJSON, getTicketCategories, TicketCategory } from "$lib/server/db";
 import { ZodValidator } from "$lib/server/validators";
-import { MentionableEntity, NormalFormComponentSchema, PartialEmoji, SnowflakePredicate } from "$v1Api/assertions.js";
-import z from "zod";
-import { FormComponentsSchema } from "$v1Api/assertions";
-
-const putSchema = z.object({
-  _id: z.string(),
-  guildId: SnowflakePredicate,
-  label: z.string().min(3).max(45),
-  emoji: PartialEmoji.optional(),
-  enabled: z.boolean().default(true),
-  tag: SnowflakePredicate.optional(),
-  pings: MentionableEntity.array().optional(),
-  components: FormComponentsSchema(NormalFormComponentSchema),
-  customMessageId: z.string().optional(),
-});
+import { TicketCategorySchema } from "$v1Api/assertions.js";
 
 // It may be a PUT endpoint, but the index field is not allowed to be passed, because it is managed by the server.
 // To change the index (order) of categories, use the PUT endpoint at /api/v1/guilds/[guildid]/config/tickets/categories
@@ -28,9 +14,9 @@ export async function PUT({ request, locals, params }) {
 
   const body = await request.json();
 
-  const valRes = new ZodValidator(putSchema).validate(body);
+  const valRes = new ZodValidator(TicketCategorySchema).validate(body);
   if (!valRes.success) {
-    return JsonErrors.badRequest(ZodValidator.toHumanError(valRes.error));
+    return JsonErrors.badRequest(valRes.error.message);
   }
 
   valRes.data.guildId = guildId;
