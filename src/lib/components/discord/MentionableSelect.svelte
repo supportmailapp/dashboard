@@ -49,11 +49,8 @@
     class: className,
   }: Props = $props();
 
-  let searchMode = $state<"users" | "roles">();
-
-  onMount(() => {
-    searchMode = defaultTab;
-  });
+  // svelte-ignore state_referenced_locally | we only want to capture the initial value
+  let searchMode = $state<"users" | "roles">($state.snapshot(defaultTab));
 </script>
 
 <Tabs.Root bind:value={searchMode} class={cn("h-full w-full max-w-xs", className)}>
