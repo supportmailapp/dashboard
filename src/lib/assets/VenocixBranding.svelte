@@ -8,7 +8,7 @@
 
 <div class={cn("w-full px-2", className)}>
   <a
-    href="https://venocix.de"
+    href="https://venocix.de?utm_source=supportmail&utm_medium=branding&utm_campaign=dashboard"
     target="_blank"
     id="branding"
     class="mx-auto my-2 flex w-full flex-col items-center justify-center gap-1 gap-x-3 rounded-lg py-2 transition-all duration-120 select-none hover:opacity-75"
