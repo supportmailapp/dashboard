@@ -88,13 +88,11 @@ export const StringSelectComponentSchema = BaseFormComponentWithDescriptionSchem
   .safeExtend({
     type: z.literal(ComponentType.StringSelect),
     minValues: z
-      .number()
       .int()
       .nonnegative(zem("Min values must be non-negative"))
       .max(25, zem("Min values must be at most 25"))
       .optional(),
     maxValues: z
-      .number()
       .int()
       .min(1, zem("Max values must be at least 1"))
       .max(25, zem("Max values must be at most 25"))

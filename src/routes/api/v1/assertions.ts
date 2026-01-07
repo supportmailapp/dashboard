@@ -63,7 +63,7 @@ export const TicketCategorySchema = z.object({
   _id: z.string(),
   guildId: SnowflakePredicate,
   enabled: z.boolean(),
-  index: z.number().int().nonnegative(zem("Index must be non-negative")),
+  index: z.int().nonnegative(zem("Index must be non-negative")),
   label: z
     .string()
     .min(3, zem("Label must be at least 3 characters long"))

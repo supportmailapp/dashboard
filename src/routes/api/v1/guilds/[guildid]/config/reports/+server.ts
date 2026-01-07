@@ -7,7 +7,9 @@ import {
 } from "$lib/server/db/utils.js";
 import { ZodValidator } from "$lib/server/validators";
 import { ReportNotificationType, SpecialReportChannelType, type IDBGuild } from "$lib/sm-types";
-import { APIPausedUntilSchema, MentionableEntity, SnowflakePredicate } from "$v1Api/assertions";
+import { zem } from "$lib/utils.js";
+import { APIPausedUntilSchema, MentionableEntity, SnowflakePredicate } from "$v1Api/assertions.js";
+import { json } from "@sveltejs/kit";
 import dayjs from "dayjs";
 import type { UpdateQuery } from "mongoose";
 import z from "zod";
@@ -21,7 +23,7 @@ export async function GET({ params }) {
       return JsonErrors.notFound();
     }
 
-    return Response.json({
+    return json({
       ...config,
       pausedUntil: config.pausedUntil ?? {
         value: false,
@@ -41,16 +43,20 @@ const channelsSchema = z.object({
       t: z.enum(SpecialReportChannelType),
       id: SnowflakePredicate,
     })
-    .array(),
+    .array()
+    .max(100, zem("Maximum of 100 channels can be set.")),
 });
 
 const limitSchema = z.object({
-  perUserReceive: z.number().int().min(1).max(10).default(1),
-  perUserCreate: z.number().int().min(1).max(50).default(5),
-  opens: z.number().int().min(1).max(100).default(20),
+  perUserReceive: z.int().min(1, zem("Minimum value is 1")).max(10, zem("Maximum value is 10")).default(1),
+  perUserCreate: z.int().min(1, zem("Minimum value is 1")).max(50, zem("Maximum value is 50")).default(5),
+  opens: z.int().min(1, zem("Minimum value is 1")).max(100, zem("Maximum value is 100")).default(20),
 });
 
-const notificationSchema = z.enum(ReportNotificationType).array();
+const notificationSchema = z
+  .enum(ReportNotificationType)
+  .array()
+  .refine((arr) => arr.length === new Set(arr).size, zem("Duplicate notification types are not allowed."));
 
 const putSchema = z
   .object({
@@ -61,9 +67,9 @@ const putSchema = z
       setting: "EX",
       ids: [],
     }),
-    pings: MentionableEntity.array().default([]),
-    immune: MentionableEntity.array().default([]),
-    mods: MentionableEntity.array().default([]),
+    pings: MentionableEntity.array().max(100, zem("Maximum of 100 pings can be set.")).default([]),
+    immune: MentionableEntity.array().max(100, zem("Maximum of 100 immune entities can be set.")).default([]),
+    mods: MentionableEntity.array().max(100, zem("Maximum of 100 mods can be set.")).default([]),
     limits: limitSchema.default({
       perUserReceive: 1,
       perUserCreate: 5,
@@ -73,16 +79,8 @@ const putSchema = z
     pausedUntil: APIPausedUntilSchema.default({ date: null, value: false }),
   })
   .refine(
-    (data) => {
-      // Ensure channelId is set if enabled is true
-      if (data.enabled && !data.channelId) {
-        throw new Error("Channel ID must be set when reports are enabled.");
-      }
-      return true;
-    },
-    {
-      error: "Invalid configuration: Channel ID must be set when reports are enabled.",
-    },
+    (data) => (data.enabled && !!data.channelId) || !data.enabled,
+    zem("Invalid configuration: Channel ID must be set when reports are enabled."),
   );
 
 export type PutFields = z.infer<typeof putSchema>;
@@ -102,7 +100,6 @@ export async function PUT({ request, locals, params }) {
 
   // Validation
   const valRes = new ZodValidator(putSchema).validate(body);
-
   if (!valRes.success) {
     console.error(valRes.error);
     return JsonErrors.badRequest(valRes.error.message);
@@ -152,12 +149,9 @@ export async function PUT({ request, locals, params }) {
 
     console.log("Updated Fields (reportConfig)", reportConfig);
 
-    return Response.json({
+    return json({
       ...reportConfig,
-      pausedUntil: reportConfig.pausedUntil ?? {
-        value: false,
-        date: null,
-      },
+      pausedUntil: reportConfig.pausedUntil ?? null,
     } as DBGuildProjectionReturns["reportSettings"]);
   } catch (err: any) {
     console.error("Error updating guild config:", err);

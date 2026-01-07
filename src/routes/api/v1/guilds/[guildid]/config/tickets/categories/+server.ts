@@ -54,7 +54,7 @@ const putSchema = z
   .object({
     _id: z.string(),
     guildId: SnowflakePredicate,
-    index: z.number().int().min(1),
+    index: z.int().min(1),
   })
   .array();
 
