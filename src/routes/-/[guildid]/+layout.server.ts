@@ -1,4 +1,3 @@
-import { isCurrentPage as _isCurrentPage, guildHref as _guildHref } from "$lib";
 import { redirect } from "@sveltejs/kit";
 
 export async function load({ locals, url }) {
