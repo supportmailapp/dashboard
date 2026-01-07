@@ -1,112 +1,98 @@
 <script lang="ts">
   import { page } from "$app/state";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
+  import SaveAlert from "$lib/components/SaveAlert.svelte";
   import SettingsGrid from "$lib/components/SettingsGrid.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import type { DBGuildProjectionReturns } from "$lib/server/db";
   import { APIRoutes } from "$lib/urls";
-  import { deepClone } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
   import dayjs from "dayjs";
-  import { onMount } from "svelte";
+  import { onDestroy, onMount, untrack } from "svelte";
   import { toast } from "svelte-sonner";
   import type { PutFields } from "../../../api/v1/guilds/[guildid]/config/reports/+server";
   import ChannelSelectCard from "./ChannelSelectCard.svelte";
   import LimitsCard from "./LimitsCard.svelte";
   import MentionableSelectCard from "./MentionableSelectCard.svelte";
   import SystemControl from "./SystemControl.svelte";
-  import equal from "fast-deep-equal/es6";
+  import { determineUnsavedChanges } from "$lib/utils";
   import { getManager } from "$lib/stores/GuildsManager.svelte";
 
   const guildsManager = getManager();
-  const reportsConfig = new ConfigState<DBGuildProjectionReturns["reportSettings"]>();
-  const pauseState = new ConfigState<TPauseState>({
+
+  const config = $state({
+    old: null as DBGuildProjectionReturns["reportSettings"] | null,
+    current: null as DBGuildProjectionReturns["reportSettings"] | null,
+    saving: false,
+    loading: true,
+  });
+
+  let fetchedState = $state<APIPausedUntil>({ date: null, value: false });
+  let showDateError = $state(false);
+
+  let pauseState = $state<TPauseState>({
     pausedUntil: { date: null, value: false },
     type: "indefinite",
   });
-  let showDateError = $state(false);
 
-  let reportChannel = $state<GuildCoreChannel | undefined>();
-  let fetchedState = $state<APIPausedUntil>({
-    date: null,
-    value: false,
-  });
-
-  $inspect("config", reportsConfig.config);
-  $inspect("pauseState", pauseState.config);
-
-  function errorHintTimedButNoDate() {
-    toast.error("Cannot set timed pause without a date.", {
-      description: "Please select a date or change the pause type.",
-    });
-    showDateError = true;
-  }
-
-  function setPauseState(pu: APIPausedUntil) {
-    pauseState.saveConfig({
-      pausedUntil: pu,
-      type: pu.date && pu.value ? "timed" : "indefinite",
-    });
-  }
+  let unsavedChanges = $derived(determineUnsavedChanges(untrack(() => config.old), config.current));
 
   function buildPausedUntil(_data?: TPauseState): APIPausedUntil {
-    const snap = _data ?? pauseState.snap();
+    const snap = _data ?? pauseState;
     return {
       value: !!snap?.pausedUntil.value,
       date: !snap?.pausedUntil.value || !snap || snap.type === "indefinite" ? null : snap.pausedUntil.date,
     };
   }
 
-  const saveAll: SaveFunction = async function (setLoading, callback) {
-    showDateError = false;
-    if (reportsConfig.config) {
-      reportsConfig.config.pausedUntil = buildPausedUntil();
+  function setPauseState(pu: APIPausedUntil) {
+    pauseState = {
+      pausedUntil: { date: pu.date ?? null, value: !!pu.value },
+      type: pu.date && pu.value ? "timed" : "indefinite",
+    };
+  }
+
+  async function saveFn() {
+    if (!config.current) {
+      toast.error("No configuration to save.");
+      return;
     }
 
-    setLoading(true);
+    showDateError = false;
+    config.saving = true;
 
-    const current = $state.snapshot(reportsConfig.config);
+    const current = $state.snapshot(config.current);
     const pausedPayload = buildPausedUntil();
-    const oldPausedUntil = pauseState.snap();
 
-    // Store original states for comparison
-    const originalPausedState = deepClone($state.snapshot(fetchedState));
-    const originalConfig = deepClone(reportsConfig.backup);
-
-    console.log("paused payload", pausedPayload);
-
-    if (oldPausedUntil?.type === "timed" && !pausedPayload.date && pausedPayload.value) {
-      errorHintTimedButNoDate();
-      setLoading(false);
-      return;
-    } else if (pausedPayload.date && dayjs(pausedPayload.date).isBefore(new Date())) {
+    // Validate pause date
+    if (pausedPayload.date && dayjs(pausedPayload.date).isBefore(new Date())) {
       toast.error("Cannot set a pause date in the past.", {
         description: "Please select a future date for the pause.",
       });
       showDateError = true;
-      setLoading(false);
+      config.saving = false;
       return;
     }
 
-    if (!reportsConfig.evalUnsaved()) {
+    if (!unsavedChanges) {
       toast.info("Nothing to save.");
-      setLoading(false);
+      config.saving = false;
       return;
     }
-
-    const { pausedUntil, ...rest } = current ?? {
-      channelId: null,
-      actionsEnabled: false,
-      enabled: false,
-      limits: { opens: 20, perUserCreate: 5, perUserReceive: 1 },
-      pausedUntil: {
-        date: null,
-        value: false,
-      },
-      pings: [],
-    };
 
     try {
+      const { pausedUntil, ...rest } = current ?? {
+        channelId: null,
+        actionsEnabled: false,
+        enabled: false,
+        limits: { opens: 20, perUserCreate: 5, perUserReceive: 1 },
+        pausedUntil: {
+          date: null,
+          value: false,
+        },
+        pings: [],
+      };
+
       const res = await apiClient.put(APIRoutes.reportsConfig(page.data.guildId!), {
         json: {
           ...rest,
@@ -121,39 +107,25 @@
       }
 
       const json = await res.json<DBGuildProjectionReturns["reportSettings"]>();
-      reportsConfig.saveConfig(json);
+      config.old = { ...json };
+      config.current = { ...json };
       setPauseState(json.pausedUntil);
       fetchedState = json.pausedUntil;
 
-      // Determine what actually changed
-      const pauseStatusChanged = originalPausedState.value !== json.pausedUntil.value;
-      const pauseDateChanged = originalPausedState.date !== json.pausedUntil.date;
-      const configChanged = !equal(originalConfig, json);
-
-      let description: string | undefined;
-
-      if (pauseStatusChanged) {
-        description = json.pausedUntil.value ? "Reports paused." : "Reports resumed.";
-      } else if (pauseDateChanged && json.pausedUntil.value) {
-        description = "Pause schedule updated.";
-      } else if (configChanged) {
-        description = "Configuration updated successfully.";
-      }
-
-      toast.success("Report configuration saved successfully.", {
-        description,
-      });
-
-      callback?.(json);
+      toast.success("Report configuration saved successfully.");
     } catch (error: any) {
       toast.error(`Failed to save report configuration: ${error.message}`);
     } finally {
-      setLoading(false);
+      config.saving = false;
     }
-  };
+  }
 
-  function setChannel(channelId?: string) {
-    reportChannel = channelId ? guildsManager.channels?.find((c) => c.id === channelId) : undefined;
+  function resetConfig() {
+    if (config.old) {
+      config.current = { ...config.old };
+      fetchedState = config.old.pausedUntil;
+      setPauseState(config.old.pausedUntil);
+    }
   }
 
   onMount(() => {
@@ -166,85 +138,85 @@
           return;
         }
         res.json().then((data: DBGuildProjectionReturns["reportSettings"]) => {
-          reportsConfig.saveConfig({
+          config.old = {
             ...data,
             limits: {
               perUserReceive: data.limits?.perUserReceive ?? 1,
               perUserCreate: data.limits?.perUserCreate ?? 5,
               opens: data.limits?.opens ?? 20,
             },
-          });
+          };
+          config.current = { ...config.old };
           setPauseState(data.pausedUntil);
           fetchedState = data.pausedUntil;
-          setChannel(reportsConfig.config?.channelId ?? undefined);
         });
       })
       .catch((err) => {
         toast.error("Failed to load report configuration.", {
           description: err.message,
         });
+      })
+      .finally(() => {
+        config.loading = false;
       });
-
-    return () => {
-      console.log("Cleaning up report configuration state");
-      reportsConfig.clear();
-    };
   });
+
+  onDestroy(resetConfig);
 </script>
 
 <SiteHeading title="Report Settings" />
 
+<SaveAlert
+  saving={config.saving}
+  {unsavedChanges}
+  discardChanges={() => {
+    if (config.old) {
+      config.current = { ...config.old };
+      fetchedState = config.old.pausedUntil;
+      setPauseState(config.old.pausedUntil);
+    }
+  }}
+  saveData={saveFn}
+/>
+
 <SettingsGrid class="mt-6">
-  {#if reportsConfig.isConfigured() && pauseState.isConfigured()}
+  {#if config.current}
     <SystemControl
-      bind:pauseState={pauseState.config}
-      bind:enabled={reportsConfig.config.enabled}
-      bind:loading={reportsConfig.loading}
+      bind:pauseState={pauseState}
+      bind:enabled={config.current.enabled}
+      bind:loading={config.loading}
+      alertChannelSet={!!config.current.channelId}
       {fetchedState}
       {showDateError}
-      saveAllFn={saveAll}
     />
-    <LimitsCard bind:limits={reportsConfig.config.limits} bind:loading={reportsConfig.loading} saveFn={saveAll} />
+    <LimitsCard bind:limits={config.current.limits} bind:loading={config.loading} />
     <ChannelSelectCard
-      bind:channel={
-        () => reportChannel ?? undefined,
-        (c) => {
-          reportChannel = c;
-          reportsConfig.config.channelId = c?.id ?? null;
-          if (!c) {
-            reportsConfig.config.enabled = false; // Disable reports if no channel is selected
-          }
-        }
-      }
-      bind:loading={reportsConfig.loading}
-      saveFn={saveAll}
+      bind:channelId={config.current.channelId}
+      bind:loading={config.loading}
     />
     <MentionableSelectCard
       title="Notification Settings"
       description="Select users and roles to notify when reports are created."
       addButtonText="Add Ping"
-      bind:entities={reportsConfig.config.pings}
-      bind:loading={reportsConfig.loading}
+      bind:entities={config.current.pings}
+      bind:loading={config.loading}
       notFoundText="No pings configured."
-      saveFn={saveAll}
     />
     <MentionableSelectCard
       title="Immune Settings"
       description="Select users and roles which cannot be reported. **Use with care!**"
       addButtonText="Add Immune Entity"
-      bind:entities={reportsConfig.config.immune}
-      bind:loading={reportsConfig.loading}
+      bind:entities={config.current.immune}
+      bind:loading={config.loading}
       notFoundText="No immune entities configured."
-      saveFn={saveAll}
     />
     <MentionableSelectCard
       title="Moderator Settings"
       description="Select users and roles which can take action on reports."
       addButtonText="Add Moderator"
-      bind:entities={reportsConfig.config.mods}
-      bind:loading={reportsConfig.loading}
+      bind:entities={config.current.mods}
+      bind:loading={config.loading}
       notFoundText="No moderators configured."
-      saveFn={saveAll}
     />
   {:else}
     <div class="grid place-items-center">

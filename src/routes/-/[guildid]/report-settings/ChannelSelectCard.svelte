@@ -1,19 +1,19 @@
 <script lang="ts">
-  import * as Dialog from "$ui/dialog/index.js";
+  import * as Popover from "$ui/popover/index.js";
   import { Label } from "$ui/label";
   import Mention from "$lib/components/discord/Mention.svelte";
-  import { Button } from "$ui/button";
+  import { buttonVariants } from "$ui/button";
   import { ChannelType } from "discord-api-types/v10";
   import ConfigCard from "$lib/components/ConfigCard.svelte";
-  import ChannelSelect from "$lib/components/ChannelSelect.svelte";
+  import ChannelSelect from "$lib/components/discord/ChannelSelect.svelte";
+  import { cn } from "$lib/utils";
 
   type Props = {
-    channel?: GuildCoreChannel;
+    channelId?: string | null;
     loading: boolean;
-    saveFn: SaveFunction;
   };
 
-  let { channel = $bindable(), loading = $bindable(), saveFn }: Props = $props();
+  let { channelId = $bindable(), loading = $bindable() }: Props = $props();
 
   let modalOpen = $state(false);
 </script>
@@ -21,52 +21,47 @@
 <ConfigCard
   title="Alert Channel"
   description="Select the channel where new reports get sent to."
-  rootClass="col-span-full lg:col-span-2"
-  saveFn={async () => {
-    await saveFn((v) => (loading = v));
-  }}
-  saveBtnLoading={loading}
-  saveBtnDisabled={loading}
+  rootClass="col-span-full lg:col-span-3"
+  class={cn("flex flex-col items-start gap-2", loading && "opacity-50 pointer-events-none")}
+
 >
-  <div class="flex flex-col items-start gap-2" class:opacity-50={loading} class:pointer-events-none={loading}>
-    <Label>Alert Channel</Label>
-    {#if !channel}
-      <Button variant="outline" size="sm" onclick={() => (modalOpen = true)}>Select Channel</Button>
-    {:else}
-      <Mention
-        {channel}
-        onDelete={() => {
-          channel = undefined;
-          return true;
-        }}
-      />
-    {/if}
-  </div>
+  {#if !channelId}
+    <Popover.Root bind:open={modalOpen}>
+      <Popover.Trigger
+        class={buttonVariants({ variant: "outline" })}
+        disabled={!!loading}
+      >
+        Select Channel
+      </Popover.Trigger>
+      <Popover.Content class="w-80">
+        <div class="h-100 w-full max-w-100">
+          <ChannelSelect
+            selectedId={channelId ?? undefined}
+            channelTypes={[
+              ChannelType.GuildText,
+              ChannelType.GuildVoice,
+              ChannelType.GuildAnnouncement,
+              ChannelType.GuildStageVoice,
+              ChannelType.GuildForum,
+            ]}
+            allowCustomChannels
+            excludedChannelIds={channelId ? [channelId] : []}
+            onSelect={(c) => {
+              channelId = c.id;
+              modalOpen = false;
+            }}
+          />
+        </div>
+      </Popover.Content>
+    </Popover.Root>
+  {:else}
+    <Mention
+      {channelId}
+      onDelete={() => {
+        channelId = undefined;
+        return true;
+      }}
+    />
+  {/if}
 </ConfigCard>
 
-<Dialog.Root bind:open={modalOpen}>
-  <Dialog.Content>
-    <Dialog.Header>
-      <Dialog.Title>Select Alert Channel</Dialog.Title>
-    </Dialog.Header>
-    <div class="h-100 w-full max-w-100">
-      <!-- TODO -->
-      <ChannelSelect
-        selectedId={channel}
-        channelTypes={[
-          ChannelType.GuildText,
-          ChannelType.GuildVoice,
-          ChannelType.GuildAnnouncement,
-          ChannelType.GuildStageVoice,
-          ChannelType.GuildForum,
-        ]}
-        allowCustomChannels
-        excludedChannelIds={!!channel ? [channel.id] : []}
-        onSelect={(c) => {
-          channel = c;
-          modalOpen = false;
-        }}
-      />
-    </div>
-  </Dialog.Content>
-</Dialog.Root>

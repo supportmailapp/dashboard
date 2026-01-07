@@ -1,15 +1,15 @@
 <script lang="ts">
   import ConfigCard from "$lib/components/ConfigCard.svelte";
-  import DateTimePicker from "$lib/components/DateTimePicker.svelte";
   import { relativeDatetime } from "$lib/utils";
   import { dateToLocalString } from "$lib/utils/formatting";
-  import * as Alert from "$ui/alert";
+  import * as Alert from "$ui/alert/index.js";
   import { Label } from "$ui/label/index.js";
-  import * as RadioGroup from "$ui/radio-group/index.js";
+  import * as Tooltip from "$ui/tooltip/index.js";
   import Separator from "$ui/separator/separator.svelte";
   import { Switch } from "$ui/switch";
   import CircleAlertIcon from "@lucide/svelte/icons/circle-alert";
-  import dayjs from "dayjs";
+  import PauseDialog from "../ticket-settings/PauseDialog.svelte";
+  import Button from "$ui/button/button.svelte";
 
   interface Props {
     pauseState: TPauseState;
@@ -17,7 +17,7 @@
     loading: boolean;
     fetchedState: APIPausedUntil;
     showDateError: boolean;
-    saveAllFn: SaveFunction;
+    alertChannelSet: boolean;
   }
 
   let {
@@ -26,13 +26,14 @@
     loading = $bindable(),
     fetchedState = $bindable(),
     showDateError,
-    saveAllFn,
+    alertChannelSet,
   }: Props = $props();
 
-  const activeTabs = [
-    { value: "active", label: "Active" },
-    { value: "paused", label: "Paused" },
-  ];
+  let dialogOpen = $state(false);
+
+  function syncPauseType() {
+    pauseState.type = pauseState.pausedUntil.date && pauseState.pausedUntil.value ? "timed" : "indefinite";
+  }
 </script>
 
 {#if fetchedState?.value}
@@ -56,16 +57,22 @@
     class="flex flex-col gap-4"
     title="System Control"
     description="Control the report system status and pausing settings."
-    saveFn={async () => await saveAllFn((v) => (loading = v))}
     saveBtnDisabled={loading}
     saveBtnLoading={loading}
   >
     <!-- Report Status Section -->
     <div class="flex flex-col items-start gap-2">
-      <Label class="inline-flex w-full items-center gap-2">
-        <Switch variant="success" bind:checked={enabled} disabled={loading} />
-        {enabled ? "Enabled" : "Disabled"}
-      </Label>
+      <Tooltip.Root disabled={alertChannelSet} disableCloseOnTriggerClick={true}>
+        <Tooltip.Trigger>
+          <Label class="inline-flex w-full items-center gap-2">
+            <Switch variant="success" bind:checked={() => (alertChannelSet ? enabled : false), (v) => (enabled = v)} disabled={loading || !alertChannelSet} />
+            {enabled ? "Enabled" : "Disabled"}
+          </Label>
+        </Tooltip.Trigger>
+        <Tooltip.Content>
+          Setup an alert channel first, before enabling the report system.
+        </Tooltip.Content>
+      </Tooltip.Root>
     </div>
 
     <Separator class="my-3" />
@@ -77,74 +84,39 @@
         <p class="text-muted-foreground text-sm">Pausing won't reset any settings.</p>
       </div>
 
-      <!-- Tabs control 'isActive' -->
-      <RadioGroup.Root
-        orientation="horizontal"
-        class="flex flex-row gap-8"
-        bind:value={
-          () => (pauseState.pausedUntil.value ? "paused" : "active"),
-          (val) => {
-            pauseState.pausedUntil.value = val === "paused";
-            if (val === "active") {
-              pauseState.pausedUntil.date = null; // Reset date when switching to active
-            }
-          }
-        }
-      >
-        {#each activeTabs as tab}
-          <div class="inline-flex cursor-pointer items-center gap-2 py-1 *:cursor-pointer">
-            <RadioGroup.Item value={tab.value} id={tab.value} class="size-5" />
-            <Label for={tab.value} class="text-lg">{tab.label}</Label>
-          </div>
-        {/each}
-      </RadioGroup.Root>
-      {#if !pauseState.pausedUntil.value}
-        <div class="flex-1 space-y-4 outline-none">
-          <p>Reports are <strong>active</strong>, users can create reports.</p>
+      <div class="flex items-center justify-between">
+        <div class="space-y-1">
+          <p class="text-sm font-medium">
+            Status: <span class="text-muted-foreground">
+              {#if pauseState.pausedUntil.value}
+                {#if pauseState.pausedUntil.date}
+                  {@const pausedDate = new Date(pauseState.pausedUntil.date)}
+                  Paused until {dateToLocalString(pausedDate)}
+                {:else}
+                  Paused indefinitely
+                {/if}
+              {:else}
+                Active
+              {/if}
+            </span>
+          </p>
         </div>
-      {:else}
-        <div class="flex-1 space-y-4 outline-none">
-          <p>Reports are <strong>paused</strong>, users <strong>cannot</strong> create new reports.</p>
-          <!-- Radio group controls 'pauseType' -->
-          <RadioGroup.Root
-            bind:value={
-              () => pauseState.type,
-              (val) => {
-                pauseState.type = val;
-                if (val === "indefinite") {
-                  pauseState.pausedUntil.date = null;
-                }
-              }
-            }
-          >
-            <div class="flex items-center space-x-2">
-              <RadioGroup.Item value="indefinite" id="indefinite" class="size-5" />
-              <Label for="indefinite" class="text-base">Indefinitely</Label>
-            </div>
-            <div class="flex items-center space-x-2">
-              <RadioGroup.Item value="timed" id="timed" class="size-5" />
-              <Label for="timed" class="text-base">Until Date/Time</Label>
-            </div>
-          </RadioGroup.Root>
-          {#if pauseState?.type === "timed"}
-            <div class="flex flex-col gap-1">
-              <Label>Until when?</Label>
-              <DateTimePicker
-                showError={showDateError}
-                onChange={(val: string) => {
-                  const djs = dayjs(val);
-                  console.log(djs.toString());
-                  if (djs.isValid()) {
-                    pauseState.pausedUntil.date = val; // val is an ISOString
-                  } else if (!pauseState) {
-                    console.warn("Pause State not initialized???");
-                  }
-                }}
-              />
-            </div>
-          {/if}
-        </div>
-      {/if}
+        <Button variant="outline" onclick={() => (dialogOpen = true)}>
+          Configure Pause Settings
+        </Button>
+      </div>
     </div>
   </ConfigCard>
 </div>
+
+<PauseDialog
+  bind:open={dialogOpen}
+  bind:pausedUntil={pauseState.pausedUntil}
+  {showDateError}
+  onOpenChange={(open) => {
+    dialogOpen = open;
+    if (!open) {
+      syncPauseType();
+    }
+  }}
+/>

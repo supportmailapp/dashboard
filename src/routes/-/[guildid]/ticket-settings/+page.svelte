@@ -143,6 +143,7 @@
       bind:pausedUntil={config.current.pausedUntil}
       bind:enabled={config.current.enabled}
       fetchedState={fetchedPauseState}
+      ticketForumSet={!!config.current.forumId}
       {showDateError}
     />
     <MessageHandling

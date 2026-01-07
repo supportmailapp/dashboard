@@ -13,12 +13,10 @@
     rootClass?: ClassValue;
     saveBtnDisabled?: boolean;
     saveBtnLoading?: boolean;
-    saveFn?: () => void | Promise<void>;
     children?: Snippet;
   };
   let {
     children,
-    saveFn,
     title,
     description,
     class: className,
@@ -42,18 +40,4 @@
   <Card.Content class={cn(className)}>
     {@render children?.()}
   </Card.Content>
-  {#if typeof saveFn !== "undefined"}
-    <Card.Footer class="mt-auto justify-end">
-      <Button
-        variant="default"
-        disabled={saveBtnDisabled}
-        showLoading={saveBtnLoading}
-        class="w-25"
-        onclick={saveFn}
-      >
-        <Save class="mr-0.5 size-4" />
-        Save
-      </Button>
-    </Card.Footer>
-  {/if}
 </Card.Root>

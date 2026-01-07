@@ -1,14 +1,13 @@
 <script lang="ts">
   import Mention from "$lib/components/discord/Mention.svelte";
-  import MentionableSelect from "$lib/components/MentionableSelect.svelte";
+  import MentionableSelect from "$lib/components/discord/MentionableSelect.svelte";
   import { EntityType, type MentionableEntity } from "$lib/sm-types";
   import { MarkdownFormatter } from "$lib/utils/formatting";
-  import { Button, buttonVariants } from "$ui/button";
+  import { buttonVariants } from "$ui/button";
   import * as Card from "$ui/card/index.js";
   import { Label } from "$ui/label";
   import * as Popover from "$ui/popover/index.js";
   import Plus from "@lucide/svelte/icons/plus";
-  import Save from "@lucide/svelte/icons/save";
   import type { APIRole, APIUser } from "discord-api-types/v10";
   import equal from "fast-deep-equal/es6";
 
@@ -23,7 +22,6 @@
     description?: string;
     notFoundText?: string;
     addButtonText?: string;
-    saveFn: SaveFunction;
   };
 
   let {
@@ -32,9 +30,9 @@
     title,
     labelText,
     description = "Select users and roles",
-    saveFn,
   }: Props = $props();
 
+  let popoverOpen = $state(false);
   let pingRoles = $derived((entities ?? []).filter((e) => e.typ === EntityType.role).map((e) => e.id));
   let pingUsers = $derived((entities ?? []).filter((e) => e.typ === EntityType.user).map((e) => e.id));
 
@@ -43,11 +41,11 @@
     return true;
   }
 
-  function handleRoleSelect(role: APIRole) {
+  function handleRoleSelect(roleId: string) {
     if (!entities) {
-      entities = [{ typ: EntityType.role, id: role.id }];
+      entities = [{ typ: EntityType.role, id: roleId }];
     } else {
-      entities = [...entities, { typ: EntityType.role, id: role.id }];
+      entities = [...entities, { typ: EntityType.role, id: roleId }];
     }
   }
 
@@ -62,7 +60,7 @@
   }
 </script>
 
-<Card.Root class="col-span-full lg:col-span-2">
+<Card.Root class="col-span-full lg:col-span-3">
   <Card.Header>
     <Card.Title>{title}</Card.Title>
     {#if description}
@@ -83,41 +81,25 @@
             onDelete={() => handlePingDelete(entity)}
           />
         {/each}
-        <Popover.Root>
+        <Popover.Root bind:open={popoverOpen}>
           <Popover.Trigger
-            class={buttonVariants({
-              variant: "outline",
-              size: "icon",
-              class: "size-7",
-            })}
+            class={buttonVariants({ variant: "outline", size: "icon", class: "size-7" })}
             disabled={!!loading}
           >
-            <Plus />
+            <Plus class="size-4" />
           </Popover.Trigger>
           <Popover.Content class="w-80">
-            <MentionableSelect
-              excludedRoleIds={pingRoles}
-              excludedUserIds={pingUsers}
-              onRoleSelect={handleRoleSelect}
-              onUserSelect={handleUserSelect}
-            />
+            <div class="h-100 w-full max-w-100">
+              <MentionableSelect
+                excludedRoleIds={pingRoles}
+                excludedUserIds={pingUsers}
+                onRoleSelect={handleRoleSelect}
+                onUserSelect={handleUserSelect}
+              />
+            </div>
           </Popover.Content>
-        </Popover.Root>
+      </Popover.Root>
       </div>
     </div>
   </Card.Content>
-  <Card.Footer class="justify-end">
-    <Button
-      variant="default"
-      disabled={loading}
-      showLoading={loading}
-      class="w-[100px]"
-      onclick={async () => {
-        await saveFn((v) => (loading = v));
-      }}
-    >
-      <Save class="mr-0.5 size-4" />
-      Save
-    </Button>
-  </Card.Footer>
 </Card.Root>

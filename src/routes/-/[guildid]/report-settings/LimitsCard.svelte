@@ -9,7 +9,6 @@
   type Props = {
     limits: ReportLimitsConfig;
     loading: boolean;
-    saveFn: SaveFunction;
   };
 
   let {
@@ -19,7 +18,6 @@
       opens: 20,
     }),
     loading = $bindable(),
-    saveFn,
   }: Props = $props();
 </script>
 
@@ -28,11 +26,7 @@
   description="Set limits for reports"
   rootClass="col-span-full lg:col-span-3"
   class="space-y-2"
-  saveBtnLoading={loading}
-  saveBtnDisabled={loading}
-  saveFn={async () => {
-    await saveFn((v) => (loading = v));
-  }}
+
 >
   <div class="grid grid-cols-[auto_1fr] gap-2 [&>input]:w-22">
     <Input type="number" bind:value={limits.perUserReceive} min={1} max={10} />
