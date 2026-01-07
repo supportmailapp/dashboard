@@ -88,15 +88,13 @@
           >
             <Plus class="size-4" />
           </Popover.Trigger>
-          <Popover.Content class="w-80">
-            <div class="h-100 w-full max-w-100">
-              <MentionableSelect
-                excludedRoleIds={pingRoles}
-                excludedUserIds={pingUsers}
-                onRoleSelect={handleRoleSelect}
-                onUserSelect={handleUserSelect}
-              />
-            </div>
+          <Popover.Content>
+            <MentionableSelect
+              excludedRoleIds={pingRoles}
+              excludedUserIds={pingUsers}
+              onRoleSelect={handleRoleSelect}
+              onUserSelect={handleUserSelect}
+            />
           </Popover.Content>
       </Popover.Root>
       </div>

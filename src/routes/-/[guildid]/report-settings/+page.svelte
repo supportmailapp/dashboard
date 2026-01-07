@@ -16,9 +16,6 @@
   import MentionableSelectCard from "./MentionableSelectCard.svelte";
   import SystemControl from "./SystemControl.svelte";
   import { determineUnsavedChanges } from "$lib/utils";
-  import { getManager } from "$lib/stores/GuildsManager.svelte";
-
-  const guildsManager = getManager();
 
   const config = $state({
     old: null as DBGuildProjectionReturns["reportSettings"] | null,
@@ -36,6 +33,9 @@
   });
 
   let unsavedChanges = $derived(determineUnsavedChanges(untrack(() => config.old), config.current));
+
+  $inspect("current + old config", config.current, config.old);
+  $inspect("unsavedChanges", unsavedChanges);
 
   function buildPausedUntil(_data?: TPauseState): APIPausedUntil {
     const snap = _data ?? pauseState;
@@ -146,7 +146,7 @@
               opens: data.limits?.opens ?? 20,
             },
           };
-          config.current = { ...config.old };
+          config.current = { ...$state.snapshot(config.old) };
           setPauseState(data.pausedUntil);
           fetchedState = data.pausedUntil;
         });
@@ -189,7 +189,12 @@
       {fetchedState}
       {showDateError}
     />
-    <LimitsCard bind:limits={config.current.limits} bind:loading={config.loading} />
+    <LimitsCard
+      bind:perUserReceive={config.current.limits.perUserReceive}
+      bind:perUserCreate={config.current.limits.perUserCreate}
+      bind:opens={config.current.limits.opens}
+      bind:loading={config.loading}
+    />
     <ChannelSelectCard
       bind:channelId={config.current.channelId}
       bind:loading={config.loading}

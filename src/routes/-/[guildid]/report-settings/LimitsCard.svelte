@@ -6,17 +6,14 @@
   import { Separator } from "$ui/separator";
   import Info from "@lucide/svelte/icons/info";
 
-  type Props = {
-    limits: ReportLimitsConfig;
+  type Props = ReportLimitsConfig & {
     loading: boolean;
   };
 
   let {
-    limits = $bindable({
-      perUserReceive: 1,
-      perUserCreate: 5,
-      opens: 20,
-    }),
+    perUserReceive = $bindable(10),
+    perUserCreate = $bindable(5),
+    opens = $bindable(20),
     loading = $bindable(),
   }: Props = $props();
 </script>
@@ -29,13 +26,22 @@
 
 >
   <div class="grid grid-cols-[auto_1fr] gap-2 [&>input]:w-22">
-    <Input type="number" bind:value={limits.perUserReceive} min={1} max={10} />
+    <Input type="number" value={perUserReceive || 10} min={1} max={10} oninput={(e) => {
+      const v = parseInt(e.currentTarget.value);
+      perUserReceive = Math.min(Math.max(v, 1), 10);
+    }}/>
     <Label>Max open reports per user</Label>
 
-    <Input type="number" bind:value={limits.perUserCreate} min={1} max={50} />
+    <Input type="number" value={perUserCreate || 5} min={1} max={50} oninput={(e) => {
+      const v = parseInt(e.currentTarget.value);
+      perUserCreate = Math.min(Math.max(v, 1), 50);
+    }}/>
     <Label>Max open reports a user can create</Label>
 
-    <Input type="number" bind:value={limits.opens} min={1} max={100} />
+    <Input type="number" value={opens || 20} min={1} max={100} oninput={(e) => {
+      const v = parseInt(e.currentTarget.value);
+      opens = Math.min(Math.max(v, 1), 100);
+    }}/>
     <Label>Max open reports in the server</Label>
   </div>
   <Separator />
