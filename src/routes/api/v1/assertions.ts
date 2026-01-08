@@ -115,5 +115,4 @@ export const GetTagSchemaForGuild = (guildId: string) =>
     )
     .max(100, zem("A maximum of 100 tags are allowed per server"));
 
-export type TagPutRequestBody = z.input<typeof TagPutSchema>;
-export type TagPut = z.output<typeof TagPutSchema>;
+export type TagPut = z.infer<typeof TagPutSchema>;
