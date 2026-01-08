@@ -1,6 +1,5 @@
 <script lang="ts">
   import { afterNavigate } from "$app/navigation";
-  import ContentEditor from "$lib/components/ContentEditor.svelte";
   import SaveAlert from "$lib/components/SaveAlert.svelte";
   import { APIRoutes } from "$lib/urls";
   import { determineUnsavedChanges } from "$lib/utils";
@@ -12,7 +11,6 @@
   import { fly } from "svelte/transition";
   import SearchIcon from "@lucide/svelte/icons/search";
   import * as InputGroup from "$ui/input-group/index.js";
-  import * as Dialog from "$ui/dialog/index.js";
   import * as Empty from "$ui/empty/index.js";
   import * as Item from "$ui/item/index.js";
   import Button from "$ui/button/button.svelte";

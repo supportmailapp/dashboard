@@ -8,6 +8,7 @@
   import * as Avatar from "$ui/avatar/index.js";
   import { Button } from "$ui/button";
   import Input from "$ui/input/input.svelte";
+  import * as ButtonGroup from "$lib/components/ui/button-group/index.js";
   import Search from "@lucide/svelte/icons/search";
   import type { APIUser } from "discord-api-types/v10";
   import { toast } from "svelte-sonner";
@@ -63,9 +64,10 @@
 
 <div class="flex flex-col gap-2">
   <form class="flex w-full flex-row gap-2" onsubmit={fetchUsers}>
-    <Input
+    <!--
+      <Input
       bind:value={userSearchInput}
-      placeholder={botsOnly ? "Bot username or ID" : "Username or ID"}
+      placeholder={botsOnly ? "Bot name or ID" : "Username or ID"}
       class="h-9 grow"
       required
     />
@@ -77,7 +79,24 @@
       showLoading={loading.fetching}
     >
       <Search class="size-4" />
-    </Button>
+    </Button> -->
+    <ButtonGroup.Root class="w-full">
+      <Input
+        bind:value={userSearchInput}
+        placeholder={botsOnly ? "Bot name or ID" : "Username or ID"}
+        class="h-9 grow"
+        required
+      />
+      <Button
+        variant="outline"
+        size="icon"
+        aria-label="Search"
+        class="h-9 px-3"
+        disabled={loading.fetching}
+      >
+        <Search />
+      </Button>
+    </ButtonGroup.Root>
   </form>
 
   <div class={cn("flex flex-col gap-1", loading.fetching && "pointer-events-none opacity-70 select-none")}>
