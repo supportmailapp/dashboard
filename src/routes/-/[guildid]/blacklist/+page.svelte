@@ -18,14 +18,14 @@
   } from "../../../api/v1/guilds/[guildid]/blacklist/+server";
   import EntriesTable from "./EntriesTable.svelte";
   import FilterControls from "./FilterControls.svelte";
-  import { BLEntry, dialogFields, toggleScope } from "./entry.svelte";
+  import { BLEntry, dialogFields } from "./entry.svelte";
 
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
 
   import { Button, buttonVariants } from "$ui/button/index.js";
   import * as Dialog from "$ui/dialog/index.js";
-  import * as Dropdown from "$ui/dropdown-menu/index.js";
+  import * as Select from "$ui/select/index.js";
   import Input from "$ui/input/input.svelte";
   import Label from "$ui/label/label.svelte";
   import * as Popover from "$ui/popover";
@@ -69,6 +69,8 @@
   let bulkDeleteConfirmation = $state(false);
 
   const newEntry = new BLEntry();
+
+  $inspect("new entry scopes", newEntry.scopes.bits.toString());
 
   function buildSearchParams() {
     const params = new URLSearchParams();
@@ -245,7 +247,7 @@
             bind:open={() => newEntry.canOpenPopup && newEntry.popupOpen, (v) => (newEntry.popupOpen = v)}
           >
             <Popover.Trigger
-              class={cn(newEntry.canOpenPopup && buttonVariants({ variant: "outline" }), "w-fit")}
+              class={cn(newEntry.canOpenPopup && buttonVariants({ variant: "outline" }), "w-60")}
               disabled={pageStatus === "loading"}
             >
               {#if newEntry.id !== ""}
@@ -278,37 +280,44 @@
           </Popover.Root>
 
           <Label>Scopes</Label>
-          <Dropdown.Root>
-            <Dropdown.Trigger
-              class={cn(
-                "border-input data-placeholder:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-fit items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none select-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-                "w-full sm:w-50",
-              )}
-            >
-              Select Scopes
-              <ChevronDown class="size-4 opacity-50" />
-            </Dropdown.Trigger>
-            <Dropdown.Content class="w-50">
-              <Dropdown.Group>
+          <Select.Root
+            type="multiple"
+            bind:value={
+              () => newEntry.scopes.getSetBits().map((bit) => String(1 << bit)),
+              (newVals) => {
+                const newNums = newVals.map((v) => parseInt(v, 10));
+                newEntry.scopes.clear();
+                newEntry.scopes.set(...newNums);
+              }
+            }
+          >
+            <Select.Trigger class="w-60">
+              {#if newEntry.scopes.size === 0}
+                Select Scopes
+              {:else}
+                <span
+                  >{newEntry.scopes
+                    .getSetBits()
+                    .map((bit) => dialogFields.scopes.find((s) => s.value === 1 << bit)?.label ?? "Unknown")
+                    .join(", ")}</span
+                >
+              {/if}
+            </Select.Trigger>
+            <Select.Content class="w-60">
+              <Select.Group>
                 {#each dialogFields.scopes as _scope}
-                  <Dropdown.Item
-                    closeOnSelect={false}
-                    onclick={() => {
-                      console.log("toggled scope", _scope.value);
-                      toggleScope(newEntry, _scope.value);
-                    }}
-                  >
+                  <Select.Item value={String(_scope.value)}>
                     {#if newEntry.scopes.has(_scope.value)}
                       <span class="absolute right-2 flex size-3.5 items-center justify-center">
                         <Check class="size-4" />
                       </span>
                     {/if}
                     {_scope.label}
-                  </Dropdown.Item>
+                  </Select.Item>
                 {/each}
-              </Dropdown.Group>
-            </Dropdown.Content>
-          </Dropdown.Root>
+              </Select.Group>
+            </Select.Content>
+          </Select.Root>
         </div>
         <Dialog.Footer>
           <Button

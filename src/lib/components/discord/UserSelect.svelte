@@ -64,22 +64,6 @@
 
 <div class="flex flex-col gap-2">
   <form class="flex w-full flex-row gap-2" onsubmit={fetchUsers}>
-    <!--
-      <Input
-      bind:value={userSearchInput}
-      placeholder={botsOnly ? "Bot name or ID" : "Username or ID"}
-      class="h-9 grow"
-      required
-    />
-    <Button
-      type="submit"
-      variant="default"
-      class="h-9 px-3"
-      disabled={loading.fetching}
-      showLoading={loading.fetching}
-    >
-      <Search class="size-4" />
-    </Button> -->
     <ButtonGroup.Root class="w-full">
       <Input
         bind:value={userSearchInput}
@@ -100,9 +84,9 @@
   </form>
 
   <div class={cn("flex flex-col gap-1", loading.fetching && "pointer-events-none opacity-70 select-none")}>
-    <div class="flex max-h-75 min-h-20 w-full flex-col gap-1 overflow-y-auto rounded-md border p-2">
+    <div class="flex max-h-75 w-full flex-col gap-1 overflow-y-auto rounded-md border p-2">
       {#if !fetchedUsers.length && !loading.fetching}
-        <p class="bg-muted text-muted-foreground rounded-md p-3 text-center text-sm">
+        <p class="text-muted-foreground p-3 text-center text-sm">
           {userSearchInput ? "No users found." : `Search for ${botsOnly ? "bots" : "users"} above.`}
         </p>
       {:else if loading.fetching}
