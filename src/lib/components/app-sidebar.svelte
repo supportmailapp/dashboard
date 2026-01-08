@@ -6,7 +6,8 @@
   import LogOut from "@lucide/svelte/icons/log-out";
   import MessagesSquare from "@lucide/svelte/icons/messages-square";
   import Moon from "@lucide/svelte/icons/moon";
-  import ReceiptText from "@lucide/svelte/icons/receipt-text";
+  import LifeBuoy from "@lucide/svelte/icons/life-buoy";
+  import BookCheck from "@lucide/svelte/icons/book-check";
   import RotateCcw from "@lucide/svelte/icons/rotate-ccw";
   import Settings from "@lucide/svelte/icons/settings";
   import ShieldUser from "@lucide/svelte/icons/shield-user";
@@ -14,6 +15,7 @@
   import Sun from "@lucide/svelte/icons/sun";
   import Table from "@lucide/svelte/icons/table";
   import Ticket from "@lucide/svelte/icons/ticket";
+  import Section from "@lucide/svelte/icons/section";
 
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
@@ -112,9 +114,9 @@
       name: "Content Management",
       items: [
         {
-          id: "snippets",
-          name: "Snippets",
-          href: page.data.guildHref("/snippets"),
+          id: "tags",
+          name: "Tags",
+          href: page.data.guildHref("/tags"),
           icon: MessagesSquare,
         },
       ],
@@ -219,11 +221,8 @@
           <DropdownMenu.Content side="top" class="w-(--bits-dropdown-menu-anchor-width)">
             <DropdownMenu.Item onclick={() => goto(atMeHref)}>
               <Settings />
-              <span>User Settings</span>
-            </DropdownMenu.Item>
-            <DropdownMenu.Item onclick={() => goto("/billing")}>
-              <ReceiptText />
-              <span>Billing</span>
+              <!-- TODO Later: <span>Me & Billing</span> -->
+              <span>My Settings</span>
             </DropdownMenu.Item>
             <DropdownMenu.Item closeOnSelect={false} onclick={() => toggleMode()}>
               {#if mode.current === "dark"}
@@ -233,8 +232,25 @@
               {/if}
               <span>Toggle Theme</span>
             </DropdownMenu.Item>
-            <DropdownMenu.Item onSelect={() => (snowflakeControlsOpen = true)}>
+            <!-- <DropdownMenu.Item onSelect={() => (snowflakeControlsOpen = true)}>
               Snowflake Controls
+            </DropdownMenu.Item> -->
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item onclick={() => window?.open("https://docs.supportmail.dev", "_blank")}>
+              <BookCheck />
+              <span>Documentation</span>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item onclick={() => window?.open("https://help.supportmail.dev", "_blank")}>
+              <LifeBuoy />
+              <span>Support Server</span>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item onclick={() => window?.open("https://status.thelukez.com", "_blank")}>
+              <ShieldUser />
+              <span>Status Page</span>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item onclick={() => window?.open("https://legal.supportmail.dev", "_blank")}>
+              <Section />
+              <span>Legal Notice</span>
             </DropdownMenu.Item>
             <DropdownMenu.Item variant="destructive" onclick={() => goto("/logout")}>
               <LogOut />
