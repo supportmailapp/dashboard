@@ -13,7 +13,7 @@
     id="branding"
     class="mx-auto my-2 flex w-full flex-col items-center justify-center gap-1 gap-x-3 rounded-lg py-2 transition-all duration-120 select-none hover:opacity-75"
   >
-    <span class="text-success rounded-lg px-2 py-1 font-bold">Hosted by</span>
+    <span class="text-foreground rounded-lg px-2 py-1 font-bold">Hosted by</span>
     {#if mode.current !== "dark"}
       <img src="https://venocix.de/assets/img/logo.png" alt="Logo" class="w-[70%]" />
     {:else}
