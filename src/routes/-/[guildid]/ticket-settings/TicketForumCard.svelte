@@ -144,13 +144,7 @@
             </Popover.Root>
 
             <Dialog.Footer>
-              <Button
-                showLoading={loading.setup}
-                disabled={loading.setup}
-                onclick={setupFn}
-              >
-                Setup
-              </Button>
+              <Button showLoading={loading.setup} disabled={loading.setup} onclick={setupFn}>Setup</Button>
             </Dialog.Footer>
           </Dialog.Content>
         </Dialog.Root>

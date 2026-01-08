@@ -14,7 +14,7 @@
     invalid_session: "Invalid Session or expired.",
     oauth_error: "OAuth Error.",
     access_denied: "Access Denied. You must authorize the application to log in.",
-    "error4xx": "A client error occurred during login.",
+    error4xx: "A client error occurred during login.",
     token_exchange_failed: "Failed to exchange authorization code for tokens.",
     user_fetch_failed: "Failed to fetch user information.",
     unknown: "An unknown error occurred.",
@@ -51,7 +51,9 @@
     </Alert.Root>
   {/if}
 
-  <Card.Root class="w-full max-w-md shadow-xl shadow-black/60 select-none backdrop-blur-md bg-transparent border-none">
+  <Card.Root
+    class="w-full max-w-md border-none bg-transparent shadow-xl shadow-black/60 backdrop-blur-md select-none"
+  >
     <Card.Header class="text-center">
       <Branding />
     </Card.Header>

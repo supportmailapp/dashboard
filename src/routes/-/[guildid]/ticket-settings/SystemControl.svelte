@@ -57,13 +57,11 @@
       <Tooltip.Root disabled={ticketForumSet} disableCloseOnTriggerClick={true}>
         <Tooltip.Trigger>
           <Label class="inline-flex w-full items-center gap-2">
-            <Switch variant="success" bind:checked={enabled} disabled={!ticketForumSet}/>
+            <Switch variant="success" bind:checked={enabled} disabled={!ticketForumSet} />
             {enabled ? "Enabled" : "Disabled"}
           </Label>
         </Tooltip.Trigger>
-        <Tooltip.Content>
-          Setup a ticket forum first, before enabling the ticket system.
-        </Tooltip.Content>
+        <Tooltip.Content>Setup a ticket forum first, before enabling the ticket system.</Tooltip.Content>
       </Tooltip.Root>
     </div>
 
@@ -93,9 +91,7 @@
             </span>
           </p>
         </div>
-        <Button variant="outline" onclick={() => dialogOpen = true}>
-          Configure Pause Settings
-        </Button>
+        <Button variant="outline" onclick={() => (dialogOpen = true)}>Configure Pause Settings</Button>
       </div>
     </div>
   </ConfigCard>
@@ -105,5 +101,5 @@
   bind:open={dialogOpen}
   bind:pausedUntil
   {showDateError}
-  onOpenChange={(open) => dialogOpen = open}
+  onOpenChange={(open) => (dialogOpen = open)}
 />

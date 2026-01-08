@@ -487,7 +487,6 @@ marked.use({
     twemojiExtension,
     autolinkExtension,
   ],
-  
 });
 
 export function toDiscordHtml(message: string) {

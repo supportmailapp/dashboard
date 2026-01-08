@@ -32,7 +32,12 @@
     type: "indefinite",
   });
 
-  let unsavedChanges = $derived(determineUnsavedChanges(untrack(() => config.old), config.current));
+  let unsavedChanges = $derived(
+    determineUnsavedChanges(
+      untrack(() => config.old),
+      config.current,
+    ),
+  );
 
   $inspect("current + old config", config.current, config.old);
   $inspect("unsavedChanges", unsavedChanges);
@@ -182,7 +187,7 @@
 <SettingsGrid class="mt-6">
   {#if config.current}
     <SystemControl
-      bind:pauseState={pauseState}
+      bind:pauseState
       bind:enabled={config.current.enabled}
       bind:loading={config.loading}
       alertChannelSet={!!config.current.channelId}
@@ -195,10 +200,7 @@
       bind:opens={config.current.limits.opens}
       bind:loading={config.loading}
     />
-    <ChannelSelectCard
-      bind:channelId={config.current.channelId}
-      bind:loading={config.loading}
-    />
+    <ChannelSelectCard bind:channelId={config.current.channelId} bind:loading={config.loading} />
     <MentionableSelectCard
       title="Notification Settings"
       description="Select users and roles to notify when reports are created."

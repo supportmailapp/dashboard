@@ -3,11 +3,7 @@
   import { Separator } from "$ui/separator/index.js";
   import type { ComponentProps } from "svelte";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    ...restProps
-  }: ComponentProps<typeof Separator> = $props();
+  let { ref = $bindable(null), class: className, ...restProps }: ComponentProps<typeof Separator> = $props();
 </script>
 
 <Separator

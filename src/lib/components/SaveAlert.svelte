@@ -13,13 +13,8 @@
     discardChanges: () => void;
   }
 
-  let {
-    saving = $bindable(false),
-    unsavedChanges,
-    saveData,
-    discardChanges,
-  }: SaveAlertProps = $props();
-  
+  let { saving = $bindable(false), unsavedChanges, saveData, discardChanges }: SaveAlertProps = $props();
+
   const jiggleSpring = new Spring(0, { stiffness: 0.6, damping: 0.5, precision: 0.1 });
   let jiggling = $state(false);
 

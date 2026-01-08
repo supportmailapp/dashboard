@@ -96,7 +96,7 @@
               onUserSelect={handleUserSelect}
             />
           </Popover.Content>
-      </Popover.Root>
+        </Popover.Root>
       </div>
     </div>
   </Card.Content>

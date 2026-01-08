@@ -226,7 +226,6 @@
     animation-duration: 100ms;
     cursor: pointer;
 
-
     &:hover {
       background-color: color-mix(in oklab, var(--blurple) 90%, transparent);
     }

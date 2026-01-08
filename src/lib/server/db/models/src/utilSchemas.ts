@@ -3,7 +3,13 @@
  * These schemas are not bound to any specific guild, which is why no models are created here.
  */
 
-import type { AnyEntity, ICustomModalField, IFormComponent, IPartialEmoji, IStringSelectOption } from "$lib/sm-types";
+import type {
+  AnyEntity,
+  ICustomModalField,
+  IFormComponent,
+  IPartialEmoji,
+  IStringSelectOption,
+} from "$lib/sm-types";
 import { Schema } from "mongoose";
 
 export const partialEmojiSchema = new Schema<IPartialEmoji>(
@@ -61,4 +67,3 @@ export const FormComponentSchema = new Schema<IFormComponent>({
   messageLabel: { type: String, required: false, maxlength: 100 },
   options: { type: [formStringSelectOptionSchema], required: false },
 });
-

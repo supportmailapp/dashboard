@@ -34,7 +34,12 @@
   });
 
   let showDateError = $state(false);
-  let unsavedChanges = $derived(determineUnsavedChanges(untrack(() => config.old), config.current));
+  let unsavedChanges = $derived(
+    determineUnsavedChanges(
+      untrack(() => config.old),
+      config.current,
+    ),
+  );
 
   async function saveFn() {
     if (!config.current) {
@@ -150,10 +155,7 @@
       bind:allowedBots={config.current.allowedBots}
       bind:autoForward={config.current.autoForwarding}
     />
-    <TicketForumCard
-      forumId={config.current.forumId ?? null}
-      wholeConfig={config}
-    />
+    <TicketForumCard forumId={config.current.forumId ?? null} wholeConfig={config} />
     <AnonymSettings bind:anonymSettings={config.current.anonym} />
     <Separator class="col-span-full my-5" />
     <ResetStuff />

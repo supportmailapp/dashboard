@@ -22,8 +22,8 @@
   }
 </script>
 
-<Dialog.Root bind:open={open}>
-  <Dialog.Content class="gap-6 max-w-md" interactOutsideBehavior="ignore" escapeKeydownBehavior="ignore">
+<Dialog.Root bind:open>
+  <Dialog.Content class="max-w-md gap-6" interactOutsideBehavior="ignore" escapeKeydownBehavior="ignore">
     <Dialog.Header>
       <Dialog.Title>Edit Option</Dialog.Title>
     </Dialog.Header>
@@ -54,7 +54,9 @@
 
         <div class="flex w-full max-w-sm flex-col gap-1.5">
           <Label>Value</Label>
-          <p class="text-muted-foreground text-sm">The internal value for this option which is used after submitting the form.</p>
+          <p class="text-muted-foreground text-sm">
+            The internal value for this option which is used after submitting the form.
+          </p>
           <Input type="text" bind:value={option.value} minlength={1} maxlength={100} required />
         </div>
 
@@ -67,7 +69,9 @@
         <div class="flex w-full max-w-sm flex-col gap-1.5">
           <Label>Emoji (markdown)</Label>
           <Input type="text" bind:value={option.emoji} maxlength={100} placeholder=":smile:" />
-          <p class="text-muted-foreground text-sm">Pass emojis as markdown (e.g. <code>:smile:</code> or unicode).</p>
+          <p class="text-muted-foreground text-sm">
+            Pass emojis as markdown (e.g. <code>:smile:</code> or unicode).
+          </p>
         </div>
 
         <div class="flex w-full max-w-sm flex-col gap-1.5">

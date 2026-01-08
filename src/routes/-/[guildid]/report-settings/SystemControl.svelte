@@ -65,13 +65,15 @@
       <Tooltip.Root disabled={alertChannelSet} disableCloseOnTriggerClick={true}>
         <Tooltip.Trigger>
           <Label class="inline-flex w-full items-center gap-2">
-            <Switch variant="success" bind:checked={() => (alertChannelSet ? enabled : false), (v) => (enabled = v)} disabled={loading || !alertChannelSet} />
+            <Switch
+              variant="success"
+              bind:checked={() => (alertChannelSet ? enabled : false), (v) => (enabled = v)}
+              disabled={loading || !alertChannelSet}
+            />
             {enabled ? "Enabled" : "Disabled"}
           </Label>
         </Tooltip.Trigger>
-        <Tooltip.Content>
-          Setup an alert channel first, before enabling the report system.
-        </Tooltip.Content>
+        <Tooltip.Content>Setup an alert channel first, before enabling the report system.</Tooltip.Content>
       </Tooltip.Root>
     </div>
 
@@ -101,9 +103,7 @@
             </span>
           </p>
         </div>
-        <Button variant="outline" onclick={() => (dialogOpen = true)}>
-          Configure Pause Settings
-        </Button>
+        <Button variant="outline" onclick={() => (dialogOpen = true)}>Configure Pause Settings</Button>
       </div>
     </div>
   </ConfigCard>

@@ -87,7 +87,7 @@
               {#each getScopeNames(entry.scopes) as scopeName}
                 <span
                   class={cn(
-                    "inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary",
+                    "bg-primary/10 text-primary inline-block rounded-full px-2 py-0.5 text-xs font-medium",
                     "mr-1 last:mr-0",
                   )}
                 >
@@ -123,9 +123,7 @@
           </Table.Row>
         {:else}
           <Table.Row>
-            <Table.Cell colspan={4} class="text-center text-muted-foreground">
-              No entries found
-            </Table.Cell>
+            <Table.Cell colspan={4} class="text-center text-muted-foreground">No entries found</Table.Cell>
           </Table.Row>
         {/each}
       </Table.Body>

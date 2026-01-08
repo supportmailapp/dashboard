@@ -8,15 +8,14 @@ import { JsonErrors } from "$lib/constants.js";
 
 export type TagsResponse = APITag[];
 
-export type APITag = 
-  Omit<ITag, "createdAt" | "updatedAt"> & {
-    /** Always returned by the API */
-    createdAt?: string;
-    updatedAt?: string;
-    _id?: string;
-    local?: true;
-    delete?: true;
-  };
+export type APITag = Omit<ITag, "createdAt" | "updatedAt"> & {
+  /** Always returned by the API */
+  createdAt?: string;
+  updatedAt?: string;
+  _id?: string;
+  local?: true;
+  delete?: true;
+};
 
 export async function GET({ params, url }) {
   const tags = await DBTag.find({

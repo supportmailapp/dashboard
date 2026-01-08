@@ -45,7 +45,12 @@
     loading: false,
   });
 
-  let unsavedChanges = $derived(!equal(untrack(() => config.old), config.current));
+  let unsavedChanges = $derived(
+    !equal(
+      untrack(() => config.old),
+      config.current,
+    ),
+  );
 
   let editDialogOpen = $state(false);
   let editField = $state<AnyAPIFormComponent | null>(null);
@@ -209,13 +214,13 @@
 </script>
 
 <SaveAlert
-    saving={config.saving}
-    unsavedChanges={unsavedChanges}
-    discardChanges={() => {
-      if (config.old && config.current) {
-        config.current = { ...config.old };
-      }
-    }}
+  saving={config.saving}
+  {unsavedChanges}
+  discardChanges={() => {
+    if (config.old && config.current) {
+      config.current = { ...config.old };
+    }
+  }}
   saveData={saveCategory}
 />
 
@@ -355,13 +360,13 @@
           Have up to 5 questions, the user is asked before creating a ticket.
         </Card.Description>
       </Card.Header>
-      <Card.Content class="space-y-2 w-auto">
+      <Card.Content class="w-auto space-y-2">
         {#if config.current.components.length > 0}
-          <div class="flex max-w-2xl flex-col gap-1 overflow-y-auto w-auto">
+          <div class="flex w-auto max-w-2xl flex-col gap-1 overflow-y-auto">
             {#each config.current.components as field, index (field.id)}
               <div
                 class={cn(
-                  "bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/70 flex h-16 flex-row items-center gap-3 rounded border p-3 shadow-xs transition duration-100 w-full",
+                  "bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/70 flex h-16 w-full flex-row items-center gap-3 rounded border p-3 shadow-xs transition duration-100",
                 )}
                 animate:flip={{ duration: 250 }}
               >
@@ -392,7 +397,7 @@
                     </Button>
                   </div>
                 {/if}
-                
+
                 <Button
                   onclick={() => {
                     if (config.current) {
@@ -408,7 +413,9 @@
                   variant="destructive"
                   onclick={() => {
                     if (confirm("Do you really want to delete this field?")) {
-                      config.current!.components = config.current!.components.filter((f) => f.id !== field.id);
+                      config.current!.components = config.current!.components.filter(
+                        (f) => f.id !== field.id,
+                      );
                     }
                   }}
                 >
@@ -422,12 +429,7 @@
         {/if}
 
         {#if config.current.components.length < 5}
-          <Button
-            variant="outline"
-            class="mt-2"
-            onclick={() => addField()}
-            disabled={config.loading}
-          >
+          <Button variant="outline" class="mt-2" onclick={() => addField()} disabled={config.loading}>
             <Plus />
             Add Field
           </Button>

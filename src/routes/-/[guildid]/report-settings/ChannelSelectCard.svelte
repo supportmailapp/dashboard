@@ -22,15 +22,11 @@
   title="Alert Channel"
   description="Select the channel where new reports get sent to."
   rootClass="col-span-full lg:col-span-3"
-  class={cn("flex flex-col items-start gap-2", loading && "opacity-50 pointer-events-none")}
-
+  class={cn("flex flex-col items-start gap-2", loading && "pointer-events-none opacity-50")}
 >
   {#if !channelId}
     <Popover.Root bind:open={modalOpen}>
-      <Popover.Trigger
-        class={buttonVariants({ variant: "outline" })}
-        disabled={!!loading}
-      >
+      <Popover.Trigger class={buttonVariants({ variant: "outline" })} disabled={!!loading}>
         Select Channel
       </Popover.Trigger>
       <Popover.Content class="w-80">
@@ -64,4 +60,3 @@
     />
   {/if}
 </ConfigCard>
-

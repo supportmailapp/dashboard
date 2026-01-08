@@ -26,7 +26,11 @@ export async function init() {
   // Seed data
   const testGuilds = ["1114825999155200101", PUBLIC_SupportServer];
   for (const guildId of testGuilds) {
-    await DBGuild.updateOne({ id: guildId, name: "Test" }, { id: guildId }, { upsert: true, setDefaultsOnInsert: true });
+    await DBGuild.updateOne(
+      { id: guildId, name: "Test" },
+      { id: guildId },
+      { upsert: true, setDefaultsOnInsert: true },
+    );
   }
 }
 

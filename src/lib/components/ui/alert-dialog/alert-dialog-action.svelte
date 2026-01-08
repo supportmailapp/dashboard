@@ -3,11 +3,7 @@
   import { buttonVariants } from "$ui/button/index.js";
   import { AlertDialog as AlertDialogPrimitive } from "bits-ui";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    ...restProps
-  }: AlertDialogPrimitive.ActionProps = $props();
+  let { ref = $bindable(null), class: className, ...restProps }: AlertDialogPrimitive.ActionProps = $props();
 </script>
 
 <AlertDialogPrimitive.Action

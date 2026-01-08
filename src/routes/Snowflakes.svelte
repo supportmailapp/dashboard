@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { browser } from '$app/environment';
-  import { getSnowflakes } from '$lib/stores/SnowflakeControls.svelte';
-  import { Portal } from 'bits-ui';
-  import { onDestroy, onMount } from 'svelte';
+  import { browser } from "$app/environment";
+  import { getSnowflakes } from "$lib/stores/SnowflakeControls.svelte";
+  import { Portal } from "bits-ui";
+  import { onDestroy, onMount } from "svelte";
 
   const snowflakeCfg = getSnowflakes();
-  let intensity = $derived(snowflakeCfg.intensity)
+  let intensity = $derived(snowflakeCfg.intensity);
 
   let canvas = $state<HTMLCanvasElement>(undefined as unknown as HTMLCanvasElement);
   let ctx: CanvasRenderingContext2D;
@@ -24,15 +24,15 @@
 </svg>
 `,
   ];
-  
+
   $effect(() => {
     const count = Math.round((intensity / 10) * 200);
     updateSnowflakes(count);
   });
-  
+
   function updateSnowflakes(count: number) {
     if (!canvas || !browser) return;
-    
+
     if (count > snowflakes.length) {
       const toAdd = count - snowflakes.length;
       for (let i = 0; i < toAdd; i++) {
@@ -42,7 +42,7 @@
       snowflakes = snowflakes.slice(0, count);
     }
   }
-  
+
   function createSnowflake() {
     return {
       x: Math.random() * canvas.width,
@@ -52,17 +52,17 @@
       wind: Math.random() * 0.5 - 0.25,
       rotation: Math.random() * 360,
       rotationSpeed: Math.random() * 2 - 1,
-      svgIndex: Math.floor(Math.random() * snowflakeSVGs.length)
+      svgIndex: Math.floor(Math.random() * snowflakeSVGs.length),
     };
   }
-  
+
   /**
    * Converts an SVG string into an HTMLImageElement asynchronously.
-   * 
+   *
    * @param svgString - The SVG markup as a string to be converted into an image
    * @param size - The width and height dimensions in pixels for the resulting image
    * @returns A Promise that resolves with the loaded HTMLImageElement
-   * 
+   *
    * @description
    * This function is async because the Image element requires time to load the SVG data
    * from the object URL. The Promise wrapper ensures the caller waits until the `onload`
@@ -71,7 +71,7 @@
    */
   async function loadSVGAsImage(svgString: string, size: number): Promise<HTMLImageElement> {
     return new Promise((resolve) => {
-      const blob = new Blob([svgString], { type: 'image/svg+xml' });
+      const blob = new Blob([svgString], { type: "image/svg+xml" });
       const url = URL.createObjectURL(blob);
       const img = new Image(size, size);
       img.onload = () => {
@@ -88,63 +88,61 @@
       canvas.height = window.innerHeight;
     }
   };
-  
+
   onMount(async () => {
     if (!browser || !canvas) return;
 
-    ctx = canvas.getContext('2d')!;
+    ctx = canvas.getContext("2d")!;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    
+
     // Preload all SVG images
-    snowflakeImage = await Promise.all(
-      snowflakeSVGs.map(svg => loadSVGAsImage(svg, 50))
-    );
-    
+    snowflakeImage = await Promise.all(snowflakeSVGs.map((svg) => loadSVGAsImage(svg, 50)));
+
     const count = Math.round((intensity / 10) * 200);
     for (let i = 0; i < count; i++) {
       snowflakes.push(createSnowflake());
     }
-    
+
     animate();
-    
-    window.addEventListener('resize', handleResize);
+
+    window.addEventListener("resize", handleResize);
   });
 
   onDestroy(() => {
     if (browser) {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
       cancelAnimationFrame(animationId);
     }
   });
-  
+
   function animate() {
     if (!ctx || !canvas || !snowflakeImage) return;
-    
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    snowflakes.forEach(flake => {
+
+    snowflakes.forEach((flake) => {
       ctx.save();
       ctx.translate(flake.x, flake.y);
       ctx.rotate((flake.rotation * Math.PI) / 180);
       ctx.globalAlpha = 0.8;
-      
+
       // Draw the SVG image
       const img = snowflakeImage[flake.svgIndex];
       ctx.drawImage(img, -flake.size / 2, -flake.size / 2, flake.size, flake.size);
-      
+
       ctx.restore();
-      
+
       flake.y += flake.speed;
       flake.x += flake.wind;
       flake.rotation += flake.rotationSpeed;
-      
+
       if (flake.y > canvas.height) {
         flake.y = -flake.size;
         flake.x = Math.random() * canvas.width;
       }
     });
-    
+
     animationId = requestAnimationFrame(animate);
   }
 </script>

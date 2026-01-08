@@ -74,7 +74,7 @@
 
 <div class="flex h-screen flex-col items-center justify-center gap-6 p-3">
   <Card.Root
-    class="flex h-160 w-full max-w-xl flex-col overflow-clip border-none bg-background shadow-xl shadow-black/60 backdrop-blur-md select-none"
+    class="bg-background flex h-160 w-full max-w-xl flex-col overflow-clip border-none shadow-xl shadow-black/60 backdrop-blur-md select-none"
   >
     <Card.Header class="shrink-0 text-center">
       <Branding />
@@ -91,8 +91,8 @@
         <ServerSelect />
       {/if}
     </Card.Content>
-    <Card.Footer class="flex flex-col text-xs text-muted-foreground gap-2 text-center">
-      <div class="w-full grid grid-cols-[1fr_auto_1fr_auto_1fr] place-items-center gap-4 px-3">
+    <Card.Footer class="text-muted-foreground flex flex-col gap-2 text-center text-xs">
+      <div class="grid w-full grid-cols-[1fr_auto_1fr_auto_1fr] place-items-center gap-4 px-3">
         <!-- This is actually the footer for this page -->
         <p>&copy; 2025 SupportMail</p>
         <Separator orientation="vertical" />

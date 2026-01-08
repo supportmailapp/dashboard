@@ -46,13 +46,18 @@
       <Tabs.Trigger value="editor">Editor</Tabs.Trigger>
       <Tabs.Trigger value="preview">Preview</Tabs.Trigger>
     </Tabs.List>
-    <Tabs.Content value="editor" class="mt-4 flex flex-col flex-1 min-h-0">
-      <Textarea bind:value={rawText} placeholder="Enter your markdown here..." rows={10} class="w-full h-full resize-none overflow-y-auto" />
+    <Tabs.Content value="editor" class="mt-4 flex min-h-0 flex-1 flex-col">
+      <Textarea
+        bind:value={rawText}
+        placeholder="Enter your markdown here..."
+        rows={10}
+        class="h-full w-full resize-none overflow-y-auto"
+      />
     </Tabs.Content>
     <Tabs.Content value="preview" class="mt-4 h-full">
       <!-- Tell tailwind to ignore this section -->
       <div
-        class="prose prose-invert discord-message h-full max-h-none max-w-none pt-1 overflow-y-auto"
+        class="prose prose-invert discord-message h-full max-h-none max-w-none overflow-y-auto pt-1"
         style="background-color: rgb(54, 57, 62)"
         {@attach (e) => {
           e.addEventListener("click", (event) => {

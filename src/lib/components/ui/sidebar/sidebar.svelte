@@ -24,20 +24,14 @@
 
 {#if collapsible === "none"}
   <div
-    class={cn(
-      "bg-sidebar text-sidebar-foreground flex h-full w-(--sidebar-width) flex-col",
-      className
-    )}
+    class={cn("bg-sidebar text-sidebar-foreground flex h-full w-(--sidebar-width) flex-col", className)}
     bind:this={ref}
     {...restProps}
   >
     {@render children?.()}
   </div>
 {:else if sidebar.isMobile}
-  <Sheet.Root
-    bind:open={() => sidebar.openMobile, (v) => sidebar.setOpenMobile(v)}
-    {...restProps}
-  >
+  <Sheet.Root bind:open={() => sidebar.openMobile, (v) => sidebar.setOpenMobile(v)} {...restProps}>
     <Sheet.Content
       data-sidebar="sidebar"
       data-slot="sidebar"
@@ -74,7 +68,7 @@
         "group-data-[side=right]:rotate-180",
         variant === "floating" || variant === "inset"
           ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
-          : "group-data-[collapsible=icon]:w-(--sidebar-width-icon)"
+          : "group-data-[collapsible=icon]:w-(--sidebar-width-icon)",
       )}
     ></div>
     <div
@@ -88,7 +82,7 @@
         variant === "floating" || variant === "inset"
           ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
           : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-e group-data-[side=right]:border-s",
-        className
+        className,
       )}
       {...restProps}
     >

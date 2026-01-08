@@ -62,12 +62,10 @@
   }
 
   let groupedChannels = $derived.by(() => {
-    const sorted = sortChannels(
-        $state.snapshot(guildsManager.channels),
-        true,
-        (arg) => console.log("Sorted Channels:", arg),
-      );
-    
+    const sorted = sortChannels($state.snapshot(guildsManager.channels), true, (arg) =>
+      console.log("Sorted Channels:", arg),
+    );
+
     // filter
     const uncategorizedFiltered = sorted.uncategorized.filter(
       (channel) => (allowAllChannels || channelTypes.includes(channel.type)) && !isChannelExcluded(channel),
@@ -76,15 +74,16 @@
       .map(({ cat, channels }) => ({
         cat,
         channels: channels.filter(
-          (channel) => (allowAllChannels || channelTypes.includes(channel.type)) && !isChannelExcluded(channel),
+          (channel) =>
+            (allowAllChannels || channelTypes.includes(channel.type)) && !isChannelExcluded(channel),
         ),
       }))
       .filter(({ channels }) => channels.length > 0); // remove empty categories
-    
+
     return {
       uncategorized: uncategorizedFiltered,
       categories: groupedFiltered,
-    }
+    };
   });
 
   async function findChannelByIdOrLink() {
@@ -109,7 +108,9 @@
 
     oldFetchInput = $state.snapshot(channelIdInput);
 
-    let channel: APIGuildChannel | undefined = guildsManager.customChannels.get(oldFetchInput) || guildsManager.channels.find((c) => c.id === oldFetchInput);
+    let channel: APIGuildChannel | undefined =
+      guildsManager.customChannels.get(oldFetchInput) ||
+      guildsManager.channels.find((c) => c.id === oldFetchInput);
 
     try {
       const res = await apiClient.get(APIRoutes.guildChannel(page.data.guildId!, oldFetchInput));
@@ -198,9 +199,9 @@
         {/each}
         {#each groupedChannels.categories as { cat, channels }}
           <Command.Group heading={cat.name}>
-        {#each channels as channel}
-          {@render channelItem(channel)}
-        {/each}
+            {#each channels as channel}
+              {@render channelItem(channel)}
+            {/each}
           </Command.Group>
         {/each}
       {/if}
@@ -227,9 +228,10 @@
               class="placeholder:text-muted-foreground placeholder:text-sm"
             />
             <Field.Description>
-              <a href="http://dis.gd/findmyid?utm_source=supportmail"
+              <a
+                href="http://dis.gd/findmyid?utm_source=supportmail"
                 target="_blank"
-                class="underline hover:text-accent"
+                class="hover:text-accent underline"
               >
                 Where to find a Channel/Thread ID
               </a>
@@ -237,7 +239,12 @@
           </Field.Field>
         </Field.Group>
       </Field.Set>
-      <Button variant={channelButtonStyle} onclick={findChannelByIdOrLink} disabled={buttonDisabled} showLoading={buttonLoading}>
+      <Button
+        variant={channelButtonStyle}
+        onclick={findChannelByIdOrLink}
+        disabled={buttonDisabled}
+        showLoading={buttonLoading}
+      >
         Find Channel
       </Button>
     </Tabs.Content>

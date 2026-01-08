@@ -47,7 +47,8 @@
     font-size: 0.95em;
     quotes: none;
 
-    &::before, &::after {
+    &::before,
+    &::after {
       content: "";
     }
   }

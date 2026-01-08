@@ -23,7 +23,7 @@
   );
 </script>
 
-<div class="bg-linear-to-br from-primary/70 to-base-300/20 flex min-h-screen items-center justify-center p-8">
+<div class="from-primary/70 to-base-300/20 flex min-h-screen items-center justify-center bg-linear-to-br p-8">
   <div class="text-base-content max-w-2xl text-center">
     <h1 class="text-9xl font-bold text-white drop-shadow-lg md:text-[10rem]">
       {page.status}
@@ -38,11 +38,7 @@
       <p class="mt-3 text-sm text-white/70">Error code: {page.error.status}</p>
     {/if}
     <div class="mt-8 flex flex-col justify-center gap-3">
-      <Button 
-        variant="secondary"
-        size="lg"
-        href="/"
-      >
+      <Button variant="secondary" size="lg" href="/">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
           <path
             d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"
@@ -50,11 +46,7 @@
         </svg>
         Go to Homepage
       </Button>
-      <Button
-        variant="default"
-        size="lg"
-        onclick={() => location.reload()}
-      >
+      <Button variant="default" size="lg" onclick={() => location.reload()}>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
           <path
             fill-rule="evenodd"

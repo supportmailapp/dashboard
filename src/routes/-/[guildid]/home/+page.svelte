@@ -23,7 +23,12 @@
     saving: false,
     loading: false,
   });
-  let unsavedChanges = $derived(!equal(untrack(() => config.old), config.current));
+  let unsavedChanges = $derived(
+    !equal(
+      untrack(() => config.old),
+      config.current,
+    ),
+  );
 
   async function saveFn() {
     if (!config.current) {
@@ -32,10 +37,9 @@
     }
 
     config.saving = true;
-    const res = await apiClient.put<OverviewConfig>(
-      APIRoutes.overview(page.params.guildid!),
-      { json: $state.snapshot(config.current) },
-    );
+    const res = await apiClient.put<OverviewConfig>(APIRoutes.overview(page.params.guildid!), {
+      json: $state.snapshot(config.current),
+    });
 
     const _data = await res.json();
     if (res.ok) {
@@ -53,8 +57,8 @@
 
     const _data = await initialRes.json();
     if (initialRes.ok) {
-      config.old = {..._data};
-      config.current = {..._data};
+      config.old = { ..._data };
+      config.current = { ..._data };
     } else {
       toast.error(`Failed to load configuration: ${(_data as any).message}`);
     }
@@ -84,7 +88,7 @@
 
 <SaveAlert
   saving={config.saving}
-  unsavedChanges={unsavedChanges}
+  {unsavedChanges}
   discardChanges={() => {
     if (config.old && config.current) {
       config.current = { ...config.old };
@@ -120,16 +124,13 @@
         </InfoDialog>
       </Card.Title>
       <Card.Description>
-        Select the default language for your server. This will be used for bot messages and
-        communications when a user-specific language is not set.
+        Select the default language for your server. This will be used for bot messages and communications
+        when a user-specific language is not set.
       </Card.Description>
     </Card.Header>
     {#if config.current}
       <Card.Content>
-        <Select.Root
-          type="single"
-          bind:value={config.current.language}
-        >
+        <Select.Root type="single" bind:value={config.current.language}>
           <Select.Trigger class={cn(buttonVariants({ variant: "outline" }), "w-40 justify-between")}>
             {LANGUAGES.find((lang) => lang.value === config.current!.language)?.name}
           </Select.Trigger>

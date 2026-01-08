@@ -13,16 +13,11 @@
     onOpenChange: (open: boolean) => void;
   }
 
-  let {
-    open = $bindable(),
-    pausedUntil = $bindable(),
-    showDateError,
-    onOpenChange,
-  }: Props = $props();
+  let { open = $bindable(), pausedUntil = $bindable(), showDateError, onOpenChange }: Props = $props();
 
   // Internal state for pause type (timed vs indefinite)
   let pauseType = $state<"timed" | "indefinite">(
-    pausedUntil.date && pausedUntil.value ? "timed" : "indefinite"
+    pausedUntil.date && pausedUntil.value ? "timed" : "indefinite",
   );
 
   // Track if paused (for the active/paused toggle)
@@ -105,10 +100,7 @@
           {#if pauseType === "timed"}
             <div class="flex flex-col gap-1">
               <Label>Until when?</Label>
-              <DateTimePicker
-                showError={showDateError}
-                onChange={setDate}
-              />
+              <DateTimePicker showError={showDateError} onChange={setDate} />
             </div>
           {/if}
         </div>

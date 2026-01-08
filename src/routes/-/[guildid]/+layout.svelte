@@ -38,7 +38,7 @@
     };
   });
 
-   $effect(() => {
+  $effect(() => {
     if (guildsManager.loaded) {
       untrack(() => guildsManager.loadChannels());
       untrack(() => guildsManager.loadRoles());

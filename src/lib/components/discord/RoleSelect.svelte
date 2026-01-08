@@ -53,7 +53,7 @@
       {#each filteredRoles as role}
         <Command.Item
           value="{role.id}:{role.name}"
-          class="max-w-xs p-1 cursor-pointer transition duration-80 active:scale-[99%]"
+          class="max-w-xs cursor-pointer p-1 transition duration-80 active:scale-[99%]"
           onSelect={() => handleRoleSelect(role)}
         >
           <Role roleId={role.id} class="hover:bg-muted/20 bg-transparent duration-75" />

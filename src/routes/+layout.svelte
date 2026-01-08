@@ -26,7 +26,6 @@
       return;
     }
 
-    
     if (!guildsManager.loaded) {
       guildsManager.loadGuilds();
     }
@@ -59,7 +58,6 @@
   <meta property="og:url" content={page.url.href} />
   <meta property="og:site_name" content="SupportMail" />
 </svelte:head>
-
 
 <ModeWatcher />
 

@@ -58,7 +58,7 @@
             <Table.Cell>
               <Badge
                 variant="outline"
-                class="cursor-pointer text-sm select-none font-mono"
+                class="cursor-pointer font-mono text-sm select-none"
                 onclick={() => {
                   navigator.clipboard.writeText(ticket.id).then(() => {
                     toast.success("Ticket ID copied to clipboard");

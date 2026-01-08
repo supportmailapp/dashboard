@@ -8,7 +8,8 @@
         default: "bg-card text-card-foreground",
         destructive:
           "text-destructive bg-card *:data-[slot=alert-description]:text-destructive/80 [&>svg]:text-current border-red-500/40",
-        warning: "text-warning bg-card *:data-[slot=alert-description]:text-warning/80 [&>svg]:text-current border-yellow-500/40",
+        warning:
+          "text-warning bg-card *:data-[slot=alert-description]:text-warning/80 [&>svg]:text-current border-yellow-500/40",
       },
     },
     defaultVariants: {

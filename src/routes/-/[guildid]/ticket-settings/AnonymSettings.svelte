@@ -5,16 +5,10 @@
   import { Label } from "$ui/label";
   import { Switch } from "$ui/switch";
 
-  let {
-    anonymSettings = $bindable(),
-  }: { anonymSettings: IAnonym | undefined } = $props();
+  let { anonymSettings = $bindable() }: { anonymSettings: IAnonym | undefined } = $props();
 </script>
 
-<ConfigCard
-  rootClass="col-span-full lg:col-span-3"
-  title="Anonym Settings"
-  class="space-y-2"
->
+<ConfigCard rootClass="col-span-full lg:col-span-3" title="Anonym Settings" class="space-y-2">
   {#if !anonymSettings}
     <LoadingSpinner />
   {:else}

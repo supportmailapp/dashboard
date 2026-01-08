@@ -84,7 +84,9 @@
       const res = await apiClient.get<APIFeedbackConfig>(APIRoutes.ticketFeedback(page.params.guildid!));
       if (!res.ok) {
         const err = await res.json<any>();
-        toast.error("Failed to load ticket configuration.", { description: err.message || "Please try again later." });
+        toast.error("Failed to load ticket configuration.", {
+          description: err.message || "Please try again later.",
+        });
         loading = false;
         return;
       }
@@ -151,16 +153,14 @@
     const coreChannel = channels.find((c) => c.id === feedbackConfig!.channelId);
     if (
       coreChannel &&
-      ![
-        ChannelType.GuildCategory,
-        ChannelType.GuildForum,
-        ChannelType.GuildMedia
-      ].includes(coreChannel.type)
+      ![ChannelType.GuildCategory, ChannelType.GuildForum, ChannelType.GuildMedia].includes(coreChannel.type)
     ) {
       return coreChannel as GuildSendableChannel;
     }
 
-    const res = await apiClient.get<APIGuildChannel>(APIRoutes.guildChannel(page.params.guildid!, feedbackConfig.channelId));
+    const res = await apiClient.get<APIGuildChannel>(
+      APIRoutes.guildChannel(page.params.guildid!, feedbackConfig.channelId),
+    );
 
     if (!res.ok) {
       throw new Error("Failed to fetch feedback channel.");
@@ -213,7 +213,9 @@
     <Card.Root>
       <Card.Header>
         <Card.Title>Basic Settings</Card.Title>
-        <Card.Description>Configure whether feedback is enabled and customize the thank you message.</Card.Description>
+        <Card.Description
+          >Configure whether feedback is enabled and customize the thank you message.</Card.Description
+        >
       </Card.Header>
       <Card.Content class="space-y-5">
         <div class="flex items-center justify-between">
@@ -221,7 +223,12 @@
             <Label for="feedback-enabled">Enable Feedback</Label>
             <p class="text-muted-foreground text-sm">Collect feedback when tickets are closed</p>
           </div>
-          <Switch variant="success" bind:checked={feedbackConfig.isEnabled} id="feedback-enabled" disabled={saving} />
+          <Switch
+            variant="success"
+            bind:checked={feedbackConfig.isEnabled}
+            id="feedback-enabled"
+            disabled={saving}
+          />
         </div>
 
         <div class="flex items-center justify-between">
@@ -234,7 +241,12 @@
           <div>
             {#if !!feedbackConfig?.channelId}
               {#await fetchFeedbackChannel() then channel}
-                <Mention channel={channel} onDelete={() => { if (feedbackConfig) delete feedbackConfig.channelId; }} />
+                <Mention
+                  {channel}
+                  onDelete={() => {
+                    if (feedbackConfig) delete feedbackConfig.channelId;
+                  }}
+                />
               {:catch error}
                 <span
                   {@attach () => {
@@ -250,8 +262,10 @@
               {/await}
             {/if}
             <Popover.Root bind:open={() => channelSelectOpen, (v) => (channelSelectOpen = v)}>
-              <Popover.Trigger class={cn(!feedbackConfig.channelId ? buttonVariants({ variant: "outline" }) : "hidden")}>
-                  Choose a channel
+              <Popover.Trigger
+                class={cn(!feedbackConfig.channelId ? buttonVariants({ variant: "outline" }) : "hidden")}
+              >
+                Choose a channel
               </Popover.Trigger>
               <Popover.Content class="w-80">
                 <ChannelSelect
@@ -293,9 +307,7 @@
                 disabled={saving}
                 rows={4}
               />
-              <Field.Description>
-                This message is shown after users submit their feedback.
-              </Field.Description>
+              <Field.Description>This message is shown after users submit their feedback.</Field.Description>
             </Field.Field>
           </Field.Group>
         </Field.Set>
@@ -310,13 +322,13 @@
           Add up to 5 custom questions to collect additional feedback. File uploads are not supported.
         </Card.Description>
       </Card.Header>
-      <Card.Content class="space-y-2 w-auto">
+      <Card.Content class="w-auto space-y-2">
         {#if feedbackConfig.components && feedbackConfig.components.length > 0}
-          <div class="flex max-w-2xl flex-col gap-1 overflow-y-auto w-auto">
+          <div class="flex w-auto max-w-2xl flex-col gap-1 overflow-y-auto">
             {#each feedbackConfig.components as field, index (field.id)}
               <div
                 class={cn(
-                  "bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/70 flex h-16 flex-row items-center gap-3 rounded border p-3 shadow-xs transition duration-100 w-full",
+                  "bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/70 flex h-16 w-full flex-row items-center gap-3 rounded border p-3 shadow-xs transition duration-100",
                 )}
                 animate:flip={{ duration: 250 }}
               >
@@ -347,7 +359,7 @@
                     </Button>
                   </div>
                 {/if}
-                
+
                 <Button
                   size="icon"
                   variant="outline"
@@ -366,7 +378,9 @@
                   variant="destructive"
                   onclick={() => {
                     if (confirm("Do you really want to delete this field?")) {
-                      feedbackConfig!.components = feedbackConfig!.components!.filter((f) => f.id !== field.id);
+                      feedbackConfig!.components = feedbackConfig!.components!.filter(
+                        (f) => f.id !== field.id,
+                      );
                     }
                   }}
                   disabled={saving}
@@ -381,12 +395,7 @@
         {/if}
 
         {#if (feedbackConfig.components?.length || 0) < 5}
-          <Button
-            variant="outline"
-            class="mt-2"
-            onclick={() => addField()}
-            disabled={saving}
-          >
+          <Button variant="outline" class="mt-2" onclick={() => addField()} disabled={saving}>
             <Plus class="mr-2 h-4 w-4" />
             Add Question
           </Button>

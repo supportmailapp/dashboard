@@ -9,11 +9,11 @@
   import Plus from "@lucide/svelte/icons/plus";
   import type { APIUser } from "discord-api-types/v10";
 
-  let { 
-    allowedBots = $bindable(), 
-    autoForward = $bindable()
-  }: { 
-    allowedBots: string[]; 
+  let {
+    allowedBots = $bindable(),
+    autoForward = $bindable(),
+  }: {
+    allowedBots: string[];
     autoForward: boolean;
   } = $props();
 
@@ -32,8 +32,10 @@
 >
   <div class="space-y-4">
     <div>
-      <h4 class="text-sm font-medium mb-2">Automatic Forwarding</h4>
-      <p class="text-sm text-muted-foreground mb-3">Messages in ticket posts are always forwarded to the user when enabled.</p>
+      <h4 class="mb-2 text-sm font-medium">Automatic Forwarding</h4>
+      <p class="text-muted-foreground mb-3 text-sm">
+        Messages in ticket posts are always forwarded to the user when enabled.
+      </p>
       <Label>
         <Switch variant="success" bind:checked={autoForward} />
         Automatic Forwarding
@@ -41,8 +43,10 @@
     </div>
 
     <div>
-      <h4 class="text-sm font-medium mb-2">Allowed Bots</h4>
-      <p class="text-sm text-muted-foreground mb-3">Bots are usually ignored in ticket posts. Allow up to 5 bots that will not be ignored.</p>
+      <h4 class="mb-2 text-sm font-medium">Allowed Bots</h4>
+      <p class="text-muted-foreground mb-3 text-sm">
+        Bots are usually ignored in ticket posts. Allow up to 5 bots that will not be ignored.
+      </p>
       <div class="bg-input/30 border-input max-h-40 w-full overflow-y-auto rounded-md border p-3">
         {#each allowedBots as botId}
           <Mention
@@ -54,9 +58,7 @@
           />
         {/each}
         <Popover.Root>
-          <Popover.Trigger
-            class={buttonVariants({ variant: "outline", size: "icon", class: "size-7" })}
-          >
+          <Popover.Trigger class={buttonVariants({ variant: "outline", size: "icon", class: "size-7" })}>
             <Plus />
           </Popover.Trigger>
           <Popover.Content class="w-100">

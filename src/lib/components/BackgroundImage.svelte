@@ -20,8 +20,10 @@
     fallback = $bindable({
       url: "/johannes-plenio-bhCdwWNmXw8-unsplash.jpg",
       authorName: "Johannes Plenio",
-      authorUrl: "https://unsplash.com/de/@jplenio?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText",
-      imageUrl: "https://unsplash.com/de/fotos/grune-baume-in-der-nahe-von-gewassern-wahrend-des-tages-bhCdwWNmXw8?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText",
+      authorUrl:
+        "https://unsplash.com/de/@jplenio?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText",
+      imageUrl:
+        "https://unsplash.com/de/fotos/grune-baume-in-der-nahe-von-gewassern-wahrend-des-tages-bhCdwWNmXw8?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText",
     }),
     apiEndpoint = "/api/v1/get-image",
     cacheKey = "cached_background_images",
@@ -34,7 +36,10 @@
   let imageLoaded = $state(false);
   let imageData = $state<Unsplash.MyImage | null>(null);
   let usingFallback = $state(false);
-  let screenDimensions = $state<{ width: number | null; height: number | null }>({ width: null, height: null });
+  let screenDimensions = $state<{ width: number | null; height: number | null }>({
+    width: null,
+    height: null,
+  });
 
   interface CachedImage {
     id: string;
@@ -46,8 +51,14 @@
     timestamp: string;
   }
 
-  function decodeBlurHash(hash: string, width: number, height: number, punch: number = 1): Uint8ClampedArray | null {
-    const digitCharacters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz#$%*+,-.:;=?@[]^_{|}~";
+  function decodeBlurHash(
+    hash: string,
+    width: number,
+    height: number,
+    punch: number = 1,
+  ): Uint8ClampedArray | null {
+    const digitCharacters =
+      "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz#$%*+,-.:;=?@[]^_{|}~";
 
     const decode83 = (str: string): number => {
       let value = 0;
@@ -66,7 +77,9 @@
 
     const linearToSRGB = (value: number): number => {
       const v = Math.max(0, Math.min(1, value));
-      return v <= 0.0031308 ? Math.round(v * 12.92 * 255 + 0.5) : Math.round((1.055 * Math.pow(v, 1 / 2.4) - 0.055) * 255 + 0.5);
+      return v <= 0.0031308
+        ? Math.round(v * 12.92 * 255 + 0.5)
+        : Math.round((1.055 * Math.pow(v, 1 / 2.4) - 0.055) * 255 + 0.5);
     };
 
     const signPow = (base: number, exp: number): number => Math.sign(base) * Math.pow(Math.abs(base), exp);
@@ -109,7 +122,9 @@
 
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
-        let r = 0, g = 0, b = 0;
+        let r = 0,
+          g = 0,
+          b = 0;
         for (let j = 0; j < numY; j++) {
           for (let i = 0; i < numX; i++) {
             const basis = Math.cos((Math.PI * x * i) / width) * Math.cos((Math.PI * y * j) / height);
@@ -293,7 +308,11 @@
   onMount(async () => {
     if (browser && screenDimensions.width && screenDimensions.height && !imageData && !usingFallback) {
       const cached = getRandomCachedImage();
-      if (cached && dayjs(cached.timestamp).isValid() && dayjs().diff(dayjs(cached.timestamp), "minutes") < cacheExpiryMinutes) {
+      if (
+        cached &&
+        dayjs(cached.timestamp).isValid() &&
+        dayjs().diff(dayjs(cached.timestamp), "minutes") < cacheExpiryMinutes
+      ) {
         useCachedImage(cached);
         return;
       }
@@ -315,9 +334,12 @@
   <canvas bind:this={blurCanvas}></canvas>
 </div>
 <div id="bg-image" bind:this={bgImage} class:loaded={imageLoaded}></div>
-<p class="text-muted-foreground hover:text-blue-500 absolute right-3 bottom-3 z-50 text-[10px]">
+<p class="text-muted-foreground absolute right-3 bottom-3 z-50 text-[10px] hover:text-blue-500">
   {#if imageData}
-    Photo by <a href={imageData.authorProfileUrl ?? fallback.authorUrl} target="_blank">{imageData.authorName ?? fallback.authorName}</a> on
+    Photo by <a href={imageData.authorProfileUrl ?? fallback.authorUrl} target="_blank"
+      >{imageData.authorName ?? fallback.authorName}</a
+    >
+    on
     <a href={imageData.htmlUrl ?? fallback.imageUrl} target="_blank">Unsplash</a>
   {/if}
 </p>
@@ -342,7 +364,7 @@
     height: 100%;
     object-fit: cover;
     filter: blur(40px);
-    transform: scale(1.0.5);
+    transform: scale(1.5);
   }
 
   #bg-image {

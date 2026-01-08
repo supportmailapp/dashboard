@@ -42,7 +42,7 @@
           }
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     if (h1Element) {
@@ -61,7 +61,10 @@
 
 <section class="mb-6 h-fit w-full max-w-2xl space-y-3" class:text-center={centered}>
   <div class="space-y-2">
-    <h1 bind:this={h1Element} class={cn("un space-b font-bold", sizeClasses[size], hasBeenViewed && "force-un")}>
+    <h1
+      bind:this={h1Element}
+      class={cn("un space-b font-bold", sizeClasses[size], hasBeenViewed && "force-un")}
+    >
       {#if typeof realTitle === "string"}
         {realTitle}
       {:else if realTitle}
