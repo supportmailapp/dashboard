@@ -76,6 +76,8 @@ export async function PUT({ request, params }) {
     })),
   );
 
+  const toDelete = tagsToDelete.map((tag) => tag._id!);
+
   const allTags = [...updatedTags.filter((tag) => !!tag), ...createdTags]
     .map((tag) => FlattenDocToJSON(tag!))
     .map((tag) => FlattenDateFields(tag, "createdAt", "updatedAt"));

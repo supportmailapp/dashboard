@@ -36,8 +36,9 @@
     tags
       ? tags.filter(
           (tag) =>
-            tag.name.toLowerCase().includes(query.toLowerCase()) ||
-            tag.content.toLowerCase().includes(query.toLowerCase()),
+            !tag.delete &&
+            (tag.name.toLowerCase().includes(query.toLowerCase()) ||
+              tag.content.toLowerCase().includes(query.toLowerCase())),
         )
       : null,
   );
@@ -63,16 +64,22 @@
     ].sort((a, b) => a.createdAt!.localeCompare(b.createdAt!)) as TagsResponse;
   }
 
+  function findTagIndex(id: string) {
+    if (!tags) return null;
+    const index = tags.findIndex((t) => t._id === id);
+    return index === -1 ? null : index;
+  }
+
   function removeTagById(id: string) {
     if (!tags) return;
-    tags = tags.filter((t) => t._id !== id);
+    const tagIndex = findTagIndex(id);
+    if (tagIndex !== null) tags[tagIndex].delete = true;
   }
 
   function updateTagById(id: string, updatedTag: Partial<APITag>) {
     if (!tags) return;
-    const tagIndex = tags.findIndex((t) => t._id === id);
-    if (tagIndex === -1) return;
-    tags[tagIndex] = { ...tags[tagIndex], ...updatedTag };
+    const tagIndex = findTagIndex(id);
+    if (tagIndex !== null) tags[tagIndex] = { ...tags[tagIndex], ...updatedTag };
   }
 
   async function fetchTags() {
@@ -113,17 +120,6 @@
     if (!fetchedTags) return;
     tags = [...fetchedTags];
   }
-
-  // onMount(async () => {
-  //   if (Array.isArray(tags)) return;
-  //   await fetchTags();
-  //   loading = false;
-  // });
-
-  // onDestroy(() => {
-  //   tags = null;
-  //   fetchedTags = null;
-  // });
 
   afterNavigate(async () => {
     tags = null;
