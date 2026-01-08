@@ -195,3 +195,19 @@ export function FlattenBigIntFields<T extends Record<string, any>>(obj: T): Flat
   }
   return newObj as FlattenBigIntResult<T>;
 }
+
+export function FlattenDateFields<T extends Record<string, any>, K extends keyof T>(
+  obj: T,
+  ...dateFields: K[]
+): Omit<T, K> & {
+  [P in K]: string;
+} {
+  const newObj = { ...obj };
+  for (const field of dateFields) {
+    const value = newObj[field];
+    if ((value as any) instanceof Date) {
+      newObj[field] = value.toISOString();
+    }
+  }
+  return newObj;
+}
