@@ -91,13 +91,18 @@
         <ServerSelect />
       {/if}
     </Card.Content>
-    <Card.Footer class="text-muted-foreground flex h-5 shrink-0 flex-row justify-center gap-4 px-3 text-xs">
-      <!-- This is actually the footer for this page -->
-      <p>&copy; 2025 SupportMail</p>
-      <Separator orientation="vertical" />
-      <a href={LegalLinks.terms} target="_blank" class="hover:underline">Terms of Service</a>
-      <Separator orientation="vertical" />
-      <a href={LegalLinks.privacy} target="_blank" class="hover:underline">Privacy Policy</a>
+    <Card.Footer class="flex flex-col text-xs text-muted-foreground gap-2 text-center">
+      <div class="w-full grid grid-cols-[1fr_auto_1fr_auto_1fr] place-items-center gap-4 px-3">
+        <!-- This is actually the footer for this page -->
+        <p>&copy; 2025 SupportMail</p>
+        <Separator orientation="vertical" />
+        <a href={LegalLinks.terms} target="_blank" class="hover:underline">Terms of Service</a>
+        <Separator orientation="vertical" />
+        <a href={LegalLinks.privacy} target="_blank" class="hover:underline">Privacy Policy</a>
+      </div>
+      <div>
+        <a href="/@me" class="hover:underline">Account Settings & Billing</a>
+      </div>
     </Card.Footer>
   </Card.Root>
 </div>
