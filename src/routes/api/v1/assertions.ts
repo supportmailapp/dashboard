@@ -93,6 +93,7 @@ export const TagPutSchema = z.preprocess(
     .object({
       _id: ObjectIdSchema.optional(),
       local: z.literal(true).optional(),
+      delete: z.literal(true).optional(),
       guildId: SnowflakePredicate,
       name: z
         .string()

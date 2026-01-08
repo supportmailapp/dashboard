@@ -1,6 +1,7 @@
 import twemoji from "@discordapp/twemoji";
 import { marked, type Token, type TokenizerAndRendererExtension, type Tokens } from "marked";
 import { TwemojiRegex } from "./twemojiRegex";
+import { escapeHtml } from "$lib/utils";
 
 // extensions for marked
 
@@ -21,6 +22,16 @@ const customRules = {
     start: /^<\/([-_'\p{L}\p{N}\p{sc=Deva}\p{sc=Thai}]{1,32}):/u,
   },
   everyoneHere: { full: /^@(everyone|here)/, start: /^@/ },
+  nestedUnorderedList: {
+    // nested unordered lists start with 2 or a multiple of 2 spaces at the beginning of a line, with a "- " or "* " after
+    full: /^( {2})+[-*] +([^\n]+)(?:\n|$)/,
+    start: /^( {2})+[-*] +/,
+  },
+  nestedOrderedList: {
+    // nested ordered lists start with 2 or a multiple of 2 spaces at the beginning of a line, with a "<number>. " after
+    full: /^( {2})+(\d+)\. +([^\n]+)(?:\n|$)/,
+    start: /^( {2})+\d+\. +/,
+  },
 };
 
 type UnderlineToken = Token & {
@@ -75,7 +86,7 @@ const subtextExtension: TokenizerAndRendererExtension<SubtextToken, string> = {
     }
   },
   renderer(tokens) {
-    return `<small>${this.parser.parseInline(tokens.tokens!)}</small>`;
+    return `<p><small>${this.parser.parseInline(tokens.tokens!)}</small></p>`;
   },
 };
 
@@ -383,57 +394,69 @@ const twemojiExtension: TokenizerAndRendererExtension<UnicodeEmojiToken, string>
   },
 };
 
+type AutolinkToken = Token & {
+  type: "autolink";
+  href: string;
+};
+
+const autolinkExtension: TokenizerAndRendererExtension<AutolinkToken, string> = {
+  name: "autolink",
+  level: "inline",
+  start(src) {
+    return src.match(/https?:\/\//)?.index;
+  },
+  tokenizer(src) {
+    const match = /^(https?:\/\/[^\s<>\[\]()]+)/.exec(src);
+    if (match) {
+      return {
+        type: "autolink",
+        raw: match[0],
+        href: match[1],
+      };
+    }
+  },
+  renderer(token) {
+    return `<a href="${token.href}" target="_blank">${token.href}</a>`;
+  },
+};
+
+function cleanUrl(href: string) {
+  try {
+    return encodeURI(href).replace(/%25/g, "%");
+  } catch {
+    return null;
+  }
+}
+
 marked.use({
   renderer: {
-    blockquote({ tokens }: Tokens.Blockquote): string {
-      return `<blockquote>${this.parser.parseInline(tokens)}</blockquote>\n`;
-    },
-    strong({ tokens }: Tokens.Strong): string {
-      return `<strong>${this.parser.parseInline(tokens)}</strong>`;
-    },
     br(_: Tokens.Br): string {
-      return `<br />`;
+      return `<br />`; // wit da space because it looks better
     },
-    codespan({ text }: Tokens.Codespan): string {
-      return `<code>${text}</code>`;
+    // from marked, but with our own cleanUrl and escapeHtml functions
+    link({ href, title, tokens }: Tokens.Link) {
+      const text = this.parser.parseInline(tokens) as string;
+      const cleanHref = cleanUrl(href);
+      if (cleanHref === null) {
+        return text;
+      }
+      href = cleanHref;
+      let out = '<a href="' + href + '" target="_blank"';
+      if (title) {
+        out += ' title="' + escapeHtml(title) + '"';
+      }
+      out += ">" + text + "</a>";
+      return out;
     },
-    code({ text, lang }: Tokens.Code): string {
-      return `<pre><code class="language-${lang ?? ""}">${text}</code></pre>`;
+    codespan({ text }: Tokens.Codespan) {
+      return `<code>${escapeHtml(text)}</code>`;
     },
-    em({ tokens }: Tokens.Em): string {
-      return `<em>${this.parser.parseInline(tokens)}</em>`;
-    },
-    del({ tokens }: Tokens.Del): string {
-      return `<del>${this.parser.parseInline(tokens)}</del>`;
-    },
-    checkbox(_: Tokens.Checkbox): string {
+
+    // stuff we don't want to render
+    image(_: Tokens.Image): string {
       return "";
     },
-    link({ href, title, tokens }: Tokens.Link): string {
-      return `<a href="${href}" target="_blank" title="${title ?? ""}">${this.parser.parseInline(tokens)}</a>`;
-    },
-    heading({ tokens, depth }: Tokens.Heading): string {
-      if (depth >= 1 && depth <= 3) {
-        return `<h${depth}>${this.parser.parseInline(tokens)}</h${depth}>`;
-      }
-      return new Array(depth).fill(() => "#").join("") + " " + this.parser.parseInline(tokens);
-    },
-    text(token: Tokens.Text | Tokens.Escape): string {
-      return "tokens" in token && token.tokens ? this.parser.parseInline(token.tokens) : token.text;
-    },
-    list({ items, ordered, start }: Tokens.List): string {
-      const listTag = ordered ? "ol" : "ul";
-      const startAttr = ordered && start !== 1 ? ` start="${start}"` : "";
-      const listItems = items.map((item) => this.listitem!(item)).join("\n");
-      return `<${listTag}${startAttr}>\n${listItems}\n</${listTag}>\n`;
-    },
-    listitem({ tokens }: Tokens.ListItem): string {
-      return `<li>${this.parser.parseInline(tokens)}</li>`;
-    },
-    paragraph({ tokens }: Tokens.Paragraph): string {
-      return `<p>${this.parser.parseInline(tokens)}</p>\n`;
-    },
-    image(_: Tokens.Image): string {
+    checkbox(_: Tokens.Checkbox): string {
       return "";
     },
     hr(_: Tokens.Hr): string {
@@ -454,9 +477,6 @@ marked.use({
     def(_: Tokens.Def): string {
       return "";
     },
-    space(_: Tokens.Space): string {
-      return "";
-    },
   },
   extensions: [
     underlineExtension,
@@ -465,8 +485,9 @@ marked.use({
     customemojiExtension,
     ...(mentionExtensions as TokenizerAndRendererExtension[]), // gotta assert because TS will freak out
     twemojiExtension,
+    autolinkExtension,
   ],
-  breaks: true,
+  
 });
 
 export function toDiscordHtml(message: string) {

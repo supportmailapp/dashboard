@@ -45,11 +45,16 @@
     border-radius: 4px;
     font-family: "Courier New", Courier, monospace;
     font-size: 0.95em;
+    quotes: none;
+
+    &::before, &::after {
+      content: "";
+    }
   }
 
   pre {
     background-color: oklch(25.111% 0.00642 258.425 / 0.6);
-    padding: 1rem;
+    padding: 0.6rem;
     border-radius: 6px;
     overflow-x: auto;
     margin: 1rem 0;
@@ -63,20 +68,34 @@
   }
 
   blockquote {
-    border-left: 4px solid oklch(25.111% 0.00642 258.425 / 0.6);
+    border: 0;
     padding-left: 1rem;
     color: oklch(79.137% 0.00487 258.57);
-    margin: 1rem 0;
+    margin: 1.5rem 0;
+    font-style: normal;
+    quotes: none;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      border-radius: 2px;
+      background-color: oklch(25.111% 0.00642 258.425 / 0.6);
+    }
+
+    position: relative;
   }
 
   ul,
   ol {
-    margin: 1rem 0;
-    padding-left: 2rem;
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
   }
 
   li {
-    margin: 0.5rem 0;
+    margin: 0;
   }
 
   small {

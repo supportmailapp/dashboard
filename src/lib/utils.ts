@@ -253,3 +253,12 @@ export function isChannelSendable(channel: APIGuildChannel): channel is GuildSen
  * Zod Error Message helper
  */
 export const zem = (msg: string) => ({ error: msg });
+
+export function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}

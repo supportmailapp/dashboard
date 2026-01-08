@@ -45,13 +45,18 @@
 
   function createTag() {
     if (!tags) return;
+    let newNameIndex = 1;
+    while (tags.some((t) => t.name === `new-tag-${newNameIndex}`)) {
+      newNameIndex++;
+    }
+    const newTagName = `new-tag-${newNameIndex}`;
     tags = [
       ...tags,
       {
         _id: new Date().toISOString(), // temp unique id
         local: true,
         guildId: page.params.guildid!,
-        name: "new-tag",
+        name: newTagName,
         content: "",
         onlyTickets: false,
       },

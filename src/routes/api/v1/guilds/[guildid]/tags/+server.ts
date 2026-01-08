@@ -14,6 +14,7 @@ export type APITag =
     updatedAt?: string;
     _id?: string;
     local?: true;
+    delete?: true;
   };
 
 export async function GET({ params, url }) {
@@ -43,7 +44,13 @@ export async function PUT({ request, params }) {
   }
 
   const tagsToCreate = body.filter((tag) => tag.local);
-  const tagsToUpdate = body.filter((tag) => !tag.local);
+  const tagsToUpdate = body.filter((tag) => !tag.local && !tag.delete);
+  const tagsToDelete = body.filter((tag) => tag.delete).filter((tag) => !tag.local);
+
+  await DBTag.deleteMany({
+    _id: { $in: tagsToDelete.map((tag) => tag._id!) },
+    guildId: params.guildid,
+  });
 
   const updatedTags = await Promise.all(
     tagsToUpdate.map((tag) =>
