@@ -5,6 +5,8 @@ export * from "./forms.zod.js";
 import { FeedbackComponentSchema, FormComponentsSchema } from "./forms.zod.js";
 import { zem } from "$lib/utils.js";
 
+export const ObjectIdSchema = z.string().regex(/^[a-f\d]{24}$/i, zem("Invalid ObjectId format"));
+
 export const overview = z.object({
   language: z.union([z.literal("en"), z.literal("de"), z.literal("fr")]),
 });
@@ -76,3 +78,41 @@ export const TicketCategorySchema = z.object({
 });
 
 export type TicketCategory = z.infer<typeof TicketCategorySchema>;
+
+export const TagPutSchema = z.preprocess(
+  (obj) => {
+    // delete _id if local is true
+    if (typeof obj === "object" && obj !== null && "local" in obj && (obj as any).local === true) {
+      const newObj = { ...(obj as any) };
+      delete newObj._id;
+      return newObj;
+    }
+    return obj;
+  },
+  z
+    .object({
+      _id: ObjectIdSchema.optional(),
+      local: z.literal(true).optional(),
+      guildId: SnowflakePredicate,
+      name: z
+        .string()
+        .trim()
+        .min(2, zem("Name must be at least 2 characters long"))
+        .max(50, zem("Name must be at most 100 characters long")),
+      content: z.string().max(2000, zem("Content must be at most 2000 characters long")),
+      onlyTickets: z.boolean().default(false),
+      createdAt: z.string().optional(), // we remove this field later anyways
+      updatedAt: z.string().optional(), // we remove this field later anyways
+    })
+    .transform(({ createdAt, updatedAt, ...rest }) => rest),
+);
+
+export const GetTagSchemaForGuild = (guildId: string) =>
+  z
+    .array(
+      TagPutSchema.refine((tag) => tag.guildId === guildId, zem("guildId in tag must match URL parameter")),
+    )
+    .max(100, zem("A maximum of 100 tags are allowed per server"));
+
+export type TagPutRequestBody = z.input<typeof TagPutSchema>;
+export type TagPut = z.output<typeof TagPutSchema>;

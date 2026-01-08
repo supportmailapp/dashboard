@@ -6,6 +6,7 @@ import { TicketStatus } from "$lib/sm-types";
 import { safeParseInt } from "$lib/utils.js";
 import type { QueryFilter } from "mongoose";
 import type { TicketSearchScope } from "../../../../../-/[guildid]/tickets/FilterControls.svelte";
+import { json } from "@sveltejs/kit";
 
 export type PaginatedResponseWithError<T> = PaginatedResponse<T> & {
   error: string;
@@ -39,8 +40,6 @@ export async function GET({ locals, url, params }) {
     if (Params.status === -1) {
       Params.status = undefined;
     }
-
-    console.log("Params:", Params);
 
     const skip = (Params.page - 1) * Params.pageSize;
 
@@ -101,9 +100,7 @@ export async function GET({ locals, url, params }) {
       },
     };
 
-    console.log("Response:", response);
-
-    return Response.json(response);
+    return json(response);
   } catch (error) {
     const response: PaginatedTicketsResponse = {
       data: [],
