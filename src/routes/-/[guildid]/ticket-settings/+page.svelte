@@ -158,7 +158,7 @@
     <Separator class="col-span-full my-5" />
     <ResetStuff />
   {:else}
-    <div class="grid place-items-center">
+    <div class="col-span-full flex h-48 items-center justify-center">
       <LoadingSpinner />
     </div>
   {/if}
