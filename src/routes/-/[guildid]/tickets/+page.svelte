@@ -7,6 +7,7 @@
   import apiClient from "$lib/utils/apiClient";
   import { Button } from "$ui/button";
   import * as Pagination from "$ui/pagination/index.js";
+  import * as Empty from "$ui/empty/index.js";
   import { Skeleton } from "$ui/skeleton";
   import equal from "fast-deep-equal/es6";
   import { TicketStatus } from "$lib/sm-types";
@@ -15,6 +16,8 @@
   import type { PaginatedTicketsResponse } from "../../../api/v1/guilds/[guildid]/tickets/+server";
   import FilterControls, { type TicketSearchScope } from "./FilterControls.svelte";
   import TicketsTable from "./TicketsTable.svelte";
+  import FolderOpen from "@lucide/svelte/icons/folder-open";
+  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
 
   const pageData = $state({
     page: safeParseInt(page.url.searchParams.get("page"), 1),
@@ -147,11 +150,23 @@
 
 <div class="flex flex-col items-center">
   {#if ticketsStatus === "loading"}
-    <Skeleton class="mx-auto h-8 w-full max-w-2xl" />
+    <div class="h-full grid place-items-center">
+      <LoadingSpinner class="mx-auto" />
+    </div>
   {:else if ticketsStatus === "error"}
     <div class="text-destructive">Failed to load tickets. Please try again later.</div>
   {:else if ticketsStatus === "loaded" && ticketItems.length === 0}
-    <div class="text-muted-foreground">{"No tickets found :("}</div>
+    <Empty.Root>
+      <Empty.Header>
+        <Empty.Media variant="icon">
+          <FolderOpen />
+        </Empty.Media>
+        <Empty.Title>{"No tickets found :("}</Empty.Title>
+        <Empty.Description>
+          Either your search/filter criteria did not match any tickets, or there are no tickets yet.
+        </Empty.Description>
+      </Empty.Header>
+    </Empty.Root>
   {:else if ticketsStatus === "loaded" && ticketItems.length > 0}
     <TicketsTable items={ticketItems} />
   {/if}

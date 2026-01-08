@@ -62,5 +62,4 @@
       </Table.Row>
     {/each}
   </Table.Body>
-  <!-- ? Maybe put the pagination in the footer with a passed snippet -->
 </Table.Root>
