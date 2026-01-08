@@ -21,6 +21,7 @@
   import FolderOpen from "@lucide/svelte/icons/folder-open";
   import Pencil from "@lucide/svelte/icons/pencil";
   import Trash from "@lucide/svelte/icons/trash";
+  import ContentEditorDialog from "$lib/components/ContentEditorDialog.svelte";
 
   // svelte-ignore non_reactive_update
   let fetchedTags: TagsResponse | null = null;
@@ -172,7 +173,7 @@
         </Empty.Root>
       {/if}
       {#if filteredTags && filteredTags.length > 0}
-        {#each filteredTags as tag, index (tag.name)}
+        {#each filteredTags as tag (tag.name)}
           <Item.Root variant="outline" class="w-full">
             <Item.Content>
               <Input
@@ -225,7 +226,7 @@
   </div>
 {/if}
 
-<Dialog.Root
+<ContentEditorDialog
   bind:open={
     () => editTag.open,
     (v) => {
@@ -235,25 +236,11 @@
       }
     }
   }
->
-  <Dialog.Content
-    class="h-screen w-screen max-w-screen grid-rows-[auto_1fr] sm:max-h-[calc(100%-2rem)] sm:max-w-[calc(100%-2rem)]"
-  >
-    <Dialog.Header class="h-fit">
-      <Dialog.Title>
-        Edit <span class="monospace">{editTag.data?.name}</span>
-      </Dialog.Title>
-    </Dialog.Header>
-    <div class="flex h-full w-full flex-1 overflow-y-auto">
-      <ContentEditor
-        class="h-full flex-1"
-        bind:rawText={
-          () => editTag.data?.content ?? "",
-          (v) => {
-            if (editTag.data) editTag.data.content = v;
-          }
-        }
-      />
-    </div>
-  </Dialog.Content>
-</Dialog.Root>
+  title={`Edit ${editTag.data?.name}`}
+  bind:rawText={
+    () => editTag.data?.content ?? "",
+    (v) => {
+      if (editTag.data) editTag.data.content = v;
+    }
+  }
+/>
