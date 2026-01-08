@@ -47,12 +47,9 @@ export async function PUT({ request, locals, params }) {
   });
 }
 
-export async function DELETE({ locals, params }) {
+export async function DELETE({ params }) {
   const guildId = params.guildid;
   const categoryId = params.categoryid;
-  if (!locals.isAuthenticated()) {
-    return JsonErrors.unauthorized();
-  }
 
   const cat = await TicketCategory.findOneAndDelete({ _id: categoryId, guildId });
 

@@ -34,7 +34,12 @@
     loading: true,
   });
 
-  let unsavedChanges = $derived(!equal(untrack(() => config.old), config.current));
+  let unsavedChanges = $derived(
+    !equal(
+      untrack(() => config.old),
+      config.current,
+    ),
+  );
 
   class NewCategory {
     open = $state(false);
@@ -56,9 +61,7 @@
       return;
     }
 
-    
     config.current = [
-      ...(config.current ?? []),
       {
         local: true,
         _id: new Date().toISOString(),
@@ -67,9 +70,9 @@
         index: (config.current?.length ?? 0) + 1,
         enabled: true,
         components: [],
-      },
-    ];
-    config.current!.sort((a, b) => a.index - b.index);
+      } satisfies APITicketCategory,
+      ...(config.current ?? []),
+    ].sort((a, b) => a.index - b.index) as APITicketCategory[];
 
     newCategory.reset();
     toast.success(`Category "${newCategory.label}" created.`);
@@ -90,6 +93,7 @@
           .map((cat) => ({
             _id: cat._id,
             guildId: cat.guildId,
+            index: cat.index,
           })),
       });
 
@@ -177,9 +181,7 @@
 
   onMount(async () => {
     try {
-      const res = await apiClient.get<APITicketCategory[]>(
-        APIRoutes.ticketCategories(page.params.guildid!),
-      );
+      const res = await apiClient.get<APITicketCategory[]>(APIRoutes.ticketCategories(page.params.guildid!));
 
       if (!res.ok) {
         const error = await res.json<any>();
@@ -187,8 +189,12 @@
       }
 
       const data = await res.json();
-      config.old = [...data];
-      config.current = [...data];
+      const normalized = (data ?? []).map((item: APITicketCategory, i: number) => ({
+        ...item,
+        index: typeof item.index === "number" ? item.index : i + 1,
+      }));
+      config.old = [...normalized];
+      config.current = [...normalized];
     } catch (err: any) {
       toast.error("Failed to load ticket categories.", {
         description: err.message,
@@ -211,7 +217,7 @@
 
 <SaveAlert
   saving={config.saving}
-  unsavedChanges={unsavedChanges}
+  {unsavedChanges}
   discardChanges={() => {
     if (config.old && config.current) {
       config.current = [...config.old];
@@ -232,7 +238,7 @@
         >
           <Badge variant="outline">{cat.index}</Badge>
           <span class="flex-1">{cat.label}</span>
-          
+
           {#if config.current.length > 1}
             <div class="flex gap-1">
               <Button
@@ -255,7 +261,7 @@
               </Button>
             </div>
           {/if}
-          
+
           <Button href={page.data.guildHref(`/ticket-categories/${cat._id}`)}>
             <Pencil />
           </Button>
@@ -277,27 +283,29 @@
         </li>
       {/each}
       {#if config.current.length === 0}
-       <Empty.Root>
-        <Empty.Header>
-          <Empty.Media variant="icon">
-            <FolderOpen />
-          </Empty.Media>
-          <Empty.Title>No categories</Empty.Title>
-          <Empty.Description>You need at least <b>two</b> categories for categories to work.</Empty.Description>
-        </Empty.Header>
-        <Empty.Content>
-          <Button onclick={() => (newCategory.open = true)}>Create Category</Button>
-        </Empty.Content>
-        <Button
-          variant="link"
-          href={DocsLinks.TicketCategories}
-          target="_blank"
-          class="text-muted-foreground"
-        >
-          Learn more
-          <ArrowUpRightIcon class="inline" />
-        </Button>
-      </Empty.Root>
+        <Empty.Root>
+          <Empty.Header>
+            <Empty.Media variant="icon">
+              <FolderOpen />
+            </Empty.Media>
+            <Empty.Title>No categories</Empty.Title>
+            <Empty.Description
+              >You need at least <b>two</b> categories for categories to work.</Empty.Description
+            >
+          </Empty.Header>
+          <Empty.Content>
+            <Button onclick={() => (newCategory.open = true)}>Create Category</Button>
+          </Empty.Content>
+          <Button
+            variant="link"
+            href={DocsLinks.TicketCategories}
+            target="_blank"
+            class="text-muted-foreground"
+          >
+            Learn more
+            <ArrowUpRightIcon class="inline" />
+          </Button>
+        </Empty.Root>
       {/if}
     </ul>
     <div class="flex gap-2">
@@ -325,7 +333,6 @@
       onsubmit={(e) => {
         e.preventDefault();
         createCategory();
-        
       }}
     >
       <Label for="new-cat-name">Category Name</Label>

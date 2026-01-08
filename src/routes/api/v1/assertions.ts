@@ -62,7 +62,8 @@ export const FeedbackConfigSchema = z.object({
 export type FeedbackConfig = z.infer<typeof FeedbackConfigSchema>;
 
 export const TicketCategorySchema = z.object({
-  _id: z.string(),
+  _id: ObjectIdSchema.optional(),
+  local: z.literal(true).optional(),
   guildId: SnowflakePredicate,
   enabled: z.boolean(),
   index: z.int().nonnegative(zem("Index must be non-negative")),
@@ -74,9 +75,42 @@ export const TicketCategorySchema = z.object({
   tag: SnowflakePredicate.optional(),
   pings: z.array(MentionableEntity).max(100, zem("A maximum of 100 pings are allowed")).optional(),
   components: FormComponentsSchema(FeedbackComponentSchema),
-  customMessageId: z.string(),
+  customMessageId: z.string().optional(),
 });
 
+export const PartialTicketCategorySchema = TicketCategorySchema.pick({
+  _id: true,
+  local: true,
+  label: true,
+  guildId: true,
+  index: true,
+});
+
+export const TicketCategoriesPUTSchema = z.preprocess(
+  (obj) => {
+    // ensure index is at least 0 and _id is unset if local is true
+    if (typeof obj === "object" && obj !== null) {
+      const newObj = { ...obj };
+      if ("index" in newObj && typeof newObj.index === "number") {
+        newObj.index = Math.max(0, newObj.index || 0);
+      }
+      if ("local" in newObj && newObj.local === true && "_id" in newObj) {
+        delete newObj._id;
+      }
+      return newObj;
+    }
+    return obj;
+  },
+  // ensure unqiue _ids
+  PartialTicketCategorySchema.array()
+    .max(10, zem("A maximum of 10 ticket categories are allowed"))
+    .refine(
+      (cats) => cats.length === new Set(cats.map((c) => c._id)).size,
+      zem("Duplicate _id values found in ticket categories"),
+    ),
+);
+
+export type PartialTicketCategory = z.infer<typeof PartialTicketCategorySchema>;
 export type TicketCategory = z.infer<typeof TicketCategorySchema>;
 
 export const TagPutSchema = z.preprocess(
