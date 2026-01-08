@@ -1,6 +1,6 @@
+import twemoji from "@discordapp/twemoji";
 import { marked, Renderer, type Token, type TokenizerAndRendererExtension, type Tokens } from "marked";
 import { TwemojiRegex } from "./twemojiRegex";
-import { APIRoutes } from "$lib/urls";
 
 // Overwrites for everything else, because the renderer needs to be told to use custom elements for those too
 class SMRenderer extends Renderer {
@@ -83,6 +83,7 @@ class SMRenderer extends Renderer {
 // extensions for marked
 
 const customRules = {
+  underline: { full: /^__([\s\S]+?)__/, start: /^__/ },
   customemoji: { full: /^(<a?:(\w+):([0-9]{17,21})>)/, start: /<a?:\w+:[0-9]{17,21}>/ },
   subtext: { full: /^-# +([^\n]+?)(?:\n|$)/, start: /^-# / },
   spoiler: { full: /^\|\|([\s\S]+?)\|\|/, start: /\|\|/ },
@@ -98,6 +99,34 @@ const customRules = {
     start: /^<\/([-_'\p{L}\p{N}\p{sc=Deva}\p{sc=Thai}]{1,32}):/u,
   },
   everyoneHere: { full: /^@(everyone|here)/, start: /^@/ },
+};
+
+type UnderlineToken = Token & {
+  type: "underline";
+  text: string;
+  tokens?: Token[];
+};
+
+const underlineExtension: TokenizerAndRendererExtension<UnderlineToken, string> = {
+  name: "underline",
+  level: "inline",
+  start(src) {
+    return src.match(customRules.underline.start)?.index;
+  },
+  tokenizer(src, tokens) {
+    const match = customRules.underline.full.exec(src);
+    if (match) {
+      return {
+        type: "underline",
+        raw: match[0],
+        text: match[1],
+        tokens: this.lexer.inlineTokens(match[1]),
+      };
+    }
+  },
+  renderer(tokens) {
+    return `<discord-underlined>${this.parser.parseInline(tokens.tokens!)}</discord-underlined>`;
+  },
 };
 
 type SubtextToken = Token & {
@@ -393,7 +422,7 @@ const mentionExtensions: TokenizerAndRendererExtension<AnyMentionToken, string>[
     renderer(token) {
       return `<discord-mention type="user">${token.name}</discord-mention>`;
     },
-  }
+  },
 ];
 
 type UnicodeEmojiToken = Token & {
@@ -405,31 +434,37 @@ const twemojiExtension: TokenizerAndRendererExtension<UnicodeEmojiToken, string>
   name: "unicodeemoji",
   level: "inline",
   start(src) {
-    // find the first occurrence of any emoji
-    const emojiRegex = TwemojiRegex().source;
-    return src.match(emojiRegex)?.index;
+    return src.match(TwemojiRegex())?.index;
   },
   tokenizer(src, tokens) {
-    const emojiRegex = TwemojiRegex();
-    const match = emojiRegex.exec(src);
-    if (match && match.index === 0) {
+    /*
+    twemoji.parse parses the WHOLE entire HTML string and... returns a parsed version with emojis replaced
+    with imgs
+    So we have to first test if there's any emoji in the src at all, and only then parse it
+    However, because discord doesn't expose an option to only parse it the whole string is a twemoji,
+    we have to return the whole string as raw and emoji and replace newlines with linebreaks
+    TODO: Submit a PR to twemoji to add an option to only parse if the whole string is an emoji
+    */
+    const contains = twemoji.test(src);
+    // TODO: Report issue to marked.js that we can't use Buffer.from in here because its not defined??
+    if (contains) {
       return {
         type: "unicodeemoji",
-        raw: match[0],
-        emoji: match[0],
+        raw: src,
+        emoji: twemoji.parse(src, { className: "inline-image" }).replace(/\n/g, "<br />"),
       };
     }
   },
   renderer(token) {
-    // inline img tag, proxy through our own api route
-    return `<img class="inline-image" src="${APIRoutes.twemojiProxy(token.emoji)}" alt="${token.emoji}" />`;
-  }
+    return token.emoji;
+  },
 };
 
 marked.use({
   // ! No, we can't pass the Renderer here, it has to be passed per-parse because if not, inline parsing of paragraphs isn't handled correctly
   // ! renderer: new SMRenderer(),
   extensions: [
+    underlineExtension,
     subtextExtension,
     spoilerExtension,
     customemojiExtension,
@@ -437,9 +472,11 @@ marked.use({
     twemojiExtension,
   ],
   breaks: true,
-  async: false,
 });
 
 export function toDiscordHtml(message: string) {
-  return marked(message, { renderer: new SMRenderer() });
+  return marked(message, {
+    renderer: new SMRenderer(),
+    async: false,
+  });
 }
