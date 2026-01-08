@@ -16,6 +16,7 @@
   import SaveAlert from "$lib/components/SaveAlert.svelte";
   import { onMount } from "svelte";
   import Checkbox from "$ui/checkbox/checkbox.svelte";
+  import Files from "@lucide/svelte/icons/files";
 
   interface OurUser {
     language: string;
@@ -24,7 +25,7 @@
 
   let loading = $state(true);
   let oldUser = null as OurUser | null;
-  let dbUser = $state<OurUser| null>(null);
+  let dbUser = $state<OurUser | null>(null);
   const dcUser = $derived(page.data.user);
   let goingBack = $state(false);
   let unsavedChanges = $derived(determineUnsavedChanges(oldUser, dbUser));
@@ -117,7 +118,9 @@
   </div>
 
   <div class="-mt-14 flex max-w-full items-end space-x-5 overflow-clip rounded-lg px-6">
-    <Avatar src={profile.avatar} class="border-base-50 dark:border-base-950 mb-4 size-24 border-2" />
+    <div class="border-background mb-4 size-24 overflow-hidden rounded-full border-4 shadow-lg">
+      <img src={profile.avatar} alt="User Avatar" class="object-cover" />
+    </div>
     <div class="flex min-w-0 flex-1 items-center justify-end space-x-6 pb-1">
       <div class="mt-0 flex max-w-full min-w-0 flex-1 flex-col items-baseline">
         <h1 class="text-base-900 dark:text-base-100 max-w-full truncate text-lg font-bold">
@@ -137,6 +140,7 @@
             }}
           >
             {dcUser?.id}
+            <Files class="size-3" />
           </Button>
         {:else}
           <small class="h-fit p-1 text-xs text-gray-400">Unknown ID</small>
@@ -149,7 +153,7 @@
     <Field.Legend>Preferences</Field.Legend>
     {#if dbUser}
       <Field.Group>
-        <Field.Field class="p-2 rounded">
+        <Field.Field class="rounded p-2">
           <Field.Label for="language">Language</Field.Label>
           <Select.Root type="single" name="language" bind:value={dbUser.language}>
             <Select.Trigger id="language" class="w-full max-w-3xs">
@@ -171,7 +175,7 @@
 
         <Field.Separator />
 
-        <Field.Field orientation="horizontal" class="p-2 rounded">
+        <Field.Field orientation="horizontal" class="rounded p-2">
           <Field.Content>
             <Field.Label>
               <Switch bind:checked={dbUser.autoRedirect} variant="success" />
@@ -179,10 +183,13 @@
             </Field.Label>
             <Field.Description>
               <div class="text-sm">
-                When enabled, the bot will automatically send DM messages to your most recent ticket without asking for confirmation.
+                When enabled, the bot will automatically send DM messages to your most recent ticket without
+                asking for confirmation.
               </div>
               <div class="text-sm">
-                When managing multiple open tickets across different servers, use the <span class="font-mono">/ticket-create</span> command to create new tickets.
+                When managing multiple open tickets across different servers, use the <span class="font-mono"
+                  >/ticket-create</span
+                > command to create new tickets.
               </div>
             </Field.Description>
           </Field.Content>
