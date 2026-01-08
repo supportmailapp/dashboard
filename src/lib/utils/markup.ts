@@ -1,4 +1,3 @@
-// src/lib/discordMarkdown.ts
 import { marked, Renderer, type Token, type TokenizerAndRendererExtension, type Tokens } from "marked";
 import { TwemojiRegex } from "./twemojiRegex";
 import { APIRoutes } from "$lib/urls";
