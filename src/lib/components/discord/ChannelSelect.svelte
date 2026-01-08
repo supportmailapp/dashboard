@@ -210,7 +210,7 @@
 
 {#if allowCustomChannels}
   <Tabs.Root value="selectChannel" class="w-full max-w-100">
-    <Tabs.List>
+    <Tabs.List class="w-full">
       <Tabs.Trigger value="selectChannel">Select Channel</Tabs.Trigger>
       <Tabs.Trigger value="customChannel">Custom Channel</Tabs.Trigger>
     </Tabs.List>

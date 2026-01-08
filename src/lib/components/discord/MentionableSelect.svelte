@@ -54,7 +54,7 @@
 </script>
 
 <Tabs.Root bind:value={searchMode} class={cn("h-full w-full max-w-xs", className)}>
-  <Tabs.List>
+  <Tabs.List class="w-full">
     <Tabs.Trigger value="roles">Roles</Tabs.Trigger>
     <Tabs.Trigger value="users">{botsOnly ? "Bots" : "Users"}</Tabs.Trigger>
   </Tabs.List>
