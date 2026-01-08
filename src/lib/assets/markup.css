@@ -1,0 +1,157 @@
+/* CSS used for the parsed output of the custom marked.js stuff */
+
+.discord-message {
+  --discord-message-font-family: "Whitney", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --discord-message-font-size: 16px;
+  display: block;
+  padding-inline: 0.5rem;
+  font-family: var(--discord-message-font-family);
+  height: 100%;
+
+  h1,
+  h2,
+  h3 {
+    margin-top: 1.5rem;
+    margin-bottom: 0;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+  h2 {
+    font-size: 1.5rem;
+  }
+  h3 {
+    font-size: 1.25rem;
+  }
+
+  p {
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  a {
+    color: oklch(71.515% 0.15239 235.315);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  code {
+    background-color: oklch(25.111% 0.00642 258.425 / 0.6);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 0.95em;
+  }
+
+  pre {
+    background-color: oklch(25.111% 0.00642 258.425 / 0.6);
+    padding: 1rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 1rem 0;
+
+    code {
+      background-color: transparent;
+      padding: 0;
+      border-radius: 0;
+      font-size: 1em;
+    }
+  }
+
+  blockquote {
+    border-left: 4px solid oklch(25.111% 0.00642 258.425 / 0.6);
+    padding-left: 1rem;
+    color: oklch(79.137% 0.00487 258.57);
+    margin: 1rem 0;
+  }
+
+  ul,
+  ol {
+    margin: 1rem 0;
+    padding-left: 2rem;
+  }
+
+  li {
+    margin: 0.5rem 0;
+  }
+
+  small {
+    color: oklch(63.571% 0.00387 248.313);
+    font-size: 0.875rem;
+  }
+
+  .spoiler {
+    background-color: oklch(25.111% 0.00642 258.425);
+    border-radius: 3px;
+    padding: 1.5px 3px;
+    color: transparent;
+    cursor: pointer;
+
+    &:hover {
+      background-color: oklch(25.111% 0.00642 258.425 / 0.8);
+    }
+
+    &.revealed {
+      color: inherit;
+      background-color: oklch(100% 0.00011 271.152 / 0.1);
+    }
+  }
+
+  .mention {
+    background-color: oklch(71.515% 0.15239 235.315 / 0.1);
+    color: oklch(71.515% 0.15239 235.315);
+    border-radius: 3px;
+    padding: 0 0.25rem;
+    cursor: pointer;
+    font-weight: 500;
+
+    &:hover {
+      background-color: oklch(71.515% 0.15239 235.315 / 0.2);
+    }
+  }
+
+  del {
+    text-decoration: line-through;
+  }
+}
+
+img.inline-image {
+  display: inline-block;
+  object-fit: contain;
+  width: 1.375rem;
+  height: 1.375rem;
+  vertical-align: bottom;
+  margin: 0;
+}
+
+strong {
+  font-weight: 900;
+}
+
+@font-face {
+  font-family: "Whitney";
+  src: url("https://cdn.skyra.pw/whitney-font/v2/Book.woff") format("woff");
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Whitney";
+  src: url("https://cdn.skyra.pw/whitney-font/v2/Medium.woff") format("woff");
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: "Whitney";
+  src: url("https://cdn.skyra.pw/whitney-font/v2/Semibold.woff") format("woff");
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: "Whitney";
+  src: url("https://cdn.skyra.pw/whitney-font/v2/Bold.woff") format("woff");
+  font-weight: 700;
+}

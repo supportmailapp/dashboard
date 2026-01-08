@@ -217,7 +217,7 @@
     width: fit-content;
     min-width: 80px;
     max-width: 200px;
-    background-color: color-mix(in oklab, var(--blurple) 80%, transparent);
+    background-color: color-mix(in oklab, var(--blurple) 65%, transparent);
     display: grid;
     grid-template-columns: auto;
     justify-content: start;
@@ -225,6 +225,11 @@
     align-items: center;
     animation-duration: 100ms;
     cursor: pointer;
+
+
+    &:hover {
+      background-color: color-mix(in oklab, var(--blurple) 90%, transparent);
+    }
 
     span,
     p {

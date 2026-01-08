@@ -188,7 +188,7 @@ export function deepClone<T>(obj: T): T {
   }
 }
 
-export function sanitizeSnippetName(str: string) {
+export function sanitizeTagName(str: string) {
   // 1+ spaces -> 1 space + trim
   // uppercase -> lowercase
   // only a-z0-9_ and space in general (delete everything else)
