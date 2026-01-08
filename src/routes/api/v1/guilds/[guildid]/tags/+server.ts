@@ -10,6 +10,7 @@ export type TagsResponse = APITag[];
 
 export type APITag = 
   Omit<ITag, "createdAt" | "updatedAt"> & {
+    /** Always returned by the API */
     createdAt?: string;
     updatedAt?: string;
     _id?: string;

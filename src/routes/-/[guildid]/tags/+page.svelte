@@ -4,7 +4,7 @@
   import SaveAlert from "$lib/components/SaveAlert.svelte";
   import { APIRoutes } from "$lib/urls";
   import { determineUnsavedChanges } from "$lib/utils";
-  import type { APITag } from "$v1Api/guilds/[guildid]/tags/+server";
+  import type { APITag, TagsResponse } from "$v1Api/guilds/[guildid]/tags/+server";
   import { page } from "$app/state";
   import { toast } from "svelte-sonner";
   import apiClient from "$lib/utils/apiClient";
@@ -23,9 +23,9 @@
   import Trash from "@lucide/svelte/icons/trash";
 
   // svelte-ignore non_reactive_update
-  let fetchedTags: APITag[] | null = null;
+  let fetchedTags: TagsResponse | null = null;
   let loading = $state(true);
-  let tags = $state<APITag[] | null>(null);
+  let tags = $state<TagsResponse | null>(null);
   let unsavedChanges = $derived(determineUnsavedChanges(fetchedTags, tags));
   const editTag = $state({
     data: null as APITag | null,
@@ -59,8 +59,9 @@
         name: newTagName,
         content: "",
         onlyTickets: false,
+        createdAt: new Date().toISOString(),
       },
-    ];
+    ].sort((a, b) => a.createdAt!.localeCompare(b.createdAt!)) as TagsResponse;
   }
 
   function removeTagById(id: string) {
