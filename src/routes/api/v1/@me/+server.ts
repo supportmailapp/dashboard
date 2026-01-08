@@ -21,9 +21,7 @@ const putSchema = z.object({
   autoRedirect: z.boolean(),
 });
 
-export async function PUT({ locals, request }) {
-  if (!locals.user?.id) return JsonErrors.unauthorized();
-
+export async function PATCH({ locals, request }) {
   const body = await request.json();
 
   const valRes = new ZodValidator(putSchema).validate(body);
@@ -34,7 +32,7 @@ export async function PUT({ locals, request }) {
 
   const user = await DBUser.findOneAndUpdate(
     {
-      id: locals.user.id,
+      id: locals.user!.id,
     },
     valRes.data,
     {
