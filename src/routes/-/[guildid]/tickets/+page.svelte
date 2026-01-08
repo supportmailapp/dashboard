@@ -8,7 +8,6 @@
   import { Button } from "$ui/button";
   import * as Pagination from "$ui/pagination/index.js";
   import * as Empty from "$ui/empty/index.js";
-  import { Skeleton } from "$ui/skeleton";
   import equal from "fast-deep-equal/es6";
   import { TicketStatus } from "$lib/sm-types";
   import { onMount } from "svelte";
