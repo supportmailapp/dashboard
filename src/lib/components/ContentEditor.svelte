@@ -1,5 +1,5 @@
 <script lang="ts">
-  // import "@skyra/discord-components-core";
+  // import "@skyra/discord-components-core"; | maybe this isn't needed after all
   import "$lib/assets/markup.css";
   import { toDiscordHtml } from "$lib/utils/markup";
   import Textarea from "$ui/textarea/textarea.svelte";
