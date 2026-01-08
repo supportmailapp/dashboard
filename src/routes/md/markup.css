@@ -1,0 +1,15 @@
+discord-message {
+  display: block;
+  margin: 1rem 0;
+
+  --discord-message-font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --discord-message-font-size: 16px;
+}
+
+img.inline-image {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  margin: 0;
+  vertical-align: -0.1em;
+}

@@ -114,6 +114,8 @@ const APIRoutes = {
   blacklist: (guildId: string) => `${API_BASE}/guilds/${guildId}/blacklist` as const,
 
   snippets: (guildId: string) => `${API_BASE}/guilds/${guildId}/snippets` as const,
+
+  twemojiProxy: (emoji: string) => `${API_BASE}/twemoji/${encodeURIComponent(emoji)}` as const,
 };
 
 const LegalLinks = {

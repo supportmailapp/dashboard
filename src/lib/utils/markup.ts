@@ -1,5 +1,7 @@
 // src/lib/discordMarkdown.ts
 import { marked, Renderer, type Token, type TokenizerAndRendererExtension, type Tokens } from "marked";
+import { TwemojiRegex } from "./twemojiRegex";
+import { APIRoutes } from "$lib/urls";
 
 // Overwrites for everything else, because the renderer needs to be told to use custom elements for those too
 class SMRenderer extends Renderer {
@@ -96,6 +98,7 @@ const customRules = {
     full: /^<\/([-_'\p{L}\p{N}\p{sc=Deva}\p{sc=Thai}]{1,32}):([0-9]{17,21})>/u,
     start: /^<\/([-_'\p{L}\p{N}\p{sc=Deva}\p{sc=Thai}]{1,32}):/u,
   },
+  everyoneHere: { full: /^@(everyone|here)/, start: /^@/ },
 };
 
 type SubtextToken = Token & {
@@ -212,9 +215,12 @@ type BrowseMentionToken = MentionToken & {
   type: "browsemention";
 };
 
-type SlashcommandMentionToken = MentionToken & {
+type SlashcommandMentionToken = Required<MentionToken> & {
   type: "slashcommandmention";
-  name: string;
+};
+
+type EveryoneHereMentionToken = Required<Omit<MentionToken, "id">> & {
+  type: "hereEveryone";
 };
 
 type AnyMentionToken =
@@ -224,7 +230,8 @@ type AnyMentionToken =
   | ServerguideMentionToken
   | CustomizeMentionToken
   | BrowseMentionToken
-  | SlashcommandMentionToken;
+  | SlashcommandMentionToken
+  | EveryoneHereMentionToken;
 
 const mentionExtensions: TokenizerAndRendererExtension<AnyMentionToken, string>[] = [
   {
@@ -368,7 +375,57 @@ const mentionExtensions: TokenizerAndRendererExtension<AnyMentionToken, string>[
       return `<discord-mention type="slash">${token.name}</discord-mention>`;
     },
   },
+  {
+    name: "hereEveryone",
+    level: "inline",
+    start(src) {
+      return src.match(customRules.everyoneHere.start)?.index;
+    },
+    tokenizer(src, tokens) {
+      const match = customRules.everyoneHere.full.exec(src);
+      if (match) {
+        return {
+          type: "hereEveryone",
+          raw: match[0],
+          name: match[1],
+        };
+      }
+    },
+    renderer(token) {
+      return `<discord-mention type="user">${token.name}</discord-mention>`;
+    },
+  }
 ];
+
+type UnicodeEmojiToken = Token & {
+  type: "unicodeemoji";
+  emoji: string;
+};
+
+const twemojiExtension: TokenizerAndRendererExtension<UnicodeEmojiToken, string> = {
+  name: "unicodeemoji",
+  level: "inline",
+  start(src) {
+    // find the first occurrence of any emoji
+    const emojiRegex = TwemojiRegex().source;
+    return src.match(emojiRegex)?.index;
+  },
+  tokenizer(src, tokens) {
+    const emojiRegex = TwemojiRegex();
+    const match = emojiRegex.exec(src);
+    if (match && match.index === 0) {
+      return {
+        type: "unicodeemoji",
+        raw: match[0],
+        emoji: match[0],
+      };
+    }
+  },
+  renderer(token) {
+    // inline img tag, proxy through our own api route
+    return `<img class="inline-image" src="${APIRoutes.twemojiProxy(token.emoji)}" alt="${token.emoji}" />`;
+  }
+};
 
 marked.use({
   // ! No, we can't pass the Renderer here, it has to be passed per-parse because if not, inline parsing of paragraphs isn't handled correctly
@@ -378,8 +435,10 @@ marked.use({
     spoilerExtension,
     customemojiExtension,
     ...(mentionExtensions as TokenizerAndRendererExtension[]), // gotta assert because TS will freak out
+    twemojiExtension,
   ],
   breaks: true,
+  async: false,
 });
 
 export function toDiscordHtml(message: string) {
