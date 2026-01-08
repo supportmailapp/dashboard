@@ -8,8 +8,9 @@ discord-message {
 
 img.inline-image {
   display: inline-block;
-  width: 1em;
-  height: 1em;
+  object-fit: contain;
+  width: 1.375rem;
+  height: 1.375rem;
+  vertical-align: bottom;
   margin: 0;
-  vertical-align: -0.1em;
 }
