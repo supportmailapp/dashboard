@@ -8,15 +8,17 @@
   import apiClient from "$lib/utils/apiClient";
   import { Button } from "$ui/button";
   import * as Pagination from "$ui/pagination/index.js";
-  import { Skeleton } from "$ui/skeleton";
   import * as Tooltip from "$ui/tooltip/index.js";
   import Files from "@lucide/svelte/icons/files";
+  import * as Empty from "$ui/empty/index.js";
+  import FolderOpen from "@lucide/svelte/icons/folder-open";
   import equal from "fast-deep-equal/es6";
   import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
   import type { PaginatedReportsResponse } from "../../../api/v1/guilds/[guildid]/reports/+server";
   import FilterControls, { type ReportSearchScope, type ReportSearchType } from "./FilterControls.svelte";
   import ReportsTable from "./ReportsTable.svelte";
+  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
 
   const pageData = $state({
     page: safeParseInt(page.url.searchParams.get("page"), 1),
@@ -190,11 +192,21 @@
 
 <div class="flex flex-col items-center">
   {#if reportsStatus === "loading"}
-    <Skeleton class="h-8 w-full max-w-2xl" />
+    <LoadingSpinner class="mx-auto mt-10" />
   {:else if reportsStatus === "error"}
     <div class="text-destructive">Failed to load reports. Please try again later.</div>
   {:else if reportsStatus === "loaded" && reportItems.length === 0}
-    <div class="text-muted-foreground">{"No reports found :("}</div>
+    <Empty.Root>
+      <Empty.Header>
+        <Empty.Media variant="icon">
+          <FolderOpen />
+        </Empty.Media>
+        <Empty.Title>{"No reports found :("}</Empty.Title>
+        <Empty.Description>
+          Either your search/filter criteria did not match any reports, or there are no reports yet.
+        </Empty.Description>
+      </Empty.Header>
+    </Empty.Root>
   {:else if reportsStatus === "loaded" && reportItems.length > 0}
     <ReportsTable items={reportItems} />
   {/if}

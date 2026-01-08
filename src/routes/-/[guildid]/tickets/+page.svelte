@@ -149,9 +149,7 @@
 
 <div class="flex flex-col items-center">
   {#if ticketsStatus === "loading"}
-    <div class="h-full grid place-items-center">
-      <LoadingSpinner class="mx-auto" />
-    </div>
+    <LoadingSpinner class="mx-auto mt-10" />
   {:else if ticketsStatus === "error"}
     <div class="text-destructive">Failed to load tickets. Please try again later.</div>
   {:else if ticketsStatus === "loaded" && ticketItems.length === 0}
