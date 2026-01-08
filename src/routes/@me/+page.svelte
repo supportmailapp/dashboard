@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { Avatar } from "@fuxui/base";
-  import { goto } from "$app/navigation";
   import { page } from "$app/state";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import { LANGUAGES } from "$lib/constants";
@@ -15,7 +13,6 @@
   import apiClient from "$lib/utils/apiClient";
   import SaveAlert from "$lib/components/SaveAlert.svelte";
   import { onMount } from "svelte";
-  import Checkbox from "$ui/checkbox/checkbox.svelte";
   import Files from "@lucide/svelte/icons/files";
 
   interface OurUser {
