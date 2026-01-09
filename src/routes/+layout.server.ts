@@ -3,9 +3,9 @@ import jwt from "jsonwebtoken";
 
 export const prerender = false;
 
-export async function load({ locals }) {
+export async function load({ locals, depends }) {
+  depends("guild:layout");
   console.log("Loading +layout.server.ts");
-  console.log("User:", locals.user);
 
   return {
     user: locals.user,

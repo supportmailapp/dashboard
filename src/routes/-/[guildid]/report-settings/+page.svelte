@@ -99,7 +99,7 @@
         pings: [],
       };
 
-      const res = await apiClient.put(APIRoutes.reportsConfig(page.data.guildId!), {
+      const res = await apiClient.put(APIRoutes.reportsConfig(page.params.guildid!), {
         json: {
           ...rest,
           enabled: !rest.channelId ? false : rest.enabled,
@@ -135,7 +135,7 @@
   }
 
   afterNavigate(() => {
-    fetch(APIRoutes.reportsConfig(page.data.guildId!))
+    fetch(APIRoutes.reportsConfig(page.params.guildid!))
       .then((res) => {
         if (!res.ok) {
           toast.error("Failed to load report configuration.", {

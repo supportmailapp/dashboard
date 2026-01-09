@@ -3,6 +3,7 @@
   import Mention from "$lib/components/discord/Mention.svelte";
   import Timestamp from "$lib/components/discord/Timestamp.svelte";
   import { TicketState, TicketStatus } from "$lib/sm-types";
+  import { guildHref } from "$lib/stores/site.svelte.js";
   import { mentionUsers } from "$lib/stores/users.svelte";
   import { cdnUrls } from "$lib/urls";
   import { cn, makeFallbackInitials } from "$lib/utils.js";
@@ -37,7 +38,7 @@
   };
 </script>
 
-<Button variant="outline" class="mb-4 w-fit" href={page.data.guildHref("/tickets")}>
+<Button variant="outline" class="mb-4 w-fit" href={guildHref("/tickets")}>
   <ChevronLeft class="size-4" />
   Back
 </Button>

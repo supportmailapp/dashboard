@@ -1,7 +1,6 @@
 import type { SMErrorCodes } from "$lib/server/constants";
 import type { DiscordBotAPI, DiscordUserAPI } from "$lib/server/discord";
 import type { IUserToken, PausedUntil } from "$lib/sm-types";
-import type { DataManager } from "$lib/stores/DataManager.svelte";
 import type { GuildsManager } from "$lib/stores/GuildsManager.svelte";
 import type { EventsMap } from "$lib/utils/websocket";
 import type {
@@ -54,18 +53,7 @@ declare global {
     interface PageData {
       wsToken?: string;
       ws?: Socket<EventsMap>;
-      manager: DataManager;
       user: APIUser | null;
-      guildId?: string;
-      /**
-       * Checks if the current page matches the given href.
-       * @param url The current URL.
-       * @param check The href to check against the current page.
-       * @param partial If true, checks if the current page starts with the given href. Defaults to true.
-       * @returns True if the current page matches the href, false otherwise.
-       */
-      isCurrentPage: (href: string, partial?: boolean) => boolean;
-      guildHref: (path: string) => string;
     }
   }
 

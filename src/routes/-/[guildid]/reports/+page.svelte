@@ -48,7 +48,7 @@
       reportsStatus = "loading";
       const searchParams = buildSearchParams(true);
 
-      const res = await apiClient.get<PaginatedReportsResponse>(APIRoutes.reports(page.data.guildId!), {
+      const res = await apiClient.get<PaginatedReportsResponse>(APIRoutes.reports(page.params.guildid!), {
         searchParams,
       });
 

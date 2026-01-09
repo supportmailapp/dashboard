@@ -34,6 +34,7 @@
   import { getManager } from "$lib/stores/GuildsManager.svelte";
   import Slider from "$ui/slider/slider.svelte";
   import { getSnowflakes } from "$lib/stores/SnowflakeControls.svelte";
+  import { guildHref, isCurrentPage } from "$lib/stores/site.svelte";
 
   type NavItem = {
     id: string;
@@ -52,7 +53,7 @@
     {
       id: "home",
       name: "Home",
-      href: page.data.guildHref("/home"),
+      href: "/home",
       icon: Home,
     },
     {
@@ -62,25 +63,25 @@
         {
           id: "view-tickets",
           name: "View Tickets",
-          href: page.data.guildHref("/tickets"),
+          href: "/tickets",
           icon: Ticket,
         },
         {
           id: "ticket-settings",
           name: "Ticket Settings",
-          href: page.data.guildHref("/ticket-settings"),
+          href: "/ticket-settings",
           icon: Cog,
         },
         {
           id: "ticket-categories",
           name: "Ticket Categories",
-          href: page.data.guildHref("/ticket-categories"),
+          href: "/ticket-categories",
           icon: FolderOpen,
         },
         {
           id: "feedback",
           name: "Feedback",
-          href: page.data.guildHref("/feedback"),
+          href: "/feedback",
           icon: Star,
         },
       ],
@@ -92,19 +93,19 @@
         {
           id: "view-reports",
           name: "View Reports",
-          href: page.data.guildHref("/reports"),
+          href: "/reports",
           icon: Table,
         },
         {
           id: "report-settings",
           name: "Report Settings",
-          href: page.data.guildHref("/report-settings"),
+          href: "/report-settings",
           icon: Cog,
         },
         {
           id: "blacklist",
           name: "Blacklist Management",
-          href: page.data.guildHref("/blacklist"),
+          href: "/blacklist",
           icon: ShieldUser,
         },
       ],
@@ -116,7 +117,7 @@
         {
           id: "tags",
           name: "Tags",
-          href: page.data.guildHref("/tags"),
+          href: "/tags",
           icon: MessagesSquare,
         },
       ],
@@ -128,7 +129,6 @@
   let reloadBtnDisabled = $state(false);
   let snowflakeControlsOpen = $state(false);
   let atMeHref = $derived(`/@me?back=${encodeURIComponent(page.url.pathname)}`);
-  let isCurrentPage = $derived(page.data.isCurrentPage);
 
   async function reloadGuildData() {
     if (reloadBtnDisabled) return;
@@ -151,6 +151,7 @@
     {#each navCategories as item, index (item.id)}
       <Sidebar.Group>
         {#if "href" in item}
+          {@const href = guildHref(item.href)}
           <Sidebar.Menu>
             {#if index === 0}
               <Sidebar.MenuItem>
@@ -168,7 +169,7 @@
             <Sidebar.MenuItem>
               <Sidebar.MenuButton isActive={isCurrentPage(item.href, false)}>
                 {#snippet child({ props })}
-                  <a href={item.href} {...props} onclick={onClick}>
+                  <a href={href} {...props} onclick={onClick}>
                     <item.icon />
                     <span>{item.name}</span>
                   </a>
@@ -181,10 +182,11 @@
           <Sidebar.GroupContent>
             <Sidebar.Menu>
               {#each item.items as subItem (subItem.id)}
+                {@const href = guildHref(subItem.href)}
                 <Sidebar.MenuItem>
                   <Sidebar.MenuButton isActive={isCurrentPage(subItem.href, true)}>
                     {#snippet child({ props })}
-                      <a href={subItem.href} {...props} onclick={onClick}>
+                      <a href={href} {...props} onclick={onClick}>
                         <subItem.icon />
                         <span>{subItem.name}</span>
                       </a>

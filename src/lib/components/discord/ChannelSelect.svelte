@@ -113,7 +113,7 @@
       guildsManager.channels.find((c) => c.id === oldFetchInput);
 
     try {
-      const res = await apiClient.get(APIRoutes.guildChannel(page.data.guildId!, oldFetchInput));
+      const res = await apiClient.get(APIRoutes.guildChannel(page.params.guildid!, oldFetchInput));
 
       if (!res.ok) {
         buttonLoading = false;

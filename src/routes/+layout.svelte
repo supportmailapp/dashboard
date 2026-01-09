@@ -1,6 +1,5 @@
 <script lang="ts">
   import "../app.css";
-  import { onMount } from "svelte";
   import { afterNavigate, beforeNavigate, goto } from "$app/navigation";
   import { page } from "$app/state";
   import { site } from "$stores/site.svelte";
@@ -15,7 +14,18 @@
   setSnowflakes();
   const guildsManager = getManager();
 
-  onMount(async () => {
+  beforeNavigate((nav) => {
+    if (nav.from?.url.pathname === nav.to?.url.pathname) {
+      nav.cancel();
+      return;
+    }
+  });
+
+  afterNavigate((nav) => {
+    nav.complete.finally(() => {
+      site.showLoading = false;
+    });
+
     if (!data.user) {
       console.log("User not found");
       if (page.url.pathname !== "/login") {
@@ -28,23 +38,6 @@
     if (!guildsManager.loaded) {
       guildsManager.loadGuilds();
     }
-  });
-
-  beforeNavigate((nav) => {
-    if (nav.from?.url.pathname === nav.to?.url.pathname) {
-      nav.cancel();
-      return;
-    }
-
-    // if (nav.to?.url.origin === page.url.origin) {
-    //   site.showLoading = true;
-    // }
-  });
-
-  afterNavigate((nav) => {
-    nav.complete.finally(() => {
-      site.showLoading = false;
-    });
   });
 </script>
 

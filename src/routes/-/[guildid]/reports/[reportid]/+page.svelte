@@ -17,6 +17,7 @@
   import Skeleton from "$ui/skeleton/skeleton.svelte";
   import * as Table from "$ui/table";
   import { toast } from "svelte-sonner";
+  import { guildHref } from "$lib/stores/site.svelte.js";
 
   let { data } = $props();
   let report = $derived(data.report);
@@ -40,7 +41,7 @@
   };
 </script>
 
-<Button variant="outline" class="mb-4 w-fit" href={page.data.guildHref("/reports")}>
+<Button variant="outline" class="mb-4 w-fit" href={guildHref("/reports")}>
   <ChevronLeft class="size-4" />
   Back
 </Button>

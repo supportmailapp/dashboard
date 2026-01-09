@@ -1,7 +1,6 @@
 <script lang="ts">
   import { browser } from "$app/environment";
-  import { beforeNavigate } from "$app/navigation";
-  import { page } from "$app/state";
+  import { afterNavigate, beforeNavigate, invalidate } from "$app/navigation";
   import AppSidebar from "$lib/components/app-sidebar.svelte";
   import { cdnUrls } from "$lib/urls";
   import { cn } from "$lib/utils";
@@ -45,7 +44,7 @@
     }
   });
 
-  beforeNavigate((nav) => {
+  beforeNavigate(async (nav) => {
     console.log("beforeNavigate in layout", nav);
     if (nav.from?.route === nav.to?.route) {
       nav.cancel();
@@ -53,6 +52,18 @@
     }
 
     guildsSelectOpen = false;
+  });
+
+  afterNavigate(async (nav) => {
+    if (
+      nav.from?.params?.guildid &&
+      nav.to?.params?.guildid &&
+      nav.from?.params?.guildid !== nav.to?.params?.guildid
+    ) {
+      console.log("layout-load-layout.svelte-afterNavigate.ts-before");
+      await invalidate("guild:layout");
+      console.log("layout-load-layout.svelte-afterNavigate.ts-after");
+    }
   });
 </script>
 

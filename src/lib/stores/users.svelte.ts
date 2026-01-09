@@ -26,12 +26,12 @@ export async function fetchUser(userId: string, filters?: { bot?: boolean }): Pr
     return user;
   }
 
-  if (!page.data.ws || !page.data.guildId) {
+  if (!page.data.ws || !page.params.guildid) {
     console.warn("WebSocket connection or guild ID is not available.");
     return undefined;
   }
 
-  page.data.ws.emit("get-guild-users", { userIds: [userId], guildId: page.data.guildId, filters }, (res) => {
+  page.data.ws.emit("get-guild-users", { userIds: [userId], guildId: page.params.guildid, filters }, (res) => {
     if (res.success) {
       for (const u of res.data) {
         users.set(u.id, u);

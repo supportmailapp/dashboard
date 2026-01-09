@@ -19,37 +19,6 @@ export function redirectToLoginWithError({
   );
 }
 
-/**
- * Checks if the current page matches the given href.
- * @param url The current URL.
- * @param check The href to check against the current page.
- * @param partial If true, checks if the current page starts with the given href. Defaults to true.
- * @returns True if the current page matches the href, false otherwise.
- */
-export function isCurrentPage(url: URL, check: string, partial = true) {
-  if (partial) {
-    return url.pathname.startsWith(check);
-  }
-  return url.pathname === check;
-}
-
-/**
- * Generates a URL path for a guild with an optional next path segment.
- *
- * @param guildId - The unique identifier of the guild
- * @param nextPath - Optional additional path to append after the guild ID
- * @returns The constructed URL path in the format `/-/{guildId}{nextPath}`
- *
- * @example
- * ```typescript
- * guildHref("123456789") // Returns "/-/123456789"
- * guildHref("123456789", "/settings") // Returns "/-/123456789/settings"
- * ```
- */
-export function guildHref(guildId: string, nextPath?: string) {
-  return `/-/${guildId}${nextPath ? nextPath : ""}`;
-}
-
 export function getNextPathFromGuildPath(pathname: string) {
   const match = pathname.replace(/^\/-\/\d+/, "").match(/^(\/[^/]+)?/);
   if (match) {

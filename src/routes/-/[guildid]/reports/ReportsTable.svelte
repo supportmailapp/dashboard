@@ -1,6 +1,5 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { guildHref } from "$lib";
   import Mention from "$lib/components/discord/Mention.svelte";
   import { ReportStatus } from "$lib/sm-types";
   import { cn } from "$lib/utils";
@@ -12,6 +11,7 @@
   import UserIcon from "@lucide/svelte/icons/user";
   import type { ClassValue } from "clsx";
   import type { PaginatedReportsResponse } from "../../../api/v1/guilds/[guildid]/reports/+server";
+  import { guildHref } from "$lib/stores/site.svelte";
 
   let { items }: { items: PaginatedReportsResponse["data"] } = $props();
 
@@ -107,7 +107,7 @@
             variant="outline"
             size="icon"
             onclick={() => {
-              goto(guildHref(report.guildId, `/reports/${report._id}`));
+              goto(guildHref(`/reports/${report._id}`));
             }}
           >
             <ChevronRight class="text-muted-foreground size-4" />

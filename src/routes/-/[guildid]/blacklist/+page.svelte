@@ -107,7 +107,7 @@
     }
 
     try {
-      const res = await apiClient.get<PaginatedBlacklistResponse>(APIRoutes.blacklist(page.data.guildId!), {
+      const res = await apiClient.get<PaginatedBlacklistResponse>(APIRoutes.blacklist(page.params.guildid!), {
         searchParams: buildSearchParams(),
       });
       if (res.ok) {
@@ -160,10 +160,10 @@
         return;
       }
 
-      const res = await apiClient.put(APIRoutes.blacklist(page.data.guildId!), {
+      const res = await apiClient.put(APIRoutes.blacklist(page.params.guildid!), {
         json: {
           id: entry.id,
-          guildId: page.data.guildId!,
+          guildId: page.params.guildid!,
           scopes: entry.scopes.toString(),
           _type: entry.type,
         },
@@ -193,7 +193,7 @@
     const ids = id ? [id] : Array.from(rowSelection.values());
     const singleEntry = ids.length === 1;
     try {
-      const res = await apiClient.delete(APIRoutes.blacklist(page.data.guildId!), {
+      const res = await apiClient.delete(APIRoutes.blacklist(page.params.guildid!), {
         json: {
           ids: ids,
         },

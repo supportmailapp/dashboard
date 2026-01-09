@@ -6,6 +6,7 @@
   import SaveAlert from "$lib/components/SaveAlert.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import type { APITicketCategory } from "$lib/sm-types";
+  import { guildHref } from "$lib/stores/site.svelte";
   import { APIRoutes, DocsLinks } from "$lib/urls";
   import { cn } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
@@ -265,7 +266,7 @@
             </div>
           {/if}
 
-          <Button href={page.data.guildHref(`/ticket-categories/${cat._id}`)}>
+          <Button href={guildHref(`/ticket-categories/${cat._id}`)}>
             <Pencil />
           </Button>
           <AreYouSureDialog

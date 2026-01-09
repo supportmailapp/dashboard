@@ -9,8 +9,6 @@
   import Plus from "@lucide/svelte/icons/plus";
   import { getManager } from "$lib/stores/GuildsManager.svelte";
 
-  let { clickFn }: { clickFn?: () => any } = $props();
-
   const guildsManager = getManager();
 </script>
 
@@ -30,11 +28,6 @@
         href={_guildHref}
         value="{guild.id}:{guild.name}"
         class={cn("transition-all duration-120", !guild.isConfigured && "text-foreground/70")}
-        onclick={() => {
-          if (!page.url.pathname.startsWith(`/-/${guild.id}`)) {
-            clickFn?.();
-          }
-        }}
       >
         <Avatar.Root>
           <Avatar.Image src={cdnUrls.guildIcon(guild.id, guild.icon, 128)} alt={guild.name} />

@@ -65,7 +65,7 @@
     }
 
     try {
-      const res = await apiClient.put(APIRoutes.ticketsConfig(page.data.guildId!), {
+      const res = await apiClient.put(APIRoutes.ticketsConfig(page.params.guildid!), {
         json: {
           allowedBots: current.allowedBots,
           enabled: current.enabled,
@@ -104,7 +104,7 @@
 
   afterNavigate(async () => {
     try {
-      const res = await apiClient.get(APIRoutes.ticketsConfig(page.data.guildId!));
+      const res = await apiClient.get(APIRoutes.ticketsConfig(page.params.guildid!));
 
       if (!res.ok) {
         toast.error("Failed to load ticket configuration.", {

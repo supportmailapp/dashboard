@@ -1,6 +1,5 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { guildHref } from "$lib";
   import Mention from "$lib/components/discord/Mention.svelte";
   import { TicketState, TicketStatus } from "$lib/sm-types";
   import { cn } from "$lib/utils";
@@ -8,6 +7,7 @@
   import * as Table from "$ui/table";
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import type { PaginatedTicketsResponse } from "../../../api/v1/guilds/[guildid]/tickets/+server";
+  import { guildHref } from "$lib/stores/site.svelte";
 
   let { items }: { items: PaginatedTicketsResponse["data"] } = $props();
 
@@ -53,7 +53,7 @@
             variant="outline"
             size="icon"
             onclick={() => {
-              goto(guildHref(ticket.guildId, `/tickets/${ticket.id}`));
+              goto(guildHref(`/tickets/${ticket.id}`));
             }}
           >
             <ChevronRight class="text-muted-foreground size-4" />

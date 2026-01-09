@@ -44,7 +44,7 @@
   async function setupFn() {
     try {
       loading.setup = true;
-      const res = await apiClient.post(APIRoutes.ticketSetup(page.data.guildId!), {
+      const res = await apiClient.post(APIRoutes.ticketSetup(page.params.guildid!), {
         json: {
           categoryId: newCategoryId,
         },

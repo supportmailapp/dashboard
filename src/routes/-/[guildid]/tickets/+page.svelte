@@ -94,7 +94,7 @@
     try {
       ticketsStatus = "loading";
 
-      const res = await apiClient.get<PaginatedTicketsResponse>(APIRoutes.tickets(page.data.guildId!), {
+      const res = await apiClient.get<PaginatedTicketsResponse>(APIRoutes.tickets(page.params.guildid!), {
         searchParams: buildSearchParams(),
       });
 

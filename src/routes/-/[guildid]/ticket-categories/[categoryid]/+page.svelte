@@ -34,6 +34,7 @@
   import FieldDialog from "$lib/components/forms/FieldDialog.svelte";
   import MentionableSelect from "$lib/components/discord/MentionableSelect.svelte";
   import { validateEmoji } from "$lib/utils/formatting.js";
+  import { guildHref } from "$lib/stores/site.svelte.js";
 
   let { data } = $props();
 
@@ -138,7 +139,7 @@
   }
 
   function navigateBack() {
-    goto(page.data.guildHref("/ticket-categories"));
+    goto(guildHref("/ticket-categories"));
   }
 
   function handlePingDelete(entityToRemove: any) {
