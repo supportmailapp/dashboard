@@ -14,7 +14,12 @@
   import EmojiInput from "$lib/components/EmojiInput.svelte";
   import SaveAlert from "$lib/components/SaveAlert.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
-  import { EntityType, type AnyAPIFormComponent, type ITicketCategory } from "$lib/sm-types";
+  import {
+    EntityType,
+    type AnyAPIFormComponent,
+    type ITicketCategory,
+    type MentionableEntity,
+  } from "$lib/sm-types";
   import { APIRoutes } from "$lib/urls.js";
   import { cn, SnowflakeUtil } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient.js";
@@ -26,12 +31,12 @@
   import * as Popover from "$ui/popover/index.js";
   import * as Field from "$ui/field/index.js";
   import { Switch } from "$ui/switch";
-  import { ComponentType } from "discord-api-types/v10";
+  import { ComponentType, type APIUser } from "discord-api-types/v10";
   import equal from "fast-deep-equal/es6";
   import { onDestroy, untrack } from "svelte";
   import { toast } from "svelte-sonner";
   import { flip } from "svelte/animate";
-  import { fly } from "svelte/transition";
+  import { fade, fly } from "svelte/transition";
   import FieldDialog from "$lib/components/forms/FieldDialog.svelte";
   import MentionableSelect from "$lib/components/discord/MentionableSelect.svelte";
   import { validateEmoji } from "$lib/utils/formatting.js";
@@ -148,7 +153,7 @@
     goto(guildHref("/ticket-categories"));
   }
 
-  function handlePingDelete(entityToRemove: any) {
+  function handlePingDelete(entityToRemove: MentionableEntity) {
     if (config.current) {
       config.current.pings = (config.current.pings ?? []).filter((e) => !equal(e, entityToRemove));
       return true;
@@ -156,17 +161,17 @@
     return false;
   }
 
-  function handleRoleSelect(role: any) {
+  function handleRoleSelect(roleId: string) {
     if (config.current) {
       if (!config.current.pings) {
-        config.current.pings = [{ typ: EntityType.role, id: role.id }];
+        config.current.pings = [{ typ: EntityType.role, id: roleId }];
       } else {
-        config.current.pings = [...config.current.pings, { typ: EntityType.role, id: role.id }];
+        config.current.pings = [...config.current.pings, { typ: EntityType.role, id: roleId }];
       }
     }
   }
 
-  function handleUserSelect(user: any) {
+  function handleUserSelect(user: APIUser) {
     if (config.current) {
       if (!config.current.pings) {
         config.current.pings = [{ typ: EntityType.user, id: user.id }];
@@ -331,7 +336,6 @@
             <div class="flex flex-wrap gap-2">
               {#each config.current.pings ?? [] as entity}
                 <Mention
-                  class="w-max"
                   userId={entity.typ === EntityType.user ? entity.id : undefined}
                   roleId={entity.typ === EntityType.role ? entity.id : undefined}
                   onDelete={() => handlePingDelete(entity)}
@@ -370,6 +374,12 @@
             <Field.Group>
               <Field.Field>
                 <Field.Label>Creation Message</Field.Label>
+                <Field.Description>
+                  The message sent to a user after they create a ticket.
+                  {#if !config.current.creationMessage}
+                    <em class="text-warning text-sm" in:fade>No custom message set.</em>
+                  {/if}
+                </Field.Description>
                 <Button
                   onclick={() => {
                     contentEditorState = {
@@ -385,6 +395,12 @@
               </Field.Field>
               <Field.Field>
                 <Field.Label>Closing Message</Field.Label>
+                <Field.Description>
+                  The message sent to a user when their ticket is closed.
+                  {#if !config.current.closeMessage}
+                    <em class="text-warning text-sm" in:fade>No custom message set.</em>
+                  {/if}
+                </Field.Description>
                 <Button
                   onclick={() => {
                     contentEditorState = {

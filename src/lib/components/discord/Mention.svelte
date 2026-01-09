@@ -7,7 +7,6 @@
   import { toast } from "svelte-sonner";
   import "./mentions.css";
   import User from "./User.svelte";
-  import type { APIRole, APIUser } from "discord-api-types/v10";
 
   // Component wrapper for colors and copy & delete button
   type Props = {
