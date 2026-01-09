@@ -2,12 +2,12 @@
   import { page } from "$app/state";
   import Mention from "$lib/components/discord/Mention.svelte";
   import Timestamp from "$lib/components/discord/Timestamp.svelte";
-  import { TicketState, TicketStatus } from "$lib/sm-types";
+  import { TicketState, TicketStatus, type APIFeedback } from "$lib/sm-types";
   import { guildHref } from "$lib/stores/site.svelte.js";
   import { mentionUsers } from "$lib/stores/users.svelte";
   import { cdnUrls } from "$lib/urls";
   import { cn, makeFallbackInitials } from "$lib/utils.js";
-  import { userDisplayName } from "$lib/utils/formatting.js";
+  import { dateToLocalString, userDisplayName } from "$lib/utils/formatting.js";
   import * as Avatar from "$ui/avatar";
   import Badge from "$ui/badge/badge.svelte";
   import Button from "$ui/button/button.svelte";
@@ -24,6 +24,7 @@
   let ticket = $derived(data.ticket);
 
   let userMention = $derived(ticket?.userId ? mentionUsers.get(ticket?.userId) : undefined);
+  let feedback = $state<APIFeedback | null>(null);
 
   const ticketStatusMap: Record<TicketStatus, string> = {
     [TicketStatus.open]: "Open",
@@ -36,6 +37,8 @@
     [TicketState.uResponded]: "User Responded",
     [TicketState.unanswered]: "Unanswered",
   };
+
+  async function fetchFeedback() {}
 </script>
 
 <Button variant="outline" class="mb-4 w-fit" href={guildHref("/tickets")}>
@@ -169,10 +172,11 @@
     </Card.Content>
   </Card.Root>
 
-  {#if ticket.feedback}
+  {#if feedback}
     <Card.Root class="mt-4">
       <Card.Header>
         <Card.Title>Feedback</Card.Title>
+        <Card.Description>{dateToLocalString(feedback.timestamp)}</Card.Description>
       </Card.Header>
       <Card.Content>
         <div class="inline-flex gap-2">
@@ -180,7 +184,7 @@
             <Star
               class={cn(
                 "size-6",
-                index < ticket.feedback.stars
+                index < feedback.rating
                   ? "fill-yellow-400 text-yellow-500"
                   : "fill-muted-foreground text-muted-foreground",
               )}
@@ -189,9 +193,9 @@
         </div>
         <Separator class="my-2" />
         <div class="bg-card-foreground/10 rounded-lg p-3">
-          {#each ticket.feedback.questionAnswers as fb}
+          {#each feedback.answers as fb}
             <h2 class="text-muted-foreground text-xl font-semibold">
-              {fb.question}
+              {fb.label}
             </h2>
             <p class="mt-1 border-l-2 pl-3 not-last:mb-5">{fb.answer}</p>
           {/each}
