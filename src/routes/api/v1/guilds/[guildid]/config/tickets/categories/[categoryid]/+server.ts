@@ -14,7 +14,7 @@ export async function PUT({ request, locals, params }) {
 
   const body = await request.json();
 
-  const valRes = new ZodValidator(TicketCategorySchema).validate(body);
+  const valRes = new ZodValidator(TicketCategorySchema.omit({ index: true })).validate(body);
   if (!valRes.success) {
     return JsonErrors.badRequest(valRes.error.message);
   }

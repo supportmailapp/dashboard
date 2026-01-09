@@ -9,14 +9,8 @@ const ticketCategorySchema = new Schema<ITicketCategory>({
   enabled: { type: Boolean, default: true },
   index: { type: Number, default: 1 },
   tag: { type: String, required: false },
-  emoji: {
-    type: partialEmojiSchema,
-    required: false,
-  },
-  pings: {
-    type: [EntitySchema],
-    required: false,
-  },
+  emoji: { type: String, required: false },
+  pings: { type: [EntitySchema], required: false },
   fields: {
     type: [customModalFieldSchema],
     required: false,

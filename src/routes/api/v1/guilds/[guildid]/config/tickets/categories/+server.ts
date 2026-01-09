@@ -65,4 +65,5 @@ export async function PUT({ request, params }) {
   }
 
   const finalCats = cats.map((cat) => FlattenDocToJSON(cat, true));
+  return json(finalCats);
 }

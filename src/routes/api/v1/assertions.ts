@@ -71,7 +71,7 @@ export const TicketCategorySchema = z.object({
     .string()
     .min(3, zem("Label must be at least 3 characters long"))
     .max(45, zem("Label must be at most 45 characters long")),
-  emoji: PartialEmoji.optional(),
+  emoji: z.string().trim().optional(), // technically we could also validate this but for the sake of simplicity we allow any string here
   tag: SnowflakePredicate.optional(),
   pings: z.array(MentionableEntity).max(100, zem("A maximum of 100 pings are allowed")).optional(),
   components: FormComponentsSchema(FeedbackComponentSchema),
@@ -89,15 +89,20 @@ export const PartialTicketCategorySchema = TicketCategorySchema.pick({
 export const TicketCategoriesPUTSchema = z.preprocess(
   (obj) => {
     // ensure index is at least 0 and _id is unset if local is true
-    if (typeof obj === "object" && obj !== null) {
-      const newObj = { ...obj };
-      if ("index" in newObj && typeof newObj.index === "number") {
-        newObj.index = Math.max(0, newObj.index || 0);
-      }
-      if ("local" in newObj && newObj.local === true && "_id" in newObj) {
-        delete newObj._id;
-      }
-      return newObj;
+    if (Array.isArray(obj)) {
+      return obj.map((item) => {
+        if (typeof item === "object" && item !== null) {
+          const newObj = { ...item };
+          if ("index" in newObj && typeof newObj.index === "number") {
+            newObj.index = Math.max(0, newObj.index || 0);
+          }
+          if ("local" in newObj && newObj.local === true && "_id" in newObj) {
+            delete newObj._id;
+          }
+          return newObj;
+        }
+        return item;
+      });
     }
     return obj;
   },

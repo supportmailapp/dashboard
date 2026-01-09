@@ -14,6 +14,7 @@
   import SaveAlert from "$lib/components/SaveAlert.svelte";
   import { onMount } from "svelte";
   import Files from "@lucide/svelte/icons/files";
+  import { goto } from "$app/navigation";
 
   interface OurUser {
     language: string;
@@ -24,7 +25,7 @@
   let oldUser = null as OurUser | null;
   let dbUser = $state<OurUser | null>(null);
   const dcUser = $derived(page.data.user);
-  let goingBack = $state(false);
+  let backPath = $derived(page.url.searchParams.get("back") ?? "/");
   let unsavedChanges = $derived(determineUnsavedChanges(oldUser, dbUser));
 
   const triggerContent = $derived(
@@ -92,8 +93,7 @@
   <Button
     variant="outline"
     onclick={() => {
-      goingBack = true;
-      history.back();
+      goto(backPath);
     }}
   >
     <ChevronLeft class="size-4" />

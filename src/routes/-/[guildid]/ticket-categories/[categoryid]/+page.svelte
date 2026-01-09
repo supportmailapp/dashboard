@@ -1,4 +1,12 @@
 <script lang="ts">
+  import ArrowDown from "@lucide/svelte/icons/arrow-down";
+  import ArrowLeft from "@lucide/svelte/icons/arrow-left";
+  import ArrowUp from "@lucide/svelte/icons/arrow-up";
+  import Pencil from "@lucide/svelte/icons/pencil";
+  import Plus from "@lucide/svelte/icons/plus";
+  import Trash from "@lucide/svelte/icons/trash";
+  import XIcon from "@lucide/svelte/icons/x";
+
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
   import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
@@ -10,7 +18,6 @@
   import { APIRoutes } from "$lib/urls.js";
   import { cn, SnowflakeUtil } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient.js";
-  import { EmojiParser } from "$lib/utils/formatting.js";
   import { Badge } from "$ui/badge/index.js";
   import { Button, buttonVariants } from "$ui/button";
   import * as Card from "$ui/card/index.js";
@@ -18,13 +25,6 @@
   import { Label } from "$ui/label";
   import * as Popover from "$ui/popover/index.js";
   import { Switch } from "$ui/switch";
-  import ArrowDown from "@lucide/svelte/icons/arrow-down";
-  import ArrowLeft from "@lucide/svelte/icons/arrow-left";
-  import ArrowUp from "@lucide/svelte/icons/arrow-up";
-  import Pencil from "@lucide/svelte/icons/pencil";
-  import Plus from "@lucide/svelte/icons/plus";
-  import Trash from "@lucide/svelte/icons/trash";
-  import XIcon from "@lucide/svelte/icons/x";
   import { ComponentType } from "discord-api-types/v10";
   import equal from "fast-deep-equal/es6";
   import { onDestroy, onMount, untrack } from "svelte";
@@ -33,6 +33,7 @@
   import { fly } from "svelte/transition";
   import FieldDialog from "$lib/components/forms/FieldDialog.svelte";
   import MentionableSelect from "$lib/components/discord/MentionableSelect.svelte";
+  import { validateEmoji } from "$lib/utils/formatting.js";
 
   let { data } = $props();
 
@@ -45,6 +46,8 @@
     loading: false,
   });
 
+  $inspect("current cfg emoji", config.current?.emoji);
+
   let unsavedChanges = $derived(
     !equal(
       untrack(() => config.old),
@@ -54,8 +57,6 @@
 
   let editDialogOpen = $state(false);
   let editField = $state<AnyAPIFormComponent | null>(null);
-
-  $inspect("edit field", editField);
 
   onMount(() => {
     if (data.category) {
@@ -89,9 +90,6 @@
     config.saving = true;
 
     const payload = $state.snapshot(config.current);
-    if (payload && payload.emoji?.name === "") {
-      payload.emoji = undefined;
-    }
 
     // Remove the index field from the payload
     const { index, ...payloadWithoutIndex } = payload;
@@ -282,22 +280,29 @@
             <Switch variant="success" bind:checked={config.current.enabled} id="cat-enabled" />
           </div>
           <div class="flex items-center justify-start gap-2">
-            {#if config.current.emoji}
-              <EmojiInput bind:emoji={config.current.emoji} />
-              {#if EmojiParser.isValid(config.current.emoji)}
-                <Button
-                  size="icon"
-                  variant="destructive"
-                  onclick={() => {
-                    if (config.current) {
-                      config.current.emoji = { name: "", animated: false, id: "" };
-                    }
-                  }}
-                  aria-label="Reset "
-                >
-                  <XIcon />
-                </Button>
-              {/if}
+            <EmojiInput
+              bind:emoji={
+                () => config.current?.emoji || "",
+                (v) => {
+                  if (config.current) {
+                    config.current.emoji = v;
+                  }
+                }
+              }
+            />
+            {#if validateEmoji(config.current.emoji || "")}
+              <Button
+                size="icon"
+                variant="destructive"
+                onclick={() => {
+                  if (config.current) {
+                    config.current.emoji = "";
+                  }
+                }}
+                aria-label="Reset "
+              >
+                <XIcon />
+              </Button>
             {/if}
           </div>
         </Card.Content>

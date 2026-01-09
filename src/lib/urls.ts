@@ -52,7 +52,7 @@ const cdnUrls = {
     (avatar
       ? `/avatars/${userId}/${avatar}.webp?size=${size}`
       : `/embed/avatars/${(Number(userId) >> 22) % 6}.png`),
-  guildEmoji: (emojiId: string, size = 64) =>
+  guildEmoji: (emojiId: string, size = 72) =>
     `${DISCORD_CDN_BASE}/emojis/${emojiId}.webp?size=${size}` as const,
 };
 
@@ -114,8 +114,6 @@ const APIRoutes = {
   blacklist: (guildId: string) => `${API_BASE}/guilds/${guildId}/blacklist` as const,
 
   tags: (guildId: string) => `${API_BASE}/guilds/${guildId}/tags` as const,
-
-  twemojiProxy: (emoji: string) => `${API_BASE}/twemoji/${encodeURIComponent(emoji)}` as const,
 };
 
 const LegalLinks = {

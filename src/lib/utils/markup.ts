@@ -489,6 +489,6 @@ marked.use({
   ],
 });
 
-export function toDiscordHtml(message: string) {
+export function discordMdToHtml(message: string) {
   return marked(message);
 }

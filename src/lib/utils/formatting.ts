@@ -1,5 +1,6 @@
-import type { IPartialEmoji } from "$lib/sm-types";
 import { ChannelType, type APIGuildCategoryChannel, type APIUser } from "discord-api-types/v10";
+import { FullTwemojiRegex } from "./twemojiRegex";
+import type { IPartialEmoji } from "$lib/sm-types/src";
 
 /**
  * Sorts an array of items by their position property in ascending order using Discord's sorting approach.
@@ -186,53 +187,40 @@ export class MarkdownFormatter {
   }
 }
 
-export class EmojiParser {
-  private static unicodeRE(): RegExp {
-    const r = String.raw;
-    const seq = r`(?:\p{Emoji}\uFE0F\u20E3?|\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation})`;
-    const sTags = r`\u{E0061}-\u{E007A}`;
-    return new RegExp(
-      r`^([\u{1F1E6}-\u{1F1FF}]{2}|\u{1F3F4}[${sTags}]{2}[\u{E0030}-\u{E0039}${sTags}]{1,3}\u{E007F}|${seq}(?:\u200D${seq})*)$`,
-      "u",
-    );
+export const CustomEmojiRegex = /^<?(a)?:([a-zA-Z0-9_~]{2,32}):(\d{17,23})>?$/i;
+
+/**
+ * Validates and parses emoji from a text string.
+ * Attempts to match both custom Discord-style emojis and Twemoji formats.
+ *
+ * @param text - The text string to validate for emoji content
+ * @returns An object containing emoji properties (animated, name, id) if a valid emoji is found, otherwise undefined
+ *
+ * @example
+ * // Custom emoji
+ * validateEmoji('<a:name:123456789>'); // { animated: true, name: 'name', id: '123456789' }
+ *
+ * @example
+ * // Twemoji
+ * validateEmoji('😀'); // { name: '😀' }
+ *
+ * @example
+ * // Invalid emoji
+ * validateEmoji(''); // undefined
+ */
+export function validateEmoji(text: string): IPartialEmoji | undefined {
+  if (!text || text.length == 0) return;
+  text = text.trim();
+  const customEmoji = text.match(CustomEmojiRegex);
+  if (customEmoji) {
+    return { animated: !!customEmoji[1], name: customEmoji[2], id: customEmoji[3] };
   }
 
-  private static readonly customEmojiRegex = /^<?(?:(a))?:([a-zA-Z0-9_~]{2,32}):(\d{17,19})>?$/i;
-
-  static fromString(emojiStr: string, withFallback: true): IPartialEmoji;
-  static fromString(emojiStr: string, withFallback?: false): IPartialEmoji | null;
-  static fromString(emojiStr: string, withFallback?: boolean): IPartialEmoji | null {
-    // First try to match custom emoji
-    const customEmoji = emojiStr.match(this.customEmojiRegex);
-    if (customEmoji) {
-      return {
-        animated: Boolean(customEmoji[1]),
-        name: customEmoji[2],
-        id: customEmoji[3],
-      };
-    }
-
-    // Then try to match unicode emoji
-    const m = emojiStr.match(this.unicodeRE());
-    if (m?.[0]) return { name: m[0] };
-
-    return withFallback ? { name: emojiStr } : null;
+  const twemojiMatch = text.match(FullTwemojiRegex())?.[0];
+  if (twemojiMatch) {
+    return { name: twemojiMatch };
   }
-
-  static toString(emoji: IPartialEmoji): string {
-    if (emoji.id) {
-      return `<${emoji.animated ? "a" : ""}:${emoji.name}:${emoji.id}>`;
-    }
-    return emoji.name || "";
-  }
-
-  static isCustom(emoji: IPartialEmoji): emoji is IPartialEmoji & { id: string; name: string } {
-    return !!emoji.id && emoji.name.length > 0;
-  }
-
-  static isValid(emoji: IPartialEmoji): boolean {
-    return this.isCustom(emoji) || (!!emoji.name && this.unicodeRE().test(emoji.name));
-  }
+  return;
 }
 
 /**

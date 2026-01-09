@@ -1,12 +1,12 @@
 <script lang="ts">
   // import "@skyra/discord-components-core"; | maybe this isn't needed after all
   import "$lib/assets/markup.css";
-  import { toDiscordHtml } from "$lib/utils/markup";
-  import Textarea from "$ui/textarea/textarea.svelte";
   import { browser } from "$app/environment";
   import * as Tabs from "$ui/tabs/index.js";
   import type { ClassValue } from "clsx";
   import { cn } from "$lib/utils";
+  import { discordMdToHtml } from "$lib/utils/markup";
+  import Textarea from "$ui/textarea/textarea.svelte";
 
   let {
     rawText = $bindable(""),
@@ -20,7 +20,7 @@
 
   let markupDebounceTimer: ReturnType<typeof setTimeout> | null = null;
   let debouncedRaw = $state.snapshot(rawText);
-  let currentHtml = $state(toDiscordHtml($state.snapshot(rawText)));
+  let currentHtml = $state(discordMdToHtml($state.snapshot(rawText)));
   let html = $derived.by(() => {
     debouncedRaw = $state.snapshot(rawText);
     debounceMarkup();
@@ -34,7 +34,7 @@
     if (markupDebounceTimer) clearTimeout(markupDebounceTimer);
 
     markupDebounceTimer = setTimeout(async () => {
-      currentHtml = toDiscordHtml(debouncedRaw);
+      currentHtml = discordMdToHtml(debouncedRaw);
       console.log("Rendered markdown to HTML for preview:", { raw: debouncedRaw, html: currentHtml });
     }, markupDebounceMs);
   }

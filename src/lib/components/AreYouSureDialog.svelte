@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { MarkdownFormatter } from "$lib/utils/formatting";
+  import { discordMdToHtml } from "$lib/utils/markup";
   import * as AlertDialog from "$ui/alert-dialog/index.js";
   import type { Snippet } from "svelte";
 
@@ -28,7 +28,7 @@
     child,
   }: Props = $props();
 
-  let htmlDescription = $derived(description ? new MarkdownFormatter(description).toHTML() : undefined);
+  let htmlDescription = $derived(description ? discordMdToHtml(description) : undefined);
 </script>
 
 <AlertDialog.Root bind:open>

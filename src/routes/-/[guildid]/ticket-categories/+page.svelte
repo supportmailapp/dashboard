@@ -92,8 +92,10 @@
           .sort((a, b) => a.index - b.index)
           .map((cat) => ({
             _id: cat._id,
+            label: cat.label,
             guildId: cat.guildId,
             index: cat.index,
+            local: cat.local || undefined,
           })),
       });
 
