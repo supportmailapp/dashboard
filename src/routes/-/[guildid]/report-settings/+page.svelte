@@ -8,7 +8,7 @@
   import { APIRoutes } from "$lib/urls";
   import apiClient from "$lib/utils/apiClient";
   import dayjs from "dayjs";
-  import { onDestroy, onMount, untrack } from "svelte";
+  import { onDestroy, untrack } from "svelte";
   import { toast } from "svelte-sonner";
   import type { PutFields } from "../../../api/v1/guilds/[guildid]/config/reports/+server";
   import ChannelSelectCard from "./ChannelSelectCard.svelte";
@@ -16,6 +16,7 @@
   import MentionableSelectCard from "./MentionableSelectCard.svelte";
   import SystemControl from "./SystemControl.svelte";
   import { determineUnsavedChanges } from "$lib/utils";
+  import { afterNavigate } from "$app/navigation";
 
   const config = $state({
     old: null as DBGuildProjectionReturns["reportSettings"] | null,
@@ -133,7 +134,7 @@
     }
   }
 
-  onMount(() => {
+  afterNavigate(() => {
     fetch(APIRoutes.reportsConfig(page.data.guildId!))
       .then((res) => {
         if (!res.ok) {

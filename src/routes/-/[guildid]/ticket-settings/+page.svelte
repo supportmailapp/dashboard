@@ -9,7 +9,7 @@
   import apiClient from "$lib/utils/apiClient";
   import Separator from "$ui/separator/separator.svelte";
   import dayjs from "dayjs";
-  import { onDestroy, onMount, untrack } from "svelte";
+  import { onDestroy, untrack } from "svelte";
   import { toast } from "svelte-sonner";
   import type { TicketsPUTFields } from "../../../api/v1/guilds/[guildid]/config/tickets/+server";
   import AnonymSettings from "./AnonymSettings.svelte";
@@ -18,6 +18,7 @@
   import SystemControl from "./SystemControl.svelte";
   import TicketForumCard from "./TicketForumCard.svelte";
   import { determineUnsavedChanges } from "$lib/utils";
+  import { afterNavigate } from "$app/navigation";
 
   type TicketConfig = DBGuildProjectionReturns["generalTicketSettings"];
 
@@ -101,9 +102,9 @@
     }
   }
 
-  onMount(async () => {
+  afterNavigate(async () => {
     try {
-      const res = await fetch(APIRoutes.ticketsConfig(page.data.guildId!));
+      const res = await apiClient.get(APIRoutes.ticketsConfig(page.data.guildId!));
 
       if (!res.ok) {
         toast.error("Failed to load ticket configuration.", {

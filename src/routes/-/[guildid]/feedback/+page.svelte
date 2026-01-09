@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { afterNavigate } from "$app/navigation";
   import { page } from "$app/state";
   import ChannelSelect from "$lib/components/discord/ChannelSelect.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
@@ -26,7 +27,7 @@
   import Trash from "@lucide/svelte/icons/trash";
   import { ChannelType, ComponentType } from "discord-api-types/v10";
   import equal from "fast-deep-equal/es6";
-  import { onDestroy, onMount } from "svelte";
+  import { onDestroy } from "svelte";
   import { toast } from "svelte-sonner";
   import { flip } from "svelte/animate";
   import { fly } from "svelte/transition";
@@ -79,7 +80,7 @@
     }
   };
 
-  onMount(async () => {
+  afterNavigate(async () => {
     try {
       const res = await apiClient.get<APIFeedbackConfig>(APIRoutes.ticketFeedback(page.params.guildid!));
       if (!res.ok) {

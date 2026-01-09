@@ -12,9 +12,8 @@
   import { toast } from "svelte-sonner";
   import apiClient from "$lib/utils/apiClient";
   import SaveAlert from "$lib/components/SaveAlert.svelte";
-  import { onMount } from "svelte";
   import Files from "@lucide/svelte/icons/files";
-  import { goto } from "$app/navigation";
+  import { afterNavigate, goto } from "$app/navigation";
 
   interface OurUser {
     language: string;
@@ -73,7 +72,7 @@
     dbUser = { ...oldUser! };
   }
 
-  onMount(async () => {
+  afterNavigate(async () => {
     loading = true;
     const res = await apiClient.get<OurUser>(APIRoutes.me());
     const jsonRes = await res.json();

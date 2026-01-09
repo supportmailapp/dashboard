@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { afterNavigate } from "$app/navigation";
   import { page } from "$app/state";
   import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
@@ -22,7 +23,7 @@
   import Plus from "@lucide/svelte/icons/plus";
   import Trash from "@lucide/svelte/icons/trash";
   import equal from "fast-deep-equal/es6";
-  import { onDestroy, onMount, untrack } from "svelte";
+  import { onDestroy, untrack } from "svelte";
   import { toast } from "svelte-sonner";
   import { flip } from "svelte/animate";
   import { cubicOut } from "svelte/easing";
@@ -181,7 +182,7 @@
     }
   });
 
-  onMount(async () => {
+  afterNavigate(async () => {
     try {
       const res = await apiClient.get<APITicketCategory[]>(APIRoutes.ticketCategories(page.params.guildid!));
 

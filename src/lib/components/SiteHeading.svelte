@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { page } from "$app/state";
   import { getManager } from "$lib/stores/GuildsManager.svelte";
   import { cn } from "$lib/utils";
   import type { Snippet } from "svelte";

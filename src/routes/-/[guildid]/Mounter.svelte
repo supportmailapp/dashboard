@@ -2,25 +2,20 @@
   import { afterNavigate } from "$app/navigation";
   import { getManager } from "$lib/stores/GuildsManager.svelte";
   import { useSidebar } from "$ui/sidebar";
-  import { onMount } from "svelte";
+  import { untrack } from "svelte";
 
   let sidebar = $derived(useSidebar());
   const guildsManager = getManager();
 
-  $inspect("sidebar", sidebar);
-
-  onMount(() => {
-    guildsManager.loadChannels().then(() => {
-      console.log("Channels loaded");
-    });
-
-    guildsManager.loadRoles().then(() => {
-      console.log("Roles loaded");
-    });
-  });
-
   // TODO: Find out why sidebar is always undefined...
-  afterNavigate(() => {
+  afterNavigate((nav) => {
+    const guildIdChanged = nav.from?.params?.guildid !== nav.to?.params?.guildid;
+    if (guildIdChanged) {
+      console.log("Guild ID changed, reloading channels and roles...");
+      untrack(() => guildsManager.loadChannels().then(() => console.log("Channels loaded")));
+      untrack(() => guildsManager.loadRoles().then(() => console.log("Roles loaded")));
+    }
+
     sidebar?.setOpenMobile(false);
   });
 </script>

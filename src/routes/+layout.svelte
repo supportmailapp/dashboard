@@ -7,8 +7,7 @@
   import { ModeWatcher } from "mode-watcher";
   import { Toaster } from "$ui/sonner/index.js";
   import { getManager, setManager } from "$lib/stores/GuildsManager.svelte";
-  import { getSnowflakes, setSnowflakes } from "$lib/stores/SnowflakeControls.svelte";
-  import Snowflakes from "./Snowflakes.svelte";
+  import { setSnowflakes } from "$lib/stores/SnowflakeControls.svelte";
 
   let { children, data } = $props();
 
@@ -16,7 +15,7 @@
   setSnowflakes();
   const guildsManager = getManager();
 
-  onMount(async function () {
+  onMount(async () => {
     if (!data.user) {
       console.log("User not found");
       if (page.url.pathname !== "/login") {

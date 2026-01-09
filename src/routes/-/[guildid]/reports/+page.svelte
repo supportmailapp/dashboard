@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
+  import { afterNavigate, goto } from "$app/navigation";
   import { page } from "$app/state";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import { ReportStatus } from "$lib/sm-types";
@@ -13,7 +13,6 @@
   import * as Empty from "$ui/empty/index.js";
   import FolderOpen from "@lucide/svelte/icons/folder-open";
   import equal from "fast-deep-equal/es6";
-  import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
   import type { PaginatedReportsResponse } from "../../../api/v1/guilds/[guildid]/reports/+server";
   import FilterControls, { type ReportSearchScope, type ReportSearchType } from "./FilterControls.svelte";
@@ -143,7 +142,7 @@
     return `${page.url.origin}${page.url.pathname}?${params.toString()}`;
   }
 
-  onMount(() => {
+  afterNavigate(() => {
     // Fetch reports when the component mounts
     fetchReports().then(() => {
       console.log("Reports fetched successfully");

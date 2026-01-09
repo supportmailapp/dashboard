@@ -4,7 +4,6 @@
   import type { APIUser } from "discord-api-types/v10";
   import RoleSelect from "./RoleSelect.svelte";
   import UserSelect from "./UserSelect.svelte";
-  import { onMount } from "svelte";
 
   type Props = {
     /**

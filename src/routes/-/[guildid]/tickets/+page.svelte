@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
+  import { afterNavigate, goto } from "$app/navigation";
   import { page } from "$app/state";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import { APIRoutes } from "$lib/urls";
@@ -10,7 +10,6 @@
   import * as Empty from "$ui/empty/index.js";
   import equal from "fast-deep-equal/es6";
   import { TicketStatus } from "$lib/sm-types";
-  import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
   import type { PaginatedTicketsResponse } from "../../../api/v1/guilds/[guildid]/tickets/+server";
   import FilterControls, { type TicketSearchScope } from "./FilterControls.svelte";
@@ -86,8 +85,8 @@
     return `${page.url.origin}${page.url.pathname}?${params.toString()}`;
   }
 
-  async function fetchTickets() {
-    if (equal(fetchedData, $state.snapshot(pageData)) && ticketsStatus === "loaded") {
+  async function fetchTickets(force = false) {
+    if (equal(fetchedData, $state.snapshot(pageData)) && ticketsStatus === "loaded" && !force) {
       toast.info("Nothing changed, not fetching tickets again.");
       return;
     }
@@ -124,9 +123,10 @@
     }
   }
 
-  onMount(() => {
+  afterNavigate(() => {
+    console.log("refetching tickets after navigation");
     // Fetch tickets when the component mounts
-    fetchTickets().then(() => {
+    fetchTickets(true).then(() => {
       console.log("Tickets fetched successfully");
     });
   });
@@ -142,7 +142,7 @@
     bind:perPage={pageData.perPage}
     bind:searchScope={pageData.searchScope}
   />
-  <Button variant="default" onclick={fetchTickets}>
+  <Button variant="default" onclick={() => fetchTickets()}>
     <span class="text-sm">Fetch</span>
   </Button>
 </div>

@@ -10,7 +10,6 @@
   import { LegalLinks } from "$lib/urls";
   import * as Card from "$ui/card/index.js";
   import { Separator } from "$ui/separator/index.js";
-  import { onMount } from "svelte";
   import { slide } from "svelte/transition";
   import ServerSelect from "./ServerSelect.svelte";
 

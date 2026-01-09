@@ -9,7 +9,6 @@
 
   import { BlacklistScope, EntityType } from "$lib/sm-types";
   import equal from "fast-deep-equal/es6";
-  import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
 
   import {
@@ -20,7 +19,7 @@
   import FilterControls from "./FilterControls.svelte";
   import { BLEntry, dialogFields } from "./entry.svelte";
 
-  import { goto } from "$app/navigation";
+  import { afterNavigate, goto } from "$app/navigation";
   import { page } from "$app/state";
 
   import { Button, buttonVariants } from "$ui/button/index.js";
@@ -135,7 +134,7 @@
     }
   }
 
-  onMount(() => {
+  afterNavigate(() => {
     fetchBlacklist().then(() => {
       console.log("Blacklist fetched successfully.");
     });

@@ -10,12 +10,13 @@
   import * as Card from "$ui/card/index.js";
   import { Skeleton } from "$ui/skeleton";
   import { toast } from "svelte-sonner";
-  import { onDestroy, onMount, untrack } from "svelte";
+  import { onDestroy, untrack } from "svelte";
   import SaveAlert from "$lib/components/SaveAlert.svelte";
   import apiClient from "$lib/utils/apiClient";
   import type { OverviewConfig } from "$v1Api/assertions";
   import equal from "fast-deep-equal/es6";
   import InfoDialog from "$lib/components/InfoDialog.svelte";
+  import { afterNavigate } from "$app/navigation";
 
   const config = $state({
     old: null as OverviewConfig | null,
@@ -52,7 +53,7 @@
     config.saving = false;
   }
 
-  onMount(async () => {
+  afterNavigate(async () => {
     const initialRes = await apiClient.get<OverviewConfig>(APIRoutes.overview(page.params.guildid!));
 
     const _data = await initialRes.json();

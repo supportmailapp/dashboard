@@ -7,7 +7,7 @@
   import Trash from "@lucide/svelte/icons/trash";
   import XIcon from "@lucide/svelte/icons/x";
 
-  import { goto } from "$app/navigation";
+  import { afterNavigate, goto } from "$app/navigation";
   import { page } from "$app/state";
   import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
@@ -27,7 +27,7 @@
   import { Switch } from "$ui/switch";
   import { ComponentType } from "discord-api-types/v10";
   import equal from "fast-deep-equal/es6";
-  import { onDestroy, onMount, untrack } from "svelte";
+  import { onDestroy, untrack } from "svelte";
   import { toast } from "svelte-sonner";
   import { flip } from "svelte/animate";
   import { fly } from "svelte/transition";
@@ -58,7 +58,7 @@
   let editDialogOpen = $state(false);
   let editField = $state<AnyAPIFormComponent | null>(null);
 
-  onMount(() => {
+  afterNavigate(() => {
     if (data.category) {
       const categoryData: any = { ...data.category, emoji: data.category.emoji ?? { name: "" } };
       config.old = { ...categoryData };
