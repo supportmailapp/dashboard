@@ -13,10 +13,12 @@
     rawText = $bindable(""),
     activeTab = $bindable("preview"),
     class: className,
+    onRawTextChange,
   }: {
     rawText: string;
     class?: ClassValue;
     activeTab?: "editor" | "preview";
+    onRawTextChange?: (text: string) => void;
   } = $props();
 
   let markupDebounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -26,6 +28,7 @@
 
   function debounceRawText() {
     if (!browser) return;
+    onRawTextChange?.(rawText);
     if (markupDebounceTimer) clearTimeout(markupDebounceTimer);
 
     markupDebounceTimer = setTimeout(async () => {
@@ -53,7 +56,7 @@
     <Tabs.Content value="preview" class="mt-4 h-full">
       <!-- Tell tailwind to ignore this section -->
       <div
-        class="prose prose-invert discord-message h-full max-h-none max-w-none overflow-y-auto pt-1"
+        class="prose prose-invert discord-message max-h-none max-w-none overflow-y-auto px-3 py-2 rounded-lg"
         style="background-color: rgb(54, 57, 62)"
         {@attach (e) => {
           e.addEventListener("click", (event) => {

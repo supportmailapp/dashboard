@@ -52,6 +52,7 @@
   let contentEditorState = $state({
     open: false,
     rawText: "",
+    type: "create" as "create" | "close",
   });
 
   let unsavedChanges = $derived(
@@ -371,7 +372,11 @@
                 <Field.Label>Creation Message</Field.Label>
                 <Button
                   onclick={() => {
-                    contentEditorState = { open: true, rawText: config.current!.creationMessage || "" };
+                    contentEditorState = {
+                      open: true,
+                      rawText: config.current!.creationMessage || "",
+                      type: "create",
+                    };
                   }}
                 >
                   <Pencil class="size-4" />
@@ -382,7 +387,11 @@
                 <Field.Label>Closing Message</Field.Label>
                 <Button
                   onclick={() => {
-                    contentEditorState = { open: true, rawText: config.current!.closeMessage || "" };
+                    contentEditorState = {
+                      open: true,
+                      rawText: config.current!.closeMessage || "",
+                      type: "close",
+                    };
                   }}
                 >
                   <Pencil class="size-4" />
@@ -394,8 +403,16 @@
 
           <ContentEditorDialog
             bind:open={contentEditorState.open}
-            title="Edit Creation Message"
+            title="Edit {contentEditorState.type === 'create' ? 'Creation' : 'Closing'} Message"
             bind:rawText={contentEditorState.rawText}
+            onRawTextChange={(text) => {
+              if (!config.current) return;
+              if (contentEditorState.type === "create") {
+                config.current!.creationMessage = text;
+              } else {
+                config.current!.closeMessage = text;
+              }
+            }}
           />
         {:else}
           <LoadingSpinner />

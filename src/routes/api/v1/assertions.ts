@@ -75,7 +75,11 @@ export const TicketCategorySchema = z.object({
   tag: SnowflakePredicate.optional(),
   pings: z.array(MentionableEntity).max(100, zem("A maximum of 100 pings are allowed")).optional(),
   components: FormComponentsSchema(FeedbackComponentSchema),
-  customMessageId: z.string().optional(),
+  creationMessage: z
+    .string()
+    .max(2000, zem("Creation message must be at most 2000 characters long"))
+    .nullable().default(null),
+  closeMessage: z.string().max(2000, zem("Close message must be at most 2000 characters long")).nullable().default(null),
 });
 
 export const PartialTicketCategorySchema = TicketCategorySchema.pick({

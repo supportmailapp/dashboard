@@ -15,6 +15,7 @@
     contentEditorClasses?: ClassValue;
     /** @default "preview" */
     activeTab?: "editor" | "preview";
+    onRawTextChange?: (text: string) => void;
   }
 
   let {
@@ -25,6 +26,7 @@
     titleChild,
     contentEditorWrapperClasses,
     contentEditorClasses,
+    onRawTextChange,
   }: Props = $props();
 </script>
 
@@ -42,7 +44,7 @@
       </Dialog.Title>
     </Dialog.Header>
     <div class={cn("flex h-full w-full flex-1 overflow-y-auto", contentEditorWrapperClasses)}>
-      <ContentEditor class={cn("h-full flex-1", contentEditorClasses)} bind:rawText bind:activeTab />
+      <ContentEditor class={cn("h-full flex-1", contentEditorClasses)} bind:rawText bind:activeTab onRawTextChange={onRawTextChange} />
     </div>
   </Dialog.Content>
 </Dialog.Root>
