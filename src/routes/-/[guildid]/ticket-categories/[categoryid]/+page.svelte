@@ -24,6 +24,7 @@
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
   import * as Popover from "$ui/popover/index.js";
+  import * as Field from "$ui/field/index.js";
   import { Switch } from "$ui/switch";
   import { ComponentType } from "discord-api-types/v10";
   import equal from "fast-deep-equal/es6";
@@ -35,6 +36,8 @@
   import MentionableSelect from "$lib/components/discord/MentionableSelect.svelte";
   import { validateEmoji } from "$lib/utils/formatting.js";
   import { guildHref } from "$lib/stores/site.svelte.js";
+  import ContentEditorDialog from "$lib/components/ContentEditorDialog.svelte";
+  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
 
   let { data } = $props();
 
@@ -46,8 +49,10 @@
     saving: false,
     loading: false,
   });
-
-  $inspect("current cfg emoji", config.current?.emoji);
+  let contentEditorState = $state({
+    open: false,
+    rawText: "",
+  });
 
   let unsavedChanges = $derived(
     !equal(
@@ -322,42 +327,81 @@
           <div
             class="bg-input/30 border-input max-h-40 min-h-20 w-full overflow-y-auto rounded-md border p-3"
           >
-            {#if (config.current.pings ?? []).length === 0}
-              <p class="text-muted-foreground text-sm">
-                No pings configured. Add users or roles to notify when tickets are created.
-              </p>
-            {:else}
-              <div class="flex flex-wrap gap-2">
-                {#each config.current.pings ?? [] as entity}
-                  <Mention
-                    class="w-max"
-                    userId={entity.typ === EntityType.user ? entity.id : undefined}
-                    roleId={entity.typ === EntityType.role ? entity.id : undefined}
-                    onDelete={() => handlePingDelete(entity)}
+            <div class="flex flex-wrap gap-2">
+              {#each config.current.pings ?? [] as entity}
+                <Mention
+                  class="w-max"
+                  userId={entity.typ === EntityType.user ? entity.id : undefined}
+                  roleId={entity.typ === EntityType.role ? entity.id : undefined}
+                  onDelete={() => handlePingDelete(entity)}
+                />
+              {/each}
+              <Popover.Root>
+                <Popover.Trigger
+                  class={buttonVariants({ variant: "outline", size: "icon", class: "size-7" })}
+                  disabled={config.loading}
+                >
+                  <Plus />
+                </Popover.Trigger>
+                <Popover.Content class="w-80">
+                  <MentionableSelect
+                    excludedRoleIds={pingRoles}
+                    excludedUserIds={pingUsers}
+                    onRoleSelect={handleRoleSelect}
+                    onUserSelect={handleUserSelect}
                   />
-                {/each}
-                <Popover.Root>
-                  <Popover.Trigger
-                    class={buttonVariants({ variant: "outline", size: "icon", class: "size-7" })}
-                    disabled={config.loading}
-                  >
-                    <Plus />
-                  </Popover.Trigger>
-                  <Popover.Content class="w-80">
-                    <MentionableSelect
-                      excludedRoleIds={pingRoles}
-                      excludedUserIds={pingUsers}
-                      onRoleSelect={handleRoleSelect}
-                      onUserSelect={handleUserSelect}
-                    />
-                  </Popover.Content>
-                </Popover.Root>
-              </div>
-            {/if}
+                </Popover.Content>
+              </Popover.Root>
+            </div>
           </div>
         </Card.Content>
       </Card.Root>
     </div>
+
+    <Card.Root>
+      <Card.Header>
+        <Card.Title>Custom Messages</Card.Title>
+        <Card.Description>TODO!</Card.Description>
+      </Card.Header>
+      <Card.Content class="w-auto space-y-2">
+        {#if config.current}
+          <Field.Set>
+            <Field.Group>
+              <Field.Field>
+                <Field.Label>Creation Message</Field.Label>
+                <Button
+                  onclick={() => {
+                    contentEditorState = { open: true, rawText: config.current!.creationMessage || "" };
+                  }}
+                >
+                  <Pencil class="size-4" />
+                  Edit
+                </Button>
+              </Field.Field>
+              <Field.Field>
+                <Field.Label>Closing Message</Field.Label>
+                <Button
+                  onclick={() => {
+                    contentEditorState = { open: true, rawText: config.current!.closeMessage || "" };
+                  }}
+                >
+                  <Pencil class="size-4" />
+                  Edit
+                </Button>
+              </Field.Field>
+            </Field.Group>
+          </Field.Set>
+
+          <ContentEditorDialog
+            bind:open={contentEditorState.open}
+            title="Edit Creation Message"
+            bind:rawText={contentEditorState.rawText}
+          />
+        {:else}
+          <LoadingSpinner />
+        {/if}
+      </Card.Content>
+    </Card.Root>
 
     <Card.Root>
       <Card.Header>

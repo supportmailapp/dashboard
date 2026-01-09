@@ -7,8 +7,8 @@
 
   interface Props {
     /** @default true */
-    open: boolean;
     title: string;
+    open?: boolean;
     rawText?: string;
     titleChild?: Snippet;
     contentEditorWrapperClasses?: ClassValue;

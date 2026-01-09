@@ -7,6 +7,7 @@
   import { cn } from "$lib/utils";
   import { discordMdToHtml } from "$lib/utils/markup";
   import Textarea from "$ui/textarea/textarea.svelte";
+  import LoadingSpinner from "./LoadingSpinner.svelte";
 
   let {
     rawText = $bindable(""),
@@ -19,23 +20,17 @@
   } = $props();
 
   let markupDebounceTimer: ReturnType<typeof setTimeout> | null = null;
-  let debouncedRaw = $state.snapshot(rawText);
-  let currentHtml = $state(discordMdToHtml($state.snapshot(rawText)));
-  let html = $derived.by(() => {
-    debouncedRaw = $state.snapshot(rawText);
-    debounceMarkup();
-    return $state.snapshot(currentHtml);
-  });
+  let debouncedRaw = $state($state.snapshot(rawText));
   let currentTab = $state<"editor" | "preview">("preview");
   let markupDebounceMs = $derived(currentTab === "editor" ? 1000 : 400);
 
-  function debounceMarkup() {
+  function debounceRawText() {
     if (!browser) return;
     if (markupDebounceTimer) clearTimeout(markupDebounceTimer);
 
     markupDebounceTimer = setTimeout(async () => {
-      currentHtml = discordMdToHtml(debouncedRaw);
-      console.log("Rendered markdown to HTML for preview:", { raw: debouncedRaw, html: currentHtml });
+      debouncedRaw = $state.snapshot(rawText);
+      console.log("Debounced raw text updated:", debouncedRaw);
     }, markupDebounceMs);
   }
 </script>
@@ -52,6 +47,7 @@
         placeholder="Enter your markdown here..."
         rows={10}
         class="h-full w-full resize-none overflow-y-auto"
+        oninput={debounceRawText}
       />
     </Tabs.Content>
     <Tabs.Content value="preview" class="mt-4 h-full">
@@ -79,11 +75,17 @@
           });
         }}
       >
-        {@html html}
-        <!-- <discord-messages>
-          <discord-message bot verified author="SupportMail" avatar="/logo.png" timstamp="">
-          </discord-message>
-        </discord-messages> -->
+        {#await discordMdToHtml(debouncedRaw)}
+          <LoadingSpinner />
+        {:then html}
+          <div
+            class="sr-only"
+            {@attach () => {
+              console.log(html);
+            }}
+          ></div>
+          {@html html}
+        {/await}
       </div>
     </Tabs.Content>
   </Tabs.Root>

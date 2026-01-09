@@ -32,7 +32,8 @@ const ticketCategorySchema = new Schema<ITicketCategory>({
       message: (props: any) => `${props.value} exceeds the limit of 5 components`,
     },
   },
-  customMessageId: { type: String, required: false },
+  creationMessage: { type: String, default: null, maxLength: 2000 },
+  closeMessage: { type: String, default: null, maxLength: 2000 },
 });
 
 export const TicketCategory = models.TicketCategory

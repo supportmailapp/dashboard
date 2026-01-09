@@ -60,8 +60,6 @@ const ticketConfigSchema = new Schema<ITicketConfig>({
   autoForwarding: { type: Boolean, default: true },
   allowedBots: { type: [String], required: false },
   webhookDocId: { type: String, required: false },
-  creationMessage: { type: String, default: null, maxLength: 2000 },
-  closeMessage: { type: String, default: null, maxLength: 2000 },
   pings: { type: [EntitySchema], required: false },
 });
 

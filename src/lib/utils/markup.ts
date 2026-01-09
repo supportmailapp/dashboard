@@ -22,16 +22,6 @@ const customRules = {
     start: /^<\/([-_'\p{L}\p{N}\p{sc=Deva}\p{sc=Thai}]{1,32}):/u,
   },
   everyoneHere: { full: /^@(everyone|here)/, start: /^@/ },
-  nestedUnorderedList: {
-    // nested unordered lists start with 2 or a multiple of 2 spaces at the beginning of a line, with a "- " or "* " after
-    full: /^( {2})+[-*] +([^\n]+)(?:\n|$)/,
-    start: /^( {2})+[-*] +/,
-  },
-  nestedOrderedList: {
-    // nested ordered lists start with 2 or a multiple of 2 spaces at the beginning of a line, with a "<number>. " after
-    full: /^( {2})+(\d+)\. +([^\n]+)(?:\n|$)/,
-    start: /^( {2})+\d+\. +/,
-  },
 };
 
 type UnderlineToken = Token & {
@@ -136,9 +126,9 @@ const customemojiExtension: TokenizerAndRendererExtension<CustomemojiToken, stri
       return {
         type: "customemoji",
         raw: match[0],
-        name: emojiMatch[1],
+        name: emojiMatch[2],
         animated: match[0].startsWith("<a:"),
-        id: emojiMatch[2],
+        id: emojiMatch[3],
       };
     }
   },
@@ -380,7 +370,6 @@ const twemojiExtension: TokenizerAndRendererExtension<UnicodeEmojiToken, string>
     TODO: Submit a PR to twemoji to add an option to only parse if the whole string is an emoji
     */
     const contains = twemoji.test(src);
-    // TODO: Report issue to marked.js that we can't use Buffer.from in here because its not defined??
     if (contains) {
       return {
         type: "unicodeemoji",
@@ -453,29 +442,32 @@ marked.use({
     },
 
     // stuff we don't want to render
-    image(_: Tokens.Image): string {
-      return "";
+    image({ raw }: Tokens.Image): string {
+      return raw;
     },
-    checkbox(_: Tokens.Checkbox): string {
-      return "";
+    checkbox({ raw }: Tokens.Checkbox): string {
+      return `<p>${raw}</p>`;
     },
-    hr(_: Tokens.Hr): string {
-      return "";
+    hr({ raw }: Tokens.Hr): string {
+      return `<p>${raw}</p>`;
     },
     html({ text }: Tokens.HTML | Tokens.Tag): string {
       return text;
     },
-    table(_: Tokens.Table): string {
-      return "";
+    table({ raw }: Tokens.Table): string {
+      return raw;
     },
     tablecell(_: Tokens.TableCell): string {
-      return "";
+      return ""; // no raw available
     },
     tablerow(_: Tokens.TableRow<string>): string {
-      return "";
+      return ""; // no raw available
     },
-    def(_: Tokens.Def): string {
-      return "";
+    def({ raw }: Tokens.Def): string {
+      return `<p>${raw}</p>`;
+    },
+    space() {
+      return "<br />"; // Somehow, "\n\n" in markdown becomes a space token? So we convert it to a line break
     },
   },
   extensions: [
@@ -487,8 +479,9 @@ marked.use({
     twemojiExtension,
     autolinkExtension,
   ],
+  breaks: true,
 });
 
 export function discordMdToHtml(message: string) {
-  return marked(message);
+  return marked(message, {});
 }

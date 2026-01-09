@@ -140,10 +140,11 @@
 }
 
 img.inline-image {
+  --size: 1.5rem;
   display: inline-block;
   object-fit: contain;
-  width: 1.375rem;
-  height: 1.375rem;
+  width: var(--size);
+  height: var(--size);
   vertical-align: bottom;
   margin: 0;
 }
