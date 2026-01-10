@@ -16,7 +16,6 @@
   import { mode } from "mode-watcher";
   import { untrack } from "svelte";
   import { getManager } from "$lib/stores/GuildsManager.svelte";
-  import { site } from "$lib/stores/site.svelte";
 
   let { children } = $props();
 
@@ -26,20 +25,6 @@
   let sidebar = Sidebar.useSidebar();
 
   const isMobile = new IsMobile();
-
-  $inspect("isMobile.current", isMobile.current);
-  $inspect("site.sidebarOpen", site.sidebarOpen);
-
-  $effect(() => {
-    if (browser && innerWidth.current) {
-      site.sidebarOpen = innerWidth.current >= 768;
-    }
-
-    return () => {
-      console.log("Clearing current guild...");
-      site.sidebarOpen = false;
-    };
-  });
 
   $effect(() => {
     if (guildsManager.loaded) {
