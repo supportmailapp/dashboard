@@ -418,6 +418,28 @@ function cleanUrl(href: string) {
 }
 
 marked.use({
+  tokenizer: {
+    br(src) {
+      // from marked's built-in tokenizer, but modified to also match empty lines
+      const match = /^( {2,}|\\)\n/.exec(src);
+      if (match) {
+        return {
+          type: "br",
+          raw: match[0],
+        };
+      }
+    },
+    space(src) {
+      const match = /^\n\n+/.exec(src);
+      if (match) {
+        return {
+          type: "space",
+          raw: match[0],
+        };
+      }
+      return false; // ! This is needed because it throws "Infinite loop" otherwise
+    },
+  },
   renderer: {
     br(_: Tokens.Br): string {
       return `<br />`; // wit da space because it looks better
@@ -452,7 +474,7 @@ marked.use({
       return `<p>${raw}</p>`;
     },
     html({ text }: Tokens.HTML | Tokens.Tag): string {
-      return text;
+      return "";
     },
     table({ raw }: Tokens.Table): string {
       return raw;
