@@ -219,18 +219,18 @@
         >
       </Card.Header>
       <Card.Content class="space-y-5">
-        <div class="flex items-center justify-between">
-          <div class="space-y-0.5">
+        <Field.Field orientation="horizontal">
+          <Field.Content>
             <Label for="feedback-enabled">Enable Feedback</Label>
             <p class="text-muted-foreground text-sm">Collect feedback when tickets are closed</p>
-          </div>
+          </Field.Content>
           <Switch
             variant="success"
             bind:checked={feedbackConfig.isEnabled}
             id="feedback-enabled"
             disabled={saving}
           />
-        </div>
+        </Field.Field>
 
         <div class="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
           <div class="space-y-0.5">

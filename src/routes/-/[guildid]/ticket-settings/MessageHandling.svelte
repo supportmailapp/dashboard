@@ -5,9 +5,11 @@
   import { buttonVariants } from "$ui/button";
   import { Label } from "$ui/label";
   import * as Popover from "$ui/popover/index.js";
-  import { Switch } from "$ui/switch";
+  import * as Field from "$ui/field/index.js";
+  import Switch from "$ui/switch/switch.svelte";
   import Plus from "@lucide/svelte/icons/plus";
   import type { APIUser } from "discord-api-types/v10";
+  import { Description } from "$ui/alert";
 
   let {
     allowedBots = $bindable(),
@@ -30,23 +32,26 @@
   title="Message Handling"
   description="Configure how messages are handled in tickets, including bot permissions and automatic forwarding."
 >
-  <div class="space-y-4">
-    <div>
-      <h4 class="mb-2 text-sm font-medium">Automatic Forwarding</h4>
-      <p class="text-muted-foreground mb-3 text-sm">
-        Messages in ticket posts are always forwarded to the user when enabled.
-      </p>
-      <Label>
-        <Switch variant="success" bind:checked={autoForward} />
-        Automatic Forwarding
-      </Label>
-    </div>
+  <Field.Group>
+    <Field.Field orientation="horizontal">
+      <Field.Content>
+        <Field.Label>Automatic Forwarding</Field.Label>
+        <Field.Description>
+          Messages in ticket posts are always forwarded to the user when enabled.
+        </Field.Description>
+      </Field.Content>
+      <Switch variant="success" bind:checked={autoForward} />
+    </Field.Field>
 
-    <div>
-      <h4 class="mb-2 text-sm font-medium">Allowed Bots</h4>
-      <p class="text-muted-foreground mb-3 text-sm">
-        Bots are usually ignored in ticket posts. Allow up to 5 bots that will not be ignored.
-      </p>
+    <Field.Separator />
+
+    <Field.Field orientation="vertical">
+      <Field.Content>
+        <Field.Label>Allowed Bots</Field.Label>
+        <Field.Description>
+          Bots are usually ignored in ticket posts. Allow up to 5 bots that will not be ignored.
+        </Field.Description>
+      </Field.Content>
       <div class="bg-input/30 border-input max-h-40 w-full overflow-y-auto rounded-md border p-3">
         {#each allowedBots as botId}
           <Mention
@@ -66,6 +71,6 @@
           </Popover.Content>
         </Popover.Root>
       </div>
-    </div>
-  </div>
+    </Field.Field>
+  </Field.Group>
 </ConfigCard>

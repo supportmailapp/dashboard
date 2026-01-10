@@ -8,7 +8,7 @@
   import * as Avatar from "$ui/avatar/index.js";
   import { Button } from "$ui/button";
   import Input from "$ui/input/input.svelte";
-  import * as ButtonGroup from "$lib/components/ui/button-group/index.js";
+  import * as ButtonGroup from "$ui/button-group/index.js";
   import Search from "@lucide/svelte/icons/search";
   import type { APIUser } from "discord-api-types/v10";
   import { toast } from "svelte-sonner";
