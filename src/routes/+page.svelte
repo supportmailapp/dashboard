@@ -93,7 +93,7 @@
     <Card.Footer class="text-muted-foreground flex flex-col gap-2 text-center text-xs">
       <div class="grid w-full grid-cols-[1fr_auto_1fr_auto_1fr] place-items-center gap-4 px-3">
         <!-- This is actually the footer for this page -->
-        <p>&copy; 2025 SupportMail</p>
+        <p>&copy; 2026 SupportMail</p>
         <Separator orientation="vertical" />
         <a href={LegalLinks.terms} target="_blank" class="hover:underline">Terms of Service</a>
         <Separator orientation="vertical" />

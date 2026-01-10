@@ -192,7 +192,7 @@
   saveData={saveFn}
 />
 
-<div class="container max-w-4xl space-y-6" in:fly={{ x: -30, duration: 200 }}>
+<div class="container mb-40 max-w-4xl space-y-6" in:fly={{ x: -30, duration: 200 }}>
   <SiteHeading title="Ticket Feedback" subtitle="Configure feedback collection for closed tickets" />
 
   {#if loading}
@@ -325,11 +325,11 @@
       </Card.Header>
       <Card.Content class="w-auto space-y-2">
         {#if feedbackConfig.components && feedbackConfig.components.length > 0}
-          <div class="flex w-auto max-w-2xl flex-col gap-1 overflow-y-auto">
+          <div class="flex w-auto max-w-2xl flex-col gap-1">
             {#each feedbackConfig.components as field, index (field.id)}
               <div
                 class={cn(
-                  "bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/70 flex h-16 w-full flex-row items-center gap-3 rounded border p-3 shadow-xs transition duration-100",
+                  "bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/70 flex h-16 w-full flex-row items-center gap-3 overflow-y-auto rounded border p-3 shadow-xs transition duration-100",
                 )}
                 animate:flip={{ duration: 250 }}
               >

@@ -16,24 +16,28 @@
   import { mode } from "mode-watcher";
   import { untrack } from "svelte";
   import { getManager } from "$lib/stores/GuildsManager.svelte";
+  import { site } from "$lib/stores/site.svelte";
 
   let { children } = $props();
 
-  let sidebarOpen = $state(true);
   let guildsManager = getManager();
   let currentGuild = $derived(guildsManager.currentGuild);
   let guildsSelectOpen = $state(false);
+  let sidebar = Sidebar.useSidebar();
 
   const isMobile = new IsMobile();
 
+  $inspect("isMobile.current", isMobile.current);
+  $inspect("site.sidebarOpen", site.sidebarOpen);
+
   $effect(() => {
     if (browser && innerWidth.current) {
-      sidebarOpen = innerWidth.current >= 768;
+      site.sidebarOpen = innerWidth.current >= 768;
     }
 
     return () => {
       console.log("Clearing current guild...");
-      sidebarOpen = false;
+      site.sidebarOpen = false;
     };
   });
 
@@ -52,14 +56,17 @@
     }
 
     guildsSelectOpen = false;
+    nav.complete.then(() => {
+      sidebar?.setOpenMobile(false);
+    });
   });
 
   afterNavigate(async (nav) => {
-    if (
+    const guildChanged =
       nav.from?.params?.guildid &&
       nav.to?.params?.guildid &&
-      nav.from?.params?.guildid !== nav.to?.params?.guildid
-    ) {
+      nav.from?.params?.guildid !== nav.to?.params?.guildid;
+    if (guildChanged) {
       console.log("layout-load-layout.svelte-afterNavigate.ts-before");
       await invalidate("guild:layout");
       console.log("layout-load-layout.svelte-afterNavigate.ts-after");
@@ -69,7 +76,7 @@
 
 <Mounter />
 
-<Sidebar.Provider bind:open={sidebarOpen} class="h-svh">
+<Sidebar.Provider class="h-svh">
   <AppSidebar />
   <Sidebar.Inset class="main-container">
     <header

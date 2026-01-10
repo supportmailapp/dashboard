@@ -52,16 +52,19 @@
       data-state={unsavedChanges ? "open" : "closed"}
       style="transform: translate(calc(-50% + {jiggleSpring.current}px), 0);"
       class={cn(
-        "fixed bottom-4 left-[50%] z-50 flex w-full max-w-[calc(100%-2rem)] flex-col gap-4 rounded-lg border p-6 shadow-lg ring-0 outline-0 transition-all duration-200 sm:max-w-2xl sm:flex-row",
+        "fixed bottom-4 left-[50%] z-50 flex w-full max-w-[calc(100%-2rem)] flex-col items-center gap-4 rounded-lg border p-6 shadow-lg ring-0 outline-0 transition-all duration-200 sm:max-w-2xl sm:flex-row",
         jiggling ? "bg-destructive" : "bg-background",
       )}
       transition:fly={{ y: 50, duration: 200, opacity: 0.5 }}
     >
       <!-- TODO: Center that shit properly on mobile -->
       <p>You got unsaved changes mate.</p>
-      <div class="flex flex-1 flex-col gap-2 sm:flex-row sm:justify-end">
-        <Button variant="outline" class="w-1/2 sm:w-33" onclick={discardChanges}>Discard</Button>
-        <Button variant="success" class="w-1/2 sm:w-33" onclick={saveData}>Save</Button>
+      <div class="flex w-full flex-1 flex-row gap-2 sm:w-auto sm:justify-end">
+        <Button variant="outline" class="w-auto flex-1 sm:flex-none sm:w-33" onclick={discardChanges}
+          >Discard</Button
+        >
+        <Button variant="success" class="w-auto flex-1 sm:flex-none sm:w-33" onclick={saveData}>Save</Button
+        >
       </div>
     </div>
   {/if}

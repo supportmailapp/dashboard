@@ -4,7 +4,6 @@
   import { useSidebar } from "$ui/sidebar";
   import { untrack } from "svelte";
 
-  let sidebar = $derived(useSidebar());
   const guildsManager = getManager();
 
   // TODO: Find out why sidebar is always undefined...
@@ -15,7 +14,5 @@
       untrack(() => guildsManager.loadChannels().then(() => console.log("Channels loaded")));
       untrack(() => guildsManager.loadRoles().then(() => console.log("Roles loaded")));
     }
-
-    sidebar?.setOpenMobile(false);
   });
 </script>

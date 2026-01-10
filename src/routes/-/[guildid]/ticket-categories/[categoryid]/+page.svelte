@@ -234,7 +234,7 @@
   saveData={saveCategory}
 />
 
-<div class="container max-w-4xl space-y-6" in:fly={{ x: -30, duration: 200 }}>
+<div class="container mb-40 max-w-4xl space-y-6" in:fly={{ x: -30, duration: 200 }}>
   <div class="flex items-center gap-4">
     <Button variant="ghost" size="sm" onclick={navigateBack}>
       <ArrowLeft class="mr-2 h-4 w-4" />
@@ -445,16 +445,16 @@
       </Card.Header>
       <Card.Content class="w-auto space-y-2">
         {#if config.current.components.length > 0}
-          <div class="flex w-auto max-w-2xl flex-col gap-1 overflow-y-auto">
+          <div class="flex w-auto max-w-2xl flex-col gap-1">
             {#each config.current.components as field, index (field.id)}
               <div
                 class={cn(
-                  "bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/70 flex h-16 w-full flex-row items-center gap-3 rounded border p-3 shadow-xs transition duration-100",
+                  "bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/70 flex h-16 w-full flex-row items-center gap-3 overflow-y-auto rounded border p-3 shadow-xs transition duration-100",
                 )}
                 animate:flip={{ duration: 250 }}
               >
                 <Badge variant="outline">{index + 1}</Badge>
-                <span class="flex-1">
+                <span class="min-w-30 flex-1">
                   {field.type !== ComponentType.TextDisplay ? field.label : field.content.slice(0, 100)}
                 </span>
 

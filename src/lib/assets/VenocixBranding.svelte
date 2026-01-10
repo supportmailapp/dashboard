@@ -40,6 +40,4 @@
       animation: bop 3s ease-in-out infinite;
     }
   }
-
-  /* TODO: Make a shimmer animation for the branding logo */
 </style>
