@@ -1,20 +1,19 @@
 import ky, { type Options } from "ky";
 import { env } from "$env/dynamic/private";
 
-const clientApiBaseUrl = env.clientAPIOrigin as
-  | "https://client-api.supportmail.dev/dash"
-  | "http://localhost:3000/dash";
-
 interface RequestOptions extends Partial<Options> {
   baseURL?: string;
 }
 
+/**
+ * Client for the internal Client API.
+ */
 class ClientApiClient {
   private client: typeof ky;
 
   constructor(options: RequestOptions = {}) {
     this.client = ky.create({
-      prefixUrl: clientApiBaseUrl,
+      prefixUrl: "http://localhost:3000/dash", // when hosted on the same server, we can just use localhost
       timeout: 5000,
       retry: 2,
       throwHttpErrors: false,
@@ -51,5 +50,5 @@ class ClientApiClient {
   }
 }
 
-export { ClientApiClient, clientApiBaseUrl };
+export { ClientApiClient };
 export default new ClientApiClient();

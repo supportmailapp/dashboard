@@ -220,7 +220,7 @@ declare global {
 
     interface POSTTicketSetupJSONResultSuccess {
       success: true;
-      data?: {
+      data: {
         categoryId: string;
         forumId: string;
         forumName: string;
@@ -235,12 +235,7 @@ declare global {
       };
     }
 
-    type POSTTicketSetupJSONResult = {
-      updates?: Array<{
-        step: string;
-        payload: any;
-      }>;
-    } & (POSTTicketSetupJSONResultSuccess | POSTTicketSetupJSONResultError);
+    type POSTTicketSetupJSONResult = POSTTicketSetupJSONResultSuccess | POSTTicketSetupJSONResultError;
   }
 
   namespace Unsplash {

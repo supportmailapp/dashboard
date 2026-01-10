@@ -2,10 +2,10 @@ import { JsonErrors } from "$lib/constants";
 import { getGuildChannels, getGuildRoles } from "$lib/server/caches/guilds.js";
 import userGuilds from "$lib/server/caches/userGuilds.js";
 import { ClientApiRoutes, SMErrorCodes } from "$lib/server/constants";
-import { getDBGuild } from "$lib/server/db/utils.js";
 import clientApi from "$lib/server/utils/clientApi.js";
 import { ZodValidator } from "$lib/server/validators/index.js";
 import { canManageBot } from "$lib/utils/permissions.js";
+import { json } from "@sveltejs/kit";
 import type { KyResponse } from "ky";
 import z from "zod";
 
@@ -16,10 +16,10 @@ const routePredicate = z.object({
     .optional(),
 });
 
-export async function POST({ locals, request }) {
+export async function POST({ locals, request, params }) {
   if (!locals.token || !locals.user) return JsonErrors.unauthorized();
 
-  const guildId = locals.guildId!;
+  const guildId = params.guildid;
 
   const _guild = userGuilds.getUserGuilds(locals.user.id)?.find((g) => g.id === guildId);
   let hasPerms = false;
@@ -85,7 +85,7 @@ export async function POST({ locals, request }) {
     .post<ClientAPI.POSTTicketSetupJSONResult>(ClientApiRoutes.ticketSetup(), {
       json: {
         userId: locals.user.id,
-        guildId: locals.guildId,
+        guildId: guildId,
         categoryId: categoryId,
       },
     })
@@ -95,17 +95,18 @@ export async function POST({ locals, request }) {
           ok: false,
           status: 500,
           statusText: "Internal Error",
-        }) as KyResponse,
+        }) as KyResponse<ClientAPI.POSTTicketSetupJSONResult>,
     );
 
   if (!res.ok) {
+    // This only happens on 500 errors
     return new Response(null, { status: res.status, statusText: res.statusText });
   }
 
-  const json = await res.json();
+  const jsonRes = await res.json();
 
-  if (!json.success) {
-    switch (json.error.code) {
+  if (!jsonRes.success) {
+    switch (jsonRes.error.code ?? 500) {
       case SMErrorCodes.MissingPermissions:
         return JsonErrors.forbidden("Bot missing required permissions");
       case SMErrorCodes.CategoryNotFound:
@@ -121,13 +122,5 @@ export async function POST({ locals, request }) {
     }
   }
 
-  // This can't be null, because then res.status above wouldn't be OK, but 404
-  const dbGuild = await getDBGuild(guildId, "generalTicketSettings");
-
-  // Return the completely new general guild config
-  if (!dbGuild) {
-    return JsonErrors.serverError("Could not retrieve guild configuration");
-  }
-
-  return Response.json(dbGuild);
+  return json(jsonRes.data);
 }

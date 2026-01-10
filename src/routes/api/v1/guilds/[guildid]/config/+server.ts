@@ -1,6 +1,7 @@
 import { JsonErrors, LANGUAGES, zodLanguage } from "$lib/constants.js";
 import { FlattenDocToJSON, getDBGuild, updateDBGuild } from "$lib/server/db";
 import { ZodValidator } from "$lib/server/validators/index.js";
+import { json } from "@sveltejs/kit";
 import z from "zod";
 
 const patchSchema = z.object({
@@ -9,26 +10,18 @@ const patchSchema = z.object({
 
 export type PatchFields = z.infer<typeof patchSchema>;
 
-export async function GET({ locals }) {
-  if (locals.guildId && locals.token) {
-    const guild = await getDBGuild(locals.guildId, "language");
-    if (!guild) {
-      return JsonErrors.notFound();
-    }
-
-    return Response.json(guild, { status: 200, statusText: "OK" });
+export async function GET({ params }) {
+  const guild = await getDBGuild(params.guildid, "language");
+  if (!guild) {
+    return JsonErrors.notFound();
   }
 
-  return JsonErrors.badRequest();
+  return json(guild);
 }
 
 // Currently, this endpoint only supports updating the language setting,
 // since it's the only "global" setting that can be changed per guild.
-export async function PATCH({ request, locals }) {
-  if (!locals.guildId || !locals.token) {
-    return JsonErrors.badRequest();
-  }
-
+export async function PATCH({ request, locals, params }) {
   const body = await request.json();
   if (!body) {
     return JsonErrors.badRequest("Missing body?");
@@ -41,7 +34,7 @@ export async function PATCH({ request, locals }) {
     return JsonErrors.badRequest(validationRes.error.message);
   }
 
-  const guild = await getDBGuild(locals.guildId, "full");
+  const guild = await getDBGuild(params.guildid, "full");
   if (!guild) {
     return JsonErrors.notFound();
   }
@@ -51,14 +44,14 @@ export async function PATCH({ request, locals }) {
   }
 
   try {
-    const newGuild = await updateDBGuild(locals.guildId, {
+    const newGuild = await updateDBGuild(params.guildid, {
       lang: language,
     });
     if (!newGuild) {
       return JsonErrors.serverError();
     }
 
-    return Response.json({
+    return json({
       language: FlattenDocToJSON(newGuild).lang,
     });
   } catch (err: any) {
