@@ -232,14 +232,14 @@
           />
         </div>
 
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
           <div class="space-y-0.5">
             <Label for="feedback-channel">Feedback Channel</Label>
             <p class="text-muted-foreground text-sm">
               The channel where feedback submissions will be sent to.
             </p>
           </div>
-          <div>
+          <div class="w-full sm:w-auto">
             {#if !!feedbackConfig?.channelId}
               {#await fetchFeedbackChannel() then channel}
                 <Mention
@@ -264,7 +264,10 @@
             {/if}
             <Popover.Root bind:open={() => channelSelectOpen, (v) => (channelSelectOpen = v)}>
               <Popover.Trigger
-                class={cn(!feedbackConfig.channelId ? buttonVariants({ variant: "outline" }) : "hidden")}
+                class={cn(
+                  !feedbackConfig.channelId ? buttonVariants({ variant: "outline" }) : "hidden",
+                  "w-full sm:w-auto",
+                )}
               >
                 Choose a channel
               </Popover.Trigger>
@@ -296,22 +299,18 @@
           </div>
         </div>
 
-        <Field.Set>
-          <Field.Group>
-            <Field.Field>
-              <Field.Label for="thank-you">Thank You Message</Field.Label>
-              <Textarea
-                bind:value={feedbackConfig.thankYou}
-                id="thank-you"
-                placeholder="Thank you for your feedback!"
-                maxlength={2000}
-                disabled={saving}
-                rows={4}
-              />
-              <Field.Description>This message is shown after users submit their feedback.</Field.Description>
-            </Field.Field>
-          </Field.Group>
-        </Field.Set>
+        <Field.Field>
+          <Field.Label for="thank-you">Thank You Message</Field.Label>
+          <Textarea
+            id="thank-you"
+            bind:value={feedbackConfig.thankYou}
+            placeholder="Thank you for your feedback!"
+            maxlength={2000}
+            disabled={saving}
+            rows={4}
+          />
+          <Field.Description>This message is shown after users submit their feedback.</Field.Description>
+        </Field.Field>
       </Card.Content>
     </Card.Root>
 
