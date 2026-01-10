@@ -33,7 +33,7 @@
 
     markupDebounceTimer = setTimeout(async () => {
       debouncedRaw = $state.snapshot(rawText);
-      console.log("Debounced raw text updated:", debouncedRaw);
+      console.log("Debounced raw text updated:", String.raw`${debouncedRaw}`);
     }, markupDebounceMs);
   }
 </script>
@@ -81,12 +81,6 @@
         {#await discordMdToHtml(debouncedRaw)}
           <LoadingSpinner />
         {:then html}
-          <div
-            class="sr-only"
-            {@attach () => {
-              console.log(html);
-            }}
-          ></div>
           {@html html}
         {/await}
       </div>
