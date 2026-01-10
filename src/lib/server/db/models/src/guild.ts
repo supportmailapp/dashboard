@@ -1,8 +1,5 @@
 import type {
-  ICustomModalField,
   IDBGuild,
-  IFeedbackConfig,
-  IFeedbackTags,
   IGuildFlags,
   IReportConfig,
   IStatusTags,
@@ -13,19 +10,6 @@ import type {
 import pkg, { model, Schema } from "mongoose";
 import { EntitySchema } from "./utilSchemas";
 const { models } = pkg;
-
-const CustomModalFieldSchema = new Schema<ICustomModalField>(
-  {
-    position: { type: Number, default: 1 },
-    label: { type: String, required: true },
-    placeholder: { type: String, required: false },
-    style: { type: Number, default: 1 },
-    minL: { type: Number, default: 0 },
-    maxL: { type: Number, default: 256 },
-    _required: { type: Boolean, default: true },
-  },
-  { id: false },
-);
 
 const statusTagsSchema = new Schema<IStatusTags>(
   {

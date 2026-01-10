@@ -70,6 +70,8 @@
     const uncategorizedFiltered = sorted.uncategorized.filter(
       (channel) => (allowAllChannels || channelTypes.includes(channel.type)) && !isChannelExcluded(channel),
     );
+
+    // When selecting categories, we need to keep all categories (not filter by their children)
     const groupedFiltered = sorted.categories
       .map(({ cat, channels }) => ({
         cat,
@@ -78,7 +80,12 @@
             (allowAllChannels || channelTypes.includes(channel.type)) && !isChannelExcluded(channel),
         ),
       }))
-      .filter(({ channels }) => channels.length > 0); // remove empty categories
+      .filter(
+        ({ cat, channels }) =>
+          // Keep category if: we're selecting categories and the category itself isn't excluded,
+          // OR if it has filtered channels
+          (selectCategories && !isChannelExcluded(cat)) || channels.length > 0,
+      );
 
     return {
       uncategorized: uncategorizedFiltered,
@@ -176,10 +183,6 @@
   <Command.Root class="w-full rounded-lg border shadow-md">
     <Command.Input placeholder="Search channels..." />
     <Command.List>
-      {#if guildsManager.channelsLoaded}
-        <Command.Empty>No channels found.</Command.Empty>
-      {/if}
-
       {#if !guildsManager.channelsLoaded}
         {#each new Array(5) as _}
           <Command.Item disabled>
@@ -187,7 +190,9 @@
             <Skeleton class="h-4 w-full" />
           </Command.Item>
         {/each}
-      {:else if guildsManager.channelsLoaded && selectCategories && channelTypes.includes(ChannelType.GuildCategory)}
+      {:else if groupedChannels.categories.length === 0 && groupedChannels.uncategorized.length === 0}
+        <Command.Empty>No channels found.</Command.Empty>
+      {:else if selectCategories && channelTypes.includes(ChannelType.GuildCategory)}
         <!-- The logic for selecting ONLY categories -->
         {#each groupedChannels.categories as { cat }}
           {@render channelItem(cat)}

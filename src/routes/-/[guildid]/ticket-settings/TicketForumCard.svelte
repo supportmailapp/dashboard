@@ -8,6 +8,7 @@
   import { APIRoutes } from "$lib/urls";
   import apiClient from "$lib/utils/apiClient";
   import { Button, buttonVariants } from "$ui/button/index.js";
+  import XIcon from "@lucide/svelte/icons/x";
   import * as Dialog from "$ui/dialog/index.js";
   import { Label } from "$ui/label";
   import * as Popover from "$ui/popover/index.js";
@@ -22,7 +23,6 @@
     wholeConfig: {
       old: TicketConfig | null;
       current: TicketConfig | null;
-      saving: boolean;
       loading: boolean;
     };
   };
@@ -34,16 +34,12 @@
   let channels = $derived(channelsLoaded ? guildsManager.channels : []);
   let newCategoryId = $state<string | null>(null);
   let categorySelectOpen = $state(false);
-  let loading = $state({
-    setup: false,
-    saving: false,
-  });
-
-  $inspect("fetchedForumId", fetchedForumId);
+  let settingUp = $state(false);
+  let dialogOpen = $state(false);
 
   async function setupFn() {
     try {
-      loading.setup = true;
+      settingUp = true;
       const res = await apiClient.post(APIRoutes.ticketSetup(page.params.guildid!), {
         json: {
           categoryId: newCategoryId,
@@ -70,7 +66,7 @@
         description: String(err.message ?? err),
       });
     } finally {
-      loading.setup = false;
+      settingUp = false;
     }
   }
 
@@ -94,7 +90,15 @@
     {#if channelsLoaded}
       <div class="flex w-full items-center justify-between">
         <Mention channel={forum ?? undefined} fallback buttons="copy" />
-        <Dialog.Root>
+        <Dialog.Root
+          bind:open={
+            () => dialogOpen || settingUp,
+            (v) => {
+              if (settingUp) return;
+              dialogOpen = v;
+            }
+          }
+        >
           <Dialog.Trigger class={buttonVariants({ variant: "outline" })}>Setup New Forum</Dialog.Trigger>
           <Dialog.Content class="sm:max-w-130">
             <Dialog.Header>
@@ -106,45 +110,37 @@
                 the bot create one for you.
               </Dialog.Description>
             </Dialog.Header>
-            <div class="grid grid-cols-[1fr_auto] gap-2">
+            <div class="flex justify-center gap-2">
               {#if newCategoryId}
                 {@const deleteHandler = () => {
                   newCategoryId = null;
                   return true;
                 }}
-                <Mention channelId={newCategoryId} fallback onDelete={deleteHandler} />
-                <Button
-                  variant="destructive"
-                  class={buttonVariants({ variant: "destructive" })}
-                  onclick={deleteHandler}
-                >
-                  Clear
+                <Mention channelId={newCategoryId} buttons="copy" />
+                <Button variant="destructive" size="icon-sm" onclick={deleteHandler}>
+                  <XIcon class="size-4" />
                 </Button>
               {:else}
-                <span class="text-muted-foreground bg-muted col-span-2 rounded-lg px-3 py-2 text-sm">
-                  No category selected
-                </span>
+                <Popover.Root bind:open={categorySelectOpen}>
+                  <Popover.Trigger class={buttonVariants({ variant: "outline" })}>
+                    Choose a category or leave empty
+                  </Popover.Trigger>
+                  <Popover.Content class="w-80">
+                    <ChannelSelect
+                      selectedId={newCategoryId || undefined}
+                      selectCategories
+                      channelTypes={[ChannelType.GuildCategory]}
+                      onSelect={(c) => {
+                        newCategoryId = c.id;
+                        categorySelectOpen = false;
+                      }}
+                    />
+                  </Popover.Content>
+                </Popover.Root>
               {/if}
             </div>
-            <Popover.Root bind:open={categorySelectOpen}>
-              <Popover.Trigger class={buttonVariants({ variant: "outline" })}>
-                Choose a category
-              </Popover.Trigger>
-              <Popover.Content class="w-80">
-                <ChannelSelect
-                  selectedId={newCategoryId || undefined}
-                  channelTypes={[ChannelType.GuildCategory]}
-                  selectCategories
-                  onSelect={(c) => {
-                    newCategoryId = c.id;
-                    categorySelectOpen = false;
-                  }}
-                />
-              </Popover.Content>
-            </Popover.Root>
-
             <Dialog.Footer>
-              <Button showLoading={loading.setup} disabled={loading.setup} onclick={setupFn}>Setup</Button>
+              <Button showLoading={settingUp} disabled={settingUp} onclick={setupFn}>Setup</Button>
             </Dialog.Footer>
           </Dialog.Content>
         </Dialog.Root>
