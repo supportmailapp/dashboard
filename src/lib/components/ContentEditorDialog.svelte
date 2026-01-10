@@ -11,7 +11,6 @@
     open?: boolean;
     rawText?: string;
     titleChild?: Snippet;
-    contentEditorWrapperClasses?: ClassValue;
     contentEditorClasses?: ClassValue;
     /** @default "preview" */
     activeTab?: "editor" | "preview";
@@ -24,7 +23,6 @@
     activeTab = $bindable("preview"),
     title,
     titleChild,
-    contentEditorWrapperClasses,
     contentEditorClasses,
     onRawTextChange,
   }: Props = $props();
@@ -32,7 +30,7 @@
 
 <Dialog.Root bind:open>
   <Dialog.Content
-    class="h-screen w-screen max-w-screen grid-rows-[auto_1fr] sm:max-h-[calc(100%-2rem)] sm:max-w-[calc(100%-2rem)]"
+    class="flex h-screen w-screen flex-col sm:max-h-[calc(100%-2rem)] sm:max-w-[calc(100%-2rem)]"
   >
     <Dialog.Header class="h-fit">
       <Dialog.Title>
@@ -43,13 +41,6 @@
         {/if}
       </Dialog.Title>
     </Dialog.Header>
-    <div class={cn("flex h-full w-full flex-1 overflow-y-auto", contentEditorWrapperClasses)}>
-      <ContentEditor
-        class={cn("h-full flex-1", contentEditorClasses)}
-        bind:rawText
-        bind:activeTab
-        {onRawTextChange}
-      />
-    </div>
+    <ContentEditor class={contentEditorClasses} bind:rawText bind:activeTab {onRawTextChange} />
   </Dialog.Content>
 </Dialog.Root>

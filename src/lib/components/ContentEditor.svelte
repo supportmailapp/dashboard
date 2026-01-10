@@ -38,25 +38,25 @@
   }
 </script>
 
-<div class={cn("flex h-full w-full overflow-hidden bg-gray-950", className)}>
-  <Tabs.Root bind:value={currentTab} class="flex h-full w-full flex-col">
-    <Tabs.List class="w-full">
+<div class={cn("flex h-full w-full overflow-hidden", className)}>
+  <Tabs.Root bind:value={currentTab} class="flex h-full w-full flex-col gap-3 overflow-hidden">
+    <Tabs.List class="w-full *:text-lg *:font-semibold">
       <Tabs.Trigger value="editor">Editor</Tabs.Trigger>
       <Tabs.Trigger value="preview">Preview</Tabs.Trigger>
     </Tabs.List>
-    <Tabs.Content value="editor" class="mt-4 flex min-h-0 flex-1 flex-col">
+    <Tabs.Content value="editor" class="flex min-h-0 flex-1 flex-col overflow-hidden">
       <Textarea
         bind:value={rawText}
         placeholder="Enter your markdown here..."
         rows={10}
-        class="h-full w-full resize-none overflow-y-auto"
+        class="w-full flex-1 resize-none bg-zinc-900"
         oninput={debounceRawText}
       />
     </Tabs.Content>
-    <Tabs.Content value="preview" class="mt-4 h-full">
+    <Tabs.Content value="preview" class="flex min-h-0 w-full flex-1 overflow-hidden">
       <!-- Tell tailwind to ignore this section -->
       <div
-        class="prose prose-invert discord-message max-h-none max-w-none overflow-y-auto rounded-lg px-3 py-2"
+        class="prose prose-invert discord-message w-full max-w-none overflow-y-auto rounded-lg px-3 py-2"
         style="background-color: rgb(54, 57, 62)"
         {@attach (e) => {
           e.addEventListener("click", (event) => {
