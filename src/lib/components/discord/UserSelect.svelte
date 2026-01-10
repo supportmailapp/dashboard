@@ -71,7 +71,14 @@
         class="h-9 grow"
         required
       />
-      <Button type="submit" variant="outline" size="icon" aria-label="Search" class="h-9 px-3" disabled={loading.fetching}>
+      <Button
+        type="submit"
+        variant="outline"
+        size="icon"
+        aria-label="Search"
+        class="h-9 px-3"
+        disabled={loading.fetching}
+      >
         <Search />
       </Button>
     </ButtonGroup.Root>

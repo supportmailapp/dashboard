@@ -56,7 +56,7 @@
     <Tabs.Content value="preview" class="mt-4 h-full">
       <!-- Tell tailwind to ignore this section -->
       <div
-        class="prose prose-invert discord-message max-h-none max-w-none overflow-y-auto px-3 py-2 rounded-lg"
+        class="prose prose-invert discord-message max-h-none max-w-none overflow-y-auto rounded-lg px-3 py-2"
         style="background-color: rgb(54, 57, 62)"
         {@attach (e) => {
           e.addEventListener("click", (event) => {

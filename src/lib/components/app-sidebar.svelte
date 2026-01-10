@@ -169,7 +169,7 @@
             <Sidebar.MenuItem>
               <Sidebar.MenuButton isActive={isCurrentPage(item.href, false)}>
                 {#snippet child({ props })}
-                  <a href={href} {...props} onclick={onClick}>
+                  <a {href} {...props} onclick={onClick}>
                     <item.icon />
                     <span>{item.name}</span>
                   </a>
@@ -186,7 +186,7 @@
                 <Sidebar.MenuItem>
                   <Sidebar.MenuButton isActive={isCurrentPage(subItem.href, true)}>
                     {#snippet child({ props })}
-                      <a href={href} {...props} onclick={onClick}>
+                      <a {href} {...props} onclick={onClick}>
                         <subItem.icon />
                         <span>{subItem.name}</span>
                       </a>

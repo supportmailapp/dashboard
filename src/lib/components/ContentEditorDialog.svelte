@@ -44,7 +44,12 @@
       </Dialog.Title>
     </Dialog.Header>
     <div class={cn("flex h-full w-full flex-1 overflow-y-auto", contentEditorWrapperClasses)}>
-      <ContentEditor class={cn("h-full flex-1", contentEditorClasses)} bind:rawText bind:activeTab onRawTextChange={onRawTextChange} />
+      <ContentEditor
+        class={cn("h-full flex-1", contentEditorClasses)}
+        bind:rawText
+        bind:activeTab
+        {onRawTextChange}
+      />
     </div>
   </Dialog.Content>
 </Dialog.Root>

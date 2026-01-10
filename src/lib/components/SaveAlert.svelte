@@ -60,11 +60,10 @@
       <!-- TODO: Center that shit properly on mobile -->
       <p>You got unsaved changes mate.</p>
       <div class="flex w-full flex-1 flex-row gap-2 sm:w-auto sm:justify-end">
-        <Button variant="outline" class="w-auto flex-1 sm:flex-none sm:w-33" onclick={discardChanges}
+        <Button variant="outline" class="w-auto flex-1 sm:w-33 sm:flex-none" onclick={discardChanges}
           >Discard</Button
         >
-        <Button variant="success" class="w-auto flex-1 sm:flex-none sm:w-33" onclick={saveData}>Save</Button
-        >
+        <Button variant="success" class="w-auto flex-1 sm:w-33 sm:flex-none" onclick={saveData}>Save</Button>
       </div>
     </div>
   {/if}

@@ -78,8 +78,13 @@ export const TicketCategorySchema = z.object({
   creationMessage: z
     .string()
     .max(2000, zem("Creation message must be at most 2000 characters long"))
-    .nullable().default(null),
-  closeMessage: z.string().max(2000, zem("Close message must be at most 2000 characters long")).nullable().default(null),
+    .nullable()
+    .default(null),
+  closeMessage: z
+    .string()
+    .max(2000, zem("Close message must be at most 2000 characters long"))
+    .nullable()
+    .default(null),
 });
 
 export const PartialTicketCategorySchema = TicketCategorySchema.pick({

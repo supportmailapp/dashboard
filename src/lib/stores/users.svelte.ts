@@ -31,16 +31,20 @@ export async function fetchUser(userId: string, filters?: { bot?: boolean }): Pr
     return undefined;
   }
 
-  page.data.ws.emit("get-guild-users", { userIds: [userId], guildId: page.params.guildid, filters }, (res) => {
-    if (res.success) {
-      for (const u of res.data) {
-        users.set(u.id, u);
+  page.data.ws.emit(
+    "get-guild-users",
+    { userIds: [userId], guildId: page.params.guildid, filters },
+    (res) => {
+      if (res.success) {
+        for (const u of res.data) {
+          users.set(u.id, u);
+        }
+        console.log("Fetched user:", res.data);
+      } else {
+        console.error("Failed to fetch user:", res.error);
       }
-      console.log("Fetched user:", res.data);
-    } else {
-      console.error("Failed to fetch user:", res.error);
-    }
-  });
+    },
+  );
 }
 
 export function hasMentionUsers(...userIds: string[]): boolean {
