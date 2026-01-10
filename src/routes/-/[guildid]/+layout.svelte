@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { browser } from "$app/environment";
   import { afterNavigate, beforeNavigate, invalidate } from "$app/navigation";
   import AppSidebar from "$lib/components/app-sidebar.svelte";
   import { cdnUrls } from "$lib/urls";
@@ -8,7 +7,6 @@
   import { Button } from "$ui/button";
   import * as Sidebar from "$ui/sidebar/index.js";
   import { Skeleton } from "$ui/skeleton";
-  import { innerWidth } from "svelte/reactivity/window";
   import { fade, slide } from "svelte/transition";
   import { IsMobile } from "$lib/hooks/is-mobile.svelte";
   import Mounter from "./Mounter.svelte";
@@ -22,7 +20,7 @@
   let guildsManager = getManager();
   let currentGuild = $derived(guildsManager.currentGuild);
   let guildsSelectOpen = $state(false);
-  let sidebar = Sidebar.useSidebar();
+  Sidebar.useSidebar();
 
   const isMobile = new IsMobile();
 
@@ -41,9 +39,6 @@
     }
 
     guildsSelectOpen = false;
-    nav.complete.then(() => {
-      sidebar?.setOpenMobile(false);
-    });
   });
 
   afterNavigate(async (nav) => {
@@ -59,9 +54,9 @@
   });
 </script>
 
-<Mounter />
-
 <Sidebar.Provider class="h-svh">
+  <!-- Needs to be inserted here because it needs context from Sidebar.Provider -->
+  <Mounter />
   <AppSidebar />
   <Sidebar.Inset class="main-container">
     <header

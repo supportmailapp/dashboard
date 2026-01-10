@@ -7,7 +7,6 @@
   const sidebar = useSidebar();
   const guildsManager = getManager();
 
-  // TODO: Find out why sidebar is always undefined...
   afterNavigate((nav) => {
     const guildIdChanged = nav.from?.params?.guildid !== nav.to?.params?.guildid;
     if (guildIdChanged) {
@@ -24,3 +23,5 @@
     }
   });
 </script>
+
+<!-- ! Important: This component must be used inside a Sidebar.Provider -->
