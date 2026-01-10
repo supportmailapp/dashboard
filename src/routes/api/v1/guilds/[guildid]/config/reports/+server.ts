@@ -6,7 +6,7 @@ import {
   type DBGuildProjectionReturns,
 } from "$lib/server/db/utils.js";
 import { ZodValidator } from "$lib/server/validators";
-import { ReportNotificationType, SpecialReportChannelType, type IDBGuild } from "$lib/sm-types";
+import { ReportNotificationType, SpecialChannelType, type IDBGuild } from "$lib/sm-types";
 import { zem } from "$lib/utils.js";
 import { APIPausedUntilSchema, MentionableEntity, SnowflakePredicate } from "$v1Api/assertions.js";
 import { json } from "@sveltejs/kit";
@@ -40,7 +40,7 @@ const channelsSchema = z.object({
   setting: z.enum(["IN", "EX"]),
   ids: z
     .object({
-      t: z.enum(SpecialReportChannelType),
+      t: z.enum(SpecialChannelType),
       id: SnowflakePredicate,
     })
     .array()

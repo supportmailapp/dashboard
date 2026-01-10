@@ -1,9 +1,9 @@
-import { EntityType } from "$lib/sm-types/src";
+import { EntityType } from "$lib/sm-types";
 import z from "zod";
-
 export * from "./forms.zod.js";
 import { FeedbackComponentSchema, FormComponentsSchema } from "./forms.zod.js";
 import { zem } from "$lib/utils.js";
+import { PermissionFlagsBits } from "$lib/utils/permissions.js";
 
 export const ObjectIdSchema = z.string().regex(/^[a-f\d]{24}$/i, zem("Invalid ObjectId format"));
 
@@ -164,3 +164,36 @@ export const GetTagSchemaForGuild = (guildId: string) =>
     .max(100, zem("A maximum of 100 tags are allowed per server"));
 
 export type TagPut = z.infer<typeof TagPutSchema>;
+
+export const CommandConfigSchema = z.object({
+  id: SnowflakePredicate,
+  commandPath: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .regex(
+      /^([-_'\p{L}\p{N}\p{sc=Deva}\p{sc=Thai}]{1,32})(\/[-_'\p{L}\p{N}\p{sc=Deva}\p{sc=Thai}]{1,32}){0,2}$/iu,
+      zem("Invalid command path format"),
+    ),
+  guildId: SnowflakePredicate.nullable(), // null for global commands, currently for all!
+  channels: z.array(SnowflakePredicate).max(100, zem("A maximum of 100 channels are allowed")).default([]),
+  roles: z.array(SnowflakePredicate).max(100, zem("A maximum of 100 roles are allowed")).default([]),
+  users: z.array(SnowflakePredicate).max(100, zem("A maximum of 100 users are allowed")).default([]),
+  permissions: z
+    .string()
+    .trim()
+    .refine((val) => /^[0-9]+$/.test(val), zem("Permissions must be a valid numeric string"))
+    .transform((val) => BigInt(val))
+    .refine((val) => val >= BigInt(0), zem("Permissions must be non-negative"))
+    .refine(
+      (val) => val <= BigInt(PermissionFlagsBits.BypassSlowmode),
+      zem("Permissions exceed maximum allowed value"),
+    )
+    // if no permissions are set, default to ManageGuild
+    .default(PermissionFlagsBits.ManageGuild)
+    .transform((val) => (val === BigInt(0) ? BigInt(PermissionFlagsBits.ManageGuild) : val)),
+});
+
+export const CommandConfigPutSchema = CommandConfigSchema.array();
+
+export type CommandConfigPut = z.infer<typeof CommandConfigPutSchema>;

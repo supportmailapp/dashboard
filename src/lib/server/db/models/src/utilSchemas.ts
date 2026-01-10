@@ -9,6 +9,7 @@ import type {
   IFormComponent,
   IPartialEmoji,
   IStringSelectOption,
+  SpecialChannel,
 } from "$lib/sm-types";
 import { Schema } from "mongoose";
 
@@ -67,3 +68,11 @@ export const FormComponentSchema = new Schema<IFormComponent>({
   messageLabel: { type: String, required: false, maxlength: 100 },
   options: { type: [formStringSelectOptionSchema], required: false },
 });
+
+export const SpecialChannelSchema = new Schema<SpecialChannel>(
+  {
+    t: { type: Number, required: true },
+    id: { type: String, required: false },
+  },
+  { _id: false },
+);

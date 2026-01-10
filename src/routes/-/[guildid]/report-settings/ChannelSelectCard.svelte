@@ -1,6 +1,5 @@
 <script lang="ts">
   import * as Popover from "$ui/popover/index.js";
-  import { Label } from "$ui/label";
   import Mention from "$lib/components/discord/Mention.svelte";
   import { buttonVariants } from "$ui/button";
   import { ChannelType } from "discord-api-types/v10";

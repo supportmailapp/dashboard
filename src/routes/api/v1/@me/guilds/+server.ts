@@ -1,7 +1,7 @@
 import { JsonErrors } from "$lib/constants";
 import { DBGuild } from "$lib/server/db";
 import { DiscordUserAPI } from "$lib/server/discord";
-import { canManageBot } from "$lib/utils/permissions";
+import { canManageBot } from "$lib/server/permissions";
 import { error, type RequestHandler } from "@sveltejs/kit";
 
 export const GET: RequestHandler = async ({ locals, url }) => {

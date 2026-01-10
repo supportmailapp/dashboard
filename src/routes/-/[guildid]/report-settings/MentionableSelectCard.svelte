@@ -8,7 +8,7 @@
   import { Label } from "$ui/label";
   import * as Popover from "$ui/popover/index.js";
   import Plus from "@lucide/svelte/icons/plus";
-  import type { APIRole, APIUser } from "discord-api-types/v10";
+  import type { APIUser } from "discord-api-types/v10";
   import equal from "fast-deep-equal/es6";
 
   type Props = {

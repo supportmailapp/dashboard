@@ -4,7 +4,7 @@ import userGuilds from "$lib/server/caches/userGuilds.js";
 import { ClientApiRoutes, SMErrorCodes } from "$lib/server/constants";
 import clientApi from "$lib/server/utils/clientApi.js";
 import { ZodValidator } from "$lib/server/validators/index.js";
-import { canManageBot } from "$lib/utils/permissions.js";
+import { canManageBot } from "$lib/server/permissions.js";
 import { json } from "@sveltejs/kit";
 import type { KyResponse } from "ky";
 import z from "zod";

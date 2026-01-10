@@ -7,7 +7,7 @@ import guildAccessCache from "$lib/server/caches/guildAccess.js";
 import sessionCache from "$lib/server/caches/sessions.js";
 import { dbConnect, DBGuild, UserToken } from "$lib/server/db";
 import { DiscordBotAPI, DiscordUserAPI } from "$lib/server/discord";
-import type { IUserToken } from "$lib/sm-types/src";
+import type { IUserToken } from "$lib/sm-types";
 import arcjet, { detectBot, shield, slidingWindow } from "@arcjet/sveltekit";
 import * as Sentry from "@sentry/sveltekit";
 import { error, redirect, type Handle } from "@sveltejs/kit";

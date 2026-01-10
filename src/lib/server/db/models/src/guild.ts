@@ -8,7 +8,7 @@ import type {
   ReportLimitsConfig,
 } from "$lib/sm-types";
 import pkg, { model, Schema } from "mongoose";
-import { EntitySchema } from "./utilSchemas";
+import { EntitySchema, SpecialChannelSchema } from "./utilSchemas";
 const { models } = pkg;
 
 const statusTagsSchema = new Schema<IStatusTags>(
@@ -63,7 +63,7 @@ const reportConfigSchema = new Schema<IReportConfig>({
   actionsEnabled: { type: Boolean, default: true },
   channels: {
     setting: { type: String, enum: ["IN", "EX"], default: "EX" },
-    ids: { type: [{ t: Number, id: String }], default: [] },
+    ids: { type: [SpecialChannelSchema], default: [] },
   },
   pings: { type: [EntitySchema], required: false },
   immune: { type: [EntitySchema], required: false },

@@ -16,6 +16,7 @@
   import Table from "@lucide/svelte/icons/table";
   import Ticket from "@lucide/svelte/icons/ticket";
   import Section from "@lucide/svelte/icons/section";
+  import SquareSlash from "@lucide/svelte/icons/square-slash";
 
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
@@ -111,7 +112,7 @@
       ],
     },
     {
-      id: "content-management",
+      id: "Miscellaneous",
       name: "Content Management",
       items: [
         {
@@ -119,6 +120,12 @@
           name: "Tags",
           href: "/tags",
           icon: MessagesSquare,
+        },
+        {
+          id: "command-config",
+          name: "Command Config",
+          href: "/command-config",
+          icon: SquareSlash
         },
       ],
     },

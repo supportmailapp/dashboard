@@ -114,6 +114,8 @@ const APIRoutes = {
   blacklist: (guildId: string) => `${API_BASE}/guilds/${guildId}/blacklist` as const,
 
   tags: (guildId: string) => `${API_BASE}/guilds/${guildId}/tags` as const,
+
+  commandConfig: (guildId: string, commandId: string) => `${API_BASE}/guilds/${guildId}/config/commands/${commandId}` as const,
 };
 
 const LegalLinks = {

@@ -1,7 +1,7 @@
 // Helper functions for session management
 import { env } from "$env/dynamic/private";
 import { discordUrls } from "$lib/urls";
-import { canManageBot } from "$lib/utils/permissions";
+import { canManageBot } from "$lib/server/permissions";
 import jwt from "jsonwebtoken";
 import userGuildsCache from "./caches/userGuilds";
 import { discord } from "./constants";

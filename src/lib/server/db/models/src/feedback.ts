@@ -1,4 +1,4 @@
-import type { IFeedbackAnswer, IFeedback, IFeedbackConfig, IFeedbackTags } from "$lib/sm-types/src";
+import type { IFeedbackAnswer, IFeedback, IFeedbackConfig, IFeedbackTags } from "$lib/sm-types";
 import pkg, { model, Schema } from "mongoose";
 import { FormComponentSchema } from "./utilSchemas";
 const { models } = pkg;

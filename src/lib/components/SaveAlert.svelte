@@ -9,8 +9,8 @@
   interface SaveAlertProps {
     saving: boolean;
     unsavedChanges: boolean;
-    saveData: () => Promise<void>;
-    discardChanges: () => void;
+    saveData?: () => Promise<void>;
+    discardChanges?: () => void;
   }
 
   let { saving = $bindable(false), unsavedChanges, saveData, discardChanges }: SaveAlertProps = $props();

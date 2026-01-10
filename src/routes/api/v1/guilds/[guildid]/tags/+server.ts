@@ -1,5 +1,5 @@
 import { DBTag, FlattenDateFields, FlattenDocToJSON } from "$lib/server/db";
-import type { ITag } from "$lib/sm-types/src";
+import type { ITag } from "$lib/sm-types";
 import { json } from "@sveltejs/kit";
 import { GetTagSchemaForGuild } from "$v1Api/assertions.js";
 import z from "zod";

@@ -4,7 +4,7 @@ import userGuilds from "$lib/server/caches/userGuilds.js";
 import { getDBGuild, updateDBGuild } from "$lib/server/db/utils.js";
 import type { IFeedbackTags } from "$lib/sm-types";
 import { hasAllKeys } from "$lib/utils";
-import { canManageBot } from "$lib/utils/permissions.js";
+import { canManageBot } from "$lib/server/permissions.js";
 import type { APIGuildForumChannel, APIGuildForumTag } from "discord-api-types/v10";
 
 export async function POST({ locals }) {

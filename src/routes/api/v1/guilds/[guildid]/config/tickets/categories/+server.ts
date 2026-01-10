@@ -1,7 +1,7 @@
 import { JsonErrors } from "$lib/constants.js";
 import { FlattenDocToJSON, getTicketCategories, TicketCategory } from "$lib/server/db";
 import { ZodValidator } from "$lib/server/validators/index.js";
-import type { ITicketCategory } from "$lib/sm-types/src/index.js";
+import type { ITicketCategory } from "$lib/sm-types/index.js";
 import { TicketCategoriesPUTSchema } from "$v1Api/assertions";
 import { json } from "@sveltejs/kit";
 import type { HydratedDocument } from "mongoose";

@@ -9,3 +9,4 @@ export * from "./src/utilSchemas.js";
 export * from "./src/ticket.js";
 export * from "./src/report.js";
 export * from "./src/feedback.js";
+export * from "./src/commandConfig.js";

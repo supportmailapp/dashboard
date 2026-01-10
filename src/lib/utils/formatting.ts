@@ -1,6 +1,6 @@
 import { ChannelType, type APIGuildCategoryChannel, type APIUser } from "discord-api-types/v10";
 import { FullTwemojiRegex } from "./twemojiRegex";
-import type { IPartialEmoji } from "$lib/sm-types/src";
+import type { IPartialEmoji } from "$lib/sm-types";
 
 /**
  * Sorts an array of items by their position property in ascending order using Discord's sorting approach.
