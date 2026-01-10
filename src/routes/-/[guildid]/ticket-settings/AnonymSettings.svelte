@@ -25,7 +25,7 @@
             This helps keep things focused on the support, not the person.
           </Field.Description>
         </Field.Content>
-        <Switch id="toggle-2" bind:checked={anonymSettings.enabled} variant="success" />
+        <Switch bind:checked={anonymSettings.enabled} variant="success" size="lg" />
       </Field.Field>
 
       <Field.Separator />
@@ -40,7 +40,7 @@
             their ticket feels natural and not awkward.
           </Field.Description>
         </Field.Content>
-        <Switch id="toggle-2" bind:checked={anonymSettings.user} variant="success" />
+        <Switch bind:checked={anonymSettings.user} variant="success" size="lg" />
       </Field.Field>
     </Field.Group>
   {/if}

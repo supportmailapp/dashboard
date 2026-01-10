@@ -228,6 +228,7 @@
             variant="success"
             bind:checked={feedbackConfig.isEnabled}
             id="feedback-enabled"
+            size="lg"
             disabled={saving}
           />
         </Field.Field>

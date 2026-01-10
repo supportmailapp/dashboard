@@ -67,6 +67,7 @@
           <Label class="inline-flex w-full items-center gap-2">
             <Switch
               variant="success"
+              size="lg"
               bind:checked={() => (alertChannelSet ? enabled : false), (v) => (enabled = v)}
               disabled={loading || !alertChannelSet}
             />

@@ -24,7 +24,12 @@
   let oldUser = null as OurUser | null;
   let dbUser = $state<OurUser | null>(null);
   const dcUser = $derived(page.data.user);
-  let backPath = $derived(page.url.searchParams.get("back") ?? "/");
+  let backPath = $derived.by(() => {
+    const param = page.url.searchParams.get("back") ?? "/";
+    // Prevent tampering with the back path
+    if (!param.startsWith("/")) return "/";
+    return param;
+  });
   let unsavedChanges = $derived(determineUnsavedChanges(oldUser, dbUser));
 
   const triggerContent = $derived(
@@ -173,10 +178,7 @@
 
         <Field.Field orientation="horizontal" class="rounded p-2">
           <Field.Content>
-            <Field.Label>
-              <Switch bind:checked={dbUser.autoRedirect} variant="success" />
-              Use automatic ticket redirect
-            </Field.Label>
+            <Field.Label>Use automatic ticket redirect</Field.Label>
             <Field.Description>
               <div class="text-sm">
                 When enabled, the bot will automatically send DM messages to your most recent ticket without
@@ -189,10 +191,13 @@
               </div>
             </Field.Description>
           </Field.Content>
+          <Switch bind:checked={dbUser.autoRedirect} variant="success" size="lg" />
         </Field.Field>
       </Field.Group>
     {:else}
-      <LoadingSpinner size="10" />
+      <div class="grid w-full place-items-center py-10">
+        <LoadingSpinner />
+      </div>
     {/if}
   </Field.Set>
 

@@ -40,7 +40,7 @@
           Messages in ticket posts are always forwarded to the user when enabled.
         </Field.Description>
       </Field.Content>
-      <Switch variant="success" bind:checked={autoForward} />
+      <Switch variant="success" size="lg" bind:checked={autoForward} />
     </Field.Field>
 
     <Field.Separator />
