@@ -370,9 +370,9 @@
       </Card.Header>
       <Card.Content class="w-auto space-y-2">
         {#if config.current}
-          <Field.Set>
-            <Field.Group>
-              <Field.Field>
+          <Field.Group>
+            <Field.Field orientation="horizontal">
+              <Field.Content>
                 <Field.Label>Creation Message</Field.Label>
                 <Field.Description>
                   The message sent to a user after they create a ticket.
@@ -380,20 +380,22 @@
                     <em class="text-warning text-sm" in:fade>No custom message set.</em>
                   {/if}
                 </Field.Description>
-                <Button
-                  onclick={() => {
-                    contentEditorState = {
-                      open: true,
-                      rawText: config.current!.creationMessage || "",
-                      type: "create",
-                    };
-                  }}
-                >
-                  <Pencil class="size-4" />
-                  Edit
-                </Button>
-              </Field.Field>
-              <Field.Field>
+              </Field.Content>
+              <Button
+                onclick={() => {
+                  contentEditorState = {
+                    open: true,
+                    rawText: config.current!.creationMessage || "",
+                    type: "create",
+                  };
+                }}
+              >
+                <Pencil class="size-4" />
+                Edit
+              </Button>
+            </Field.Field>
+            <Field.Field orientation="horizontal">
+              <Field.Content>
                 <Field.Label>Closing Message</Field.Label>
                 <Field.Description>
                   The message sent to a user when their ticket is closed.
@@ -401,21 +403,21 @@
                     <em class="text-warning text-sm" in:fade>No custom message set.</em>
                   {/if}
                 </Field.Description>
-                <Button
-                  onclick={() => {
-                    contentEditorState = {
-                      open: true,
-                      rawText: config.current!.closeMessage || "",
-                      type: "close",
-                    };
-                  }}
-                >
-                  <Pencil class="size-4" />
-                  Edit
-                </Button>
-              </Field.Field>
-            </Field.Group>
-          </Field.Set>
+              </Field.Content>
+              <Button
+                onclick={() => {
+                  contentEditorState = {
+                    open: true,
+                    rawText: config.current!.closeMessage || "",
+                    type: "close",
+                  };
+                }}
+              >
+                <Pencil class="size-4" />
+                Edit
+              </Button>
+            </Field.Field>
+          </Field.Group>
 
           <ContentEditorDialog
             bind:open={contentEditorState.open}
