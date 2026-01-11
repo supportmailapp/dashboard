@@ -2,7 +2,6 @@
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import SaveAlert from "$lib/components/SaveAlert.svelte";
   import * as Card from "$ui/card/index.js";
-  import * as Select from "$ui/select/index.js";
   import * as Field from "$ui/field/index.js";
   import * as Popover from "$ui/popover/index.js";
   import SettingsGrid from "$lib/components/SettingsGrid.svelte";
@@ -223,7 +222,9 @@
         <Card.Title>Whitelisted Channels</Card.Title>
         <Card.Description>
           The channels where the selected subcommands can be used.<br />
-          If empty, this restriction is ignored.
+          <span class:text-warning={!selectedSubcommand?.channels.length}
+            >If empty, this restriction is ignored.</span
+          >
         </Card.Description>
         <Card.Content class="p-0">
           {#key selectedSubcommandPath}
