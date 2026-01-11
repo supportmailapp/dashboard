@@ -288,3 +288,16 @@ export function toTitleCase(str: string): string {
     .trim();
   return result.charAt(0).toUpperCase() + result.slice(1);
 }
+
+/**
+ * A helper function for zod validation to determine if all elements in an array are distinct (no duplicates).
+ * Only works for primitive types like string, number, boolean, bigint, symbol.
+ *
+ * @param arr - The array to check for distinct elements
+ * @returns `true` if all elements are distinct, `false` otherwise
+ *
+ * Wanna check for complex types? Use `zod.refine` and do your own magic.
+ */
+export function arrayIsDistinct<T>(arr: T[]): boolean {
+  return arr.length === new Set(arr).size;
+}

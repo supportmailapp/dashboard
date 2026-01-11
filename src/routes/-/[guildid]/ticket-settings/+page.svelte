@@ -159,7 +159,7 @@
     <TicketForumCard forumId={config.current.forumId ?? null} wholeConfig={config} />
     <AnonymSettings bind:anonymSettings={config.current.anonym} />
     <Separator class="col-span-full my-5" />
-    <ResetStuff />
+    <ResetStuff discardChanges={resetConfig} />
   {:else}
     <div class="col-span-full flex h-48 items-center justify-center">
       <LoadingSpinner />

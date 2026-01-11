@@ -2,7 +2,7 @@ import { EntityType } from "$lib/sm-types";
 import z from "zod";
 export * from "./forms.zod.js";
 import { FeedbackComponentSchema, FormComponentsSchema } from "./forms.zod.js";
-import { zem } from "$lib/utils.js";
+import { arrayIsDistinct, zem } from "$lib/utils.js";
 import { PermissionFlagsBits } from "$lib/utils/permissions.js";
 
 export const ObjectIdSchema = z.string().regex(/^[a-f\d]{24}$/i, zem("Invalid ObjectId format"));
@@ -73,7 +73,14 @@ export const TicketCategorySchema = z.object({
     .max(45, zem("Label must be at most 45 characters long")),
   emoji: z.string().trim().optional(), // technically we could also validate this but for the sake of simplicity we allow any string here
   tag: SnowflakePredicate.optional(),
-  pings: z.array(MentionableEntity).max(100, zem("A maximum of 100 pings are allowed")).optional(),
+  pings: z
+    .array(MentionableEntity)
+    .max(100, zem("A maximum of 100 pings are allowed"))
+    .refine((p) => {
+      const uniqueCombos = new Set<string>(p.map((ent) => `${ent.typ}-${ent.id}`));
+      return uniqueCombos.size === p.length;
+    }, zem("Duplicate mentionable entities found in pings"))
+    .optional(),
   components: FormComponentsSchema(FeedbackComponentSchema),
   creationMessage: z
     .string()
@@ -176,9 +183,21 @@ export const CommandConfigSchema = z.object({
       zem("Invalid command path format"),
     ),
   guildId: SnowflakePredicate.nullable(), // null for global commands, currently for all!
-  channels: z.array(SnowflakePredicate).max(100, zem("A maximum of 100 channels are allowed")).default([]),
-  roles: z.array(SnowflakePredicate).max(100, zem("A maximum of 100 roles are allowed")).default([]),
-  users: z.array(SnowflakePredicate).max(100, zem("A maximum of 100 users are allowed")).default([]),
+  channels: z
+    .array(SnowflakePredicate)
+    .max(100, zem("A maximum of 100 channels are allowed"))
+    .refine((c) => arrayIsDistinct(c), zem("Duplicate channels are not allowed"))
+    .default([]),
+  roles: z
+    .array(SnowflakePredicate)
+    .max(100, zem("A maximum of 100 roles are allowed"))
+    .refine((r) => arrayIsDistinct(r), zem("Duplicate roles are not allowed"))
+    .default([]),
+  users: z
+    .array(SnowflakePredicate)
+    .max(100, zem("A maximum of 100 users are allowed"))
+    .refine((u) => arrayIsDistinct(u), zem("Duplicate users are not allowed"))
+    .default([]),
   permissions: z
     .string()
     .trim()
@@ -197,3 +216,11 @@ export const CommandConfigSchema = z.object({
 export const CommandConfigPutSchema = CommandConfigSchema.array();
 
 export type CommandConfigPut = z.infer<typeof CommandConfigPutSchema>;
+
+export const ResetTicketsSchema = z
+  .array(z.enum(["forum", "categories", "feedback", "anonym", "other"]))
+  .refine((i) => arrayIsDistinct(i), zem("Duplicate reset options are not allowed"))
+  .min(1, zem("At least one reset option must be selected"))
+  .transform((arr) => new Set(arr));
+
+export type ResetTickets = z.infer<typeof ResetTicketsSchema>;
