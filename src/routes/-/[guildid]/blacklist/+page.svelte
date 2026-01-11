@@ -308,7 +308,7 @@
                   <Select.Item value={String(_scope.value)}>
                     {#if newEntry.scopes.has(_scope.value)}
                       <span class="absolute right-2 flex size-3.5 items-center justify-center">
-                        <Check class="size-4" />
+                        <Check class="size-4 stroke-4" />
                       </span>
                     {/if}
                     {_scope.label}
