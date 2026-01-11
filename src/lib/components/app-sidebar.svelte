@@ -112,8 +112,8 @@
       ],
     },
     {
-      id: "Miscellaneous",
-      name: "Content Management",
+      id: "other",
+      name: "Other",
       items: [
         {
           id: "tags",
