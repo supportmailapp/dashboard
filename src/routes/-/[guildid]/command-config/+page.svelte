@@ -180,34 +180,38 @@
 
 <SaveAlert saving={loading} unsavedChanges={unsaved} saveData={saveChanges} {discardChanges} />
 
+<!-- Info -->
+<Card.Root class="col-span-full sm:col-span-4">
+  <Card.Header>
+    <Card.Title>Subcommands</Card.Title>
+    <Card.Description>Select the subcommands of /blacklist which you want to configure</Card.Description>
+  </Card.Header>
+  <Card.Content>
+    <Field.Field>
+      <div class="w-full max-w-xl">
+        <Combobox
+          closeOnSelect={true}
+          single={true}
+          options={Subcommands}
+          selected={selectedSubcommandPath ? [selectedSubcommandPath] : []}
+          onSelect={(value) => {
+            selectedSubcommandPath = value;
+          }}
+          label={Subcommands.find((sub) => sub.value === selectedSubcommandPath)?.label ||
+            "Select Subcommand"}
+          commandItemClass="w-full max-w-xl"
+        />
+      </div>
+      <Field.Description>
+        If <u>no channels</u>, <u>no roles</u>, <u>no users</u>, and <u>no permissions</u> are set, the
+        command will be available to members with the <b>Manage Server</b> permission.
+      </Field.Description>
+    </Field.Field>
+  </Card.Content>
+</Card.Root>
+
 <SettingsGrid class="mt-6">
   {#if commands}
-    <!-- Info -->
-    <Card.Root class="col-span-full sm:col-span-3">
-      <Card.Header>
-        <Card.Title>Subcommands</Card.Title>
-        <Card.Description>Select the subcommands of /blacklist which you want to configure</Card.Description>
-      </Card.Header>
-      <Card.Content>
-        <Field.Field>
-          <Select.Root type="single" bind:value={selectedSubcommandPath}>
-            <Select.Trigger class="w-40">
-              {Subcommands.find((sub) => sub.value === selectedSubcommandPath)?.label || "Select Subcommand"}
-            </Select.Trigger>
-            <Select.Content>
-              {#each Subcommands as sub (sub.value)}
-                <Select.Item value={sub.value}>{sub.label}</Select.Item>
-              {/each}
-            </Select.Content>
-          </Select.Root>
-          <Field.Description>
-            If <u>no channels</u>, <u>no roles</u>, <u>no users</u>, and <u>no permissions</u> are set, the
-            command will be available to members with the <b>Manage Server</b> permission.
-          </Field.Description>
-        </Field.Field>
-      </Card.Content>
-    </Card.Root>
-
     <!-- Channels (whitelist  model; empty = everywhere) -->
     <Card.Root
       class={cn(
