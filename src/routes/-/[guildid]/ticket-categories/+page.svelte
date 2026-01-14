@@ -240,7 +240,7 @@
           )}
           animate:flip={{ duration: 200, easing: cubicOut }}
         >
-          <Badge variant="outline">{cat.index}</Badge>
+          <Badge variant="outline">{cat.index + 1}</Badge>
           <span class="flex-1">{cat.label}</span>
 
           {#if config.current.length > 1}
