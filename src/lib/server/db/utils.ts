@@ -7,7 +7,10 @@ type DBGuildProjection = "full" | "generalTicketSettings" | "language" | "report
 
 export interface DBGuildProjectionReturns {
   full: IDBGuild;
-  generalTicketSettings: Pick<ITicketConfig, "enabled" | "forumId" | "anonym" | "autoForwarding"> & {
+  generalTicketSettings: Pick<
+    ITicketConfig,
+    "enabled" | "forumId" | "anonym" | "autoForwarding" | "creationMessage" | "closeMessage"
+  > & {
     pausedUntil: APIPausedUntil;
     allowedBots: string[];
   };
@@ -43,6 +46,8 @@ export async function getDBGuild<T extends DBGuildProjection>(
         anonym: jsonConfig.ticketConfig.anonym,
         autoForwarding: jsonConfig.ticketConfig.autoForwarding,
         allowedBots: jsonConfig.ticketConfig.allowedBots,
+        creationMessage: jsonConfig.ticketConfig.creationMessage || "",
+        closeMessage: jsonConfig.ticketConfig.closeMessage || "",
       } as DBGuildProjectionReturns[T];
     case "language":
       return jsonConfig.lang as DBGuildProjectionReturns[T];

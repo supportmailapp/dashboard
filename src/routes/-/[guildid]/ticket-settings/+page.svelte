@@ -19,6 +19,7 @@
   import TicketForumCard from "./TicketForumCard.svelte";
   import { determineUnsavedChanges } from "$lib/utils";
   import { afterNavigate } from "$app/navigation";
+  import DefaultMessages from "./DefaultMessages.svelte";
 
   type TicketConfig = DBGuildProjectionReturns["generalTicketSettings"];
 
@@ -163,6 +164,12 @@
       loading={config.loading}
     />
     <AnonymSettings bind:anonymSettings={config.current.anonym} />
+    <DefaultMessages
+      bind:creationMessage={
+        () => config.current!.creationMessage || "", (v) => (config.current!.creationMessage = v)
+      }
+      bind:closeMessage={() => config.current!.closeMessage || "", (v) => (config.current!.closeMessage = v)}
+    />
     <Separator class="col-span-full my-5" />
     <ResetStuff discardChanges={resetConfig} />
   {:else}

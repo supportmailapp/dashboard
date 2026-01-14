@@ -8,6 +8,7 @@ import {
 import { ZodValidator } from "$lib/server/validators";
 import type { IDBGuild } from "$lib/sm-types";
 import { APIPausedUntilSchema, SnowflakePredicate } from "$v1Api/assertions.js";
+import { json } from "@sveltejs/kit";
 import dayjs from "dayjs";
 import type { UpdateQuery } from "mongoose";
 import z from "zod";
@@ -19,7 +20,7 @@ export async function GET({ params }) {
       return JsonErrors.notFound();
     }
 
-    return Response.json({
+    return json({
       ...config,
       allowedBots: config.allowedBots ?? [],
       pausedUntil: config.pausedUntil ?? {
@@ -47,6 +48,8 @@ const patchSchema = z.object({
       user: false,
     }),
   pausedUntil: APIPausedUntilSchema.default({ date: null, value: false }),
+  creationMessage: z.string().trim().max(2000).optional(),
+  closeMessage: z.string().trim().max(2000).optional(),
 });
 
 export type TicketsPUTFields = z.infer<typeof patchSchema>;

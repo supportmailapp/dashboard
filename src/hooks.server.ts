@@ -24,14 +24,14 @@ export async function init() {
   console.log("Server started at", dayjs().toString());
 
   // Seed data
-  const testGuilds = ["1114825999155200101", PUBLIC_SupportServer];
-  for (const guildId of testGuilds) {
-    await DBGuild.updateOne(
-      { id: guildId, name: "Test" },
-      { id: guildId },
-      { upsert: true, setDefaultsOnInsert: true },
-    );
-  }
+  // const testGuilds = ["1114825999155200101", PUBLIC_SupportServer];
+  // for (const guildId of testGuilds) {
+  //   await DBGuild.updateOne(
+  //     { id: guildId, name: "Test" },
+  //     { id: guildId },
+  //     { upsert: true, setDefaultsOnInsert: true },
+  //   );
+  // }
 }
 
 // 100 requests per minute for all routes (Live)
