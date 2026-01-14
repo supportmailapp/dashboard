@@ -1,7 +1,8 @@
 import { JsonErrors } from "$lib/constants.js";
 import { FlattenDocToJSON, getTicketCategories, TicketCategory } from "$lib/server/db";
 import { ZodValidator } from "$lib/server/validators/index.js";
-import type { ITicketCategory } from "$lib/sm-types/index.js";
+import type { ITicketCategory } from "$lib/sm-types";
+import { zem } from "$lib/utils.js";
 import { TicketCategoriesPUTSchema } from "$v1Api/assertions";
 import { json } from "@sveltejs/kit";
 import type { HydratedDocument } from "mongoose";
@@ -19,17 +20,15 @@ export async function PUT({ request, params }) {
   const guildId = params.guildid;
   const body = await request.json();
 
-  const valRes = new ZodValidator(TicketCategoriesPUTSchema).validate(body);
+  const valRes = new ZodValidator(
+    TicketCategoriesPUTSchema.refine(
+      (data) => data.every((cat) => cat.guildId === guildId),
+      zem("Guild ID doesn't match."),
+    ),
+  ).validate(body);
 
   if (!valRes.success) {
     return JsonErrors.badRequest(valRes.error.message);
-  }
-
-  // Validate that the guildId matches the one in the locals
-  for (const category of valRes.data) {
-    if (category.guildId !== guildId) {
-      return JsonErrors.badRequest(`Guild ID in the request body does not match the authenticated guild ID.`);
-    }
   }
 
   // ensure index is sequential and starts from 0
@@ -40,7 +39,7 @@ export async function PUT({ request, params }) {
   const toCreate = sanitizedData.filter((cat) => cat.local);
 
   const cats: HydratedDocument<ITicketCategory>[] = [];
-  if (toCreate.length > 0) {
+  if (toUpdate.length > 0) {
     const updated = await Promise.all(
       toUpdate.map((category) =>
         TicketCategory.findOneAndUpdate(
