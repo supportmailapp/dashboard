@@ -20,13 +20,16 @@
 
   type Props = {
     forumId: string | null;
-    wholeConfig: {
-      old: TicketConfig | null;
-      current: TicketConfig | null;
-      loading: boolean;
-    };
+    oldCfg: TicketConfig | null;
+    currentCfg: TicketConfig | null;
+    loading: boolean;
   };
-  let { forumId: fetchedForumId, wholeConfig }: Props = $props();
+  let {
+    forumId: fetchedForumId,
+    oldCfg = $bindable(),
+    currentCfg = $bindable(),
+    loading = $bindable(),
+  }: Props = $props();
 
   const guildsManager = getManager();
   let forum = $state<GuildCoreChannel | null>(null);
@@ -56,8 +59,8 @@
 
       const json = await res.json<TicketConfig>();
 
-      wholeConfig.old = { ...json };
-      wholeConfig.current = { ...json };
+      oldCfg = { ...json };
+      currentCfg = { ...json };
       fetchedForumId = json.forumId!;
 
       toast.success("Config updated");

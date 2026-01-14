@@ -156,7 +156,12 @@
       bind:allowedBots={config.current.allowedBots}
       bind:autoForward={config.current.autoForwarding}
     />
-    <TicketForumCard forumId={config.current.forumId ?? null} wholeConfig={config} />
+    <TicketForumCard
+      forumId={config.current.forumId ?? null}
+      oldCfg={config.old}
+      currentCfg={config.current}
+      loading={config.loading}
+    />
     <AnonymSettings bind:anonymSettings={config.current.anonym} />
     <Separator class="col-span-full my-5" />
     <ResetStuff discardChanges={resetConfig} />
