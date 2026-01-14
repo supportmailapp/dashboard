@@ -38,6 +38,8 @@
   }
 </script>
 
+<!-- TODO: Make maxLength a prop -->
+
 <div class={cn("flex h-full w-full overflow-hidden", className)}>
   <Tabs.Root bind:value={currentTab} class="flex h-full w-full flex-col gap-3 overflow-hidden">
     <Tabs.List class="w-full *:text-lg *:font-semibold">
@@ -51,6 +53,7 @@
         rows={10}
         class="w-full flex-1 resize-none bg-zinc-900"
         oninput={debounceRawText}
+        maxlength={2000}
       />
     </Tabs.Content>
     <Tabs.Content value="preview" class="flex min-h-0 w-full flex-1 overflow-hidden">
