@@ -17,6 +17,8 @@
   import {
     EntityType,
     type AnyAPIFormComponent,
+    type IFormComponent,
+    type ITextDisplayComponent,
     type ITicketCategory,
     type MentionableEntity,
   } from "$lib/sm-types";
@@ -72,9 +74,12 @@
 
   afterNavigate(() => {
     if (data.category) {
-      const categoryData: any = { ...data.category, emoji: data.category.emoji ?? { name: "" } };
+      const categoryData: CategoryData = { ...data.category, emoji: data.category.emoji ?? undefined };
       config.old = { ...categoryData };
       config.current = { ...categoryData };
+    } else {
+      config.old = null;
+      config.current = null;
     }
   });
 
@@ -302,7 +307,7 @@
                 }
               }
             />
-            {#if validateEmoji(config.current.emoji || "")}
+            {#if config.current && validateEmoji(config.current.emoji || "")}
               <Button
                 size="icon"
                 variant="destructive"
@@ -457,7 +462,9 @@
               >
                 <Badge variant="outline">{index + 1}</Badge>
                 <span class="min-w-30 flex-1">
-                  {field.type !== ComponentType.TextDisplay ? field.label : field.content.slice(0, 100)}
+                  {field.type !== ComponentType.TextDisplay
+                    ? (field as Exclude<IFormComponent, ITextDisplayComponent>).label
+                    : (field as ITextDisplayComponent).content.slice(0, 100)}
                 </span>
 
                 {#if config.current.components.length > 1}

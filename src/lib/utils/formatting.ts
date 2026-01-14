@@ -209,6 +209,7 @@ export const CustomEmojiRegex = /^<?(a)?:([a-zA-Z0-9_~]{2,32}):(\d{17,23})>?$/i;
  * validateEmoji(''); // undefined
  */
 export function validateEmoji(text: string): IPartialEmoji | undefined {
+  console.log("Validating emoji:", text);
   if (!text || text.length == 0) return;
   text = text.trim();
   const customEmoji = text.match(CustomEmojiRegex);
