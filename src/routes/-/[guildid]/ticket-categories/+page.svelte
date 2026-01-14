@@ -150,7 +150,7 @@
 
     // Update index values to match new order
     newItems.forEach((item, idx) => {
-      item.index = idx + 1;
+      item.index = idx;
     });
 
     config.current = newItems;
@@ -164,7 +164,7 @@
 
     // Update index values to match new order
     newItems.forEach((item, idx) => {
-      item.index = idx + 1;
+      item.index = idx;
     });
 
     config.current = newItems;
