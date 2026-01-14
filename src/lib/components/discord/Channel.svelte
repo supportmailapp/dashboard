@@ -2,6 +2,8 @@
   import type { ClassValue } from "svelte/elements";
   import ChannelIcon from "./ChannelIcon.svelte";
   import { getManager } from "$lib/stores/GuildsManager.svelte";
+  import { onMount } from "svelte";
+  import { browser } from "$app/environment";
 
   type Props = {
     channelId?: string;
@@ -12,12 +14,19 @@
   let { channel, channelId, class: className }: Props = $props();
 
   const guildsManager = getManager();
-  const fetchedChannel = $derived.by(() => {
-    if (channel) return channel;
-    if (channelId) {
-      return guildsManager.channels.find((c) => c.id === channelId);
+  let fetchedChannel = $state<APIGuildChannel | null>(null);
+
+  onMount(async () => {
+    if (!browser) return;
+    if (channel) {
+      fetchedChannel = channel;
+      return;
     }
-    return undefined;
+    if (!channelId) {
+      fetchedChannel = null;
+      return;
+    }
+    fetchedChannel = (await guildsManager.fetchChannelById(channelId)) ?? null;
   });
 </script>
 

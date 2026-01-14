@@ -70,6 +70,8 @@
       });
     } finally {
       settingUp = false;
+      dialogOpen = false;
+      newCategoryId = null;
     }
   }
 
@@ -92,7 +94,7 @@
     <Label>Ticket Forum</Label>
     {#if channelsLoaded}
       <div class="flex w-full items-center justify-between">
-        <Mention channel={forum ?? undefined} fallback buttons="copy" />
+        <Mention channel={forum ?? undefined} buttons="copy" />
         <Dialog.Root
           bind:open={
             () => dialogOpen || settingUp,

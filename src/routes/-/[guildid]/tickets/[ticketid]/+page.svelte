@@ -138,7 +138,7 @@
           <Table.Row>
             <Table.Cell class="w-40 font-semibold">Post</Table.Cell>
             <Table.Cell>
-              <Mention channelId={ticket.postId} fallback buttons="copy" />
+              <Mention channelId={ticket.postId} buttons="copy" />
             </Table.Cell>
           </Table.Row>
           {#if ticket.closeComment}

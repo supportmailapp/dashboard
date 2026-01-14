@@ -26,15 +26,6 @@
     roleId?: string;
     userId?: string;
     /**
-     * Whether to display a fallback.
-     *
-     * This happens automatically, if the Mention is a role or user.
-     *
-     * **Important:**
-     * Since the mention automatically handles fetching users from the websocket, there is no need for a fallback, because the fallback is automatically applied, as long as the user isn't fetched.
-     */
-    fallback?: boolean;
-    /**
      * Which actions to enable.
      *
      * @default "all"
@@ -49,7 +40,6 @@
     channelId,
     class: className,
     onDelete = () => !!toast.error("This function is not set, please report this bug."),
-    fallback = false,
     buttons = "all",
   }: Props = $props();
   let hovered = $state(false);
@@ -72,7 +62,7 @@
     <Role {roleId} class={className} />
   {:else if userId}
     <User {userId} class={className} />
-  {:else if channel || channelId || fallback}
+  {:else if channel || channelId}
     <Channel {channel} class={className} {channelId} />
   {/if}
 

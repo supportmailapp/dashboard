@@ -98,6 +98,27 @@ export class GuildsManager {
     }
   }
 
+  async fetchChannelById(id: string) {
+    if (!this.currentGuild) {
+      console.warn("No current guild set, cannot fetch channel.");
+      return;
+    }
+    // check cache first
+    if (this.customChannels.has(id)) {
+      return this.customChannels.get(id)!;
+    } else if (this.channels.some((c) => c.id === id)) {
+      return this.channels.find((c) => c.id === id)!;
+    }
+
+    // fetch from API
+    const channelRes = await apiClient.get<APIGuildChannel>(APIRoutes.guildChannel(this.currentGuild.id, id));
+    if (channelRes) {
+      const channel = await channelRes.json();
+      this.customChannels.set(id, channel);
+    }
+    return this.customChannels.get(id);
+  }
+
   clearCurrentGuild() {
     // Since currentGuild is derived from guilds, we can't reset it directly.
     this.channels = [];
