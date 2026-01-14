@@ -95,7 +95,7 @@
           .map((cat) => ({
             _id: cat._id,
             label: cat.label,
-            guildId: cat.guildId,
+            guildId: page.params.guildid!,
             index: cat.index,
             local: cat.local || undefined,
           })),

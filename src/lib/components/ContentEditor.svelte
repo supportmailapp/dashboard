@@ -12,10 +12,12 @@
   let {
     rawText = $bindable(""),
     activeTab = $bindable("preview"),
+    maxlength = 2000,
     class: className,
     onRawTextChange,
   }: {
     rawText: string;
+    maxlength?: number;
     class?: ClassValue;
     activeTab?: "editor" | "preview";
     onRawTextChange?: (text: string) => void;
@@ -53,7 +55,7 @@
         rows={10}
         class="w-full flex-1 resize-none bg-zinc-900"
         oninput={debounceRawText}
-        maxlength={2000}
+        {maxlength}
       />
     </Tabs.Content>
     <Tabs.Content value="preview" class="flex min-h-0 w-full flex-1 overflow-hidden">
