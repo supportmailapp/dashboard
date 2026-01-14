@@ -5,7 +5,10 @@ import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 const config = {
   preprocess: vitePreprocess(),
   kit: {
-    adapter: adapter(),
+    adapter: adapter({
+      out: "build",
+      precompress: false,
+    }),
     alias: {
       $ui: "src/lib/components/ui",
       $lib: "src/lib",
@@ -13,6 +16,19 @@ const config = {
       $db: "src/lib/server/db",
       $v1Api: "src/routes/api/v1",
     },
+    csp: {
+      mode: "auto",
+      directives: {
+        "frame-ancestors": [
+          "'self'",
+          "https:\/\/*.paddle.com",
+          "localhost",
+          "data:",
+          "https:\/\/*.suportmail.dev",
+        ],
+      },
+    },
+    prerender: { handleHttpError: "warn", origin: "https://supportmail.dev" },
   },
   vitePlugin: {
     inspector:

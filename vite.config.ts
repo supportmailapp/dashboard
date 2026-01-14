@@ -12,7 +12,12 @@ export default defineConfig({
       uuid: "supportmail-dashboard-vite-config",
     }),
   ],
-  server: { port: 5050, cors: { credentials: true } },
+  server: {
+    port: 5050,
+    strictPort: true,
+    cors: { credentials: true },
+    allowedHosts: [".supportmail.dev", "dash.supportmail.dev", "localhost"],
+  },
 
   optimizeDeps: {
     include: ["@sveltejs/kit", "clsx"],
