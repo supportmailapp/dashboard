@@ -77,10 +77,12 @@ const APIRoutes = {
     if (manageBotOnly) sParams.set("manageBot", "true");
     return `${API_BASE}/@me/guilds` + (sParams.toString() ? `?${sParams.toString()}` : "");
   },
-  guildChannels: (guildId: string) => `${API_BASE}/guilds/${guildId}/channels` as const,
+  guildChannels: (guildId: string, force = false) =>
+    `${API_BASE}/guilds/${guildId}/channels${force ? "?cache=false" : ""}` as const,
   guildChannel: (guildId: string, channelId: string) =>
     `${API_BASE}/guilds/${guildId}/channels/${channelId}` as const,
-  guildRoles: (guildId: string) => `${API_BASE}/guilds/${guildId}/roles` as const,
+  guildRoles: (guildId: string, force = false) =>
+    `${API_BASE}/guilds/${guildId}/roles${force ? "?cache=false" : ""}` as const,
 
   overview: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/overview` as const,
 
@@ -117,7 +119,8 @@ const APIRoutes = {
 
   tags: (guildId: string) => `${API_BASE}/guilds/${guildId}/tags` as const,
 
-  commandConfig: (guildId: string, commandId: string) => `${API_BASE}/guilds/${guildId}/config/commands/${commandId}` as const,
+  commandConfig: (guildId: string, commandId: string) =>
+    `${API_BASE}/guilds/${guildId}/config/commands/${commandId}` as const,
 };
 
 const LegalLinks = {

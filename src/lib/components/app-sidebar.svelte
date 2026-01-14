@@ -125,7 +125,7 @@
           id: "command-config",
           name: "Command Config",
           href: "/command-config",
-          icon: SquareSlash
+          icon: SquareSlash,
         },
       ],
     },
@@ -140,14 +140,14 @@
   async function reloadGuildData() {
     if (reloadBtnDisabled) return;
     reloadBtnDisabled = true;
-    await guildsManager.loadChannels();
-    await guildsManager.loadRoles();
+    await guildsManager.loadChannels(true);
+    await guildsManager.loadRoles(true);
 
     toast.success("Channels and roles reloaded!");
 
     setTimeout(() => {
       reloadBtnDisabled = false;
-    }, 10_000);
+    }, 30_000);
   }
 
   let { onClick }: { onClick?: () => void } = $props();

@@ -58,7 +58,7 @@ export class GuildsManager {
     }
   }
 
-  async loadChannels() {
+  async loadChannels(force = false) {
     if (!this.currentGuild) {
       console.warn("No current guild set, cannot load channels.");
       return;
@@ -66,7 +66,7 @@ export class GuildsManager {
 
     this.channelsLoaded = false;
 
-    const channelsRes = await apiClient.get(APIRoutes.guildChannels(this.currentGuild.id));
+    const channelsRes = await apiClient.get(APIRoutes.guildChannels(this.currentGuild.id, force));
 
     if (channelsRes.ok) {
       let channelsJson: GuildCoreChannel[] = await channelsRes.json();
@@ -79,14 +79,14 @@ export class GuildsManager {
     }
   }
 
-  async loadRoles() {
+  async loadRoles(force = false) {
     if (!this.currentGuild) {
       console.warn("No current guild set, cannot load roles.");
       return;
     }
     this.rolesLoaded = false;
 
-    const rolesRes = await apiClient.get(APIRoutes.guildRoles(this.currentGuild.id));
+    const rolesRes = await apiClient.get(APIRoutes.guildRoles(this.currentGuild.id, force));
 
     if (rolesRes.ok) {
       let rolesJson: APIRole[] = await rolesRes.json();

@@ -1,4 +1,3 @@
-import { JsonErrors } from "$lib/constants";
 import { getGuildChannels, setGuildCache } from "$lib/server/caches/guilds.js";
 
 export async function GET({ locals, params, url, setHeaders }) {
