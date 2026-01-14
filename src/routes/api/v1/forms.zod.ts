@@ -114,7 +114,7 @@ export const StringSelectComponentSchema = BaseFormComponentWithDescriptionSchem
   );
 
 export const FileUploadComponentSchema = BaseFormComponentSchema.safeExtend({
-  type: z.literal(ComponentType.File),
+  type: z.literal(ComponentType.FileUpload),
   label: z
     .string()
     .trim()
@@ -128,7 +128,7 @@ export const FileUploadComponentSchema = BaseFormComponentSchema.safeExtend({
     .optional(),
   minValues: z
     .int32()
-    .min(1, zem("Min values must be at least 1"))
+    .min(0, zem("Min values must be at least 0"))
     .max(10, zem("Min values must be at most 10"))
     .default(1),
   maxValues: z

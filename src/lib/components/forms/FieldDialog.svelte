@@ -47,7 +47,7 @@
     ComponentType.TextDisplay,
     ComponentType.TextInput,
     ComponentType.StringSelect,
-    ComponentType.File,
+    ComponentType.FileUpload,
   ];
 
   const effectiveAvailableTypes = $derived(availableTypes ?? allTypes);
@@ -101,7 +101,7 @@
     [ComponentType.TextDisplay]: "Text Display",
     [ComponentType.TextInput]: "Text Input",
     [ComponentType.StringSelect]: "Select Menu",
-    [ComponentType.File]: "File Upload",
+    [ComponentType.FileUpload]: "File Upload",
   };
 
   function switchFieldType<NewType extends ModalComponentType>(
@@ -147,7 +147,7 @@
           maxValues: getOldOrDefault<number>("maxValues", 1),
           options: [],
         };
-      case ComponentType.File:
+      case ComponentType.FileUpload:
         return {
           ...base,
           type: newType,
@@ -241,7 +241,7 @@
             />
           </div>
 
-          {#if field.type !== ComponentType.File}
+          {#if field.type !== ComponentType.FileUpload}
             <div class="flex w-full max-w-sm flex-col gap-1.5">
               <Label for="edit-ph">Placeholder</Label>
               <Input
@@ -287,9 +287,9 @@
           </div>
         {/if}
 
-        {#if field.type === ComponentType.StringSelect || field.type === ComponentType.File}
-          {@const minLabel = field.type === ComponentType.File ? "Minimum Files" : "Minimum Selections"}
-          {@const maxLabel = field.type === ComponentType.File ? "Maximum Files" : "Maximum Selections"}
+        {#if field.type === ComponentType.StringSelect || field.type === ComponentType.FileUpload}
+          {@const minLabel = field.type === ComponentType.FileUpload ? "Minimum Files" : "Minimum Selections"}
+          {@const maxLabel = field.type === ComponentType.FileUpload ? "Maximum Files" : "Maximum Selections"}
           <div class="flex w-full max-w-sm flex-row gap-1.5">
             <div class="flex w-full max-w-sm flex-col gap-1">
               <Label>{minLabel}</Label>

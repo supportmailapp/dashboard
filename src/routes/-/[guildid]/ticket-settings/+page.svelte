@@ -76,6 +76,8 @@
           },
           autoForwarding: current.autoForwarding,
           pausedUntil: pausedPayload,
+          creationMessage: current.creationMessage,
+          closeMessage: current.closeMessage,
         } as TicketsPUTFields,
       });
 

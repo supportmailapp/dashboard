@@ -1,7 +1,7 @@
 import { EntityType } from "$lib/sm-types";
 import z from "zod";
 export * from "./forms.zod.js";
-import { FeedbackComponentSchema, FormComponentsSchema } from "./forms.zod.js";
+import { FeedbackComponentSchema, FormComponentsSchema, NormalFormComponentSchema } from "./forms.zod.js";
 import { arrayIsDistinct, zem } from "$lib/utils.js";
 import { PermissionFlagsBits } from "$lib/utils/permissions.js";
 
@@ -81,7 +81,7 @@ export const TicketCategorySchema = z.object({
       return uniqueCombos.size === p.length;
     }, zem("Duplicate mentionable entities found in pings"))
     .optional(),
-  components: FormComponentsSchema(FeedbackComponentSchema),
+  components: FormComponentsSchema(NormalFormComponentSchema),
   creationMessage: z
     .string()
     .max(2000, zem("Creation message must be at most 2000 characters long"))
