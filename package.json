@@ -6,7 +6,7 @@
   "scripts": {
     "start": "pnpm run build && pm2 start pm2.config.js --env production",
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "pnpm run update:submodules && vite build",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
