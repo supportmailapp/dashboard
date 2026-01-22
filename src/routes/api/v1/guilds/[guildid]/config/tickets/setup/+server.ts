@@ -10,10 +10,7 @@ import type { KyResponse } from "ky";
 import z from "zod";
 
 const routePredicate = z.object({
-  categoryId: z
-    .string()
-    .regex(/^\d+$/, { error: "Malformed categoryId snowflake" })
-    .optional(),
+  categoryId: z.string().regex(/^\d+$/, { error: "Malformed categoryId snowflake" }).optional(),
 });
 
 export async function POST({ locals, request, params }) {
