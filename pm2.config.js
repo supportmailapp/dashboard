@@ -7,9 +7,9 @@ export const apps = [
     instances: 1,
     autorestart: true,
     watch: false,
-    max_memory_restart: "1G",
+    max_memory_restart: "10G",
     env_file: ".env.production", // Your production env file
-    env: {
+    env_production: {
       NODE_ENV: "production",
       PORT: 5050,
     },
