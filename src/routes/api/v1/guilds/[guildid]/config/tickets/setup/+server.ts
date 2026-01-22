@@ -12,7 +12,7 @@ import z from "zod";
 const routePredicate = z.object({
   categoryId: z
     .string()
-    .regex(new RegExp("^\\d+$", "i"), { error: "Malformed categoryId snowflake" })
+    .regex(/^\d+$/, { error: "Malformed categoryId snowflake" })
     .optional(),
 });
 
