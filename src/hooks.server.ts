@@ -1,13 +1,11 @@
 import { dev } from "$app/environment";
 import { env } from "$env/dynamic/private";
-import { PUBLIC_SupportServer } from "$env/static/public";
 import { JsonErrors } from "$lib/constants.js";
 import { checkUserGuildAccess } from "$lib/server/auth";
 import guildAccessCache from "$lib/server/caches/guildAccess.js";
 import sessionCache from "$lib/server/caches/sessions.js";
-import { dbConnect, DBGuild, UserToken } from "$lib/server/db";
+import { dbConnect, UserToken } from "$lib/server/db";
 import { DiscordBotAPI, DiscordUserAPI } from "$lib/server/discord";
-import type { IUserToken } from "$lib/sm-types";
 import arcjet, { detectBot, shield, slidingWindow } from "@arcjet/sveltekit";
 import * as Sentry from "@sentry/sveltekit";
 import { error, redirect, type Handle } from "@sveltejs/kit";
@@ -16,22 +14,10 @@ import dayjs from "dayjs";
 import { isValidObjectId } from "mongoose";
 import wildcardMatch from "wildcard-match";
 
-const inDevMode = env.NODE_ENV === "development";
-
 export async function init() {
   await dbConnect();
   console.log("Environment:", env.NODE_ENV);
   console.log("Server started at", dayjs().toString());
-
-  // Seed data
-  // const testGuilds = ["1114825999155200101", PUBLIC_SupportServer];
-  // for (const guildId of testGuilds) {
-  //   await DBGuild.updateOne(
-  //     { id: guildId, name: "Test" },
-  //     { id: guildId },
-  //     { upsert: true, setDefaultsOnInsert: true },
-  //   );
-  // }
 }
 
 // 100 requests per minute for all routes (Live)
@@ -46,8 +32,8 @@ const aj = arcjet({
     }),
     slidingWindow({
       mode: env.ARCJET_MODE! as any,
-      interval: inDevMode ? 60000 : 60,
-      max: inDevMode ? 8000 : 100,
+      interval: dev ? 60000 : 60,
+      max: dev ? 8000 : 100,
     }),
   ],
 });

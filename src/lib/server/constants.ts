@@ -12,7 +12,7 @@ export const discord = {
   clientId: env.CLIENT_ID,
   clientSecret: env.CLIENT_SECRET,
   redirectUri: (origin: string) => origin + "/login/callback",
-  supportServerId: publicEnv.PUBLIC_SupportServer,
+  supportServerId: publicEnv.PUBLIC_GUILD_ID,
   baseScopes: ["identify", "guilds", "guilds.members.read"],
 } as const;
 

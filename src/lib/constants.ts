@@ -71,3 +71,4 @@ export const pausePresets = [
 ];
 
 export const ORIGIN = dev ? "http://localhost:5050" : "https://dash.supportmail.dev";
+export const WS_ORIGIN = dev ? "ws://localhost:4000" : "wss://ws.supportmail.dev";

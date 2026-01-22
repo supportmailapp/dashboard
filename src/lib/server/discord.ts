@@ -1,6 +1,6 @@
 // Server Discord API integration
 
-import { discordBotToken } from "$env/static/private";
+import { BOT_TOKEN } from "$env/static/private";
 import UserGuildsCache from "$lib/server/caches/userGuilds.js";
 import {
   Routes,
@@ -114,7 +114,7 @@ abstract class BaseDiscordAPI {
  */
 class DiscordBotAPI extends BaseDiscordAPI {
   constructor() {
-    super(discordBotToken, "Bot");
+    super(BOT_TOKEN, "Bot");
   }
 
   public async getGuildChannels(guildId: string): Promise<SafeResponse<GuildCoreChannel[]>> {

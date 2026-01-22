@@ -25,12 +25,12 @@ const discordUrls = {
   ) {
     const url = new URL(Routes.oauth2Authorization(), this.base);
     const searchP = new URLSearchParams({
-      client_id: pubEnv.PUBLIC_ClientId!,
+      client_id: pubEnv.PUBLIC_CLIENT_ID!,
     });
 
     if (addBot) {
       searchP.set("scope", "bot applications.commands");
-      searchP.set("permissions", pubEnv.PUBLIC_botPermissions!);
+      searchP.set("permissions", "1635040881911"); // https://discordapi.com/permissions.html#1635040881911
       searchP.set("integration_type", "0");
     } else {
       searchP.set("scope", "identify guilds guilds.members.read");

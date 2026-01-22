@@ -18,7 +18,7 @@ class ClientApiClient {
       retry: 2,
       throwHttpErrors: false,
       headers: {
-        Authorization: `Bearer ${env.clientAPIToken}`,
+        Authorization: `Bearer ${env.CLIENT_API_TOKEN}`,
       },
       ...options,
     });
