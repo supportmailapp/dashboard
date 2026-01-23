@@ -2,7 +2,6 @@
   import Mention from "$lib/components/discord/Mention.svelte";
   import MentionableSelect from "$lib/components/discord/MentionableSelect.svelte";
   import { EntityType, type MentionableEntity } from "$lib/sm-types";
-  import { MarkdownFormatter } from "$lib/utils/formatting";
   import { buttonVariants } from "$ui/button";
   import * as Card from "$ui/card/index.js";
   import { Label } from "$ui/label";
@@ -64,7 +63,7 @@
   <Card.Header>
     <Card.Title>{title}</Card.Title>
     {#if description}
-      <Card.Description>{@html new MarkdownFormatter(description).toHTML()}</Card.Description>
+      <Card.Description>{description}</Card.Description>
     {/if}
   </Card.Header>
   <Card.Content class="space-y-2">

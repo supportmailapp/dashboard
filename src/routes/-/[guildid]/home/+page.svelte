@@ -17,6 +17,7 @@
   import equal from "fast-deep-equal/es6";
   import InfoDialog from "$lib/components/InfoDialog.svelte";
   import { afterNavigate } from "$app/navigation";
+  import { discordMdToHtml } from "$lib/utils/markup";
 
   const config = $state({
     old: null as OverviewConfig | null,
@@ -98,8 +99,29 @@
   saveData={saveFn}
 />
 
-<section class="mt-6">
-  <Card.Root class="w-full max-w-xl">
+<section class="mt-6 flex w-full max-w-2xl flex-col gap-6">
+  <Card.Root class="bg-primary/10 text-foreground w-full max-w-2xl">
+    <Card.Header>
+      <Card.Title>A message from the developer</Card.Title>
+    </Card.Header>
+    <Card.Content class="space-y-4">
+      <p>
+        Hello there!<br />
+        I'm super excited to finally share this dashboard with you. After over a year of planning and building,
+        it's great to see it live and ready for you to explore.
+      </p>
+
+      <p>
+        This dashboard is intended to make your experience better by giving you quick easy access to all the
+        tools and features you love.<br />
+        If you have any questions, feedback, or just want to say hi, don't hesitate to reach out in the
+        <a href="https://discord.gg/x8sC8MpeYX" class="link link-hover">Support Server</a> – I'm always happy to hear from you.
+      </p>
+
+      <p>Thanks for being a part of this journey.</p>
+    </Card.Content>
+  </Card.Root>
+  <Card.Root class="w-full max-w-2xl">
     <Card.Header>
       <Card.Title>
         Language
