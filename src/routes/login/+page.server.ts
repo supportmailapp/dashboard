@@ -29,7 +29,7 @@ export const actions = {
   login: async ({ cookies, url }) => {
     const state = crypto.randomUUID();
 
-    const wasLoggedIn = !!cookies.get("session_id");
+    const wasLoggedIn = !!cookies.get("was_logged_in");
     const loginUrl = discordUrls.botAuth(url.origin, { state, wasLoggedIn });
 
     cookies.set("oauth_state", state, {

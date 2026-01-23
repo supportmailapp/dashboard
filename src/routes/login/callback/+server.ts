@@ -99,6 +99,11 @@ export async function GET({ url, cookies }) {
     sameSite: "lax",
     maxAge: expires_in,
   });
+  cookies.set("was_logged_in", "1", {
+    path: "/",
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 30, // 30 days
+  });
 
   // Redirect to dashboard
   redirect(302, "/");
