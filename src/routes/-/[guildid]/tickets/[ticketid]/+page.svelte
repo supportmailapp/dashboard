@@ -4,9 +4,10 @@
   import Timestamp from "$lib/components/discord/Timestamp.svelte";
   import { TicketState, TicketStatus, type APIFeedback } from "$lib/sm-types";
   import { guildHref } from "$lib/stores/site.svelte.js";
-  import { mentionUsers } from "$lib/stores/users.svelte";
-  import { cdnUrls } from "$lib/urls";
+  import { getMentionUser, fetchMentionUsers } from "$lib/stores/users.svelte";
+  import { APIRoutes, cdnUrls } from "$lib/urls";
   import { cn, makeFallbackInitials } from "$lib/utils.js";
+  import apiClient from "$lib/utils/apiClient.js";
   import { dateToLocalString, userDisplayName } from "$lib/utils/formatting.js";
   import * as Avatar from "$ui/avatar";
   import Badge from "$ui/badge/badge.svelte";
@@ -18,12 +19,13 @@
   import ChevronLeft from "@lucide/svelte/icons/chevron-left";
   import Info from "@lucide/svelte/icons/info";
   import Star from "@lucide/svelte/icons/star";
+  import { untrack } from "svelte";
   import { toast } from "svelte-sonner";
 
   let { data } = $props();
   let ticket = $derived(data.ticket);
 
-  let userMention = $derived(ticket?.userId ? mentionUsers.get(ticket?.userId) : undefined);
+  let userMention = $derived(ticket?.userId ? getMentionUser(ticket.userId) : undefined);
   let feedback = $state<APIFeedback | null>(null);
 
   const ticketStatusMap: Record<TicketStatus, string> = {
@@ -38,7 +40,29 @@
     [TicketState.unanswered]: "Unanswered",
   };
 
-  async function fetchFeedback() {}
+  $effect(() => {
+    if (ticket && ticket.feedbackId) {
+      try {
+        apiClient.get<APIFeedback>(APIRoutes.ticketFeedback(ticket.guildId, ticket._id)).then((res) => {
+          if (res.ok) {
+            res.json().then((data) => {
+              feedback = data;
+            });
+          } else {
+            toast.error(`Failed to fetch feedback: ${res.statusText}`);
+          }
+        });
+      } catch (error) {
+        toast.error(`Failed to fetch feedback: ${error}`);
+      }
+    }
+  });
+
+  $effect(() => {
+    if (ticket && ticket.userId && !untrack(() => getMentionUser(ticket.userId))) {
+      untrack(() => fetchMentionUsers(ticket.userId));
+    }
+  });
 </script>
 
 <Button variant="outline" class="mb-4 w-fit" href={guildHref("/tickets")}>
