@@ -21,7 +21,7 @@
     console.log("Running user effect again");
     if (!triggeredUserFetch && !userMention) {
       triggeredUserFetch = true;
-      fetchMentionUsers([userId]);
+      fetchMentionUsers(userId);
     }
   });
 </script>
