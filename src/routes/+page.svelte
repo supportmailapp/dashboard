@@ -89,7 +89,7 @@
           <LoadingSpinner size="20" />
         </div>
       {:else}
-        <ServerSelect />
+        <ServerSelect {hrefAfterSelection} />
       {/if}
     </Card.Content>
     <Card.Footer class="text-muted-foreground flex flex-col gap-2 text-center text-xs">
