@@ -49,6 +49,7 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content={page.url.href} />
   <meta property="og:site_name" content="SupportMail" />
+  <meta property="theme-color" content="#1146E5" />
 </svelte:head>
 
 <ModeWatcher />
