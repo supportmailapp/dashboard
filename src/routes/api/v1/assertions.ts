@@ -1,4 +1,4 @@
-import { EntityType } from "$lib/sm-types";
+import { EntityType, SpecialChannelType } from "$lib/sm-types";
 import z from "zod";
 export * from "./forms.zod.js";
 import { FeedbackComponentSchema, FormComponentsSchema, NormalFormComponentSchema } from "./forms.zod.js";
@@ -184,7 +184,7 @@ export const CommandConfigSchema = z.object({
     ),
   guildId: SnowflakePredicate.nullable(), // null for global commands, currently for all!
   channels: z
-    .array(SnowflakePredicate)
+    .array(z.object({ id: SnowflakePredicate, t: z.enum(SpecialChannelType) }))
     .max(100, zem("A maximum of 100 channels are allowed"))
     .refine((c) => arrayIsDistinct(c), zem("Duplicate channels are not allowed"))
     .default([]),

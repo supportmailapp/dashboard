@@ -25,6 +25,8 @@
   import Combobox from "$ui/combobox/Combobox.svelte";
   import { BitField } from "$lib/utils/bitfields";
   import { toast } from "svelte-sonner";
+  import Button from "$ui/button/button.svelte";
+  import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
 
   const Subcommands = [
     { label: "/blacklist add", value: "blacklist/add" },
@@ -39,6 +41,7 @@
   let commands = $state<Record<string, APICommandConfig> | null>(null);
   let loading = $state(true);
   let unsaved = $derived(determineUnsavedChanges(oldCommands, $state.snapshot(commands)));
+  let resetDialogOpen = $state(false);
 
   // All have the same id
   let selectedSubcommandPath = $state("");
@@ -172,6 +175,20 @@
     }
 
     return 0;
+  }
+
+  async function reset() {
+    if (!page.params.guildid) return;
+    loading = true;
+    const res = await apiClient.delete(
+      APIRoutes.commandConfig(page.params.guildid, PUBLIC_BLACKLIST_COMMAND_ID),
+    );
+    if (res.ok) {
+      toast.success("Command configuration has been reset to default.");
+    } else {
+      toast.error("Failed to reset command configuration.");
+    }
+    location.reload();
   }
 </script>
 
@@ -381,9 +398,25 @@
         </Card.Content>
       </Card.Header>
     </Card.Root>
+
+    <Card.Root destructive class="col-span-full">
+      <Card.Header>
+        <Card.Title>Danger Zone</Card.Title>
+      </Card.Header>
+      <Card.Content>
+        <Button variant="destructive" onclick={() => (resetDialogOpen = true)}>Reset Configuration</Button>
+      </Card.Content>
+    </Card.Root>
   {:else}
     <div class="col-span-full flex h-48 items-center justify-center">
       <LoadingSpinner />
     </div>
   {/if}
 </SettingsGrid>
+
+<AreYouSureDialog
+  bind:open={resetDialogOpen}
+  title="Reset Command Configuration"
+  description="This will reset all command configurations to their default settings. Are you sure you want to proceed?"
+  onYes={reset}
+/>

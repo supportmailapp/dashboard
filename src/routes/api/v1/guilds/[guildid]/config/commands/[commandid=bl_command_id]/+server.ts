@@ -34,6 +34,7 @@ export async function PUT({ request, params }) {
     ),
   ).validate(body);
   if (!valRes.success) {
+    console.debug("Validation error:", valRes.error);
     return JsonErrors.badRequest(valRes.error.message);
   }
 
@@ -51,4 +52,14 @@ export async function PUT({ request, params }) {
   }
 
   return json(cfgs);
+}
+
+export async function DELETE({ params }) {
+  try {
+    await CommandConfig.deleteMany({ guildId: params.guildid, id: params.commandid });
+    return json({ success: true });
+  } catch (err: any) {
+    console.error("Error deleting command configuration:", err);
+    return JsonErrors.serverError(err.message || "Failed to delete command configuration");
+  }
 }

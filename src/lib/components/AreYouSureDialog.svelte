@@ -1,6 +1,7 @@
 <script lang="ts">
   import { discordMdToHtml } from "$lib/utils/markup";
   import * as AlertDialog from "$ui/alert-dialog/index.js";
+  import type { ClassValue } from "clsx";
   import type { Snippet } from "svelte";
 
   interface Props {
