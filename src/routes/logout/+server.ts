@@ -10,8 +10,8 @@ export async function GET({ cookies, locals }) {
     5. The user is redirected to the login page.
   */
 
-  if (cookies.get("session")) {
-    cookies.delete("session", { path: "/" });
+  if (cookies.get("session_id")) {
+    cookies.delete("session_id", { path: "/" });
   }
 
   if (!locals.user) {
