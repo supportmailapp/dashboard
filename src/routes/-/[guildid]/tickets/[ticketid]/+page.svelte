@@ -102,9 +102,11 @@
             <Table.Cell>
               <Badge
                 class={cn(
-                  ticket.status === TicketStatus.open && "bg-success/50 text-success-foreground",
-                  ticket.status === TicketStatus.closed && "bg-destructive/50 text-destructive-foreground",
-                  ticket.status === TicketStatus.closeRequested && "bg-warning/50 text-warning-foreground",
+                  ticket.status === TicketStatus.open && "bg-success/30 border-success text-foreground",
+                  ticket.status === TicketStatus.closed &&
+                    "bg-destructive/30 border-destructive text-foreground",
+                  ticket.status === TicketStatus.closeRequested &&
+                    "bg-warning/30 border-warning text-foreground",
                   "select-none",
                 )}
               >

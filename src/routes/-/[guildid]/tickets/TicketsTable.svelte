@@ -8,6 +8,7 @@
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import type { PaginatedTicketsResponse } from "../../../api/v1/guilds/[guildid]/tickets/+server";
   import { guildHref } from "$lib/stores/site.svelte";
+  import Badge from "$ui/badge/badge.svelte";
 
   let { items }: { items: PaginatedTicketsResponse["data"] } = $props();
 
@@ -37,7 +38,18 @@
     {#each items as ticket (ticket.id)}
       <Table.Row class={cn(ticket.alias ? "bg-primary/7 hover:bg-primary/20" : "")}>
         <Table.Cell class="font-mono font-medium">{ticket.id}</Table.Cell>
-        <Table.Cell>{ticketStatusMap[ticket.status]}</Table.Cell>
+        <Table.Cell>
+          <Badge
+            class={cn(
+              ticket.status === TicketStatus.open && "bg-success/30 border-success text-foreground",
+              ticket.status === TicketStatus.closed && "bg-destructive/30 border-destructive text-foreground",
+              ticket.status === TicketStatus.closeRequested && "bg-warning/30 border-warning text-foreground",
+              "select-none",
+            )}
+          >
+            {ticketStatusMap[ticket.status]}
+          </Badge>
+        </Table.Cell>
         <!-- Anon tickets don't expose the userId -->
         <Table.Cell>
           {#if ticket.userId}
