@@ -9,9 +9,11 @@
   import { site } from "$lib/stores/site.svelte";
   import { LegalLinks } from "$lib/urls";
   import * as Card from "$ui/card/index.js";
+  import * as DropdownMenu from "$ui/dropdown-menu/index.js";
   import { Separator } from "$ui/separator/index.js";
   import { slide } from "svelte/transition";
   import ServerSelect from "./ServerSelect.svelte";
+  import { buttonVariants } from "$ui/button";
 
   let loading = $derived(site.showLoading);
   let hrefAfterLogin = $state<string | null>(null);
@@ -99,9 +101,17 @@
         <Separator orientation="vertical" />
         <a href={LegalLinks.privacy} target="_blank" class="hover:underline">Privacy Policy</a>
       </div>
-      <div>
-        <a href="/@me" class="hover:underline">Account Settings & Billing</a>
-      </div>
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger class={buttonVariants({ variant: "ghost", size: "sm", class: "w-40" })}>
+          Settings
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Content align="center" side="top">
+          <DropdownMenu.Item onSelect={() => goto("/@me?back=/")}
+            >Account Settings & Billing</DropdownMenu.Item
+          >
+          <DropdownMenu.Item onSelect={() => goto("/logout")} variant="destructive">Logout</DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Root>
     </Card.Footer>
   </Card.Root>
 </div>
