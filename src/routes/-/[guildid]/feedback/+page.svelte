@@ -56,7 +56,7 @@
     saving = true;
 
     try {
-      const res = await apiClient.put(APIRoutes.ticketFeedback(page.params.guildid!), {
+      const res = await apiClient.put(APIRoutes.ticketsFeedback(page.params.guildid!), {
         json: current,
       });
 
@@ -82,7 +82,7 @@
 
   afterNavigate(async () => {
     try {
-      const res = await apiClient.get<APIFeedbackConfig>(APIRoutes.ticketFeedback(page.params.guildid!));
+      const res = await apiClient.get<APIFeedbackConfig>(APIRoutes.ticketsFeedback(page.params.guildid!));
       if (!res.ok) {
         const err = await res.json<any>();
         toast.error("Failed to load ticket configuration.", {
@@ -225,10 +225,10 @@
             <p class="text-muted-foreground text-sm">Collect feedback when tickets are closed</p>
           </Field.Content>
           <Switch
-            variant="success"
+            
             bind:checked={feedbackConfig.isEnabled}
             id="feedback-enabled"
-            size="lg"
+            
             disabled={saving}
           />
         </Field.Field>

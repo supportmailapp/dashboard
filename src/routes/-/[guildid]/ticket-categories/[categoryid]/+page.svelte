@@ -294,7 +294,7 @@
               <Label for="cat-enabled">Enable Category</Label>
               <p class="text-muted-foreground text-sm">Allow users to create tickets in this category</p>
             </div>
-            <Switch variant="success" size="lg" bind:checked={config.current.enabled} id="cat-enabled" />
+            <Switch   bind:checked={config.current.enabled} id="cat-enabled" />
           </div>
           <div class="flex items-center justify-start gap-2">
             <EmojiInput

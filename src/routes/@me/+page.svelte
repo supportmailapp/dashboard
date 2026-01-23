@@ -191,7 +191,7 @@
               </div>
             </Field.Description>
           </Field.Content>
-          <Switch bind:checked={dbUser.autoRedirect} variant="success" size="lg" />
+          <Switch bind:checked={dbUser.autoRedirect}   />
         </Field.Field>
       </Field.Group>
     {:else}
