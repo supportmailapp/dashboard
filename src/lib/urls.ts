@@ -99,7 +99,9 @@ const APIRoutes = {
   ticketCategories: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/tickets/categories` as const,
   ticketCategory: (guildId: string, categoryId: string) =>
     `${API_BASE}/guilds/${guildId}/config/tickets/categories/${categoryId}` as const,
-  ticketFeedback: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/tickets/feedback` as const,
+  ticketsFeedback: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/tickets/feedback` as const,
+  ticketFeedback: (guildId: string, ticketId: string) =>
+    `${API_BASE}/guilds/${guildId}/tickets/${ticketId}/feedback` as const,
   resetTickets: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/tickets/reset` as const,
 
   reports: (guildId: string) => `${API_BASE}/guilds/${guildId}/reports` as const,
