@@ -16,7 +16,7 @@
   const guildsManager = getManager();
   let fetchedChannel = $state<APIGuildChannel | null>(null);
 
-  onMount(async () => {
+  $effect(() => {
     if (!browser) return;
     if (channel) {
       fetchedChannel = channel;
@@ -26,7 +26,9 @@
       fetchedChannel = null;
       return;
     }
-    fetchedChannel = (await guildsManager.fetchChannelById(channelId)) ?? null;
+    guildsManager.fetchChannelById(channelId).then((ch) => {
+      fetchedChannel = ch ?? null;
+    });
   });
 </script>
 
