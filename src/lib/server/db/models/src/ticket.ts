@@ -1,4 +1,4 @@
-import { type IFeedback, type IFeedbackAnswer, type ITicket, TicketStatus } from "$lib/sm-types";
+import { type ITicket, TicketStatus } from "$lib/sm-types";
 import dayjs from "dayjs";
 import pkg, { model, Schema } from "mongoose";
 const { models } = pkg;
@@ -15,6 +15,7 @@ const TicketSchema = new Schema<ITicket>(
     status: { type: Number, default: TicketStatus.open },
     stateTag: { type: Number, required: false },
     closeComment: { type: String, default: null },
+    feedbackId: { type: String, default: null },
     lastActive: { type: String, default: dayjs().toISOString() },
   },
   { timestamps: true },
