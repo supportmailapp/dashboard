@@ -5,6 +5,7 @@ import type { APICommandConfig } from "$lib/sm-types/src/index.js";
 import { zem } from "$lib/utils.js";
 import { CommandConfigPutSchema } from "$v1Api/assertions.js";
 import { json } from "@sveltejs/kit";
+import { inspect } from "util";
 
 export async function GET({ params }) {
   const cfgs = await CommandConfig.find({
@@ -38,18 +39,23 @@ export async function PUT({ request, params }) {
     return JsonErrors.badRequest(valRes.error.message);
   }
 
+  console.log(inspect(valRes.data));
+
   let cfgs: APICommandConfig[] = [];
   for (const data of valRes.data) {
     const cfg = await CommandConfig.findOneAndUpdate(
       {
         guildId: params.guildid,
         id: params.commandid,
+        commandPath: data.commandPath,
       },
       data,
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
     cfgs.push(FlattenBigIntFields(FlattenDocToJSON(cfg)));
   }
+
+  console.log(inspect(cfgs));
 
   return json(cfgs);
 }

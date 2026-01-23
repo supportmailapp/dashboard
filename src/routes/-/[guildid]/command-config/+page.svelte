@@ -35,6 +35,21 @@
     { label: "/blacklist clear", value: "blacklist/clear" },
     { label: "/blacklist check", value: "blacklist/check" },
   ];
+  const DefaultSubcommandConfig = Subcommands.map((sub) => sub.value).reduce(
+    (acc, path) => {
+      acc[path] = {
+        id: PUBLIC_BLACKLIST_COMMAND_ID,
+        guildId: page.params.guildid!,
+        commandPath: path,
+        channels: [],
+        roles: [],
+        users: [],
+        permissions: PermissionFlagsBits.ManageGuild.toString(),
+      };
+      return acc;
+    },
+    {} as Record<string, APICommandConfig>,
+  );
   const StringifiedPermissions = GetPermissionsArray(true);
 
   let oldCommands: Record<string, APICommandConfig> | null = null;
@@ -86,27 +101,13 @@
           acc[cmd.commandPath] = cmd;
           return acc;
         },
-        {} as Record<string, APICommandConfig>,
+        { ...DefaultSubcommandConfig },
       );
       oldCommands = $state.snapshot(commands);
     } else if (res.status === 404) {
       // Mock data
-      commands = Subcommands.map((sub) => sub.value).reduce(
-        (acc, path) => {
-          acc[path] = {
-            id: PUBLIC_BLACKLIST_COMMAND_ID,
-            guildId: page.params.guildid!,
-            commandPath: path,
-            channels: [],
-            roles: [],
-            users: [],
-            permissions: PermissionFlagsBits.ManageGuild.toString(),
-          };
-          return acc;
-        },
-        {} as Record<string, APICommandConfig>,
-      );
-      oldCommands = $state.snapshot(commands);
+      commands = { ...DefaultSubcommandConfig };
+      oldCommands = { ...DefaultSubcommandConfig };
     } else {
       commands = null;
       oldCommands = null;
@@ -117,7 +118,7 @@
     if (!commands) return;
     loading = true;
 
-    const res = await apiClient.put(
+    const res = await apiClient.put<APICommandConfig[]>(
       APIRoutes.commandConfig(page.params.guildid!, PUBLIC_BLACKLIST_COMMAND_ID),
       {
         json: Object.values($state.snapshot(commands)),
@@ -125,7 +126,16 @@
     );
 
     if (res.ok) {
-      await fetchCommand();
+      const jsonres = await res.json();
+      commands = jsonres.reduce(
+        (acc, cmd) => {
+          acc[cmd.commandPath] = cmd;
+          return acc;
+        },
+        { ...DefaultSubcommandConfig },
+      );
+      oldCommands = $state.snapshot(commands);
+      toast.success("Command configuration saved successfully.");
     }
 
     loading = false;
