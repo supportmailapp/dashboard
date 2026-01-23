@@ -55,7 +55,7 @@ export function getMentionUser(userId: string): MentionUser | undefined {
   return mentionUsers.get(userId);
 }
 
-export async function fetchMentionUsers(userIds: string[]) {
+export async function fetchMentionUsers(...userIds: string[]) {
   const fetchedUsers: MentionUser[] = [];
 
   if (!page.data.ws) {
