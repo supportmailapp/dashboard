@@ -9,7 +9,7 @@
   import Plus from "@lucide/svelte/icons/plus";
   import { getManager } from "$lib/stores/GuildsManager.svelte";
 
-  let { hrefAfterSelection }: { hrefAfterSelection: string } = $props();
+  let { hrefAfterSelection }: { hrefAfterSelection?: string } = $props();
 
   const guildsManager = getManager();
 </script>
@@ -27,7 +27,7 @@
         ? `/-/${guild.id + getNextPathFromGuildPath(page.url.pathname)}`
         : `/invite/${guild.id}`}
       <Command.LinkItem
-        href={_guildHref + hrefAfterSelection.replace(/^\//, "")}
+        href={_guildHref + (hrefAfterSelection ?? "").replace(/^\//, "")}
         value="{guild.id}:{guild.name}"
         class={cn("transition-all duration-120", !guild.isConfigured && "text-foreground/70")}
       >
