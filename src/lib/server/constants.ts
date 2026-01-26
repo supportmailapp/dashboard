@@ -12,7 +12,7 @@ export const authData = {
 export const discord = {
   clientId: env.CLIENT_ID,
   clientSecret: env.CLIENT_SECRET,
-  redirectUri: dev ? "https://localhost:5050/login/callback" : `https://dash.supportmail.dev/login/callback`,
+  redirectUri: dev ? "http://localhost:5050/login/callback" : `https://dash.supportmail.dev/login/callback`,
   supportServerId: publicEnv.PUBLIC_GUILD_ID,
   baseScopes: ["identify", "guilds", "guilds.members.read"],
 } as const;
