@@ -1,5 +1,6 @@
 // Private constants
 
+import { dev } from "$app/environment";
 import { env } from "$env/dynamic/private";
 import { env as publicEnv } from "$env/dynamic/public";
 
@@ -11,7 +12,7 @@ export const authData = {
 export const discord = {
   clientId: env.CLIENT_ID,
   clientSecret: env.CLIENT_SECRET,
-  redirectUri: (origin: string) => origin + "/login/callback",
+  redirectUri: dev ? "https://localhost:5050/login/callback" : `https://dash.supportmail.dev/login/callback`,
   supportServerId: publicEnv.PUBLIC_GUILD_ID,
   baseScopes: ["identify", "guilds", "guilds.members.read"],
 } as const;

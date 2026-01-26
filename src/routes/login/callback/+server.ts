@@ -1,7 +1,9 @@
 import { redirectToLoginWithError } from "$lib";
 import { SessionManager } from "$lib/server/auth";
 import { discord } from "$lib/server/constants";
+import { BlacklistEntry } from "$lib/server/db/index.js";
 import { DiscordUserAPI } from "$lib/server/discord";
+import { BlacklistScope, EntityType } from "$lib/sm-types/src/index.js";
 import { discordUrls } from "$lib/urls";
 import * as Sentry from "@sentry/sveltekit";
 import { redirect } from "@sveltejs/kit";
@@ -17,6 +19,24 @@ export async function GET({ url, cookies }) {
     return redirectToLoginWithError({
       errKey: "invalid_session",
     });
+  }
+
+  const guildId = url.searchParams.get("guild_id");
+  if (guildId) {
+    // Implicit code grant: Check if guild is blacklisted
+    const isBlacklisted = await BlacklistEntry.exists({
+      guildId: guildId,
+      _type: EntityType.guild,
+      scopes: { $bitsAllSet: BlacklistScope.global },
+    });
+    if (isBlacklisted) {
+      Sentry.logger.info("Blocked OAuth attempt from blacklisted guild", {
+        extra: {
+          guildId,
+        },
+      });
+      return redirect(302, "This server is banned from using the bot.");
+    }
   }
 
   if (!urlState || !cookieState) {
@@ -40,11 +60,11 @@ export async function GET({ url, cookies }) {
         "Content-Type": "application/x-www-form-urlencoded",
       },
       body: new URLSearchParams({
-        client_id: discord.clientId,
-        client_secret: discord.clientSecret,
+        client_id: discord.clientId!,
+        client_secret: discord.clientSecret!,
         grant_type: "authorization_code",
         code: code,
-        redirect_uri: discord.redirectUri(url.origin),
+        redirect_uri: discord.redirectUri,
       }).toString(),
     });
 
