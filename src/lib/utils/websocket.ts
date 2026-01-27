@@ -1,5 +1,5 @@
 import type { APIUser } from "discord-api-types/v10";
-import { io, Socket } from "socket.io-client";
+import { io, type Socket } from "socket.io-client";
 
 type WsResponseSuccess<T> = {
   success: true;

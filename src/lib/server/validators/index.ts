@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ValidationError, fromZodError } from "zod-validation-error";
+import { type ValidationError, fromZodError } from "zod-validation-error";
 
 type ValidationRes<V extends z.ZodType> =
   | { success: true; readonly data: z.core.output<V>; error?: never }

@@ -1,5 +1,5 @@
 import { type IDBGuild, type IDBUser, type ITicketConfig, type ReportLimitsConfig } from "$lib/sm-types";
-import { Document, Types, type UpdateQuery, type UpdateWithAggregationPipeline } from "mongoose";
+import type { Document, Types, UpdateQuery, UpdateWithAggregationPipeline } from "mongoose";
 import { DBGuild, DBUser } from "./models";
 import { TicketCategory } from "./models/src/ticketCategory";
 
