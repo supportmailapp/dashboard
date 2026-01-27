@@ -351,10 +351,12 @@
 />
 
 {#if config.current}
-  <Button variant="outline" class="mb-4" onclick={() => (syncTags.open = true)}>
-    <GitCompareArrows />
-    Sync Category Tags
-  </Button>
+  {#if !!config.old?.length}
+    <Button variant="outline" class="mb-4" onclick={() => (syncTags.open = true)}>
+      <GitCompareArrows />
+      Sync Category Tags
+    </Button>
+  {/if}
   <div class="flex w-full flex-col justify-start gap-1.5" class:max-w-3xl={config.current.length > 0}>
     <ul class="flex w-full flex-col gap-1">
       {#each config.current as cat, index (cat._id)}
