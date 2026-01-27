@@ -29,10 +29,6 @@ export function ErrorJsonResponse(status: number, statusText: string, message: s
   );
 }
 
-export const ClientApiRoutes = {
-  ticketSetup: () => `/ticket-setup` as const,
-};
-
 export enum SMErrorCodes {
   UnknownError = 0,
   GuildNotFound = 101,

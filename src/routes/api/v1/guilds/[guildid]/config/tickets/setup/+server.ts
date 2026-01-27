@@ -1,8 +1,8 @@
 import { JsonErrors } from "$lib/constants";
 import { getGuildChannels, getGuildRoles } from "$lib/server/caches/guilds.js";
 import userGuilds from "$lib/server/caches/userGuilds.js";
-import { ClientApiRoutes, SMErrorCodes } from "$lib/server/constants";
-import clientApi from "$lib/server/utils/clientApi.js";
+import { SMErrorCodes } from "$lib/server/constants";
+import clientApi, { ClientApiRoutes } from "$lib/server/utils/clientApi.js";
 import { ZodValidator } from "$lib/server/validators/index.js";
 import { canManageBot } from "$lib/server/permissions.js";
 import { json } from "@sveltejs/kit";

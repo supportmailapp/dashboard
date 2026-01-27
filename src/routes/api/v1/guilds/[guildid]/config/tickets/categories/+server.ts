@@ -12,7 +12,7 @@ export async function GET({ params }) {
   return json(
     cats
       .sort((a, b) => a.index - b.index)
-      .map((cat) => ({ _id: cat._id.toString(), label: cat.label, index: cat.index })),
+      .map((cat) => ({ _id: cat._id.toString(), label: cat.label, index: cat.index, tag: cat.tag })),
   );
 }
 

@@ -1,6 +1,31 @@
 <script lang="ts">
+  import ArrowDown from "@lucide/svelte/icons/arrow-down";
+  import ArrowUp from "@lucide/svelte/icons/arrow-up";
+  import ArrowUpRightIcon from "@lucide/svelte/icons/arrow-up-right";
+  import FolderOpen from "@lucide/svelte/icons/folder-open";
+  import Pencil from "@lucide/svelte/icons/pencil";
+  import Plus from "@lucide/svelte/icons/plus";
+  import Trash from "@lucide/svelte/icons/trash";
+  import GitCompareArrows from "@lucide/svelte/icons/git-compare-arrows";
+
+  import equal from "fast-deep-equal/es6";
+  import { onDestroy, untrack } from "svelte";
+  import { toast } from "svelte-sonner";
+  import { flip } from "svelte/animate";
+  import { cubicOut } from "svelte/easing";
+  import { SvelteSet } from "svelte/reactivity";
+
+  import { Badge } from "$ui/badge/index.js";
+  import { Button, buttonVariants } from "$ui/button";
+  import Checkbox from "$ui/checkbox/checkbox.svelte";
+  import * as Dialog from "$ui/dialog/index.js";
+  import * as Empty from "$ui/empty/index.js";
+  import { Input } from "$ui/input";
+  import { Label } from "$ui/label";
+
   import { afterNavigate } from "$app/navigation";
   import { page } from "$app/state";
+
   import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import SaveAlert from "$lib/components/SaveAlert.svelte";
@@ -10,24 +35,6 @@
   import { APIRoutes, DocsLinks } from "$lib/urls";
   import { cn } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
-  import { Badge } from "$ui/badge/index.js";
-  import { Button, buttonVariants } from "$ui/button";
-  import * as Dialog from "$ui/dialog/index.js";
-  import * as Empty from "$ui/empty/index.js";
-  import { Input } from "$ui/input";
-  import { Label } from "$ui/label";
-  import ArrowDown from "@lucide/svelte/icons/arrow-down";
-  import ArrowUp from "@lucide/svelte/icons/arrow-up";
-  import ArrowUpRightIcon from "@lucide/svelte/icons/arrow-up-right";
-  import FolderOpen from "@lucide/svelte/icons/folder-open";
-  import Pencil from "@lucide/svelte/icons/pencil";
-  import Plus from "@lucide/svelte/icons/plus";
-  import Trash from "@lucide/svelte/icons/trash";
-  import equal from "fast-deep-equal/es6";
-  import { onDestroy, untrack } from "svelte";
-  import { toast } from "svelte-sonner";
-  import { flip } from "svelte/animate";
-  import { cubicOut } from "svelte/easing";
 
   const config = $state({
     old: null as APITicketCategory[] | null,
@@ -42,6 +49,55 @@
       config.current,
     ),
   );
+  class SyncTags {
+    open = $state(false);
+    loading = $state(false);
+    selected = new SvelteSet<string>();
+    finalCats = $derived.by(() => {
+      if (!config.old) {
+        return [];
+      }
+      return $state.snapshot(config.old).sort((a, b) => {
+        const aSelected = this.selected.has(a._id);
+        const bSelected = this.selected.has(b._id);
+        if (aSelected && !bSelected) return -1;
+        if (!aSelected && bSelected) return 1;
+        return a.index - b.index;
+      });
+    });
+
+    constructor() {
+      for (const cat of $state.snapshot(config.old) ?? []) {
+        if (cat.tag) {
+          this.selected.add(cat._id);
+        }
+      }
+    }
+
+    load() {
+      this.reset();
+    }
+
+    reset() {
+      this.open = false;
+      this.loading = false;
+      this.selected.clear();
+      for (const cat of $state.snapshot(config.old) ?? []) {
+        if (cat.tag) {
+          this.selected.add(cat._id);
+        }
+      }
+    }
+
+    toggleCategory(categoryId: string) {
+      if (this.selected.has(categoryId)) {
+        this.selected.delete(categoryId);
+      } else {
+        this.selected.add(categoryId);
+      }
+    }
+  }
+  const syncTags = new SyncTags();
 
   class NewCategory {
     open = $state(false);
@@ -56,6 +112,69 @@
     }
   }
   const newCategory = new NewCategory();
+
+  async function syncTagsFn() {
+    if (!syncTags.selected.size) {
+      toast.error("Please select at least one category to sync.");
+      return;
+    }
+
+    syncTags.loading = true;
+
+    try {
+      const res = await apiClient.post<ClientAPI.CategoriesTagsResult>(
+        APIRoutes.syncTags(page.params.guildid!),
+        {
+          json: ($state.snapshot(config.old) ?? []).map((cat) => ({
+            _id: cat._id,
+            setTag: syncTags.selected.has(cat._id),
+          })),
+        },
+      );
+
+      if (!res.ok) {
+        const error = await res.json<any>();
+        throw new Error(error.message || "Failed to sync ticket category tags.");
+      }
+
+      const jsonRes = await res.json();
+      if (jsonRes.data) {
+        function updateStateWithNewData(
+          state: APITicketCategory[],
+          data: {
+            categoryId: string;
+            tagId: string;
+          }[],
+        ) {
+          return state.map((cat) => {
+            const updated = data.find((d) => d.categoryId === cat._id);
+            if (updated) {
+              return {
+                ...cat,
+                tag: updated.tagId,
+              };
+            } else {
+              return {
+                ...cat,
+                tag: undefined,
+              };
+            }
+          });
+        }
+
+        // update current before old to reduce latency to reset
+        config.current = updateStateWithNewData($state.snapshot(config.current) ?? [], jsonRes.data);
+        config.old = updateStateWithNewData($state.snapshot(config.old) ?? [], jsonRes.data);
+      }
+
+      toast.success("Ticket category tags sync started.");
+      syncTags.reset();
+    } catch (error: any) {
+      toast.error(`Failed to sync ticket category tags: ${error.message}`);
+    } finally {
+      syncTags.loading = false;
+    }
+  }
 
   function createCategory() {
     if (!newCategory.isValid) {
@@ -199,6 +318,7 @@
       }));
       config.old = [...normalized];
       config.current = [...normalized];
+      syncTags.load();
     } catch (err: any) {
       toast.error("Failed to load ticket categories.", {
         description: err.message,
@@ -231,6 +351,10 @@
 />
 
 {#if config.current}
+  <Button variant="outline" class="mb-4" onclick={() => (syncTags.open = true)}>
+    <GitCompareArrows />
+    Sync Category Tags
+  </Button>
   <div class="flex w-full flex-col justify-start gap-1.5" class:max-w-3xl={config.current.length > 0}>
     <ul class="flex w-full flex-col gap-1">
       {#each config.current as cat, index (cat._id)}
@@ -360,5 +484,50 @@
         <Button type="submit">Create</Button>
       </Dialog.Footer>
     </form>
+  </Dialog.Content>
+</Dialog.Root>
+
+<Dialog.Root
+  bind:open={
+    () => syncTags.open || syncTags.loading,
+    (v) => {
+      if (!syncTags.loading) syncTags.open = v;
+    }
+  }
+  onOpenChangeComplete={() => syncTags.reset()}
+>
+  <Dialog.Content class="max-h-[80vh] space-y-4 overflow-y-auto">
+    <Dialog.Header>
+      <Dialog.Title>Sync Tags</Dialog.Title>
+      <Dialog.Description>
+        Choose which categories should have tags applied. The bot will update forum tags based on your
+        selection.
+      </Dialog.Description>
+    </Dialog.Header>
+
+    <div class={cn("flex flex-col gap-2", syncTags.loading && "pointer-events-none opacity-50")}>
+      {#each syncTags.finalCats as cat (`${cat._id}${syncTags.selected.has(cat._id)}`)}
+        <button
+          type="button"
+          class="bg-card hover:bg-accent hover:text-accent-foreground flex items-center justify-between rounded-lg border p-3 text-left transition select-none"
+          onclick={() => syncTags.toggleCategory(cat._id)}
+          animate:flip={{ duration: 300 }}
+        >
+          <span>{cat.label}</span>
+          <Checkbox readonly checked={syncTags.selected.has(cat._id)} aria-hidden="true" />
+        </button>
+      {/each}
+    </div>
+
+    <Dialog.Footer>
+      <Button
+        variant="default"
+        onclick={syncTagsFn}
+        disabled={syncTags.loading}
+        showLoading={syncTags.loading}
+      >
+        Start Sync
+      </Button>
+    </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>

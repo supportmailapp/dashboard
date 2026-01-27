@@ -236,6 +236,31 @@ declare global {
     }
 
     type POSTTicketSetupJSONResult = POSTTicketSetupJSONResultSuccess | POSTTicketSetupJSONResultError;
+
+    interface CategoriesTagsUpdate {
+      guildId: string;
+      categories: Array<{
+        _id: string;
+        label: string;
+        tag?: string;
+        emoji?: string;
+        removeTag?: boolean;
+      }>;
+    }
+
+    interface CategoriesTagsResult {
+      success: boolean;
+      /**
+       * Array of updated categories with their tag IDs.
+       *
+       * Only given if any were updated!
+       */
+      data?: Array<{
+        categoryId: string;
+        tagId: string;
+      }>;
+      error?: string;
+    }
   }
 
   namespace Unsplash {

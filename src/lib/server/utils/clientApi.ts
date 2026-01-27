@@ -50,5 +50,13 @@ class ClientApiClient {
   }
 }
 
+export const ClientApiRoutes = {
+  ticketSetup: () => `ticket-setup` as const,
+  /**
+   * Used to update the forum tags for categories.
+   */
+  syncTags: () => `categories` as const,
+};
+
 export { ClientApiClient };
 export default new ClientApiClient();

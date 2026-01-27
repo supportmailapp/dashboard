@@ -3,6 +3,7 @@ import { RouteBases, Routes } from "discord-api-types/v10";
 
 const DISCORD_CDN_BASE = RouteBases.cdn;
 const API_BASE = "/api/v1" as const;
+const API_GUILD_BASE = `${API_BASE}/guilds` as const;
 
 const discordUrls = {
   base: "https://discord.com",
@@ -78,35 +79,37 @@ const APIRoutes = {
     return `${API_BASE}/@me/guilds` + (sParams.toString() ? `?${sParams.toString()}` : "");
   },
   guildChannels: (guildId: string, force = false) =>
-    `${API_BASE}/guilds/${guildId}/channels${force ? "?cache=false" : ""}` as const,
+    `${API_GUILD_BASE}/${guildId}/channels${force ? "?cache=false" : ""}` as const,
   guildChannel: (guildId: string, channelId: string) =>
-    `${API_BASE}/guilds/${guildId}/channels/${channelId}` as const,
+    `${API_GUILD_BASE}/${guildId}/channels/${channelId}` as const,
   guildRoles: (guildId: string, force = false) =>
-    `${API_BASE}/guilds/${guildId}/roles${force ? "?cache=false" : ""}` as const,
+    `${API_GUILD_BASE}/${guildId}/roles${force ? "?cache=false" : ""}` as const,
 
-  overview: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/overview` as const,
+  overview: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/overview` as const,
 
-  tickets: (guildId: string) => `${API_BASE}/guilds/${guildId}/tickets` as const,
+  tickets: (guildId: string) => `${API_GUILD_BASE}/${guildId}/tickets` as const,
   /**
    * Returns the URL for a specific guild's tickets configuration.
    */
-  ticketsConfig: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/tickets` as const,
-  ticketSetup: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/tickets/setup` as const,
+  ticketsConfig: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/tickets` as const,
+  ticketSetup: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/tickets/setup` as const,
   ticketFeedbackSetup: (guildId: string) =>
-    `${API_BASE}/guilds/${guildId}/config/tickets/feedback/setup` as const,
+    `${API_GUILD_BASE}/${guildId}/config/tickets/feedback/setup` as const,
   memberSearch: (guildId: string, query: string, filter?: "bot") =>
-    `${API_BASE}/guilds/${guildId}/member-search?q=${encodeURIComponent(query)}${addFilterParam(filter)}` as const,
-  ticketCategories: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/tickets/categories` as const,
+    `${API_GUILD_BASE}/${guildId}/member-search?q=${encodeURIComponent(query)}${addFilterParam(filter)}` as const,
+  ticketCategories: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/tickets/categories` as const,
   ticketCategory: (guildId: string, categoryId: string) =>
-    `${API_BASE}/guilds/${guildId}/config/tickets/categories/${categoryId}` as const,
-  ticketsFeedback: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/tickets/feedback` as const,
+    `${API_GUILD_BASE}/${guildId}/config/tickets/categories/${categoryId}` as const,
+  ticketsFeedback: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/tickets/feedback` as const,
   ticketFeedback: (guildId: string, ticketId: string) =>
-    `${API_BASE}/guilds/${guildId}/tickets/${ticketId}/feedback` as const,
-  resetTickets: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/tickets/reset` as const,
+    `${API_GUILD_BASE}/${guildId}/tickets/${ticketId}/feedback` as const,
+  resetTickets: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/tickets/reset` as const,
+  syncTags: (guildId: string) =>
+    `${API_GUILD_BASE}/${guildId}/config/tickets/categories/sync-tags` as const,
 
-  reports: (guildId: string) => `${API_BASE}/guilds/${guildId}/reports` as const,
-  reportsConfig: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/reports` as const,
-  resetReports: (guildId: string) => `${API_BASE}/guilds/${guildId}/config/reports/reset` as const,
+  reports: (guildId: string) => `${API_GUILD_BASE}/${guildId}/reports` as const,
+  reportsConfig: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/reports` as const,
+  resetReports: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/reports/reset` as const,
 
   /**
    * Used for every blacklist operation.
@@ -117,12 +120,12 @@ const APIRoutes = {
    * - `DELETE` - Delete one or more blacklist entries by `_id`
    *   - Expects `{ ids: string[] }` of ObjectIds to delete
    */
-  blacklist: (guildId: string) => `${API_BASE}/guilds/${guildId}/blacklist` as const,
+  blacklist: (guildId: string) => `${API_GUILD_BASE}/${guildId}/blacklist` as const,
 
-  tags: (guildId: string) => `${API_BASE}/guilds/${guildId}/tags` as const,
+  tags: (guildId: string) => `${API_GUILD_BASE}/${guildId}/tags` as const,
 
   commandConfig: (guildId: string, commandId: string) =>
-    `${API_BASE}/guilds/${guildId}/config/commands/${commandId}` as const,
+    `${API_GUILD_BASE}/${guildId}/config/commands/${commandId}` as const,
 };
 
 const LegalLinks = {
