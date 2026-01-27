@@ -86,8 +86,7 @@
       <span class="flex items-center justify-center">
         <LoadingSpinner class="size-5" />
       </span>
-    {:else}
-      {@render children?.()}
     {/if}
+    {@render children?.()}
   </button>
 {/if}
