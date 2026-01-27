@@ -228,6 +228,7 @@
       const _data = await res.json<APITicketCategory[]>();
       config.old = [..._data];
       config.current = [..._data];
+      syncTags.load();
       toast.success("Ticket categories saved.");
     } catch (error: any) {
       toast.error(`Failed to save ticket categories: ${error.message}`);

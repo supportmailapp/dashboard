@@ -1,7 +1,7 @@
 {
   "name": "dashboard",
   "private": true,
-  "version": "1.0.0-beta",
+  "version": "1.1.0-beta",
   "type": "module",
   "scripts": {
     "start": "pnpm run build && pm2 start pm2.config.js --env production",
