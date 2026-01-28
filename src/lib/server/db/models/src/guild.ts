@@ -61,6 +61,7 @@ const reportConfigSchema = new Schema<IReportConfig>({
   pausedUntil: { type: pausedUntilSchema, default: { value: false, date: null } },
   channelId: { type: String, default: null },
   actionsEnabled: { type: Boolean, default: true },
+  autoResolve: { type: Boolean, default: false },
   channels: {
     setting: { type: String, enum: ["IN", "EX"], default: "EX" },
     ids: { type: [SpecialChannelSchema], default: [] },

@@ -26,6 +26,7 @@ export interface DBGuildProjectionReturns {
   reportSettings: Omit<IDBGuild["reportConfig"], "pausedUntil" | "limits"> & {
     pausedUntil: APIPausedUntil;
     limits: ReportLimitsConfig;
+    autoResolve: boolean;
     channels: {
       setting: "IN" | "EX";
       ids: { t: SpecialChannelType; id: string }[];
@@ -69,6 +70,7 @@ export async function getDBGuild<T extends DBGuildProjection>(
         ...jsonConfig.reportConfig,
         channels: jsonConfig.reportConfig.channels ?? { setting: "EX", ids: [] },
         pausedUntil: jsonConfig.reportConfig.pausedUntil ?? defaultP,
+        autoResolve: !!jsonConfig.reportConfig.autoResolve,
       } as DBGuildProjectionReturns[T];
     default:
       throw new Error(`Unsupported projection: ${projection}`);
