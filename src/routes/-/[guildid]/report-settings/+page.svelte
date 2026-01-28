@@ -212,7 +212,7 @@
       notFoundText="No pings configured."
     />
     <MentionableSelectCard
-      title="Moderator Settings"
+      title="Moderators"
       description="Select users and roles which can take action on reports."
       addButtonText="Add Moderator"
       bind:entities={config.current.mods}
