@@ -195,20 +195,16 @@
 <SettingsGrid class="mt-6">
   {#if config.current}
     <SystemControl
+      bind:channelId={config.current.channelId}
       bind:pauseState
       bind:enabled={config.current.enabled}
+      bind:autoResolve={config.current.autoResolve}
+      bind:actionsEnabled={config.current.actionsEnabled}
       loading={config.loading || config.saving}
       alertChannelSet={!!config.current.channelId}
       {fetchedState}
       {showDateError}
     />
-    <LimitsCard
-      bind:perUserReceive={config.current.limits.perUserReceive}
-      bind:perUserCreate={config.current.limits.perUserCreate}
-      bind:opens={config.current.limits.opens}
-      loading={config.loading || config.saving}
-    />
-    <ChannelSelectCard bind:channelId={config.current.channelId} loading={config.loading || config.saving} />
     <NotificationsCard
       bind:pings={config.current.pings}
       bind:notis={config.current.notifications}
@@ -229,6 +225,12 @@
     <SpecialChannelCard
       bind:setting={config.current.channels.setting}
       bind:channels={config.current.channels.ids}
+      loading={config.loading || config.saving}
+    />
+    <LimitsCard
+      bind:perUserReceive={config.current.limits.perUserReceive}
+      bind:perUserCreate={config.current.limits.perUserCreate}
+      bind:opens={config.current.limits.opens}
       loading={config.loading || config.saving}
     />
   {:else}

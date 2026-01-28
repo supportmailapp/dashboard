@@ -23,39 +23,4 @@
   rootClass="col-span-full lg:col-span-3"
   class={cn("flex flex-col items-start gap-2", loading && "pointer-events-none opacity-50")}
 >
-  {#if !channelId}
-    <Popover.Root bind:open={modalOpen}>
-      <Popover.Trigger class={buttonVariants({ variant: "outline" })} disabled={!!loading}>
-        Select Channel
-      </Popover.Trigger>
-      <Popover.Content class="w-80">
-        <div class="h-100 w-full max-w-100">
-          <ChannelSelect
-            selectedId={channelId ?? undefined}
-            channelTypes={[
-              ChannelType.GuildText,
-              ChannelType.GuildVoice,
-              ChannelType.GuildAnnouncement,
-              ChannelType.GuildStageVoice,
-              ChannelType.GuildForum,
-            ]}
-            allowCustomChannels
-            excludedChannelIds={channelId ? [channelId] : []}
-            onSelect={(c) => {
-              channelId = c.id;
-              modalOpen = false;
-            }}
-          />
-        </div>
-      </Popover.Content>
-    </Popover.Root>
-  {:else}
-    <Mention
-      {channelId}
-      onDelete={() => {
-        channelId = undefined;
-        return true;
-      }}
-    />
-  {/if}
 </ConfigCard>
