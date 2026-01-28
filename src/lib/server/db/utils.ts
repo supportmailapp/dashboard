@@ -1,4 +1,4 @@
-import { type IDBGuild, type IDBUser, type ITicketConfig, type ReportLimitsConfig } from "$lib/sm-types";
+import type { IDBGuild, IDBUser, ITicketConfig, MentionableEntity, ReportLimitsConfig } from "$lib/sm-types";
 import type { Document, Types, UpdateQuery, UpdateWithAggregationPipeline } from "mongoose";
 import { DBGuild, DBUser } from "./models";
 import { TicketCategory } from "./models/src/ticketCategory";
@@ -13,6 +13,7 @@ export interface DBGuildProjectionReturns {
   > & {
     pausedUntil: APIPausedUntil;
     allowedBots: string[];
+    pings: MentionableEntity[];
   };
   language: string;
   reportSettings: Omit<IDBGuild["reportConfig"], "pausedUntil" | "limits"> & {
@@ -48,6 +49,7 @@ export async function getDBGuild<T extends DBGuildProjection>(
         allowedBots: jsonConfig.ticketConfig.allowedBots,
         creationMessage: jsonConfig.ticketConfig.creationMessage || "",
         closeMessage: jsonConfig.ticketConfig.closeMessage || "",
+        pings: jsonConfig.ticketConfig.pings || [],
       } as DBGuildProjectionReturns[T];
     case "language":
       return jsonConfig.lang as DBGuildProjectionReturns[T];

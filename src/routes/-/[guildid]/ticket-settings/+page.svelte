@@ -20,6 +20,7 @@
   import { determineUnsavedChanges } from "$lib/utils";
   import { afterNavigate } from "$app/navigation";
   import DefaultMessages from "./DefaultMessages.svelte";
+  import PingsCard from "./PingsCard.svelte";
 
   type TicketConfig = DBGuildProjectionReturns["generalTicketSettings"];
 
@@ -78,6 +79,7 @@
           pausedUntil: pausedPayload,
           creationMessage: current.creationMessage,
           closeMessage: current.closeMessage,
+          pings: current.pings,
         } as TicketsPUTFields,
       });
 
@@ -165,6 +167,7 @@
       currentCfg={config.current}
       loading={config.loading}
     />
+    <PingsCard bind:pings={config.current!.pings!} />
     <AnonymSettings bind:anonymSettings={config.current.anonym} />
     <DefaultMessages
       bind:creationMessage={

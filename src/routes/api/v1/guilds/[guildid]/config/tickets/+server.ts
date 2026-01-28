@@ -7,7 +7,7 @@ import {
 } from "$lib/server/db/utils.js";
 import { ZodValidator } from "$lib/server/validators";
 import type { IDBGuild } from "$lib/sm-types";
-import { APIPausedUntilSchema, SnowflakePredicate } from "$v1Api/assertions.js";
+import { APIPausedUntilSchema, MentionableEntity, SnowflakePredicate } from "$v1Api/assertions.js";
 import { json } from "@sveltejs/kit";
 import dayjs from "dayjs";
 import type { UpdateQuery } from "mongoose";
@@ -50,6 +50,7 @@ const patchSchema = z.object({
   pausedUntil: APIPausedUntilSchema.default({ date: null, value: false }),
   creationMessage: z.string().trim().max(2000).optional(),
   closeMessage: z.string().trim().max(2000).optional(),
+  pings: MentionableEntity.array().max(100).optional(),
 });
 
 export type TicketsPUTFields = z.infer<typeof patchSchema>;
@@ -95,10 +96,11 @@ export async function PUT({ request, params }) {
       "ticketConfig.allowedBots": data.allowedBots,
       "ticketConfig.anonym": data.anonym,
       "ticketConfig.autoForwarding": data.autoForwarding,
+      "ticketConfig.creationMessage": data.creationMessage ?? null,
+      "ticketConfig.closeMessage": data.closeMessage ?? null,
+      "ticketConfig.pings": data.pings ?? [],
     },
   };
-
-  console.log("Update Fields", updateFields);
 
   try {
     const newGuild = await updateDBGuild(params.guildid, updateFields);
@@ -117,6 +119,9 @@ export async function PUT({ request, params }) {
       forumId: ticketConfig.forumId,
       pausedUntil: ticketConfig.pausedUntil ?? null,
       allowedBots: ticketConfig.allowedBots,
+      creationMessage: ticketConfig.creationMessage ?? "",
+      closeMessage: ticketConfig.closeMessage ?? "",
+      pings: ticketConfig.pings ?? [],
     } as DBGuildProjectionReturns["generalTicketSettings"]);
   } catch (err: any) {
     console.error("Error updating guild config:", err);

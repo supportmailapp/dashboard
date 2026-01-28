@@ -2,10 +2,8 @@
   import ConfigCard from "$lib/components/ConfigCard.svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import type { IAnonym } from "$lib/sm-types";
-  import { Label } from "$ui/label";
   import Switch from "$ui/switch/switch.svelte";
   import * as Field from "$ui/field/index.js";
-  import Separator from "$ui/separator/separator.svelte";
 
   let { anonymSettings = $bindable() }: { anonymSettings: IAnonym | undefined } = $props();
 </script>
@@ -25,7 +23,7 @@
             This helps keep things focused on the support, not the person.
           </Field.Description>
         </Field.Content>
-        <Switch bind:checked={anonymSettings.enabled}   />
+        <Switch bind:checked={anonymSettings.enabled} />
       </Field.Field>
 
       <Field.Separator />
@@ -40,7 +38,7 @@
             their ticket feels natural and not awkward.
           </Field.Description>
         </Field.Content>
-        <Switch bind:checked={anonymSettings.user}   />
+        <Switch bind:checked={anonymSettings.user} />
       </Field.Field>
     </Field.Group>
   {/if}
