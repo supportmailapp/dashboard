@@ -1,9 +1,12 @@
 <script lang="ts">
   import type {
+    AnyAPIFormComponent,
     APIFormComponent,
     FormComponentKeys,
-    IStringSelectOption,
+    ClientStringSelectOption,
     ModalComponentType,
+    IStringSelectComponent,
+    ITextInputComponent,
   } from "$lib/sm-types";
   import { SnowflakeUtil } from "$lib/utils";
   import Badge from "$ui/badge/badge.svelte";
@@ -24,6 +27,7 @@
   import { flip } from "svelte/animate";
   import OptionDialog from "./OptionDialog.svelte";
 
+  type RequireableFormComponent = Extract<AnyAPIFormComponent, { required?: boolean }>;
   type Props<T extends ModalComponentType = ModalComponentType> = {
     field: APIFormComponent<T> | null;
     open: boolean;
@@ -40,7 +44,7 @@
     onSave,
   }: Props = $props();
   let optionDialogOpen = $state(false);
-  let editingOption = $state<IStringSelectOption | null>(null);
+  let editingOption = $state<ClientStringSelectOption | null>(null);
 
   // Default to all types if not specified
   const allTypes: ModalComponentType[] = [
@@ -53,47 +57,51 @@
   const effectiveAvailableTypes = $derived(availableTypes ?? allTypes);
 
   function addOption() {
-    if (!field) return;
-    const newOption: IStringSelectOption = {
-      id: SnowflakeUtil.generate().toString(),
-      label: `Option ${(((field as any).options ?? []).length || 0) + 1}`,
-      value: `value-${(((field as any).options ?? []).length || 0) + 1}`,
+    if (!field || field.type !== ComponentType.StringSelect) return;
+    const newOption: ClientStringSelectOption = {
+      local: true,
+      _id: new Date().toISOString(),
+      label: `Option ${(((field).options ?? []).length || 0) + 1}`,
+      value: `value-${(((field).options ?? []).length || 0) + 1}`,
       description: "",
       emoji: "",
       default: false,
     };
-    (field as any).options = [...((field as any).options ?? []), newOption];
+    (field).options = [...((field).options ?? []), newOption];
     editingOption = newOption;
     optionDialogOpen = true;
   }
 
-  function editOption(option: IStringSelectOption) {
+  function editOption(option: ClientStringSelectOption) {
     editingOption = { ...option };
     optionDialogOpen = true;
   }
 
   function moveOptionUp(index: number) {
-    if (!field || index === 0 || !(field as any).options) return;
-    const newOptions = [...(field as any).options];
+    if (field?.type !== ComponentType.StringSelect) return;
+    if (!field || index === 0 || !(field ).options) return;
+    const newOptions = [...(field ).options];
     [newOptions[index - 1], newOptions[index]] = [newOptions[index], newOptions[index - 1]];
-    (field as any).options = newOptions;
+    (field ).options = newOptions;
   }
 
   function moveOptionDown(index: number) {
-    if (!field || !(field as any).options || index === (field as any).options.length - 1) return;
-    const newOptions = [...(field as any).options];
+    if (field?.type !== ComponentType.StringSelect) return;
+    if (!field || !(field ).options || index === (field ).options.length - 1) return;
+    const newOptions = [...(field ).options];
     [newOptions[index], newOptions[index + 1]] = [newOptions[index + 1], newOptions[index]];
-    (field as any).options = newOptions;
+    (field ).options = newOptions;
   }
 
-  function upsertOption(option: IStringSelectOption) {
+  function upsertOption(option: ClientStringSelectOption) {
+    if (field?.type !== ComponentType.StringSelect) return;
     if (!field) return;
-    if (!(field as any).options) (field as any).options = [];
-    const idx = (field as any).options.findIndex((o: any) => o.id === option.id);
+    if (!(field ).options) (field ).options = [];
+    const idx = (field ).options.findIndex((o) => o._id === option._id);
     if (idx === -1) {
-      (field as any).options = [...(field as any).options, option];
+      (field ).options = [...(field ).options, option];
     } else {
-      (field as any).options[idx] = option;
+      (field ).options[idx] = option;
     }
   }
 
@@ -107,14 +115,14 @@
   function switchFieldType<NewType extends ModalComponentType>(
     newType: NewType,
   ): NonNullable<Props["field"]> {
-    const oldField = $state.snapshot(field as any);
+    const oldField = $state.snapshot(field );
     // preserve id/local (or generate an id if this is a fresh field) so parent can identify the field after switching types
     const base = {
-      id: typeof oldField.id === "string" ? oldField.id : SnowflakeUtil.generate().toString(),
-      local: oldField.local === true || undefined,
+      id: typeof oldField?.id === "string" ? oldField.id : SnowflakeUtil.generate().toString(),
+      local: oldField?.local === true || undefined,
     };
     function getOldOrDefault<T>(key: FormComponentKeys, defaultVal: T): T {
-      const val = oldField[key];
+      const val = oldField?.[key as keyof typeof oldField] ?? undefined;
       if (val === undefined || val === null) return defaultVal;
       return val as T;
     }
@@ -260,7 +268,7 @@
           <div class="flex w-full max-w-sm flex-col gap-1.5">
             <Label for="edit-style">Style</Label>
             <RadioGroup.Root
-              bind:value={() => (field as any).style.toString(), (v) => ((field as any).style = Number(v))}
+              bind:value={() => (field as ITextInputComponent).style.toString(), (v) => ((field  as ITextInputComponent).style = Number(v))}
             >
               <div class="flex items-center space-x-2">
                 <RadioGroup.Item value="1" id="edit-style-short" />
@@ -302,7 +310,7 @@
           </div>
 
           {#if field.type === ComponentType.StringSelect}
-            {@const options = (field as any).options ?? []}
+            {@const options = field.options ?? []}
             <div class="mt-2 flex w-full max-w-sm flex-col gap-1.5">
               <Label>Options</Label>
               <div class="space-y-2">
@@ -310,7 +318,7 @@
                   <p class="text-muted-foreground text-sm">No options added. Add one to get started.</p>
                 {:else}
                   <div class="flex flex-col gap-1">
-                    {#each options as option, idx (option.id)}
+                    {#each options as option, idx (option._id)}
                       <div
                         class="flex items-center gap-2 rounded border p-2"
                         animate:flip={{ duration: 200 }}
@@ -338,7 +346,7 @@
                             variant="destructive"
                             onclick={() => {
                               if (confirm("Delete this option?"))
-                                (field as any).options = options.filter((o: any) => o.id !== option.id);
+                                (field as IStringSelectComponent).options = options.filter((o) => o._id !== option._id);
                             }}><Trash /></Button
                           >
                         </div>
@@ -364,7 +372,7 @@
           <div class="flex w-full max-w-sm flex-col gap-1.5">
             <Label for="edit-required">
               <Checkbox
-                bind:checked={() => (field as any).required ?? false, (v) => ((field as any).required = v)}
+                bind:checked={() => (field as RequireableFormComponent).required ?? false, (v) => ((field as RequireableFormComponent).required = v)}
                 id="edit-required"
               />
               Required
@@ -383,7 +391,7 @@
               <Input
                 type="text"
                 id="edit-content"
-                bind:value={field.defaultValue}
+                bind:value={(field as ITextInputComponent).defaultValue}
                 class="rounded-md border p-2"
               />
             {:else}
@@ -401,7 +409,7 @@
           bind:option={editingOption}
           bind:open={optionDialogOpen}
           saveBtnLabel="Save"
-          onSave={(opt: IStringSelectOption) => {
+          onSave={(opt: ClientStringSelectOption) => {
             upsertOption(opt);
             optionDialogOpen = false;
             editingOption = null;

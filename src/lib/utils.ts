@@ -242,6 +242,7 @@ export const SnowflakeUtil = DiscordSnowflake as typeof DiscordSnowflake;
  */
 export function isChannelSendable(channel: APIGuildChannel): channel is GuildSendableChannel {
   return (
+    channel.type === ChannelType.GuildText ||
     channel.type === ChannelType.GuildCategory ||
     channel.type === ChannelType.GuildStageVoice ||
     channel.type === ChannelType.AnnouncementThread ||

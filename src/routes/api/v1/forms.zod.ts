@@ -9,7 +9,8 @@ const SnowflakePredicate = z.string().regex(/^\d{17,23}$/, {
 });
 
 export const StringSelectOptionSchema = z.object({
-  id: SnowflakePredicate.default(() => SnowflakeUtil.generate().toString()),
+  _id: z.string().trim().optional(), // will be removed anyways
+  local: z.literal(true, zem("Local must be true (Contact developer, this should not happen)")).optional(), // Used client-side only
   label: z
     .string()
     .trim()
@@ -23,6 +24,12 @@ export const StringSelectOptionSchema = z.object({
   description: z.string().trim().max(100, zem("Description must be at most 100 characters long")).optional(),
   emoji: z.string().trim().max(100, zem("Emoji must be at most 100 characters long")).optional(),
   default: z.boolean().default(false).optional(),
+}).transform((op) => {
+  delete op._id;
+  if ("local" in op) {
+    delete op.local;
+  }
+  return op;
 });
 
 const BaseFormComponentSchema = z.object({
@@ -174,7 +181,7 @@ export const FormComponentsSchema = <T extends AnyFormComponent>(schema: z.ZodTy
           delete field._id;
         }
         //Set id field if local is true or id is missing
-        if (field.local === true || !field.id) {
+        if ("local" in field || !field.id) {
           delete (field as any).id;
           field.id = SnowflakeUtil.generate().toString();
         }

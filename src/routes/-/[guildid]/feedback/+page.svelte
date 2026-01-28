@@ -363,7 +363,7 @@
 
                 <Button
                   size="icon"
-                  variant="outline"
+                  variant="default"
                   onclick={() => {
                     if (feedbackConfig) {
                       editField = $state.snapshot(feedbackConfig.components![index]);

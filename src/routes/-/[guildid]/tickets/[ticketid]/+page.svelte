@@ -26,7 +26,7 @@
   let ticket = $derived(data.ticket);
 
   let userMention = $derived(ticket?.userId ? getMentionUser(ticket.userId) : undefined);
-  let feedback = $state<APIFeedback | null>(null);
+  // let feedback = $state<APIFeedback | null>(null);
 
   const ticketStatusMap: Record<TicketStatus, string> = {
     [TicketStatus.open]: "Open",
@@ -40,23 +40,23 @@
     [TicketState.unanswered]: "Unanswered",
   };
 
-  $effect(() => {
-    if (ticket && ticket.feedbackId) {
-      try {
-        apiClient.get<APIFeedback>(APIRoutes.ticketFeedback(ticket.guildId, ticket._id)).then((res) => {
-          if (res.ok) {
-            res.json().then((data) => {
-              feedback = data;
-            });
-          } else {
-            toast.error(`Failed to fetch feedback: ${res.statusText}`);
-          }
-        });
-      } catch (error) {
-        toast.error(`Failed to fetch feedback: ${error}`);
-      }
-    }
-  });
+  // $effect(() => {
+  //   if (ticket && ticket.feedbackId) {
+  //     try {
+  //       apiClient.get<APIFeedback>(APIRoutes.ticketFeedback(ticket.guildId, ticket._id)).then((res) => {
+  //         if (res.ok) {
+  //           res.json().then((data) => {
+  //             feedback = data;
+  //           });
+  //         } else {
+  //           toast.error(`Failed to fetch feedback: ${res.statusText}`);
+  //         }
+  //       });
+  //     } catch (error) {
+  //       toast.error(`Failed to fetch feedback: ${error}`);
+  //     }
+  //   }
+  // });
 
   $effect(() => {
     if (ticket && ticket.userId && !untrack(() => getMentionUser(ticket.userId))) {
@@ -198,36 +198,40 @@
     </Card.Content>
   </Card.Root>
 
-  {#if feedback}
-    <Card.Root class="mt-4">
-      <Card.Header>
-        <Card.Title>Feedback</Card.Title>
-        <Card.Description>{dateToLocalString(feedback.timestamp)}</Card.Description>
-      </Card.Header>
-      <Card.Content>
-        <div class="inline-flex gap-2">
-          {#each new Array(5) as _, index}
-            <Star
-              class={cn(
-                "size-6",
-                index < feedback.rating
-                  ? "fill-yellow-400 text-yellow-500"
-                  : "fill-muted-foreground text-muted-foreground",
-              )}
-            />
-          {/each}
-        </div>
-        <Separator class="my-2" />
-        <div class="bg-card-foreground/10 rounded-lg p-3">
-          {#each feedback.answers as fb}
-            <h2 class="text-muted-foreground text-xl font-semibold">
-              {fb.label}
-            </h2>
-            <p class="mt-1 border-l-2 pl-3 not-last:mb-5">{fb.answer}</p>
-          {/each}
-        </div>
-      </Card.Content>
-    </Card.Root>
+  {#if ticket.feedbackId}
+    {#await apiClient.get<APIFeedback>(APIRoutes.ticketFeedback(ticket.guildId, ticket._id)) then fResponse}
+      {#if fResponse.ok}
+        {#await fResponse.json() then feedback}
+          <Card.Root class="mt-4">
+            <Card.Header>
+              <Card.Title>Feedback</Card.Title>
+              <Card.Description>{dateToLocalString(feedback.timestamp)}</Card.Description>
+            </Card.Header>
+            <Card.Content>
+              <div class="inline-flex gap-2">
+                {#each new Array(5) as _, index}
+                  <Star
+                    class={cn(
+                      "size-6",
+                      index < feedback.rating
+                        ? "fill-yellow-400 text-yellow-500"
+                        : "fill-muted-foreground text-muted-foreground",
+                    )}
+                  />
+                {/each}
+              </div>
+              <Separator class="my-2" />
+              {#each feedback.answers as fb}
+                <h2 class="text-muted-foreground text-xl font-semibold">
+                  {fb.label}
+                </h2>
+                <p class="mt-1 border-l-2 pl-3 not-last:mb-5">{fb.answer}</p>
+              {/each}
+            </Card.Content>
+          </Card.Root>
+        {/await}
+      {/if}
+    {/await}
   {/if}
 {:else}
   <Skeleton class="h-6 w-3xl" />

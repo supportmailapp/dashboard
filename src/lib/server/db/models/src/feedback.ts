@@ -1,4 +1,10 @@
-import type { IFeedbackAnswer, IFeedback, IFeedbackConfig, IFeedbackTags } from "$lib/sm-types";
+import type {
+  IFeedbackAnswer,
+  IFeedback,
+  IFeedbackConfig,
+  IFeedbackTags,
+  IFeedbackUpload,
+} from "$lib/sm-types/src";
 import pkg, { model, Schema } from "mongoose";
 import { FormComponentSchema } from "./utilSchemas";
 const { models } = pkg;
@@ -38,11 +44,18 @@ const FeedbackAnswerSchema = new Schema<IFeedbackAnswer>({
   answer: { type: String, required: true },
 });
 
+const FeedbackUploadSchema = new Schema<IFeedbackUpload>({
+  questionId: { type: String, required: true },
+  label: { type: String, required: true },
+  uploads: { type: [String], required: true },
+});
+
 const FeedbackSchema = new Schema<IFeedback>({
   guildId: { type: String, required: true },
   ticketId: { type: String, required: true },
   rating: { type: Number, required: true, min: 1, max: 5 },
   answers: { type: [FeedbackAnswerSchema], default: [] },
+  uploads: { type: [FeedbackUploadSchema], required: false },
   timestamp: { type: Date, default: () => new Date() },
 });
 
