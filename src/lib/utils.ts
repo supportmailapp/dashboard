@@ -6,7 +6,7 @@ import { twMerge } from "tailwind-merge";
 import { DiscordSnowflake } from "@sapphire/snowflake";
 import { ChannelType } from "discord-api-types/v10";
 import { CustomEmojiRegex } from "./utils/formatting";
-import type { IPartialEmoji } from "./sm-types/src";
+import { SpecialChannelType, type IPartialEmoji } from "./sm-types/src";
 
 dayjs.extend(relativeTime);
 
@@ -300,4 +300,8 @@ export function toTitleCase(str: string): string {
  */
 export function arrayIsDistinct<T>(arr: T[]): boolean {
   return arr.length === new Set(arr).size;
+}
+
+export function extractSpecialChannelType(channelType: ChannelType): SpecialChannelType {
+  return channelType === ChannelType.GuildCategory ? SpecialChannelType.Category : SpecialChannelType.Channel;
 }

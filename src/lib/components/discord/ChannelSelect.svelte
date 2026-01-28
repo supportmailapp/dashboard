@@ -16,6 +16,7 @@
   import * as Tabs from "$ui/tabs/index.js";
   import { toast } from "svelte-sonner";
   import ChannelIcon from ".//ChannelIcon.svelte";
+  import CornerDownLeft from "@lucide/svelte/icons/corner-down-left";
 
   type Props = {
     selectedId?: string;
@@ -62,9 +63,7 @@
   }
 
   let groupedChannels = $derived.by(() => {
-    const sorted = sortChannels($state.snapshot(guildsManager.channels), true, (arg) =>
-      console.log("Sorted Channels:", arg),
-    );
+    const sorted = sortChannels($state.snapshot(guildsManager.channels), true);
 
     // filter
     const uncategorizedFiltered = sorted.uncategorized.filter(
@@ -92,6 +91,8 @@
       categories: groupedFiltered,
     };
   });
+
+  $inspect(groupedChannels);
 
   async function findChannelByIdOrLink() {
     if (channelIdInput === "") {
@@ -164,25 +165,30 @@
   }
 </script>
 
-{#snippet channelItem(channel: GuildCoreChannel)}
+{#snippet channelItem(channel: GuildCoreChannel, uncategorized = false)}
   <Command.Item
     value="{channel.id}:{channel.name}"
     class={cn(
-      "cursor-pointer transition duration-80 active:scale-[99%]",
+      "cursor-pointer transition duration-80 active:scale-[99%] truncate",
       selectedId === channel.id && "bg-muted text-muted-foreground transform-none",
+      selectCategories && channel.type !== ChannelType.GuildCategory && !uncategorized && "ps-5",
+      selectCategories && channel.type === ChannelType.GuildCategory && "text-primary-foreground font-semibold",
     )}
     onSelect={() => onSelect?.(channel, false)}
     disabled={selectedId === channel.id}
   >
     <ChannelIcon type={channel.type} />
     {channel.name}
+    {#if selectCategories && channel.type === ChannelType.GuildCategory}
+      <CornerDownLeft class="ml-auto size-4 opacity-50" />
+    {/if}
   </Command.Item>
 {/snippet}
 
 {#snippet channelsCommand()}
   <Command.Root class="w-full rounded-lg border shadow-md">
     <Command.Input placeholder="Search channels..." />
-    <Command.List>
+    <Command.List class="h-full">
       {#if !guildsManager.channelsLoaded}
         {#each new Array(5) as _}
           <Command.Item disabled>
@@ -192,7 +198,7 @@
         {/each}
       {:else if groupedChannels.categories.length === 0 && groupedChannels.uncategorized.length === 0}
         <Command.Empty>No channels found.</Command.Empty>
-      {:else if selectCategories && channelTypes.includes(ChannelType.GuildCategory)}
+      {:else if selectCategories && channelTypes.length <= 1}
         <!-- The logic for selecting ONLY categories -->
         {#each groupedChannels.categories as { cat }}
           {@render channelItem(cat)}
@@ -200,14 +206,16 @@
       {:else}
         <!-- The logic for selecting normal channels -->
         {#each groupedChannels.uncategorized as channel}
-          {@render channelItem(channel)}
+          {@render channelItem(channel, true)}
         {/each}
-        {#each groupedChannels.categories as { cat, channels }}
-          <Command.Group heading={cat.name}>
-            {#each channels as channel}
-              {@render channelItem(channel)}
-            {/each}
-          </Command.Group>
+        <!-- Show categories with their channels, or as standalone items if selectCategories is true -->
+        {#each groupedChannels.categories as cat (cat.cat.id)}
+          {#if selectCategories}
+            {@render channelItem(cat.cat)}
+          {/if}
+          {#each cat.channels as channel}
+            {@render channelItem(channel)}
+          {/each}
         {/each}
       {/if}
     </Command.List>

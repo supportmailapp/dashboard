@@ -1,4 +1,11 @@
-import type { IDBGuild, IDBUser, ITicketConfig, MentionableEntity, ReportLimitsConfig } from "$lib/sm-types";
+import type {
+  IDBGuild,
+  IDBUser,
+  ITicketConfig,
+  MentionableEntity,
+  ReportLimitsConfig,
+  SpecialChannelType,
+} from "$lib/sm-types";
 import type { Document, Types, UpdateQuery, UpdateWithAggregationPipeline } from "mongoose";
 import { DBGuild, DBUser } from "./models";
 import { TicketCategory } from "./models/src/ticketCategory";
@@ -19,6 +26,10 @@ export interface DBGuildProjectionReturns {
   reportSettings: Omit<IDBGuild["reportConfig"], "pausedUntil" | "limits"> & {
     pausedUntil: APIPausedUntil;
     limits: ReportLimitsConfig;
+    channels: {
+      setting: "IN" | "EX";
+      ids: { t: SpecialChannelType; id: string }[];
+    };
   };
 }
 
@@ -56,6 +67,7 @@ export async function getDBGuild<T extends DBGuildProjection>(
     case "reportSettings":
       return {
         ...jsonConfig.reportConfig,
+        channels: jsonConfig.reportConfig.channels ?? { setting: "EX", ids: [] },
         pausedUntil: jsonConfig.reportConfig.pausedUntil ?? defaultP,
       } as DBGuildProjectionReturns[T];
     default:

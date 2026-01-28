@@ -17,6 +17,7 @@
   import SystemControl from "./SystemControl.svelte";
   import { determineUnsavedChanges } from "$lib/utils";
   import { afterNavigate } from "$app/navigation";
+  import SpecialChannelCard from "./SpecialChannelCard.svelte";
 
   const config = $state({
     old: null as DBGuildProjectionReturns["reportSettings"] | null,
@@ -211,20 +212,25 @@
       notFoundText="No pings configured."
     />
     <MentionableSelectCard
-      title="Immune Settings"
-      description="Select users and roles which cannot be reported. **Use with care!**"
-      addButtonText="Add Immune Entity"
-      bind:entities={config.current.immune}
-      bind:loading={config.loading}
-      notFoundText="No immune entities configured."
-    />
-    <MentionableSelectCard
       title="Moderator Settings"
       description="Select users and roles which can take action on reports."
       addButtonText="Add Moderator"
       bind:entities={config.current.mods}
       bind:loading={config.loading}
       notFoundText="No moderators configured."
+    />
+    <MentionableSelectCard
+      title="Immune Settings"
+      description="Select users and roles which cannot be reported. <b>Use with care!</b>"
+      addButtonText="Add Immune Entity"
+      bind:entities={config.current.immune}
+      bind:loading={config.loading}
+      notFoundText="No immune entities configured."
+    />
+    <SpecialChannelCard
+      bind:setting={config.current.channels.setting}
+      bind:channels={config.current.channels.ids}
+      bind:loading={config.loading}
     />
   {:else}
     <div class="col-span-full flex h-48 items-center justify-center">

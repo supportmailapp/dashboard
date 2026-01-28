@@ -14,10 +14,6 @@
     entities?: MentionableEntity[];
     loading?: boolean;
     title: string;
-    /**
-     * The text to display for the label of the input field.
-     */
-    labelText?: string;
     description?: string;
     notFoundText?: string;
     addButtonText?: string;
@@ -27,11 +23,9 @@
     entities = $bindable(),
     loading = $bindable(),
     title,
-    labelText,
     description = "Select users and roles",
   }: Props = $props();
 
-  let popoverOpen = $state(false);
   let pingRoles = $derived((entities ?? []).filter((e) => e.typ === EntityType.role).map((e) => e.id));
   let pingUsers = $derived((entities ?? []).filter((e) => e.typ === EntityType.user).map((e) => e.id));
 
@@ -63,13 +57,10 @@
   <Card.Header>
     <Card.Title>{title}</Card.Title>
     {#if description}
-      <Card.Description>{description}</Card.Description>
+      <Card.Description>{@html description}</Card.Description>
     {/if}
   </Card.Header>
   <Card.Content class="space-y-2">
-    {#if labelText}
-      <Label>{labelText}</Label>
-    {/if}
     <div class="bg-input/30 border-input max-h-40 w-full overflow-y-auto rounded-md border p-3">
       <div class="flex flex-wrap gap-2">
         {#each entities ?? [] as entity}
@@ -80,7 +71,7 @@
             onDelete={() => handlePingDelete(entity)}
           />
         {/each}
-        <Popover.Root bind:open={popoverOpen}>
+        <Popover.Root>
           <Popover.Trigger
             class={buttonVariants({ variant: "outline", size: "icon", class: "size-7" })}
             disabled={!!loading}
