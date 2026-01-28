@@ -15,8 +15,6 @@
     loading?: boolean;
     title: string;
     description?: string;
-    notFoundText?: string;
-    addButtonText?: string;
   };
 
   let {

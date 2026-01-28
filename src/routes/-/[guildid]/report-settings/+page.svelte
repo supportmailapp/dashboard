@@ -18,6 +18,7 @@
   import { determineUnsavedChanges } from "$lib/utils";
   import { afterNavigate } from "$app/navigation";
   import SpecialChannelCard from "./SpecialChannelCard.svelte";
+  import NotificationsCard from "./NotificationsCard.svelte";
 
   const config = $state({
     old: null as DBGuildProjectionReturns["reportSettings"] | null,
@@ -90,14 +91,19 @@
     try {
       const { pausedUntil, ...rest } = current ?? {
         channelId: null,
-        actionsEnabled: false,
-        enabled: false,
-        limits: { opens: 20, perUserCreate: 5, perUserReceive: 1 },
         pausedUntil: {
           date: null,
           value: false,
         },
+        actionsEnabled: false,
+        enabled: false,
+        limits: { opens: 20, perUserCreate: 5, perUserReceive: 1 },
+        channels: { setting: "IN", ids: [] },
+        mods: [],
+        immune: [],
         pings: [],
+        autoResolve: false,
+        notifications: [],
       };
 
       const res = await apiClient.put(APIRoutes.reportsConfig(page.params.guildid!), {
@@ -191,7 +197,7 @@
     <SystemControl
       bind:pauseState
       bind:enabled={config.current.enabled}
-      bind:loading={config.loading}
+      loading={config.loading || config.saving}
       alertChannelSet={!!config.current.channelId}
       {fetchedState}
       {showDateError}
@@ -200,37 +206,30 @@
       bind:perUserReceive={config.current.limits.perUserReceive}
       bind:perUserCreate={config.current.limits.perUserCreate}
       bind:opens={config.current.limits.opens}
-      bind:loading={config.loading}
+      loading={config.loading || config.saving}
     />
-    <ChannelSelectCard bind:channelId={config.current.channelId} bind:loading={config.loading} />
-    <MentionableSelectCard
-      title="Notification Settings"
-      description="Select users and roles to notify when reports are created."
-      addButtonText="Add Ping"
-      bind:entities={config.current.pings}
-      bind:loading={config.loading}
-      notFoundText="No pings configured."
+    <ChannelSelectCard bind:channelId={config.current.channelId} loading={config.loading || config.saving} />
+    <NotificationsCard
+      bind:pings={config.current.pings}
+      bind:notis={config.current.notifications}
+      loading={config.loading || config.saving}
     />
     <MentionableSelectCard
       title="Moderators"
       description="Select users and roles which can take action on reports."
-      addButtonText="Add Moderator"
       bind:entities={config.current.mods}
-      bind:loading={config.loading}
-      notFoundText="No moderators configured."
+      loading={config.loading || config.saving}
     />
     <MentionableSelectCard
       title="Immune Settings"
       description="Select users and roles which cannot be reported. <b>Use with care!</b>"
-      addButtonText="Add Immune Entity"
       bind:entities={config.current.immune}
-      bind:loading={config.loading}
-      notFoundText="No immune entities configured."
+      loading={config.loading || config.saving}
     />
     <SpecialChannelCard
       bind:setting={config.current.channels.setting}
       bind:channels={config.current.channels.ids}
-      bind:loading={config.loading}
+      loading={config.loading || config.saving}
     />
   {:else}
     <div class="col-span-full flex h-48 items-center justify-center">
