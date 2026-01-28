@@ -192,7 +192,7 @@
   saveData={saveFn}
 />
 
-<SettingsGrid class="mt-6">
+<SettingsGrid class="mt-6 mb-40">
   {#if config.current}
     <SystemControl
       bind:channelId={config.current.channelId}

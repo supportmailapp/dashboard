@@ -358,7 +358,7 @@
       Sync Category Tags
     </Button>
   {/if}
-  <div class="flex w-full flex-col justify-start gap-1.5" class:max-w-3xl={config.current.length > 0}>
+  <div class="flex w-full flex-col justify-start gap-1.5 mb-40" class:max-w-3xl={config.current.length > 0}>
     <ul class="flex w-full flex-col gap-1">
       {#each config.current as cat, index (cat._id)}
         <li
