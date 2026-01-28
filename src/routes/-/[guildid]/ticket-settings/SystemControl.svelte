@@ -57,7 +57,7 @@
       <Tooltip.Root disabled={ticketForumSet} disableCloseOnTriggerClick={true}>
         <Tooltip.Trigger>
           <Label class="inline-flex w-full items-center gap-2">
-            <Switch   bind:checked={enabled} disabled={!ticketForumSet} />
+            <Switch bind:checked={enabled} disabled={!ticketForumSet} />
             {enabled ? "Enabled" : "Disabled"}
           </Label>
         </Tooltip.Trigger>

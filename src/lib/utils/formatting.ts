@@ -98,10 +98,7 @@ export function sortChannels<T extends GuildCoreChannel>(
     categories: sortedCategories.map((cat) => ({
       cat,
       channels: sortChannelsInCategory(
-        channels.filter((c) => c.parent_id === cat.id) as Exclude<
-          T,
-          APIGuildCategoryChannel
-        >[],
+        channels.filter((c) => c.parent_id === cat.id) as Exclude<T, APIGuildCategoryChannel>[],
       ),
     })),
   };

@@ -169,10 +169,12 @@
   <Command.Item
     value="{channel.id}:{channel.name}"
     class={cn(
-      "cursor-pointer transition duration-80 active:scale-[99%] truncate",
+      "cursor-pointer truncate transition duration-80 active:scale-[99%]",
       selectedId === channel.id && "bg-muted text-muted-foreground transform-none",
       selectCategories && channel.type !== ChannelType.GuildCategory && !uncategorized && "ps-5",
-      selectCategories && channel.type === ChannelType.GuildCategory && "text-primary-foreground font-semibold",
+      selectCategories &&
+        channel.type === ChannelType.GuildCategory &&
+        "text-primary-foreground font-semibold",
     )}
     onSelect={() => onSelect?.(channel, false)}
     disabled={selectedId === channel.id}

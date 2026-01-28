@@ -61,13 +61,13 @@
     const newOption: ClientStringSelectOption = {
       local: true,
       _id: new Date().toISOString(),
-      label: `Option ${(((field).options ?? []).length || 0) + 1}`,
-      value: `value-${(((field).options ?? []).length || 0) + 1}`,
+      label: `Option ${((field.options ?? []).length || 0) + 1}`,
+      value: `value-${((field.options ?? []).length || 0) + 1}`,
       description: "",
       emoji: "",
       default: false,
     };
-    (field).options = [...((field).options ?? []), newOption];
+    field.options = [...(field.options ?? []), newOption];
     editingOption = newOption;
     optionDialogOpen = true;
   }
@@ -79,29 +79,29 @@
 
   function moveOptionUp(index: number) {
     if (field?.type !== ComponentType.StringSelect) return;
-    if (!field || index === 0 || !(field ).options) return;
-    const newOptions = [...(field ).options];
+    if (!field || index === 0 || !field.options) return;
+    const newOptions = [...field.options];
     [newOptions[index - 1], newOptions[index]] = [newOptions[index], newOptions[index - 1]];
-    (field ).options = newOptions;
+    field.options = newOptions;
   }
 
   function moveOptionDown(index: number) {
     if (field?.type !== ComponentType.StringSelect) return;
-    if (!field || !(field ).options || index === (field ).options.length - 1) return;
-    const newOptions = [...(field ).options];
+    if (!field || !field.options || index === field.options.length - 1) return;
+    const newOptions = [...field.options];
     [newOptions[index], newOptions[index + 1]] = [newOptions[index + 1], newOptions[index]];
-    (field ).options = newOptions;
+    field.options = newOptions;
   }
 
   function upsertOption(option: ClientStringSelectOption) {
     if (field?.type !== ComponentType.StringSelect) return;
     if (!field) return;
-    if (!(field ).options) (field ).options = [];
-    const idx = (field ).options.findIndex((o) => o._id === option._id);
+    if (!field.options) field.options = [];
+    const idx = field.options.findIndex((o) => o._id === option._id);
     if (idx === -1) {
-      (field ).options = [...(field ).options, option];
+      field.options = [...field.options, option];
     } else {
-      (field ).options[idx] = option;
+      field.options[idx] = option;
     }
   }
 
@@ -115,7 +115,7 @@
   function switchFieldType<NewType extends ModalComponentType>(
     newType: NewType,
   ): NonNullable<Props["field"]> {
-    const oldField = $state.snapshot(field );
+    const oldField = $state.snapshot(field);
     // preserve id/local (or generate an id if this is a fresh field) so parent can identify the field after switching types
     const base = {
       id: typeof oldField?.id === "string" ? oldField.id : SnowflakeUtil.generate().toString(),
@@ -268,7 +268,10 @@
           <div class="flex w-full max-w-sm flex-col gap-1.5">
             <Label for="edit-style">Style</Label>
             <RadioGroup.Root
-              bind:value={() => (field as ITextInputComponent).style.toString(), (v) => ((field  as ITextInputComponent).style = Number(v))}
+              bind:value={
+                () => (field as ITextInputComponent).style.toString(),
+                (v) => ((field as ITextInputComponent).style = Number(v))
+              }
             >
               <div class="flex items-center space-x-2">
                 <RadioGroup.Item value="1" id="edit-style-short" />
@@ -346,7 +349,9 @@
                             variant="destructive"
                             onclick={() => {
                               if (confirm("Delete this option?"))
-                                (field as IStringSelectComponent).options = options.filter((o) => o._id !== option._id);
+                                (field as IStringSelectComponent).options = options.filter(
+                                  (o) => o._id !== option._id,
+                                );
                             }}><Trash /></Button
                           >
                         </div>
@@ -372,7 +377,10 @@
           <div class="flex w-full max-w-sm flex-col gap-1.5">
             <Label for="edit-required">
               <Checkbox
-                bind:checked={() => (field as RequireableFormComponent).required ?? false, (v) => ((field as RequireableFormComponent).required = v)}
+                bind:checked={
+                  () => (field as RequireableFormComponent).required ?? false,
+                  (v) => ((field as RequireableFormComponent).required = v)
+                }
                 id="edit-required"
               />
               Required

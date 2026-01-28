@@ -224,13 +224,7 @@
             <Label for="feedback-enabled">Enable Feedback</Label>
             <p class="text-muted-foreground text-sm">Collect feedback when tickets are closed</p>
           </Field.Content>
-          <Switch
-            
-            bind:checked={feedbackConfig.isEnabled}
-            id="feedback-enabled"
-            
-            disabled={saving}
-          />
+          <Switch bind:checked={feedbackConfig.isEnabled} id="feedback-enabled" disabled={saving} />
         </Field.Field>
 
         <div class="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">

@@ -104,8 +104,7 @@ const APIRoutes = {
   ticketFeedback: (guildId: string, ticketId: string) =>
     `${API_GUILD_BASE}/${guildId}/tickets/${ticketId}/feedback` as const,
   resetTickets: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/tickets/reset` as const,
-  syncTags: (guildId: string) =>
-    `${API_GUILD_BASE}/${guildId}/config/tickets/categories/sync-tags` as const,
+  syncTags: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/tickets/categories/sync-tags` as const,
 
   reports: (guildId: string) => `${API_GUILD_BASE}/${guildId}/reports` as const,
   reportsConfig: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/reports` as const,

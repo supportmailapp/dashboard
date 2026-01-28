@@ -8,29 +8,35 @@ const SnowflakePredicate = z.string().regex(/^\d{17,23}$/, {
   error: "Invalid Snowflake format",
 });
 
-export const StringSelectOptionSchema = z.object({
-  _id: z.string().trim().optional(), // will be removed anyways
-  local: z.literal(true, zem("Local must be true (Contact developer, this should not happen)")).optional(), // Used client-side only
-  label: z
-    .string()
-    .trim()
-    .min(1, zem("Label must be at least 1 character long"))
-    .max(45, zem("Label must be at most 45 characters long")),
-  value: z
-    .string()
-    .trim()
-    .min(1, zem("Value must be at least 1 character long"))
-    .max(100, zem("Value must be at most 100 characters long")),
-  description: z.string().trim().max(100, zem("Description must be at most 100 characters long")).optional(),
-  emoji: z.string().trim().max(100, zem("Emoji must be at most 100 characters long")).optional(),
-  default: z.boolean().default(false).optional(),
-}).transform((op) => {
-  delete op._id;
-  if ("local" in op) {
-    delete op.local;
-  }
-  return op;
-});
+export const StringSelectOptionSchema = z
+  .object({
+    _id: z.string().trim().optional(), // will be removed anyways
+    local: z.literal(true, zem("Local must be true (Contact developer, this should not happen)")).optional(), // Used client-side only
+    label: z
+      .string()
+      .trim()
+      .min(1, zem("Label must be at least 1 character long"))
+      .max(45, zem("Label must be at most 45 characters long")),
+    value: z
+      .string()
+      .trim()
+      .min(1, zem("Value must be at least 1 character long"))
+      .max(100, zem("Value must be at most 100 characters long")),
+    description: z
+      .string()
+      .trim()
+      .max(100, zem("Description must be at most 100 characters long"))
+      .optional(),
+    emoji: z.string().trim().max(100, zem("Emoji must be at most 100 characters long")).optional(),
+    default: z.boolean().default(false).optional(),
+  })
+  .transform((op) => {
+    delete op._id;
+    if ("local" in op) {
+      delete op.local;
+    }
+    return op;
+  });
 
 const BaseFormComponentSchema = z.object({
   id: SnowflakePredicate.default(() => SnowflakeUtil.generate().toString()),

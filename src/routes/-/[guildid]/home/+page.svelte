@@ -115,7 +115,8 @@
         This dashboard is intended to make your experience better by giving you quick easy access to all the
         tools and features you love.<br />
         If you have any questions, feedback, or just want to say hi, don't hesitate to reach out in the
-        <a href="https://discord.gg/x8sC8MpeYX" class="link link-hover">Support Server</a> – I'm always happy to hear from you.
+        <a href="https://discord.gg/x8sC8MpeYX" class="link link-hover">Support Server</a> – I'm always happy to
+        hear from you.
       </p>
 
       <p>Thanks for being a part of this journey.</p>
