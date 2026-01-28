@@ -63,6 +63,7 @@ const putSchema = z
     channelId: SnowflakePredicate.nullable().default(null),
     enabled: z.boolean().default(false),
     actionsEnabled: z.boolean().default(true),
+    autoResolve: z.boolean().default(false),
     channels: channelsSchema.default({
       setting: "EX",
       ids: [],
@@ -128,6 +129,7 @@ export async function PUT({ request, locals, params }) {
       },
       "reportConfig.channelId": data.channelId,
       "reportConfig.actionsEnabled": data.actionsEnabled,
+      "reportConfig.autoResolve": data.autoResolve,
       "reportConfig.channels": data.channels,
       "reportConfig.pings": data.pings,
       "reportConfig.immune": data.immune,
