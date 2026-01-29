@@ -7,7 +7,10 @@ const BlacklistEntrySchema = new Schema<IBlacklistEntry>(
     id: { type: String, required: true }, // id of entity
     _type: { type: Number, required: true },
     guildId: { type: String, required: false },
-    scope: { type: Number, required: true },
+    /**
+     * @deprecated Use `scopes` instead
+     */
+    scope: { type: Number, required: false },
     scopes: {
       type: Schema.Types.BigInt,
       required: true,
