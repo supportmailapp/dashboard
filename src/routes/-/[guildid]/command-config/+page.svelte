@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Plus from "@lucide/svelte/icons/plus";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import SaveAlert from "$lib/components/SaveAlert.svelte";
   import * as Card from "$ui/card/index.js";
@@ -11,16 +12,14 @@
   import apiClient from "$lib/utils/apiClient";
   import { APIRoutes } from "$lib/urls";
   import { page } from "$app/state";
-  import { PUBLIC_BLACKLIST_COMMAND_ID } from "$env/static/public";
   import { afterNavigate } from "$app/navigation";
   import Mention from "$lib/components/discord/Mention.svelte";
-  import ChannelSelect from "$lib/components/discord/ChannelSelect.svelte";
-  import { buttonVariants } from "$ui/button";
-  import Plus from "@lucide/svelte/icons/plus";
-  import { ChannelType } from "discord-api-types/v10";
-  import { fade } from "svelte/transition";
   import RoleSelect from "$lib/components/discord/RoleSelect.svelte";
   import UserSelect from "$lib/components/discord/UserSelect.svelte";
+  import ChannelSelect from "$lib/components/discord/ChannelSelect.svelte";
+  import { buttonVariants } from "$ui/button";
+  import { ChannelType } from "discord-api-types/v10";
+  import { fade } from "svelte/transition";
   import { GetPermissionsArray, PermissionFlagsBits } from "$lib/utils/permissions.js";
   import Combobox from "$ui/combobox/Combobox.svelte";
   import { BitField } from "$lib/utils/bitfields";
@@ -38,7 +37,6 @@
   const DefaultSubcommandConfig = Subcommands.map((sub) => sub.value).reduce(
     (acc, path) => {
       acc[path] = {
-        id: PUBLIC_BLACKLIST_COMMAND_ID,
         guildId: page.params.guildid!,
         commandPath: path,
         channels: [],
@@ -90,7 +88,7 @@
 
   async function fetchCommand() {
     const res = await apiClient.get<APICommandConfig[]>(
-      APIRoutes.commandConfig(page.params.guildid!, PUBLIC_BLACKLIST_COMMAND_ID),
+      APIRoutes.commandConfig(page.params.guildid!, { path: "blacklist" }),
     );
 
     selectedSubcommandPath = "";
@@ -118,12 +116,9 @@
     if (!commands) return;
     loading = true;
 
-    const res = await apiClient.put<APICommandConfig[]>(
-      APIRoutes.commandConfig(page.params.guildid!, PUBLIC_BLACKLIST_COMMAND_ID),
-      {
-        json: Object.values($state.snapshot(commands)),
-      },
-    );
+    const res = await apiClient.put<APICommandConfig[]>(APIRoutes.commandConfig(page.params.guildid!), {
+      json: Object.values($state.snapshot(commands)),
+    });
 
     if (res.ok) {
       const jsonres = await res.json();
@@ -190,9 +185,7 @@
   async function reset() {
     if (!page.params.guildid) return;
     loading = true;
-    const res = await apiClient.delete(
-      APIRoutes.commandConfig(page.params.guildid, PUBLIC_BLACKLIST_COMMAND_ID),
-    );
+    const res = await apiClient.delete(APIRoutes.commandConfig(page.params.guildid, { path: "blacklist" }));
     if (res.ok) {
       toast.success("Command configuration has been reset to default.");
     } else {
@@ -270,6 +263,15 @@
                     <ChannelSelect
                       selectCategories
                       allowCustomChannels
+                      channelTypes={[
+                        ChannelType.GuildText,
+                        ChannelType.GuildAnnouncement,
+                        ChannelType.GuildForum,
+                        ChannelType.GuildCategory,
+                        ChannelType.PublicThread,
+                        ChannelType.GuildVoice,
+                        ChannelType.GuildStageVoice,
+                      ]}
                       excludedChannelIds={selectedSubcommand?.channels.map((c) => c.id) ?? []}
                       onSelect={({ type, id }) =>
                         addIdToSelected(

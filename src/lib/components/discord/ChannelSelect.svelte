@@ -58,8 +58,19 @@
   let channelButtonStyle = $state<"success" | "default">("default");
   const guildsManager = getManager();
 
-  function isChannelExcluded(channel: GuildCoreChannel): boolean {
-    return excludedChannelIds !== undefined && excludedChannelIds.includes(channel.id);
+  /**
+   * Checks if a channel is excluded.
+   * @return 0 = not excluded, 1 = excluded, 2 = excluded (category with children)
+   */
+  function isChannelExcluded(channel: GuildCoreChannel): 0 | 1 | 2 {
+    if (channel.type === ChannelType.GuildCategory) {
+      return excludedChannelIds?.includes(channel.id) ? 2 : 0;
+    }
+    return excludedChannelIds?.includes(channel.id)
+      ? 1
+      : !!channel.parent_id && excludedChannelIds?.includes(channel.parent_id!)
+        ? 2
+        : 0;
   }
 
   let groupedChannels = $derived.by(() => {

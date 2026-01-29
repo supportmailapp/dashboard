@@ -4,6 +4,7 @@ export * from "./forms.zod.js";
 import { FeedbackComponentSchema, FormComponentsSchema, NormalFormComponentSchema } from "./forms.zod.js";
 import { arrayIsDistinct, zem } from "$lib/utils.js";
 import { PermissionFlagsBits } from "$lib/utils/permissions.js";
+import { CommandpathRegex } from "$lib/constants.js";
 
 export const ObjectIdSchema = z.string().regex(/^[a-f\d]{24}$/i, zem("Invalid ObjectId format"));
 
@@ -173,15 +174,11 @@ export const GetTagSchemaForGuild = (guildId: string) =>
 export type TagPut = z.infer<typeof TagPutSchema>;
 
 export const CommandConfigSchema = z.object({
-  id: SnowflakePredicate,
-  commandPath: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .regex(
-      /^([-_'\p{L}\p{N}\p{sc=Deva}\p{sc=Thai}]{1,32})(\/[-_'\p{L}\p{N}\p{sc=Deva}\p{sc=Thai}]{1,32}){0,2}$/iu,
-      zem("Invalid command path format"),
-    ),
+  /**
+   * Command ID, optional
+   */
+  id: SnowflakePredicate.optional(),
+  commandPath: z.string().trim().toLowerCase().regex(CommandpathRegex, zem("Invalid command path format")),
   guildId: SnowflakePredicate.nullable(), // null for global commands, currently for all!
   channels: z
     .array(z.object({ id: SnowflakePredicate, t: z.enum(SpecialChannelType) }))

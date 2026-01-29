@@ -123,8 +123,20 @@ const APIRoutes = {
 
   tags: (guildId: string) => `${API_GUILD_BASE}/${guildId}/tags` as const,
 
-  commandConfig: (guildId: string, commandId: string) =>
-    `${API_GUILD_BASE}/${guildId}/config/commands/${commandId}` as const,
+  /**
+   * Used for command configuration operations.
+   * - `GET` - Fetch command configurations. Requires `path` or `id` query parameter. `path` allows partial matching (^). Path takes precedence over id.
+   * - `PUT` - Create or update command configurations. Expects an array of command configuration objects. Doesn't need any query parameters.
+   * - `DELETE` - Delete command configurations. Requires `path` or `id` query parameter. `path` allows partial matching (^). Path takes precedence over id.
+   */
+  commandConfig: (guildId: string, { path, id }: { path?: string; id?: string } = {}) => {
+    const baseUrl = `${API_GUILD_BASE}/${guildId}/config/commands`;
+    const searchParams = new URLSearchParams();
+    if (path) searchParams.set("path", path);
+    if (id) searchParams.set("id", id);
+    const queryString = searchParams.toString();
+    return `${baseUrl}?${queryString}`.replace(/\?$/, "");
+  },
 };
 
 const LegalLinks = {
