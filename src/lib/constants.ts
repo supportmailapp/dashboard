@@ -72,3 +72,6 @@ export const pausePresets = [
 
 export const ORIGIN = dev ? "http://localhost:5050" : "https://dash.supportmail.dev";
 export const WS_ORIGIN = dev ? "ws://localhost:4000" : "wss://ws.supportmail.dev";
+
+const CommandnameRegex = `^[-_'\p{L}\p{N}\p{sc=Deva}\p{sc=Thai}]{1,32}$`;
+export const CommandpathRegex = new RegExp(`^${CommandnameRegex}(\\/${CommandnameRegex}){0,2}$`, "u");

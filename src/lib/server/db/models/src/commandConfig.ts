@@ -4,7 +4,7 @@ import { SpecialChannelSchema } from "./utilSchemas";
 const { models } = pkg;
 
 const CommandConfigSchema = new Schema<ICommandConfig>({
-  id: { type: String, required: true },
+  id: { type: String, required: false },
   commandPath: {
     type: String,
     required: true,
