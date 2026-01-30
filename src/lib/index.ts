@@ -31,17 +31,17 @@ export function getNextPathFromGuildPath(pathname: string) {
 
 export const componentDefaults = {
   [ComponentType.TextDisplay]: { content: "Hello world" },
+  [ComponentType.Container]: { components: [], accent_color: undefined, spoiler: false },
+  [ComponentType.Separator]: { divider: true, spacing: SeparatorSpacingSize.Small },
   [ComponentType.ActionRow]: { components: [] as APIButtonComponentWithURL[] },
   [ComponentType.Section]: {
     components: [{ type: ComponentType.TextDisplay, content: "Hello world" }],
     accessory: undefined,
   },
-  [ComponentType.Container]: { components: [], accent_color: undefined, spoiler: false },
   [ComponentType.MediaGallery]: { items: [{ url: "", description: "", spoiler: false }] } as Pick<
     SMMediaGalleryComponent,
     "items"
   >,
-  [ComponentType.Separator]: { divider: true, spacing: SeparatorSpacingSize.Small },
 };
 
 export const componentOptions: { label: string; type: keyof typeof componentDefaults }[] = [

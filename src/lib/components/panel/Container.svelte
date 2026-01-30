@@ -17,6 +17,7 @@
   import Button from "$ui/button/button.svelte";
   import RemoveButtonWrapper from "./RemoveButtonWrapper.svelte";
   import Input from "$ui/input/input.svelte";
+  import ComponentTypeIcon from "./ComponentTypeIcon.svelte";
   //   import MediaGallery from "./MediaGallery.svelte";
   //   import ActionRow from "./ActionRow.svelte";
 
@@ -48,7 +49,7 @@
 <RemoveButtonWrapper {onRemove}>
   <div
     class={cn(
-      "container-component relative space-y-1 rounded border py-1 px-2 transition duration-200 ease-in-out",
+      "container-component relative space-y-1 rounded border px-2 py-1 transition duration-200 ease-in-out",
       spoiler && "bg-linear-to-br from-violet-500/20 to-blue-500/20",
     )}
     style="--accentColor: {accent_color ? `#${numberToHex(accent_color)}` : 'transparent'};"
@@ -91,7 +92,7 @@
       {/if}
     {/each}
 
-    <div class="not-first:mt-3 flex w-full">
+    <div class="flex w-full not-first:mt-3">
       <DropdownMenu.Root bind:open={selectorOpen}>
         <DropdownMenu.Trigger
           disabled={totalComponents >= 40}
@@ -103,7 +104,10 @@
         <DropdownMenu.Content>
           <DropdownMenu.Group>
             {#each availableOptions as option (option.type)}
-              <DropdownMenu.Item onSelect={() => addComponent(option.type)}>{option.label}</DropdownMenu.Item>
+              <DropdownMenu.Item onSelect={() => addComponent(option.type)}>
+                <ComponentTypeIcon type={option.type} />
+                {option.label}
+              </DropdownMenu.Item>
             {/each}
           </DropdownMenu.Group>
         </DropdownMenu.Content>

@@ -8,6 +8,7 @@
   import TextDisplay from "./TextDisplay.svelte";
   import Separator from "./Separator.svelte";
   import Container from "./Container.svelte";
+  import ComponentTypeIcon from "./ComponentTypeIcon.svelte";
 
   let {
     components = $bindable([]),
@@ -116,7 +117,10 @@
     <DropdownMenu.Content>
       <DropdownMenu.Group>
         {#each componentOptions as option (option.type)}
-          <DropdownMenu.Item onSelect={() => addComponent(option.type)}>{option.label}</DropdownMenu.Item>
+          <DropdownMenu.Item onSelect={() => addComponent(option.type)}>
+            <ComponentTypeIcon type={option.type} />
+            {option.label}
+          </DropdownMenu.Item>
         {/each}
       </DropdownMenu.Group>
     </DropdownMenu.Content>
