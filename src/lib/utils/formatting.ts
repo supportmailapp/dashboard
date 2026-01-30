@@ -108,8 +108,8 @@ export function sortChannels<T extends GuildCoreChannel>(
   return result;
 }
 
-export function numberToHex(number: number): string {
-  return number.toString(16).padStart(6, "0");
+export function numberToHex(number: number, withHashtag: boolean = false): string {
+  return (withHashtag ? "#" : "") + number.toString(16).padStart(6, "0");
 }
 
 export function hexToNumber(hex: string): number {

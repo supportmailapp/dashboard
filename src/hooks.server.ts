@@ -144,6 +144,7 @@ type APIRouteConfig = {
 const UNAUTHENTICATED_ROUTES: Record<string, APIRouteConfig> = {
   "/api/*/testing": { allowUnauthenticated: true },
   "/api/*/health": { allowUnauthenticated: true },
+  "/test": { allowUnauthenticated: true },
 };
 
 // Optimize route matching with compiled patterns

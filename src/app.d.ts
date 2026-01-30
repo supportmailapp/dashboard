@@ -388,6 +388,8 @@ declare global {
           image: Unsplash.MyImage;
         };
   }
+
+  type ComponentWithRemoveHandler<T extends Record<string, any> = {}> = T & { onRemove: () => void };
 }
 
 export {};
