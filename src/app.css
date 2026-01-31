@@ -269,7 +269,7 @@
     border: none;
     cursor: pointer;
     font-weight: 600;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: start;
     gap: 2px;
@@ -318,6 +318,7 @@
     display: flex;
     align-items: center;
     justify-content: start;
+    flex: 0;
     gap: 8px;
     min-width: 130px;
     max-width: 400px;
@@ -335,7 +336,6 @@
       color: color-mix(in oklab, white 90%, black);
       width: 100%;
       display: flex;
-      flex-grow: 1;
       &::placeholder {
         color: color-mix(in oklab, white 60%, black);
       }

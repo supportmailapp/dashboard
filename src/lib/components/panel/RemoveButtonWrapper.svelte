@@ -12,7 +12,7 @@
 </script>
 
 <div class={cn("flex w-full flex-row items-start gap-0.5", className)}>
-  <div class="flex-1">
+  <div class="flex-1 min-w-0">
     {@render children?.()}
   </div>
   <Button

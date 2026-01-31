@@ -33,12 +33,12 @@
 </script>
 
 <RemoveButtonWrapper {onRemove}>
-  <div class="flex flex-1 flex-row gap-2 border p-2 items-center flex-wrap rounded">
+  <div class="flex flex-1 flex-row gap-2 border p-2 items-center flex-wrap rounded max-w-full overflow-x-hidden *:max-w-full w-full">
     {#each components as component, index (index)}
       {#if component.type === ComponentType.Button}
         <Button
           bind:action={component.action}
-          bind:label={() => component.label || "Button", (v) => (component.label = v)}
+          bind:label={() => component.label || "", (v) => (component.label = v)}
           bind:url={
             () => (component.style === 5 ? component.url : undefined),
             (v) => {

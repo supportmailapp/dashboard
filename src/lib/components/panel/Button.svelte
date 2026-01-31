@@ -38,9 +38,8 @@
     onRemove = () => undefined,
   }: Props = $props();
 
-  let emojiValid = $state(true); // TODO: Why was this even added?
+  let emojiValid = $state(true);
   let emojiBuffer = $state(emoji);
-  let emojiOpen = $state(false);
   let buttonSettingsOpen = $state(false);
 
   function handleEmojiBlur() {
@@ -113,80 +112,10 @@
 <!-- Imitate Discord's button component -->
 <RemoveButtonWrapper {onRemove} class="flex-0">
   <div
-    class={cn(
-      "w-fit max-w-100 truncate overflow-visible",
-      buttonStyleClasses.base,
-      buttonStyleClasses[style],
-    )}
+    class={cn("max-w-100 truncate", buttonStyleClasses.base, buttonStyleClasses[style])}
   >
     <!-- Button Config popover -->
     <Popover.Root bind:open={buttonSettingsOpen}>
-      <Popover.Trigger class={buttonVariants({ variant: "ghost", size: "icon-sm" })}>
-        <Cog class="size-4.5" />
-      </Popover.Trigger>
-      <Popover.Content class="flex w-xs flex-col gap-3 p-3" sideOffset={5}>
-        <!-- Action Selection Dropdown -->
-        <Select.Root type="single" bind:value={() => action, (v) => setAction(v as SMCustomAction)}>
-          <Select.Trigger class="w-full">
-            Action: {buttonActionLabels[action]}
-          </Select.Trigger>
-          <Select.Content>
-            {#each Object.keys(buttonActionLabels) as value}
-              <Select.Item {value}>
-                {buttonActionLabels[value as SMCustomAction]}
-              </Select.Item>
-            {/each}
-          </Select.Content>
-        </Select.Root>
-
-        <!-- Style Selection Dropdown -->
-        <Select.Root
-          type="single"
-          bind:value={() => String(style), (v) => setStyle(parseInt(v) as Props["style"])}
-        >
-          <Select.Trigger class="w-full">
-            Style: {buttonStyleLabels[style]}
-          </Select.Trigger>
-          <Select.Content>
-            {#each Object.entries(buttonStyleLabels) as [value, label]}
-              <Select.Item {value}>
-                {label}
-              </Select.Item>
-            {/each}
-          </Select.Content>
-        </Select.Root>
-
-        <!-- Conditional Inputs; URL when Link; Category when Ticket Create -->
-        {#if action === "link"}
-          <Field.Field orientation="vertical" class="gap-0">
-            <Field.Label>URL</Field.Label>
-            <Input
-              type="url"
-              class="w-full text-sm"
-              placeholder="https://example.com"
-              bind:value={url}
-              required
-            />
-          </Field.Field>
-        {:else}
-          <p class="text-muted-foreground text-center text-sm font-normal">
-            No additional settings for this action.
-          </p>
-        {/if}
-        <Button
-          class="w-full"
-          variant="secondary"
-          size="sm"
-          onclick={() => {
-            buttonSettingsOpen = false;
-          }}
-        >
-          Save
-        </Button>
-      </Popover.Content>
-    </Popover.Root>
-    <!-- Emoji Popover -->
-    <Popover.Root bind:open={emojiOpen}>
       <Popover.Trigger class={buttonVariants({ variant: "ghost", size: "icon-sm" })}>
         {#if !!emoji && emoji.length > 0}
           {@const parsed = validateEmoji(emoji) ?? null}
@@ -207,33 +136,87 @@
             </span>
           {/if}
         {:else}
-          <Smile class="size-4.5" />
+          <Cog class="size-4.5" />
         {/if}
       </Popover.Trigger>
-      <Popover.Content class="flex w-xs flex-col gap-2 p-3" sideOffset={5}>
-        <!-- Emoji Input Binding -->
-        <Field.Field class="gap-0">
+      <Popover.Content class="flex w-xs flex-col gap-3 p-3" sideOffset={5}>
+        <!-- Emoji Input -->
+        <Field.Field orientation="vertical" class="gap-2">
           <Field.Label>Emoji</Field.Label>
           <Input
             type="text"
-            class="w-full px-1 text-sm"
-            placeholder="<:emoji_name:emoji_id>"
+            class="w-full text-sm"
+            placeholder="<:emoji_name:emoji_id> or 😀"
             bind:value={emojiBuffer}
             onblur={handleEmojiBlur}
             min="3"
             max="100"
           />
-          <Button
-            class="w-full"
-            variant="secondary"
-            size="sm"
-            onclick={() => {
-              emojiOpen = false;
-            }}
-          >
-            Save
-          </Button>
         </Field.Field>
+
+        <Field.Group>
+          <Field.Field orientation="vertical" class="gap-2">
+            <Field.Label>Action</Field.Label>
+            <!-- Action Selection Dropdown -->
+            <Select.Root type="single" bind:value={() => action, (v) => setAction(v as SMCustomAction)}>
+              <Select.Trigger class="w-full">
+                Action: {buttonActionLabels[action]}
+              </Select.Trigger>
+              <Select.Content>
+                {#each Object.keys(buttonActionLabels) as value}
+                  <Select.Item {value}>
+                    {buttonActionLabels[value as SMCustomAction]}
+                  </Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+
+            <!-- Style Selection Dropdown -->
+            <Select.Root
+              type="single"
+              bind:value={() => String(style), (v) => setStyle(parseInt(v) as Props["style"])}
+            >
+              <Select.Trigger class="w-full">
+                Style: {buttonStyleLabels[style]}
+              </Select.Trigger>
+              <Select.Content>
+                {#each Object.entries(buttonStyleLabels) as [value, label]}
+                  <Select.Item {value}>
+                    {label}
+                  </Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+          </Field.Field>
+
+          <!-- Conditional Inputs; URL when Link; Category when Ticket Create -->
+          {#if action === "link"}
+            <Field.Field orientation="vertical" class="gap-0">
+              <Field.Label>URL</Field.Label>
+              <Input
+                type="url"
+                class="w-full text-sm"
+                placeholder="https://example.com"
+                bind:value={url}
+                required
+              />
+            </Field.Field>
+          {:else}
+            <p class="text-muted-foreground text-center text-sm font-normal">
+              No additional settings for this action.
+            </p>
+          {/if}
+        </Field.Group>
+        <Button
+          class="w-full"
+          variant="secondary"
+          size="sm"
+          onclick={() => {
+            buttonSettingsOpen = false;
+          }}
+        >
+          Save
+        </Button>
       </Popover.Content>
     </Popover.Root>
 
