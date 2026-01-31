@@ -11,6 +11,7 @@
   import ComponentTypeIcon from "./ComponentTypeIcon.svelte";
   import ActionRow from "./ActionRow.svelte";
   import { setTagsManager } from "./tags.svelte";
+  import MediaGallery from "./MediaGallery.svelte";
 
   let {
     components = $bindable([]),
@@ -90,6 +91,12 @@
         onRemove={() => (components = components.filter((_, i) => i !== index))}
         {totalComponents}
       />
+    {:else if component.type === ComponentType.MediaGallery}
+      <MediaGallery
+        bind:items={component.items}
+        onRemove={() => (components = components.filter((_, i) => i !== index))}
+        {totalComponents}
+      />
       <!-- 
         {:else if component.type === ComponentType.Section}
       <Section
@@ -100,12 +107,6 @@
         {categories}
         {onCategoryFetch}
       />
-    {:else if component.type === ComponentType.MediaGallery}
-      <MediaGallery
-        bind:items={component.items}
-        onRemove={() => (components = components.filter((_, i) => i !== index))}
-        {totalComponents}
-      /> 
       -->
     {/if}
   {/each}

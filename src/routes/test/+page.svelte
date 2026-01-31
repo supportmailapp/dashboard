@@ -10,8 +10,8 @@
       content: "This is a text display component.",
     },
     {
-      type: ComponentType.ActionRow,
-      components: [],
+      type: ComponentType.MediaGallery,
+      items: [],
     },
   ]);
 </script>

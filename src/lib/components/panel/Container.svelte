@@ -18,7 +18,7 @@
   import RemoveButtonWrapper from "./RemoveButtonWrapper.svelte";
   import Input from "$ui/input/input.svelte";
   import ComponentTypeIcon from "./ComponentTypeIcon.svelte";
-  //   import MediaGallery from "./MediaGallery.svelte";
+  import MediaGallery from "./MediaGallery.svelte";
   import ActionRow from "./ActionRow.svelte";
 
   type Props = Omit<SMContainerComponent, "type"> &
@@ -72,6 +72,12 @@
           onRemove={() => (components = components.filter((_, i) => i !== index))}
           {totalComponents}
         />
+      {:else if component.type === ComponentType.MediaGallery}
+        <MediaGallery
+          bind:items={component.items}
+          onRemove={() => (components = components.filter((_, i) => i !== index))}
+          {totalComponents}
+        />
         <!-- 
         {:else if component.type === ComponentType.Section}
       <Section
@@ -81,12 +87,6 @@
         {totalComponents}
         {categories}
         {onCategoryFetch}
-      />
-    {:else if component.type === ComponentType.MediaGallery}
-      <MediaGallery
-        bind:items={component.items}
-        onRemove={() => (components = components.filter((_, i) => i !== index))}
-        {totalComponents}
       />
        -->
       {/if}
