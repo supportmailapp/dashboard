@@ -1,6 +1,6 @@
 <script lang="ts">
   import { componentDefaults, componentOptions } from "$lib";
-  import type { ITicketCategory, SMContainerComponent } from "$lib/sm-types";
+  import type { SMContainerComponent } from "$lib/sm-types";
   import { hexToNumber, numberToHex } from "$lib/utils/formatting";
   import Paintbrush from "@lucide/svelte/icons/paintbrush";
   import Eye from "@lucide/svelte/icons/eye";
@@ -19,7 +19,7 @@
   import Input from "$ui/input/input.svelte";
   import ComponentTypeIcon from "./ComponentTypeIcon.svelte";
   //   import MediaGallery from "./MediaGallery.svelte";
-  //   import ActionRow from "./ActionRow.svelte";
+  import ActionRow from "./ActionRow.svelte";
 
   type Props = Omit<SMContainerComponent, "type"> &
     ComponentWithRemoveHandler & {
@@ -66,7 +66,14 @@
           bind:spacing={component.spacing}
           onRemove={() => (components = components.filter((_, i) => i !== index))}
         />
-        <!-- {:else if component.type === ComponentType.Section}
+      {:else if component.type === ComponentType.ActionRow}
+        <ActionRow
+          bind:components={component.components}
+          onRemove={() => (components = components.filter((_, i) => i !== index))}
+          {totalComponents}
+        />
+        <!-- 
+        {:else if component.type === ComponentType.Section}
       <Section
         bind:components={component.components}
         bind:accessory={component.accessory}
@@ -81,14 +88,7 @@
         onRemove={() => (components = components.filter((_, i) => i !== index))}
         {totalComponents}
       />
-    {:else if component.type === ComponentType.ActionRow}
-      <ActionRow
-        bind:components={component.components}
-        onRemove={() => (components = components.filter((_, i) => i !== index))}
-        {totalComponents}
-        {categories}
-        {onCategoryFetch}
-      /> -->
+       -->
       {/if}
     {/each}
 
@@ -114,7 +114,7 @@
       </DropdownMenu.Root>
     </div>
 
-    <div class="mt-3 flex flex-row gap-2">
+    <div class="mt-3 flex flex-row justify-center gap-2">
       <!-- Popover for setting accent color -->
       <Popover.Root>
         <Popover.Trigger

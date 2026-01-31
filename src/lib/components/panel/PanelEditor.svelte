@@ -84,13 +84,14 @@
         onRemove={() => (components = components.filter((_, i) => i !== index))}
         {totalComponents}
       />
-      {:else if component.type === ComponentType.ActionRow}
-        <ActionRow
-          bind:components={component.components}
-          onRemove={() => (components = components.filter((_, i) => i !== index))}
-          {totalComponents}
-        />
-      <!-- {:else if component.type === ComponentType.Section}
+    {:else if component.type === ComponentType.ActionRow}
+      <ActionRow
+        bind:components={component.components}
+        onRemove={() => (components = components.filter((_, i) => i !== index))}
+        {totalComponents}
+      />
+      <!-- 
+        {:else if component.type === ComponentType.Section}
       <Section
         bind:components={component.components}
         bind:accessory={component.accessory}
@@ -104,7 +105,8 @@
         bind:items={component.items}
         onRemove={() => (components = components.filter((_, i) => i !== index))}
         {totalComponents}
-      /> -->
+      /> 
+      -->
     {/if}
   {/each}
   <DropdownMenu.Root bind:open={selectorOpen}>
