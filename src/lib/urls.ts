@@ -121,7 +121,8 @@ const APIRoutes = {
    */
   blacklist: (guildId: string) => `${API_GUILD_BASE}/${guildId}/blacklist` as const,
 
-  tags: (guildId: string) => `${API_GUILD_BASE}/${guildId}/tags` as const,
+  tags: (guildId: string, partial?: boolean) =>
+    `${API_GUILD_BASE}/${guildId}/tags${partial ? "?partial=true" : ""}` as const,
 
   /**
    * Used for command configuration operations.

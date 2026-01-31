@@ -6,13 +6,16 @@
   import { ButtonStyle } from "discord-api-types/v10";
   import Smile from "@lucide/svelte/icons/smile";
   import Cog from "@lucide/svelte/icons/cog";
-  import { onMount } from "svelte";
+  import { onMount, untrack } from "svelte";
   import { cn } from "$lib/utils";
   import type { SMCustomAction } from "$lib/sm-types/src";
   import RemoveButtonWrapper from "./RemoveButtonWrapper.svelte";
   import { validateEmoji } from "$lib/utils/formatting";
   import { Button, buttonVariants } from "$ui/button";
   import Input from "$ui/input/input.svelte";
+  import Combobox from "$ui/combobox/Combobox.svelte";
+  import { getTagsManager } from "./tags.svelte";
+  import LoadingSpinner from "../LoadingSpinner.svelte";
 
   type Props = ComponentWithRemoveHandler<{
     action: SMCustomAction;
@@ -38,6 +41,7 @@
     onRemove = () => undefined,
   }: Props = $props();
 
+  const tagsManager = getTagsManager();
   let emojiValid = $state(true);
   let emojiBuffer = $state(emoji);
   let buttonSettingsOpen = $state(false);
@@ -102,6 +106,31 @@
     }
   }
 
+  /**
+   * A custom filter function for whether each command item should match the query.
+   * It should return a number between 0 and 1, with 1 being a perfect match, and 0 being no match,
+   * resulting in the item being hidden entirely.
+   */
+  function filterTagsByName(tagId: string, search: string, commandKeywords?: string[]): number {
+    const tagName = tagsManager.tags.get(tagId);
+    if (!tagName) return 0;
+
+    const lowerSearch = search.toLowerCase();
+    const lowerTagName = tagName.toLowerCase();
+
+    if (lowerTagName === lowerSearch) return 1;
+    if (lowerTagName.includes(lowerSearch)) return 0.5;
+    if (commandKeywords?.some((kw) => lowerTagName.includes(kw.toLowerCase()))) return 0.3;
+
+    return 0;
+  }
+
+  $effect(() => {
+    if (buttonSettingsOpen && action === "reply" && !tagsManager.loaded) {
+      untrack(() => tagsManager.fetchTags());
+    }
+  });
+
   onMount(() => {
     if (!url && action === "link") {
       url = "https://example.com";
@@ -111,9 +140,7 @@
 
 <!-- Imitate Discord's button component -->
 <RemoveButtonWrapper {onRemove} class="flex-0">
-  <div
-    class={cn("max-w-100 truncate", buttonStyleClasses.base, buttonStyleClasses[style])}
-  >
+  <div class={cn("max-w-100 truncate", buttonStyleClasses.base, buttonStyleClasses[style])}>
     <!-- Button Config popover -->
     <Popover.Root bind:open={buttonSettingsOpen}>
       <Popover.Trigger class={buttonVariants({ variant: "ghost", size: "icon-sm" })}>
@@ -155,13 +182,11 @@
         </Field.Field>
 
         <Field.Group>
-          <Field.Field orientation="vertical" class="gap-2">
+          <Field.Field orientation="horizontal" class="gap-2">
             <Field.Label>Action</Field.Label>
             <!-- Action Selection Dropdown -->
             <Select.Root type="single" bind:value={() => action, (v) => setAction(v as SMCustomAction)}>
-              <Select.Trigger class="w-full">
-                Action: {buttonActionLabels[action]}
-              </Select.Trigger>
+              <Select.Trigger>{buttonActionLabels[action]}</Select.Trigger>
               <Select.Content>
                 {#each Object.keys(buttonActionLabels) as value}
                   <Select.Item {value}>
@@ -170,15 +195,16 @@
                 {/each}
               </Select.Content>
             </Select.Root>
+          </Field.Field>
 
+          <Field.Field orientation="horizontal">
+            <Field.Label>Style</Field.Label>
             <!-- Style Selection Dropdown -->
             <Select.Root
               type="single"
               bind:value={() => String(style), (v) => setStyle(parseInt(v) as Props["style"])}
             >
-              <Select.Trigger class="w-full">
-                Style: {buttonStyleLabels[style]}
-              </Select.Trigger>
+              <Select.Trigger>{buttonStyleLabels[style]}</Select.Trigger>
               <Select.Content>
                 {#each Object.entries(buttonStyleLabels) as [value, label]}
                   <Select.Item {value}>
@@ -201,6 +227,24 @@
                 required
               />
             </Field.Field>
+          {:else if action === "reply" && tagsManager.loaded}
+            <Combobox
+              popoverTriggerClass="w-full"
+              label={!customId ? "Select a reply" : (tagsManager.tags.get(customId) ?? "Unknown Tag")}
+              closeOnSelect
+              selected={customId ? [customId] : []}
+              onSelect={(value) => (customId = value)}
+              options={tagsManager.tags
+                .entries()
+                .toArray()
+                .map(([id, name]) => ({ value: id, label: name }))}
+              filter={filterTagsByName}
+            />
+          {:else if action === "reply" && !tagsManager.loaded}
+            <p class="text-muted-foreground text-center text-sm">
+              <LoadingSpinner class="inline-block size-5" />
+              Loading tags...
+            </p>
           {:else}
             <p class="text-muted-foreground text-center text-sm font-normal">
               No additional settings for this action.

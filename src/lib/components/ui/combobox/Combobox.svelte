@@ -41,6 +41,7 @@
      * Custom filter function for searching options
      */
     filter?: (commandValue: string, search: string, commandKeywords?: string[]) => number;
+    popoverTriggerClass?: ClassValue;
     popoverContentClass?: ClassValue;
     commandClass?: ClassValue;
     commandInputClass?: ClassValue;
@@ -56,6 +57,7 @@
     selected = $bindable([]),
     onSelect,
     filter,
+    popoverTriggerClass,
     popoverContentClass,
     commandClass,
     commandInputClass,
@@ -98,7 +100,13 @@
 <Popover.Root bind:open>
   <Popover.Trigger bind:ref={triggerRef}>
     {#snippet child({ props })}
-      <Button {...props} variant="outline" class="w-80 justify-between" role="combobox" aria-expanded={open}>
+      <Button
+        {...props}
+        variant="outline"
+        class={cn("w-80 justify-between", popoverTriggerClass)}
+        role="combobox"
+        aria-expanded={open}
+      >
         {label}
         <ChevronsUpDownIcon class="ms-2 size-4 shrink-0 opacity-50" />
       </Button>

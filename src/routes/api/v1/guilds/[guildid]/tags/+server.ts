@@ -2,7 +2,6 @@ import { DBTag, FlattenDateFields, FlattenDocToJSON } from "$lib/server/db";
 import type { ITag } from "$lib/sm-types";
 import { json } from "@sveltejs/kit";
 import { GetTagSchemaForGuild } from "$v1Api/assertions.js";
-import z from "zod";
 import { ZodValidator } from "$lib/server/validators/index.js";
 import { JsonErrors } from "$lib/constants.js";
 
@@ -18,9 +17,10 @@ export type APITag = Omit<ITag, "createdAt" | "updatedAt"> & {
 };
 
 export async function GET({ params, url }) {
+  const partial = url.searchParams.get("partial") === "true";
   const tags = await DBTag.find({
     guildId: params.guildid,
-  });
+  }, partial ? { _id: 1, name: 1 } : null);
 
   return json(
     tags
