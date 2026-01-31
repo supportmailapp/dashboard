@@ -9,9 +9,11 @@
       type: ComponentType.TextDisplay,
       content: "This is a text display component.",
     },
+    {
+      type: ComponentType.ActionRow,
+      components: [],
+    },
   ]);
 </script>
 
 <PanelEditor bind:components />
-
-<Button action="link" style={5} onRemove={() => {}} />

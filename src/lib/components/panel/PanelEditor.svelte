@@ -9,6 +9,7 @@
   import Separator from "./Separator.svelte";
   import Container from "./Container.svelte";
   import ComponentTypeIcon from "./ComponentTypeIcon.svelte";
+  import ActionRow from "./ActionRow.svelte";
 
   let {
     components = $bindable([]),
@@ -81,18 +82,16 @@
         onRemove={() => (components = components.filter((_, i) => i !== index))}
         {totalComponents}
       />
+      {:else if component.type === ComponentType.ActionRow}
+        <ActionRow
+          bind:components={component.components}
+          onRemove={() => (components = components.filter((_, i) => i !== index))}
+          {totalComponents}
+        />
       <!-- {:else if component.type === ComponentType.Section}
       <Section
         bind:components={component.components}
         bind:accessory={component.accessory}
-        onRemove={() => (components = components.filter((_, i) => i !== index))}
-        {totalComponents}
-        {categories}
-        {onCategoryFetch}
-      />
-    {:else if component.type === ComponentType.ActionRow}
-      <ActionRow
-        bind:components={component.components}
         onRemove={() => (components = components.filter((_, i) => i !== index))}
         {totalComponents}
         {categories}

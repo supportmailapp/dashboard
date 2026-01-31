@@ -14,9 +14,9 @@
   import { Button, buttonVariants } from "$ui/button";
   import Input from "$ui/input/input.svelte";
 
-  type Props = {
+  type Props = ComponentWithRemoveHandler<{
     action: SMCustomAction;
-    label?: string;
+    label: string;
     url?: string;
     emoji?: string;
     /**
@@ -26,15 +26,15 @@
      */
     customId?: string;
     style: Exclude<ButtonStyle, ButtonStyle.Premium>;
-  } & ComponentWithRemoveHandler;
+  }>;
 
   let {
-    action = $bindable("ticket:create"),
-    label = $bindable("Button"),
-    url = $bindable(undefined),
-    emoji = $bindable(""),
-    style = $bindable(ButtonStyle.Link),
-    customId = $bindable(""),
+    action = $bindable(),
+    label = $bindable(),
+    url = $bindable(),
+    emoji = $bindable(),
+    style = $bindable(),
+    customId = $bindable(),
     onRemove = () => undefined,
   }: Props = $props();
 
@@ -111,7 +111,7 @@
 </script>
 
 <!-- Imitate Discord's button component -->
-<RemoveButtonWrapper {onRemove}>
+<RemoveButtonWrapper {onRemove} class="flex-0">
   <div
     class={cn(
       "w-fit max-w-100 truncate overflow-visible",
@@ -188,51 +188,52 @@
     <!-- Emoji Popover -->
     <Popover.Root bind:open={emojiOpen}>
       <Popover.Trigger class={buttonVariants({ variant: "ghost", size: "icon-sm" })}>
-        <div>
-          {#if emoji.length > 0}
-            {@const parsed = validateEmoji(emoji) ?? null}
-            {@const emojiUrl = `https://cdn.discordapp.com/emojis/${parsed?.id ?? ""}.webp?size=96&quality=lossless`}
-            {#if parsed && !parsed.id}
-              <span class="size-[1.1rem]">{parsed.name}</span>
-            {:else if parsed?.id}
-              <img class="size-[1.1rem]" src={emojiUrl} alt="Button Emoji" />
-            {:else}
-              <span
-                class="animate-pulse-fast size-[1.1rem]"
-                {@attach () => {
-                  emojiValid = false;
-                  return () => (emojiValid = true);
-                }}
-              >
-                ❌
-              </span>
-            {/if}
+        {#if !!emoji && emoji.length > 0}
+          {@const parsed = validateEmoji(emoji) ?? null}
+          {@const emojiUrl = `https://cdn.discordapp.com/emojis/${parsed?.id ?? ""}.webp?size=96&quality=lossless`}
+          {#if parsed && !parsed.id}
+            <span class="size-[1.1rem]">{parsed.name}</span>
+          {:else if parsed?.id}
+            <img class="size-[1.1rem]" src={emojiUrl} alt="Button Emoji" />
           {:else}
-            <Smile class="size-4.5" />
+            <span
+              class="animate-pulse-fast size-[1.1rem]"
+              {@attach () => {
+                emojiValid = false;
+                return () => (emojiValid = true);
+              }}
+            >
+              ❌
+            </span>
           {/if}
-        </div>
+        {:else}
+          <Smile class="size-4.5" />
+        {/if}
       </Popover.Trigger>
       <Popover.Content class="flex w-xs flex-col gap-2 p-3" sideOffset={5}>
         <!-- Emoji Input Binding -->
-        <Input
-          type="text"
-          class="w-full px-1 text-sm"
-          placeholder="<:emoji_name:emoji_id>"
-          bind:value={emojiBuffer}
-          onblur={handleEmojiBlur}
-          min="3"
-          max="100"
-        />
-        <Button
-          class="w-full"
-          variant="secondary"
-          size="sm"
-          onclick={() => {
-            emojiOpen = false;
-          }}
-        >
-          Save
-        </Button>
+        <Field.Field class="gap-0">
+          <Field.Label>Emoji</Field.Label>
+          <Input
+            type="text"
+            class="w-full px-1 text-sm"
+            placeholder="<:emoji_name:emoji_id>"
+            bind:value={emojiBuffer}
+            onblur={handleEmojiBlur}
+            min="3"
+            max="100"
+          />
+          <Button
+            class="w-full"
+            variant="secondary"
+            size="sm"
+            onclick={() => {
+              emojiOpen = false;
+            }}
+          >
+            Save
+          </Button>
+        </Field.Field>
       </Popover.Content>
     </Popover.Root>
 

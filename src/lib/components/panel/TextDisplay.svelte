@@ -10,6 +10,9 @@
 </script>
 
 <RemoveButtonWrapper {onRemove}>
-  <Textarea bind:value={content} rows={1} class="dark:hover:bg-input/30 min-h-9.5 dark:bg-transparent rounded"
+  <Textarea
+    bind:value={content}
+    rows={1}
+    class="dark:hover:bg-input/30 field-sizing-content min-h-9.5 resize-none overflow-y-hidden rounded dark:bg-transparent"
   ></Textarea>
 </RemoveButtonWrapper>
