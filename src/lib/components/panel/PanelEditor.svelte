@@ -12,6 +12,7 @@
   import ActionRow from "./ActionRow.svelte";
   import { setTagsManager } from "./tags.svelte";
   import MediaGallery from "./MediaGallery.svelte";
+  import Section from "./Section.svelte";
 
   let {
     components = $bindable([]),
@@ -97,17 +98,13 @@
         onRemove={() => (components = components.filter((_, i) => i !== index))}
         {totalComponents}
       />
-      <!-- 
-        {:else if component.type === ComponentType.Section}
+    {:else if component.type === ComponentType.Section}
       <Section
         bind:components={component.components}
         bind:accessory={component.accessory}
         onRemove={() => (components = components.filter((_, i) => i !== index))}
         {totalComponents}
-        {categories}
-        {onCategoryFetch}
       />
-      -->
     {/if}
   {/each}
   <DropdownMenu.Root bind:open={selectorOpen}>

@@ -190,11 +190,11 @@
         </Field.Field>
 
         <Field.Group>
-          <Field.Field orientation="horizontal" class="gap-2">
+          <Field.Field orientation="horizontal" class="grid grid-cols-3 items-center gap-2">
             <Field.Label>Action</Field.Label>
             <!-- Action Selection Dropdown -->
             <Select.Root type="single" bind:value={() => action, (v) => setAction(v as SMCustomAction)}>
-              <Select.Trigger>{buttonActionLabels[action]}</Select.Trigger>
+              <Select.Trigger class="col-span-2 w-full">{buttonActionLabels[action]}</Select.Trigger>
               <Select.Content>
                 {#each Object.keys(buttonActionLabels) as value}
                   <Select.Item {value}>
@@ -205,14 +205,14 @@
             </Select.Root>
           </Field.Field>
 
-          <Field.Field orientation="horizontal">
+          <Field.Field orientation="horizontal" class="grid grid-cols-3 items-center gap-2">
             <Field.Label>Style</Field.Label>
             <!-- Style Selection Dropdown -->
             <Select.Root
               type="single"
               bind:value={() => String(style), (v) => setStyle(parseInt(v) as Props["style"])}
             >
-              <Select.Trigger>{buttonStyleLabels[style]}</Select.Trigger>
+              <Select.Trigger class="col-span-2 w-full">{buttonStyleLabels[style]}</Select.Trigger>
               <Select.Content>
                 {#each Object.entries(buttonStyleLabels) as [value, label]}
                   <Select.Item {value}>
@@ -225,7 +225,7 @@
 
           <!-- Conditional Inputs; URL when Link; Category when Ticket Create -->
           {#if action === "link"}
-            <Field.Field orientation="vertical" class="gap-0">
+            <Field.Field orientation="vertical" class="gap-1">
               <Field.Label>URL</Field.Label>
               <Input
                 type="url"
@@ -236,18 +236,21 @@
               />
             </Field.Field>
           {:else if action === "reply" && tagsManager.loaded}
-            <Combobox
-              popoverTriggerClass="w-full"
-              label={!customId ? "Select a reply" : (tagsManager.tags.get(customId) ?? "Unknown Tag")}
-              closeOnSelect
-              selected={customId ? [customId] : []}
-              onSelect={(value) => (customId = value)}
-              options={tagsManager.tags
-                .entries()
-                .toArray()
-                .map(([id, name]) => ({ value: id, label: name }))}
-              filter={filterTags}
-            />
+            <Field.Field orientation="vertical" class="gap-1">
+              <Field.Label>Reply With Tag</Field.Label>
+              <Combobox
+                popoverTriggerClass="w-full"
+                label={!customId ? "Select a reply" : (tagsManager.tags.get(customId) ?? "Unknown Tag")}
+                closeOnSelect
+                selected={customId ? [customId] : []}
+                onSelect={(value) => (customId = value)}
+                options={tagsManager.tags
+                  .entries()
+                  .toArray()
+                  .map(([id, name]) => ({ value: id, label: name }))}
+                filter={filterTags}
+              />
+            </Field.Field>
           {:else if action === "reply" && !tagsManager.loaded}
             <p class="text-muted-foreground text-center text-sm">
               <LoadingSpinner class="inline-block size-5" />

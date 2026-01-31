@@ -9,7 +9,7 @@
   import * as DropdownMenu from "$ui/dropdown-menu/index.js";
   import * as Popover from "$ui/popover/index.js";
   import Plus from "@lucide/svelte/icons/plus";
-  //   import Section from "./Section.svelte";
+  import Section from "./Section.svelte";
   import Separator from "./Separator.svelte";
   import TextDisplay from "./TextDisplay.svelte";
   import { cn } from "$lib/utils";
@@ -78,17 +78,13 @@
           onRemove={() => (components = components.filter((_, i) => i !== index))}
           {totalComponents}
         />
-        <!-- 
-        {:else if component.type === ComponentType.Section}
-      <Section
-        bind:components={component.components}
-        bind:accessory={component.accessory}
-        onRemove={() => (components = components.filter((_, i) => i !== index))}
-        {totalComponents}
-        {categories}
-        {onCategoryFetch}
-      />
-       -->
+      {:else if component.type === ComponentType.Section}
+        <Section
+          bind:components={component.components}
+          bind:accessory={component.accessory}
+          onRemove={() => (components = components.filter((_, i) => i !== index))}
+          {totalComponents}
+        />
       {/if}
     {/each}
 
