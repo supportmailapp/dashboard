@@ -85,13 +85,13 @@
     {#if components.length < 5 && totalComponents < 40 && components[0]?.type !== ComponentType.StringSelect}
       <UIButton variant="outline" size="sm" class="shrink-0" onclick={addButton}>
         <Plus />
-        Add Button
+        Button
       </UIButton>
     {/if}
     {#if components.length === 0 && totalComponents < 40}
       <UIButton variant="outline" size="sm" class="shrink-0" onclick={addSelect}>
         <Plus />
-        Add Select Menu
+        Select Menu
       </UIButton>
     {/if}
   </div>

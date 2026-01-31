@@ -115,7 +115,7 @@
       class={buttonVariants({ variant: "outline", size: "sm", class: "mx-auto w-fit" })}
     >
       <Plus />
-      {totalComponents < 40 ? "Add Component" : "Component Limit Reached"}
+      {totalComponents < 40 ? "Component" : "Component Limit Reached"}
     </DropdownMenu.Trigger>
     <DropdownMenu.Content>
       <DropdownMenu.Group>

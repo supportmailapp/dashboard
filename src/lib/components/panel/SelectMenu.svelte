@@ -283,7 +283,7 @@
           <div class="flex w-full p-2">
             <Button variant="outline" onclick={addOption} disabled={options.length >= 25} class="w-full">
               <Plus class={options.length >= 25 ? "hidden" : ""} />
-              {options.length >= 25 ? "25 Options Reached" : "Add Option"}
+              {options.length >= 25 ? "25 Options Reached" : "Option"}
             </Button>
           </div>
         </div>
