@@ -309,20 +309,21 @@
   }
 
   .discord-select {
-    @apply rounded-md px-2.5 py-1.5 transition duration-150 ease-in-out;
+    @apply truncate rounded-md border px-2.5 py-1.5 transition duration-150 ease-in-out;
     color: white;
-    background-color: var(--discord-secondary-hover);
-    border: none;
-    cursor: pointer;
+    background-color: #1e1e22;
     font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: start;
-    flex: 0;
     gap: 8px;
     min-width: 130px;
     max-width: 400px;
     width: 100%;
+
+    &:hover {
+      background-color: #272629;
+    }
 
     &[data-state="active"] svg {
       transform: rotate(180deg);
@@ -426,6 +427,16 @@
 
   .bg-warning-subtle {
     background-color: color-mix(in oklab, var(--color-amber-400) 50%, var(--color-background));
+  }
+
+  .stripes-background {
+    background-image: repeating-linear-gradient(
+      calc(100deg / 3),
+      rgba(255, 255, 255, 0.05),
+      rgba(255, 255, 255, 0.05) 10px,
+      transparent 10px,
+      transparent 20px
+    );
   }
 }
 

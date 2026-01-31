@@ -1,10 +1,34 @@
+<script lang="ts" module>
+  /**
+   * A custom filter function for whether each command item should match the query.
+   * It should return a number between 0 and 1, with 1 being a perfect match, and 0 being no match,
+   * resulting in the item being hidden entirely.
+   */
+  export function filterTagsByName(
+    tags: Map<string, string>,
+    tagId: string,
+    search: string,
+    commandKeywords?: string[],
+  ): number {
+    const tagName = tags.get(tagId);
+    if (!tagName) return 0;
+
+    const lowerSearch = search.toLowerCase();
+    const lowerTagName = tagName.toLowerCase();
+
+    if (lowerTagName === lowerSearch) return 1;
+    if (lowerTagName.includes(lowerSearch)) return 0.5;
+    if (commandKeywords?.some((kw) => lowerTagName.includes(kw.toLowerCase()))) return 0.3;
+
+    return 0;
+  }
+</script>
+
 <script lang="ts">
-  //   import { emojiUrl, validateEmoji } from "$lib/utils/parser";
   import * as Popover from "$ui/popover/index.js";
   import * as Select from "$ui/select/index.js";
   import * as Field from "$ui/field/index.js";
   import { ButtonStyle } from "discord-api-types/v10";
-  import Smile from "@lucide/svelte/icons/smile";
   import Cog from "@lucide/svelte/icons/cog";
   import { onMount, untrack } from "svelte";
   import { cn } from "$lib/utils";
@@ -70,7 +94,7 @@
   const buttonActionLabels = {
     link: "Link Button",
     reply: "Reply Button",
-    "ticket:create": "Create Ticket Button",
+    "ticket:create": "Start Ticket Button",
   } as const;
 
   function setAction(newAction: Props["action"]) {
@@ -106,23 +130,8 @@
     }
   }
 
-  /**
-   * A custom filter function for whether each command item should match the query.
-   * It should return a number between 0 and 1, with 1 being a perfect match, and 0 being no match,
-   * resulting in the item being hidden entirely.
-   */
-  function filterTagsByName(tagId: string, search: string, commandKeywords?: string[]): number {
-    const tagName = tagsManager.tags.get(tagId);
-    if (!tagName) return 0;
-
-    const lowerSearch = search.toLowerCase();
-    const lowerTagName = tagName.toLowerCase();
-
-    if (lowerTagName === lowerSearch) return 1;
-    if (lowerTagName.includes(lowerSearch)) return 0.5;
-    if (commandKeywords?.some((kw) => lowerTagName.includes(kw.toLowerCase()))) return 0.3;
-
-    return 0;
+  function filterTags(tagId: string, search: string, commandKeywords?: string[]): number {
+    return filterTagsByName(tagsManager.tags, tagId, search, commandKeywords);
   }
 
   $effect(() => {
@@ -167,8 +176,7 @@
         {/if}
       </Popover.Trigger>
       <Popover.Content class="flex w-xs flex-col gap-3 p-3" sideOffset={5}>
-        <!-- Emoji Input -->
-        <Field.Field orientation="vertical" class="gap-2">
+        <Field.Field class="gap-2">
           <Field.Label>Emoji</Field.Label>
           <Input
             type="text"
@@ -238,16 +246,12 @@
                 .entries()
                 .toArray()
                 .map(([id, name]) => ({ value: id, label: name }))}
-              filter={filterTagsByName}
+              filter={filterTags}
             />
           {:else if action === "reply" && !tagsManager.loaded}
             <p class="text-muted-foreground text-center text-sm">
               <LoadingSpinner class="inline-block size-5" />
               Loading tags...
-            </p>
-          {:else}
-            <p class="text-muted-foreground text-center text-sm font-normal">
-              No additional settings for this action.
             </p>
           {/if}
         </Field.Group>

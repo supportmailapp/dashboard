@@ -17,7 +17,7 @@
   let { option = $bindable(null), open = $bindable(false), saveBtnLabel = "Save", onSave }: Props = $props();
 
   function ensureId(opt: IStringSelectOption) {
-    if (!opt.id) opt.id = SnowflakeUtil.generate().toString();
+    if (!opt._id) opt._id = SnowflakeUtil.generate().toString();
     return opt;
   }
 </script>

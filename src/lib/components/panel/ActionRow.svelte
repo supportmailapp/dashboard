@@ -1,11 +1,12 @@
 <script lang="ts">
   import type { SMComponentInActionRow } from "$lib/sm-types/src";
-  import { ComponentType } from "discord-api-types/v10";
+  import { ButtonStyle, ComponentType } from "discord-api-types/v10";
   import RemoveButtonWrapper from "./RemoveButtonWrapper.svelte";
   import Button from "./Button.svelte";
   import { Button as UIButton } from "$ui/button";
   import Plus from "@lucide/svelte/icons/plus";
   import { toast } from "svelte-sonner";
+  import SelectMenu from "./SelectMenu.svelte";
 
   type Props = ComponentWithRemoveHandler<{
     components: SMComponentInActionRow[];
@@ -22,18 +23,36 @@
       ...components,
       {
         action: "reply",
-        type: 2,
-        style: 1,
+        type: ComponentType.Button,
+        style: ButtonStyle.Primary,
         label: "New Button",
         custom_id: "",
         emoji: undefined,
       },
     ];
   }
+
+  function addSelect() {
+    if (totalComponents >= 40) {
+      toast.error("You have reached the maximum number of components allowed.");
+      return;
+    }
+    components = [
+      ...components,
+      {
+        type: ComponentType.StringSelect,
+        custom_id: "panelSelect",
+        options: [],
+        placeholder: "Select an option",
+      },
+    ];
+  }
 </script>
 
 <RemoveButtonWrapper {onRemove}>
-  <div class="flex flex-1 flex-row gap-2 border p-2 items-center flex-wrap rounded max-w-full overflow-x-hidden *:max-w-full w-full">
+  <div
+    class="flex w-full max-w-full flex-1 flex-row flex-wrap items-center gap-2 overflow-x-hidden rounded border p-2 *:max-w-full"
+  >
     {#each components as component, index (index)}
       {#if component.type === ComponentType.Button}
         <Button
@@ -55,12 +74,24 @@
           }
           onRemove={() => (components = components.filter((_, i) => i !== index))}
         />
+      {:else}
+        <SelectMenu
+          options={component.options}
+          placeholder={component.placeholder}
+          onRemove={() => (components = components.filter((_, i) => i !== index))}
+        />
       {/if}
     {/each}
-    {#if components.length < 5 && totalComponents < 40 && !components.some((c) => c.type === ComponentType.StringSelect)}
+    {#if components.length < 5 && totalComponents < 40 && components[0]?.type !== ComponentType.StringSelect}
       <UIButton variant="outline" size="sm" class="shrink-0" onclick={addButton}>
         <Plus />
         Add Button
+      </UIButton>
+    {/if}
+    {#if components.length === 0 && totalComponents < 40}
+      <UIButton variant="outline" size="sm" class="shrink-0" onclick={addSelect}>
+        <Plus />
+        Add Select Menu
       </UIButton>
     {/if}
   </div>
