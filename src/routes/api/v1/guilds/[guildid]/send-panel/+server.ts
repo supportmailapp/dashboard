@@ -8,7 +8,7 @@ import {
 } from "$lib/server/caches/guilds.js";
 import { TicketCategory } from "$lib/server/db/index.js";
 import { FlattenDocToJSON } from "$lib/server/db/utils.js";
-import {} from "$lib/utils/formatting.js";
+import { ComponentParser } from "$lib/utils/formatting.js";
 import { json } from "@sveltejs/kit";
 import {
   ChannelType,
@@ -23,6 +23,7 @@ import { BurstyRateLimiter, RateLimiterMemory, RateLimiterRes } from "rate-limit
 import equal from "fast-deep-equal";
 import { ZodValidator } from "$lib/server/validators/index.js";
 import { PanelSchema } from "$v1Api/assertions.js";
+import clientApi from "$lib/server/utils/clientApi";
 
 const ratelimiter = new BurstyRateLimiter(
   // 2 requests every 5 seconds with a burst of 20 requests per minute
@@ -51,8 +52,12 @@ export async function POST({ request, params, locals, setHeaders }) {
     return JsonErrors.badRequest(valRes.error.toString());
   }
 
-  const data = valRes.data;
+  const { channelId, messageId, data, allowedMentions } = valRes.data;
   const guildId = params.guildid;
+
+  if (!channelId) {
+    return JsonErrors.badRequest("Channel is required");
+  }
 
   // Ratelimit per user per message
   try {
@@ -127,20 +132,18 @@ export async function POST({ request, params, locals, setHeaders }) {
     return JsonErrors.badRequest("Channel is not sendable");
   }
 
-  const categoryDocs = await TicketCategory.find({ guildId });
-  const cats = categoryDocs.map((d) => FlattenDocToJSON(d, true));
+  const categoryDocs = await TicketCategory.find({ guildId }, { _id: 1 });
+  const cats = categoryDocs.map((d) => d._id.toString());
 
   const guild = userCache.getUserGuilds(locals.user.id)?.find((g) => g.id === guildId);
   if (!guild) return JsonErrors.forbidden("User is not in guild");
 
+  const parsed = new ComponentParser(data, cats).parse();
+
   const payload: RESTPostAPIChannelMessageJSONBody = {
     flags: MessageFlags.IsComponentsV2,
-    components: fillComponentsWithVariables(ttComponentsToDiscordComponents(message.data, cats), {
-      servername: guild.name,
-      serverid: guild.id,
-      servericonurl: guild.icon ? parseIconToURL(guild.icon, guild.id, "guild")! : "null",
-    }),
-    allowed_mentions: message.allowedMentions ?? {
+    components: parsed,
+    allowed_mentions: allowedMentions ?? {
       parse: [],
     },
   };
@@ -173,19 +176,19 @@ export async function POST({ request, params, locals, setHeaders }) {
   }
 
   let apiMessage: DCMessage | null = null;
-  if (edit) {
-    const res = await locals.rest.editMessage(channelId, editId!, payload);
+  if (!!messageId) {
+    const res = await locals.discordRest.editMessage(channelId, messageId, payload);
     if (!res.isSuccess()) {
       return JsonErrors.serverError(res.errorToString());
     }
     apiMessage = res.data;
   } else {
-    const res = await locals.rest.sendMessage(channelId, payload);
+    const res = await locals.discordRest.sendMessage(channelId, payload);
     if (!res.isSuccess()) {
       if (res.hasDiscordAPIError() && res.error.code === RESTJSONErrorCodes.InvalidFormBodyOrContentType) {
         if (res.error.message.includes("COMPONENT_CUSTOM_ID_DUPLICATED")) {
           return JsonErrors.badRequest(
-            "Multiple buttons have the same category. Make sure all buttons on a message have a unique category.",
+            "Multiple buttons have the same category (or no category). Make sure all buttons are unique.",
           );
         }
       }

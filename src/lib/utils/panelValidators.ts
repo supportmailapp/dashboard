@@ -1,5 +1,6 @@
 import { z } from "zod/mini";
 import { ButtonStyle, ComponentType, SeparatorSpacingSize } from "discord-api-types/v10";
+import { SnowflakeUtil } from "$lib/utils";
 
 // Base schemas
 const SnowflakeSchema = z.string().check(z.regex(/^\d{17,23}$/));
@@ -52,7 +53,7 @@ const SMActionRowButtonSchema = z.union([
 
 // Select schemas
 const SMSelectOptionSchema = z.object({
-  _id: z.optional(SnowflakeSchema),
+  _id: z._default(z.optional(SnowflakeSchema), SnowflakeUtil.generate().toString()),
   action: z.enum(["ticket:create", "reply"]),
   value: ObjectIdSchema,
   label: z.string(),
@@ -86,8 +87,14 @@ const ClientSMSelectSchema = z.extend(SMSelectSchema, {
 });
 
 // Component schemas
+const TextDisplayComponentSchema = z.object({
+  type: z.literal(ComponentType.TextDisplay),
+  content: z.string().check(z.minLength(1), z.maxLength(2000)),
+});
+
 const SMSectionComponentSchema = z.object({
   type: z.literal(ComponentType.Section),
+  components: z.array(TextDisplayComponentSchema).check(z.minLength(1), z.maxLength(3)),
   accessory: z.optional(z.union([SMActionRowButtonSchema, SMThumbnailComponentSchema])),
 });
 
@@ -116,12 +123,7 @@ const SMActionRowComponentSchema = z.object({
 const SeparatorComponentSchema = z.object({
   type: z.literal(ComponentType.Separator),
   divider: z._default(z.boolean(), true),
-  spacing_size: z._default(z.enum(SeparatorSpacingSize), SeparatorSpacingSize.Small),
-});
-
-const TextDisplayComponentSchema = z.object({
-  type: z.literal(ComponentType.TextDisplay),
-  content: z.string().check(z.minLength(1), z.maxLength(2000)),
+  spacing: z._default(z.enum(SeparatorSpacingSize), SeparatorSpacingSize.Small),
 });
 
 const SMComponentInContainerSchema = z.lazy(() =>

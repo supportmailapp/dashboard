@@ -5,9 +5,7 @@ import equal from "fast-deep-equal/es6";
 import { twMerge } from "tailwind-merge";
 import { DiscordSnowflake } from "@sapphire/snowflake";
 import { ChannelType } from "discord-api-types/v10";
-import { CustomEmojiRegex } from "./utils/formatting";
-import { SpecialChannelType, type IPartialEmoji } from "./sm-types/src";
-import { SnowflakeSchema } from "./sm-types/src/utils/validators";
+import { SpecialChannelType} from "./sm-types/src";
 
 dayjs.extend(relativeTime);
 

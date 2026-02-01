@@ -5,10 +5,12 @@ import UserGuildsCache from "$lib/server/caches/userGuilds.js";
 import {
   Routes,
   type APIGuildMember,
+  type APIMessage,
   type APIRole,
   type APIUser,
   type RESTAPIPartialCurrentUserGuild,
   type RESTPatchAPIChannelJSONBody,
+  type RESTPostAPIChannelMessageJSONBody,
 } from "discord-api-types/v10";
 import { DiscordAPIError, HTTPError, RateLimitError, REST, type RESTOptions } from "discord.js";
 
@@ -149,6 +151,25 @@ class DiscordBotAPI extends BaseDiscordAPI {
       this.rest.get(
         `${Routes.guildMembersSearch(guildId)}?query=${encodeURIComponent(query)}&limit=${limit}`,
       ),
+    );
+  }
+
+  async sendMessage(
+    channelId: string,
+    payload: RESTPostAPIChannelMessageJSONBody,
+  ): Promise<SafeResponse<APIMessage>> {
+    return this.doSafeRequest(
+      () => this.rest.post(Routes.channelMessages(channelId), { body: payload }) as any,
+    );
+  }
+
+  async editMessage(
+    channelId: string,
+    messageId: string,
+    payload: RESTPostAPIChannelMessageJSONBody,
+  ): Promise<SafeResponse<APIMessage>> {
+    return this.doSafeRequest(
+      () => this.rest.patch(Routes.channelMessage(channelId, messageId), { body: payload }) as any,
     );
   }
 }

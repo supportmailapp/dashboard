@@ -1,11 +1,11 @@
-import { EntityType, SpecialChannelType } from "$lib/sm-types";
+import { EntityType, SpecialChannelType, type SMAllowedMentions } from "$lib/sm-types";
 import z from "zod";
 export * from "./forms.zod.js";
 import { FeedbackComponentSchema, FormComponentsSchema, NormalFormComponentSchema } from "./forms.zod.js";
 import { arrayIsDistinct, zem } from "$lib/utils.js";
 import { PermissionFlagsBits } from "$lib/utils/permissions.js";
 import { CommandpathRegex } from "$lib/constants.js";
-import { APIAllowedMentionsSchema, type APIAllowedMentions } from "$lib/sm-types/src/utils/validators.js";
+import { type APIAllowedMentions } from "$lib/sm-types/src/utils/validators.js";
 import { SMTopLevelMessageComponentSchema } from "$lib/utils/panelValidators.js";
 import { AllowedMentionsTypes, ComponentType } from "discord-api-types/v10";
 
@@ -292,11 +292,67 @@ export const DBAllowedMentionsSchema = z
     return final;
   });
 
+/* Takes the api schema and parsed it to db schema */
+export const APIAllowedMentionsSchema = z
+  .object({
+    everyone: z.boolean().default(false),
+    userMode: z.enum(["all", "none", "specific"]).default("none"),
+    roleMode: z.enum(["all", "none", "specific"]).default("none"),
+    users: z.array(SnowflakeSchema).max(100, "Maximum of 100 user mentions").optional(),
+    roles: z.array(SnowflakeSchema).max(100, "Maximum of 100 role mentions").optional(),
+  })
+  .transform((data) => {
+    const final: SMAllowedMentions = {};
+
+    if (data.roleMode === "none" && data.userMode === "none" && !data.everyone) {
+      final.parse = [];
+      return final;
+    }
+
+    // Handle roles
+    if (data.roleMode === "all") {
+      if (!final.parse) final.parse = [];
+      final.parse.push(AllowedMentionsTypes.Role);
+    } else if (data.roleMode === "none") {
+      // Do nothing, no roles to mention
+    } else if (data.roles && data.roles.length > 0) {
+      final.roles = data.roles;
+    } else if (data.roleMode === "specific" && (!data.roles || data.roles.length === 0)) {
+      final.roles = undefined;
+    }
+
+    // Handle users
+    if (data.userMode === "all") {
+      if (!final.parse) final.parse = [];
+      final.parse.push(AllowedMentionsTypes.User);
+    } else if (data.userMode === "none") {
+      // Do nothing, no users to mention
+    } else if (data.users && data.users.length > 0) {
+      final.users = data.users;
+    }
+    if (final.roles && final.roles.length === 0) {
+      delete final.roles; // if its set, discord will thorw an error
+    }
+    if (final.users && final.users.length === 0) {
+      delete final.users; // if its set, discord will thorw an error
+    }
+
+    // Handle everyone
+    if (data.everyone) {
+      if (!final.parse) final.parse = [];
+      final.parse.push(AllowedMentionsTypes.Everyone);
+    }
+
+    return final;
+  });
+
+export type DBAllowedMentions = z.output<typeof APIAllowedMentionsSchema>;
+
 export const PanelSchema = z.object({
   guildId: SnowflakeSchema.optional(),
   channelId: SnowflakeSchema.optional(),
   messageId: SnowflakeSchema.optional(),
-  allowedMentions: z.optional(APIAllowedMentionsSchema), // zod mini things
+  allowedMentions: APIAllowedMentionsSchema.optional(), // zod mini things
   data: z
     .array(SMTopLevelMessageComponentSchema)
     .refine(
