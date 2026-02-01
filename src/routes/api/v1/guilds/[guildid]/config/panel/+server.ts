@@ -1,9 +1,10 @@
 import { JsonErrors } from "$lib/constants.js";
 import { FlattenDateFields, FlattenDocToJSON, Panel } from "$lib/server/db";
 import { ZodValidator } from "$lib/server/validators/index.js";
-import type { APIPanel } from "$lib/sm-types/src/index.js";
-import { PanelSchema } from "$v1Api/assertions.js";
+import type { APIPanel, IPanel } from "$lib/sm-types/src/index.js";
+import { DBAllowedMentionsSchema, PanelSchema } from "$v1Api/assertions.js";
 import { json } from "@sveltejs/kit";
+import type { HydratedDocument } from "mongoose";
 
 function buildPanelResponse(guildId: string, panelDoc: any): APIPanel {
   return Object.assign(
@@ -17,9 +18,21 @@ function buildPanelResponse(guildId: string, panelDoc: any): APIPanel {
         roleMode: "none",
         userMode: "none",
       },
-    } as APIPanel,
+    } satisfies APIPanel,
     panelDoc,
   );
+}
+
+function dbPanelToAPI(panel: HydratedDocument<IPanel>) {
+  const { allowedMentions, ...rest } = FlattenDateFields(
+    FlattenDocToJSON(panel, true),
+    "createdAt",
+    "updatedAt",
+  );
+  return buildPanelResponse(panel.guildId, {
+    ...rest,
+    allowedMentions: DBAllowedMentionsSchema.parse(allowedMentions || {}),
+  }); // This should NEVER error, since we generated that ourselves
 }
 
 export async function GET({ params }) {
@@ -29,9 +42,7 @@ export async function GET({ params }) {
     return JsonErrors.notFound("Panel configuration not found");
   }
 
-  return json(
-    buildPanelResponse(params.guildid, FlattenDateFields(FlattenDocToJSON(panel), "createdAt", "updatedAt")),
-  );
+  return json(dbPanelToAPI(panel));
 }
 
 export async function PUT({ params, request }) {
@@ -55,7 +66,5 @@ export async function PUT({ params, request }) {
     { upsert: true, new: true },
   );
 
-  return json(
-    buildPanelResponse(params.guildid, FlattenDateFields(FlattenDocToJSON(panel), "createdAt", "updatedAt")),
-  );
+  return json(dbPanelToAPI(panel));
 }

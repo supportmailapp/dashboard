@@ -1,6 +1,29 @@
-import { ChannelType, type APIGuildCategoryChannel, type APIUser } from "discord-api-types/v10";
+import {
+  ButtonStyle,
+  ChannelType,
+  ComponentType,
+  type APIComponentInActionRow,
+  type APIGuildCategoryChannel,
+  type APIMessageTopLevelComponent,
+  type APIUser,
+  type APIComponentInMessageActionRow,
+  type APIComponentInContainer,
+  type APIMediaGalleryItem,
+  type APIThumbnailComponent,
+  type APIButtonComponentWithCustomId,
+  type APIButtonComponentWithURL,
+  type APISectionAccessoryComponent,
+} from "discord-api-types/v10";
 import { FullTwemojiRegex } from "./twemojiRegex";
-import type { IPartialEmoji } from "$lib/sm-types";
+import type {
+  IPartialEmoji,
+  SMActionRowButton,
+  SMComponentInActionRow,
+  SMCustomAction,
+  SMMediaItem,
+  SMThumbnailComponent,
+  SMTopLevelMessageComponent,
+} from "$lib/sm-types";
 
 /**
  * Sorts an array of items by their position property in ascending order using Discord's sorting approach.
@@ -184,7 +207,6 @@ export const CustomEmojiRegex = /^<?(a)?:([a-zA-Z0-9_~]{2,32}):(\d{17,23})>?$/i;
  * validateEmoji(''); // undefined
  */
 export function validateEmoji(text: string): IPartialEmoji | undefined {
-  console.log("Validating emoji:", text);
   if (!text || text.length == 0) return;
   text = text.trim();
   const customEmoji = text.match(CustomEmojiRegex);
@@ -254,4 +276,152 @@ export function parseDiscordLink(
     channelId: match[2],
     messageId: match[3],
   };
+}
+
+export class ComponentParser {
+  static readonly ActionMapping = {
+    "ticket:create": "createTicket",
+    reply: "replyTo",
+  } as const satisfies Record<Exclude<SMCustomAction, "link">, string>;
+
+  constructor(
+    private components: SMTopLevelMessageComponent[],
+    private categories: string[],
+  ) {}
+
+  parse(): APIMessageTopLevelComponent[] {
+    return this.components.map((comp) => this.parseComponent(comp)).filter((c) => c != undefined);
+  }
+
+  private parseComponent(comp: SMTopLevelMessageComponent): APIMessageTopLevelComponent | undefined {
+    switch (comp.type) {
+      case ComponentType.ActionRow:
+        return {
+          type: comp.type,
+          components: comp.components
+            .map((c) => this.parseComponentInActionRow(c))
+            .filter((c) => c != undefined),
+        };
+      case ComponentType.Container:
+        return {
+          type: comp.type,
+          components: comp.components.map((c) => this.parseComponentInContainer(c)),
+          accent_color: comp.accent_color,
+          spoiler: !!comp.spoiler,
+        };
+      case ComponentType.MediaGallery:
+        return {
+          type: comp.type,
+          items: comp.items.map((item) => this.parseMediaItem(item)),
+        };
+      case ComponentType.Section:
+        if (!comp.accessory) {
+          return undefined; // a sections needs an accessory
+        }
+        const accessory = this.parseSectionAccessory(comp.accessory);
+        if (!accessory) {
+          return undefined; // invalid accessory
+        }
+        return {
+          type: comp.type,
+          components: comp.components.map((c) => ({ type: ComponentType.TextDisplay, content: c.content })),
+          accessory: accessory,
+        };
+      case ComponentType.Separator:
+        return {
+          type: comp.type,
+          divider: !!comp.divider,
+          spacing: comp.spacing,
+        };
+      case ComponentType.TextDisplay:
+        return {
+          type: comp.type,
+          content: comp.content,
+        };
+    }
+  }
+
+  private parseComponentInContainer(comp: SMTopLevelMessageComponent): APIComponentInContainer {
+    // the same as parseComponent but without the Container type, so we can just call it recursively
+    return this.parseComponent(comp) as APIComponentInContainer;
+  }
+
+  private parseButton(
+    comp: SMActionRowButton,
+  ): APIButtonComponentWithCustomId | APIButtonComponentWithURL | undefined {
+    if (comp.style === ButtonStyle.Link && comp.action === "link") {
+      return {
+        type: ComponentType.Button,
+        style: comp.style,
+        label: comp.label,
+        emoji: comp.emoji ? validateEmoji(comp.emoji) : undefined,
+        url: comp.url,
+        disabled: comp.disabled,
+      };
+    } else if (comp.style !== ButtonStyle.Link && comp.action !== "link") {
+      if (!this.categories.includes(comp.action)) {
+        return undefined; // invalid action/category
+      }
+      const actionPrefix = ComponentParser.ActionMapping[comp.action];
+      return {
+        type: ComponentType.Button,
+        style: comp.style,
+        label: comp.label,
+        emoji: comp.emoji ? validateEmoji(comp.emoji) : undefined,
+        custom_id: `${actionPrefix}${comp.custom_id ? `/${comp.custom_id}` : ""}`,
+        disabled: comp.disabled,
+      };
+    }
+    return undefined;
+  }
+
+  private parseComponentInActionRow(
+    comp: SMComponentInActionRow,
+  ): Extract<APIComponentInMessageActionRow, { type: SMComponentInActionRow["type"] }> | undefined {
+    if (comp.type === ComponentType.Button) {
+      return this.parseButton(comp);
+    }
+
+    return {
+      type: comp.type,
+      custom_id: "panelSelect",
+      options: comp.options.map((opt) => ({
+        label: opt.label,
+        value: opt.value,
+        description: opt.description,
+        emoji: opt.emoji ? validateEmoji(opt.emoji) : undefined,
+      })),
+      placeholder: comp.placeholder,
+    };
+  }
+
+  private parseMediaItem(item: SMMediaItem, asThumbnail: true): APIThumbnailComponent;
+  private parseMediaItem(item: SMMediaItem, asThumbnail?: false): APIMediaGalleryItem;
+  private parseMediaItem(
+    item: SMMediaItem,
+    asThumbnail: boolean = false,
+  ): APIThumbnailComponent | APIMediaGalleryItem {
+    if (asThumbnail) {
+      return {
+        type: ComponentType.Thumbnail,
+        media: { url: item.url },
+        description: item.description,
+        spoiler: !!item.spoiler,
+      };
+    }
+    return {
+      media: { url: item.url },
+      description: item.description,
+      spoiler: !!item.spoiler,
+    };
+  }
+
+  private parseSectionAccessory(
+    comp: SMActionRowButton | SMThumbnailComponent,
+  ): APISectionAccessoryComponent | undefined {
+    if (comp.type === ComponentType.Button) {
+      return this.parseButton(comp);
+    }
+    return this.parseMediaItem(comp, true);
+  }
 }

@@ -114,9 +114,10 @@ export async function DELETE({ params, url }) {
   } else if (pathRes.id) {
     filter.id = pathRes.id;
   }
-  const idParam = url.searchParams.get("id");
-  if (SnowflakeSchema.safeParse(idParam).success) {
-    filter.id = idParam;
+  if (pathRes.path) {
+    filter.commandPath = { $regex: `^${pathRes.path}`, $options: "i" };
+  } else if (pathRes.id) {
+    filter.id = pathRes.id;
   }
   try {
     await CommandConfig.deleteMany(filter);

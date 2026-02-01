@@ -288,10 +288,11 @@
 
   .discord-secondary,
   .discord-link {
-    background-color: var(--discord-secondary);
+    @apply bg-card/20 text-foreground hover:bg-card/40 dark:bg-(--discord-secondary) dark:hover:bg-(--discord-secondary-hover);
+    /* background-color: var(--discord-secondary);
     &:hover {
       background-color: var(--discord-secondary-hover);
-    }
+    } */
   }
 
   .discord-success {
@@ -309,9 +310,7 @@
   }
 
   .discord-select {
-    @apply truncate rounded-md border px-2.5 py-1.5 transition duration-150 ease-in-out;
-    color: white;
-    background-color: #1e1e22;
+    @apply truncate rounded-md border bg-[#f6f6f6] px-2.5 py-1.5 transition duration-150 ease-in-out hover:bg-[#f1f1f1] dark:bg-[#1e1e22] dark:hover:bg-[#272629];
     font-weight: 600;
     display: flex;
     align-items: center;
@@ -321,10 +320,6 @@
     max-width: 400px;
     width: 100%;
 
-    &:hover {
-      background-color: #272629;
-    }
-
     &[data-state="active"] svg {
       transform: rotate(180deg);
     }
@@ -333,13 +328,9 @@
   .discord-btn,
   .discord-select {
     input {
-      @apply rounded border bg-transparent p-0.5 outline-0;
-      color: color-mix(in oklab, white 90%, black);
+      @apply text-foreground/50 placeholder-foreground/50 rounded border bg-transparent p-0.5 outline-0;
       width: 100%;
       display: flex;
-      &::placeholder {
-        color: color-mix(in oklab, white 60%, black);
-      }
 
       &:focus {
         outline: none;

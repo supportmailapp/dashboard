@@ -164,7 +164,14 @@
   >
     <!-- Button Config popover -->
     <Popover.Root bind:open={buttonSettingsOpen}>
-      <Popover.Trigger class={buttonVariants({ variant: "ghost", size: "icon-sm" })}>
+      <Popover.Trigger
+        class={cn(
+          "mr-2 flex rounded-full bg-transparent p-1 transition duration-100",
+          style === ButtonStyle.Link || style === ButtonStyle.Secondary
+            ? "text-foreground hover:text-foreground/50"
+            : "text-white hover:text-white/50",
+        )}
+      >
         {#if !!emoji && emoji.length > 0}
           <Emoji {emoji} />
         {:else}
@@ -277,7 +284,10 @@
     <input
       type="text"
       aria-label="Button label"
-      class="field-sizing-content min-w-20 truncate font-medium"
+      class={cn(
+        "field-sizing-content min-w-20 truncate font-medium",
+        style === ButtonStyle.Link ? "text-black dark:text-white" : "text-white",
+      )}
       maxlength="100"
       bind:value={label}
     />

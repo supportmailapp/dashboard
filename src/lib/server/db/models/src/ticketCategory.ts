@@ -1,6 +1,6 @@
 import type { ITicketCategory } from "$lib/sm-types";
 import pkg, { model, Schema } from "mongoose";
-import { customModalFieldSchema, EntitySchema, FormComponentSchema, partialEmojiSchema } from "./utilSchemas";
+import { customModalFieldSchema, EntitySchema, FormComponentSchema } from "./utilSchemas";
 const { models } = pkg;
 
 const ticketCategorySchema = new Schema<ITicketCategory>({

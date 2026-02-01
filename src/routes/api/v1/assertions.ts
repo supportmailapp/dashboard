@@ -5,9 +5,9 @@ import { FeedbackComponentSchema, FormComponentsSchema, NormalFormComponentSchem
 import { arrayIsDistinct, zem } from "$lib/utils.js";
 import { PermissionFlagsBits } from "$lib/utils/permissions.js";
 import { CommandpathRegex } from "$lib/constants.js";
-import { APIAllowedMentionsSchema } from "$lib/sm-types/src/utils/validators.js";
+import { APIAllowedMentionsSchema, type APIAllowedMentions } from "$lib/sm-types/src/utils/validators.js";
 import { SMTopLevelMessageComponentSchema } from "$lib/utils/panelValidators.js";
-import { ComponentType } from "discord-api-types/v10";
+import { AllowedMentionsTypes, ComponentType } from "discord-api-types/v10";
 
 export const ObjectIdSchema = z.string().regex(/^[a-f\d]{24}$/i, zem("Invalid ObjectId format"));
 
@@ -252,6 +252,45 @@ function calculateComponentCount(data: any[]): number {
   }
   return count;
 }
+
+/* Takes the db schema and parses it to the API schema */
+export const DBAllowedMentionsSchema = z
+  .object({
+    parse: z.array(z.enum(AllowedMentionsTypes)).optional(),
+    roles: z.array(SnowflakeSchema).max(100).optional(),
+    users: z.array(SnowflakeSchema).max(100).optional(),
+  })
+  .transform((data) => {
+    const final = {
+      everyone: data.parse?.includes(AllowedMentionsTypes.Everyone) || false,
+      roleMode: !!data.parse?.includes(AllowedMentionsTypes.Role)
+        ? "all"
+        : Array.isArray(data.roles) && data.roles.length > 0
+          ? "specific"
+          : "none",
+      userMode: !!data.parse?.includes(AllowedMentionsTypes.User)
+        ? "all"
+        : Array.isArray(data.users) && data.users.length > 0
+          ? "specific"
+          : "none",
+    } as APIAllowedMentions;
+
+    // Handle roles: if Role is in parse array, it means "all roles"
+    if (final.roleMode === "specific" && !data.roles) {
+      final.roleMode = "none";
+    } else if (final.roleMode === "specific" && data.roles) {
+      final.roles = data.roles;
+    }
+
+    // Handle users: if User is in parse array, it means "all users"
+    if (final.userMode === "specific" && !data.users) {
+      final.userMode = "none";
+    } else if (final.userMode === "specific" && data.users) {
+      final.users = data.users;
+    }
+
+    return final;
+  });
 
 export const PanelSchema = z.object({
   guildId: SnowflakeSchema.optional(),

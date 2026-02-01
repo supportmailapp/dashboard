@@ -13,15 +13,6 @@ import type {
 } from "$lib/sm-types";
 import { Schema } from "mongoose";
 
-export const partialEmojiSchema = new Schema<IPartialEmoji>(
-  {
-    id: { type: String, required: false },
-    name: { type: String, required: true },
-    animated: { type: Boolean, required: false },
-  },
-  { _id: false },
-);
-
 export const EntitySchema = new Schema<AnyEntity>(
   {
     typ: { type: Number, required: true },

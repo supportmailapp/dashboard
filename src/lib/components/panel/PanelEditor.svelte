@@ -66,7 +66,7 @@
   });
 </script>
 
-<div class="flex flex-col gap-1 rounded bg-[#1e2124] p-2">
+<div class="flex flex-col gap-1 rounded dark:bg-[#1e2124] bg-slate-50 p-2">
   {#each components as component, index}
     {#if component.type === ComponentType.TextDisplay}
       <TextDisplay
