@@ -53,6 +53,7 @@
   import Emoji from "./Emoji.svelte";
   import Switch from "$ui/switch/switch.svelte";
   import { getCategoriesManager } from "./categories.svelte";
+  import Trash from "@lucide/svelte/icons/trash";
 
   type Props = ComponentWithRemoveHandler<{
     action: SMCustomAction;
@@ -280,20 +281,31 @@
           {:else if action === "ticket:create" && catsManager.cats.size > 0}
             <Field.Field orientation="vertical" class="gap-1">
               <Field.Label>Ticket Category (optional)</Field.Label>
-              <Combobox
-                popoverTriggerClass="w-full"
-                label={!customId
-                  ? "Select a category"
-                  : (catsManager.cats.get(customId) ?? "Unknown Category")}
-                closeOnSelect
-                selected={customId ? [customId] : []}
-                onSelect={(value) => (customId = value)}
-                options={catsManager.cats
-                  .entries()
-                  .toArray()
-                  .map(([id, name]) => ({ value: id, label: name }))}
-                filter={filterTicketCategories}
-              />
+              <div class="flex justify-between gap-1">
+                <Combobox
+                  popoverTriggerClass="w-full"
+                  label={!customId
+                    ? "Select a category"
+                    : (catsManager.cats.get(customId) ?? "Unknown Category")}
+                  closeOnSelect
+                  selected={customId ? [customId] : []}
+                  onSelect={(value) => (customId = value)}
+                  options={catsManager.cats
+                    .entries()
+                    .toArray()
+                    .map(([id, name]) => ({ value: id, label: name }))}
+                  filter={filterTicketCategories}
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  class={customId ? "text-destructive" : "hidden"}
+                  onclick={() => (customId = "")}
+                  aria-label="Clear Category"
+                >
+                  <Trash />
+                </Button>
+              </div>
             </Field.Field>
           {:else if action === "ticket:create" && catsManager.cats.size === 0 && catsManager.loaded}
             <p class="text-muted-foreground text-center text-sm">No ticket categories available.</p>

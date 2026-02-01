@@ -32,7 +32,7 @@
 
   const tagsManager = getTagsManager();
   const catsManager = getCategoriesManager();
-  type OptionError = "emoji" | "emptyLabel" | "noTag" | "noCategory";
+  type OptionError = "emoji" | "emptyLabel" | "noTag";
   const optionErrorLabels = {
     emoji: "Invalid emoji format.",
     emptyLabel: "Label cannot be empty.",
@@ -98,9 +98,6 @@
       }
       if (opt.action === "reply" && (!opt.value || opt.value.trim().length === 0)) {
         errors.push("noTag");
-      }
-      if (opt.action === "ticket:create" && (!opt.value || opt.value.trim().length === 0)) {
-        errors.push("noCategory");
       }
       if (errors.length > 0) {
         optionEvals.set(index, errors);
@@ -262,20 +259,31 @@
                     {:else if options[index].action === "ticket:create"}
                       <Field.Field orientation="vertical" class="gap-1">
                         <Field.Label>Ticket Category (optional)</Field.Label>
-                        <Combobox
-                          popoverTriggerClass="w-full"
-                          label={!opt.value
-                            ? "Select a category"
-                            : (catsManager.cats.get(opt.value) ?? "Unknown Category")}
-                          closeOnSelect
-                          selected={opt.value ? [opt.value] : []}
-                          onSelect={(value) => (options[index].value = value)}
-                          options={catsManager.cats
-                            .entries()
-                            .toArray()
-                            .map(([id, name]) => ({ value: id, label: name }))}
-                          filter={filterTicketCategories}
-                        />
+                        <div class="flex justify-between gap-1">
+                          <Combobox
+                            popoverTriggerClass="flex-1"
+                            label={!opt.value
+                              ? "Select a category"
+                              : (catsManager.cats.get(opt.value) ?? "Unknown Category")}
+                            closeOnSelect
+                            selected={opt.value ? [opt.value] : []}
+                            onSelect={(value) => (options[index].value = value || "")}
+                            options={catsManager.cats
+                              .entries()
+                              .toArray()
+                              .map(([id, name]) => ({ value: id, label: name }))}
+                            filter={filterTicketCategories}
+                          />
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            class={opt.value ? "text-destructive" : "hidden"}
+                            onclick={() => (options[index].value = "")}
+                            aria-label="Clear Category"
+                          >
+                            <Trash />
+                          </Button>
+                        </div>
                       </Field.Field>
                     {/if}
                   </Field.Group>
