@@ -26,7 +26,6 @@
   import { setTagsManager } from "$lib/components/panel/tags.svelte";
   import { setCategoriesManager } from "$lib/components/panel/categories.svelte";
 
-
   setTagsManager();
   setCategoriesManager();
   let oldPanel: APIPanel | null = null;
@@ -106,15 +105,12 @@
     }
     sending = true;
 
-    const res = await apiClient.post<APIMessage>(
-      APIRoutes.sendPanel(page.params.guildid!),
-      {
-        json: panel,
-      },
-    );
+    const res = await apiClient.post<APIMessage>(APIRoutes.sendPanel(page.params.guildid!), {
+      json: panel,
+    });
 
     if (res.ok) {
-        toast.success("Panel sent successfully.");
+      toast.success("Panel sent successfully.");
     } else {
       const jsonRes = await res.json().catch(() => ({}) as any);
       toast.error(`Failed to send panel`, { description: `${jsonRes.message ?? "Unknown error"}` });
@@ -137,7 +133,10 @@
 />
 
 <div class="container mb-40 max-w-3xl space-y-6" in:fly={{ x: -30, duration: 200 }}>
-  <SiteHeading title="Panel" subtitle="Configure a custom message for your server" />
+  <SiteHeading
+    title="Panel"
+    subtitle="Configure a custom message for your server from which your members can create tickets"
+  />
 
   <div class="flex flex-col gap-3">
     {#if !loading && panel}
