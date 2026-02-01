@@ -19,8 +19,7 @@
 
 <Dialog.Root bind:open>
   <Dialog.Content
-    class="dark flex h-[calc(100vh-2rem)] w-screen max-w-screen flex-col sm:w-full sm:max-w-[calc(100vw-2rem)]"
-    style="color-scheme: dark;"
+    class="flex h-[calc(100vh-2rem)] w-screen max-w-screen flex-col sm:w-full sm:max-w-[calc(100vw-2rem)]"
     showCloseButton={false}
   >
     <Tabs.Root
