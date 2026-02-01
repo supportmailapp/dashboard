@@ -154,7 +154,14 @@
 
 <!-- Imitate Discord's button component -->
 <RemoveButtonWrapper {onRemove} class="flex-0">
-  <div class={cn("max-w-100 truncate", buttonStyleClasses.base, buttonStyleClasses[style], disabled && "opacity-50 cursor-not-allowed")}>
+  <div
+    class={cn(
+      "max-w-100 truncate",
+      buttonStyleClasses.base,
+      buttonStyleClasses[style],
+      disabled && "cursor-not-allowed opacity-50",
+    )}
+  >
     <!-- Button Config popover -->
     <Popover.Root bind:open={buttonSettingsOpen}>
       <Popover.Trigger class={buttonVariants({ variant: "ghost", size: "icon-sm" })}>
@@ -215,7 +222,7 @@
           <Field.Field orientation="horizontal" class="grid grid-cols-3 items-center gap-2">
             <Field.Label>Disabled</Field.Label>
             <div class="col-span-2 flex justify-end">
-              <Switch bind:checked={disabled} />
+              <Switch bind:checked={() => !!disabled, (v) => (disabled = v)} />
             </div>
           </Field.Field>
 
