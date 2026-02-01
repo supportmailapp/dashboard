@@ -13,6 +13,8 @@ const allowedMentionsSchema = new Schema<IPanel["allowedMentions"]>(
 
 const panelSchema = new Schema<IPanel>({
   guildId: { type: String, required: true, unique: true, index: true },
+  channelId: { type: String, required: false },
+  messageId: { type: String, required: false },
   data: { type: Schema.Types.Mixed, required: true },
   allowedMentions: { type: allowedMentionsSchema, default: () => ({ parse: [], users: [], roles: [] }) },
 });

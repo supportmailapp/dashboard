@@ -138,6 +138,8 @@ const APIRoutes = {
     const queryString = searchParams.toString();
     return `${baseUrl}?${queryString}`.replace(/\?$/, "");
   },
+
+  panel: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/panel` as const,
 };
 
 const LegalLinks = {

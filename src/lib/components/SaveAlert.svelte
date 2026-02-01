@@ -57,13 +57,24 @@
       )}
       transition:fly={{ y: 50, duration: 200, opacity: 0.5 }}
     >
-      <!-- TODO: Center that shit properly on mobile -->
       <p>You got unsaved changes mate.</p>
-      <div class="flex w-full flex-1 flex-row gap-2 sm:w-auto sm:justify-end">
-        <Button variant="outline" class="w-auto flex-1 sm:w-33 sm:flex-none" onclick={discardChanges}
-          >Discard</Button
+      <div
+        class={cn(
+          "flex w-full flex-1 flex-row gap-2 sm:w-auto sm:justify-end",
+          saving ? "pointer-events-none opacity-50" : "",
+        )}
+      >
+        <Button variant="outline" class="w-auto flex-1 sm:w-33 sm:flex-none" onclick={discardChanges}>
+          Discard
+        </Button>
+        <Button
+          variant="success"
+          class="w-auto flex-1 sm:w-33 sm:flex-none"
+          onclick={saveData}
+          showLoading={saving}
         >
-        <Button variant="success" class="w-auto flex-1 sm:w-33 sm:flex-none" onclick={saveData}>Save</Button>
+          Save
+        </Button>
       </div>
     </div>
   {/if}
