@@ -5,6 +5,9 @@ import { FeedbackComponentSchema, FormComponentsSchema, NormalFormComponentSchem
 import { arrayIsDistinct, zem } from "$lib/utils.js";
 import { PermissionFlagsBits } from "$lib/utils/permissions.js";
 import { CommandpathRegex } from "$lib/constants.js";
+import { APIAllowedMentionsSchema } from "$lib/sm-types/src/utils/validators.js";
+import { SMTopLevelMessageComponentSchema } from "$lib/utils/panelValidators.js";
+import { ComponentType } from "discord-api-types/v10";
 
 export const ObjectIdSchema = z.string().regex(/^[a-f\d]{24}$/i, zem("Invalid ObjectId format"));
 
@@ -14,12 +17,12 @@ export const overview = z.object({
 
 export type OverviewConfig = z.infer<typeof overview>;
 
-export const SnowflakePredicate = z.string().regex(/^\d{17,23}$/, zem("Invalid Snowflake format"));
+export const SnowflakeSchema = z.string().regex(/^\d{17,23}$/, zem("Invalid Snowflake format"));
 
 export const Entity = <T extends EntityType>(type: z.ZodLiteral<T>) =>
   z.object({
     typ: type,
-    id: SnowflakePredicate,
+    id: SnowflakeSchema,
   });
 
 export const UserEntity = Entity(z.literal(EntityType.user));
@@ -53,8 +56,8 @@ export const APIPausedUntilSchema = z.object({
 export type APIPausedUntil = z.infer<typeof APIPausedUntilSchema>;
 
 export const FeedbackConfigSchema = z.object({
-  guildId: SnowflakePredicate,
-  channelId: SnowflakePredicate.optional(),
+  guildId: SnowflakeSchema,
+  channelId: SnowflakeSchema.optional(),
   isEnabled: z.boolean().default(false),
   thankYou: z.string().max(4000, zem("Thank you message must be at most 4000 characters long")).optional(),
   components: FormComponentsSchema(FeedbackComponentSchema),
@@ -65,7 +68,7 @@ export type FeedbackConfig = z.infer<typeof FeedbackConfigSchema>;
 export const TicketCategorySchema = z.object({
   _id: ObjectIdSchema.optional(),
   local: z.literal(true).optional(),
-  guildId: SnowflakePredicate,
+  guildId: SnowflakeSchema,
   enabled: z.boolean(),
   index: z.int().nonnegative(zem("Index must be non-negative")),
   label: z
@@ -73,7 +76,7 @@ export const TicketCategorySchema = z.object({
     .min(3, zem("Label must be at least 3 characters long"))
     .max(45, zem("Label must be at most 45 characters long")),
   emoji: z.string().trim().optional(), // technically we could also validate this but for the sake of simplicity we allow any string here
-  tag: SnowflakePredicate.optional(),
+  tag: SnowflakeSchema.optional(),
   pings: z
     .array(MentionableEntity)
     .max(100, zem("A maximum of 100 pings are allowed"))
@@ -150,7 +153,7 @@ export const TagPutSchema = z.preprocess(
       _id: ObjectIdSchema.optional(),
       local: z.literal(true).optional(),
       delete: z.literal(true).optional(),
-      guildId: SnowflakePredicate,
+      guildId: SnowflakeSchema,
       name: z
         .string()
         .trim()
@@ -177,21 +180,21 @@ export const CommandConfigSchema = z.object({
   /**
    * Command ID, optional
    */
-  id: SnowflakePredicate.optional(),
+  id: SnowflakeSchema.optional(),
   commandPath: z.string().trim().toLowerCase().regex(CommandpathRegex, zem("Invalid command path format")),
-  guildId: SnowflakePredicate.nullable(), // null for global commands, currently for all!
+  guildId: SnowflakeSchema.nullable(), // null for global commands, currently for all!
   channels: z
-    .array(z.object({ id: SnowflakePredicate, t: z.enum(SpecialChannelType) }))
+    .array(z.object({ id: SnowflakeSchema, t: z.enum(SpecialChannelType) }))
     .max(100, zem("A maximum of 100 channels are allowed"))
     .refine((c) => arrayIsDistinct(c), zem("Duplicate channels are not allowed"))
     .default([]),
   roles: z
-    .array(SnowflakePredicate)
+    .array(SnowflakeSchema)
     .max(100, zem("A maximum of 100 roles are allowed"))
     .refine((r) => arrayIsDistinct(r), zem("Duplicate roles are not allowed"))
     .default([]),
   users: z
-    .array(SnowflakePredicate)
+    .array(SnowflakeSchema)
     .max(100, zem("A maximum of 100 users are allowed"))
     .refine((u) => arrayIsDistinct(u), zem("Duplicate users are not allowed"))
     .default([]),
@@ -221,3 +224,44 @@ export const ResetTicketsSchema = z
   .transform((arr) => new Set(arr));
 
 export type ResetTickets = z.infer<typeof ResetTicketsSchema>;
+
+function calculateComponentCount(data: any[]): number {
+  let count = 0;
+  for (const component of data) {
+    count += 1; // Count the component itself
+    switch (component.type) {
+      case ComponentType.ActionRow: // ActionRows can only contain buttons
+        count += component.components.length;
+        break;
+      case ComponentType.Container: // Containers can contain any component type, except Containers
+        count += calculateComponentCount(component.components);
+        break;
+      case ComponentType.Section: // Sections can contain text displays (.components) and an accessory.
+        // The accessory counts as one component and usually must be provided.
+        if (component.accessory) count += 1;
+        count += component.components.length;
+        break;
+      case ComponentType.MediaGallery: // MediaGallery contains media items (.items)
+        count += component.items.length;
+        break;
+      case ComponentType.TextDisplay: // TextDisplays count as one component
+      case ComponentType.Separator: // Separators count as one component
+      default:
+        break;
+    }
+  }
+  return count;
+}
+
+export const PanelSchema = z.object({
+  guildId: SnowflakeSchema.optional(),
+  channelId: SnowflakeSchema.optional(),
+  messageId: SnowflakeSchema.optional(),
+  allowedMentions: z.optional(APIAllowedMentionsSchema), // zod mini things
+  data: z
+    .array(SMTopLevelMessageComponentSchema)
+    .refine(
+      (components) => calculateComponentCount(components) <= 40,
+      zem("A maximum of 40 components are allowed"),
+    ),
+});

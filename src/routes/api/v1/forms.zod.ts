@@ -3,8 +3,8 @@ import { ComponentType } from "discord-api-types/v10";
 import { z } from "zod";
 
 // We can't have a circular import from the assertions file
-// So we redefine SnowflakePredicate here
-const SnowflakePredicate = z.string().regex(/^\d{17,23}$/, {
+// So we redefine SnowflakeSchema here
+const SnowflakeSchema = z.string().regex(/^\d{17,23}$/, {
   error: "Invalid Snowflake format",
 });
 
@@ -39,7 +39,7 @@ export const StringSelectOptionSchema = z
   });
 
 const BaseFormComponentSchema = z.object({
-  id: SnowflakePredicate.default(() => SnowflakeUtil.generate().toString()),
+  id: SnowflakeSchema.default(() => SnowflakeUtil.generate().toString()),
   _id: z.string().trim().optional(),
   required: z.boolean().default(false).optional(),
   local: z.literal(true, zem("Local must be true (Contact developer, this should not happen)")).optional(), // Used client-side only

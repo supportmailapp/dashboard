@@ -11,7 +11,6 @@
   import Plus from "@lucide/svelte/icons/plus";
   import RoleSelect from "$lib/components/discord/RoleSelect.svelte";
   import UserSelect from "$lib/components/discord/UserSelect.svelte";
-  import { page } from "$app/state";
   import { users } from "$lib/stores/users.svelte";
 
   let {
@@ -145,7 +144,7 @@
 
       <Field.Field orientation="horizontal">
         <Field.Label>Allow @everyone/@here</Field.Label>
-        <Switch bind:checked={allowedMentions.everyone} />
+        <Switch bind:checked={() => !!allowedMentions.everyone, (v) => (allowedMentions.everyone = v)} />
       </Field.Field>
     </Field.Group>
   </Dialog.Content>

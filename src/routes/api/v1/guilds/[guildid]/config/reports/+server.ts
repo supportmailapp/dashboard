@@ -8,7 +8,7 @@ import {
 import { ZodValidator } from "$lib/server/validators";
 import { ReportNotificationType, SpecialChannelType, type IDBGuild } from "$lib/sm-types";
 import { zem } from "$lib/utils.js";
-import { APIPausedUntilSchema, MentionableEntity, SnowflakePredicate } from "$v1Api/assertions.js";
+import { APIPausedUntilSchema, MentionableEntity, SnowflakeSchema } from "$v1Api/assertions.js";
 import { json } from "@sveltejs/kit";
 import dayjs from "dayjs";
 import type { UpdateQuery } from "mongoose";
@@ -41,7 +41,7 @@ const channelsSchema = z.object({
   ids: z
     .object({
       t: z.enum(SpecialChannelType),
-      id: SnowflakePredicate,
+      id: SnowflakeSchema,
     })
     .array()
     .max(100, zem("Maximum of 100 channels can be set.")),
@@ -60,7 +60,7 @@ const notificationSchema = z
 
 const putSchema = z
   .object({
-    channelId: SnowflakePredicate.nullable().default(null),
+    channelId: SnowflakeSchema.nullable().default(null),
     enabled: z.boolean().default(false),
     actionsEnabled: z.boolean().default(true),
     autoResolve: z.boolean().default(false),

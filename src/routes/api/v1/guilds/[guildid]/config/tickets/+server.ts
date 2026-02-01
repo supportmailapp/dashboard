@@ -7,7 +7,7 @@ import {
 } from "$lib/server/db/utils.js";
 import { ZodValidator } from "$lib/server/validators";
 import type { IDBGuild } from "$lib/sm-types";
-import { APIPausedUntilSchema, MentionableEntity, SnowflakePredicate } from "$v1Api/assertions.js";
+import { APIPausedUntilSchema, MentionableEntity, SnowflakeSchema } from "$v1Api/assertions.js";
 import { json } from "@sveltejs/kit";
 import dayjs from "dayjs";
 import type { UpdateQuery } from "mongoose";
@@ -37,7 +37,7 @@ export async function GET({ params }) {
 const patchSchema = z.object({
   enabled: z.boolean(),
   autoForwarding: z.boolean(),
-  allowedBots: z.array(SnowflakePredicate),
+  allowedBots: z.array(SnowflakeSchema),
   anonym: z
     .object({
       enabled: z.boolean().optional(),

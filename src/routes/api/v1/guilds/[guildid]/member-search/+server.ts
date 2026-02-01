@@ -1,6 +1,6 @@
 import { JsonErrors } from "$lib/constants.js";
 import userCache from "$lib/server/caches/users.js";
-import { SnowflakePredicate } from "$v1Api/assertions";
+import { SnowflakeSchema } from "$v1Api/assertions";
 import * as Sentry from "@sentry/sveltekit";
 import type { APIGuildMember, APIUser } from "discord-api-types/v10";
 
@@ -25,7 +25,7 @@ export async function GET({ url, locals, params }) {
   let users: APIUser[] = [];
 
   // Check cache first
-  const isSnowflake = SnowflakePredicate.safeParse(searchQuery).success;
+  const isSnowflake = SnowflakeSchema.safeParse(searchQuery).success;
   const cached = userCache.get(guildId, searchQuery);
 
   if (cached) {

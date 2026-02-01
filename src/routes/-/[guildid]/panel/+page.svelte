@@ -49,7 +49,6 @@
     } else {
       panel = {
         guildId: page.params.guildid!,
-        createdBy: page.data.user!.id,
         data: [],
         allowedMentions: {
           everyone: false,
@@ -74,7 +73,7 @@
     saving = true;
     const currentPanel = $state.snapshot(panel);
 
-    const res = await apiClient.post<APIPanel>(APIRoutes.panel(page.params.guildid!), {
+    const res = await apiClient.put<APIPanel>(APIRoutes.panel(page.params.guildid!), {
       json: currentPanel,
     });
 

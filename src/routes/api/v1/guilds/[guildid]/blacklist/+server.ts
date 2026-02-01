@@ -4,7 +4,7 @@ import { ZodValidator } from "$lib/server/validators/index.js";
 import { EntityType, MaxBlacklistScope, MinBlacklistScope, type IBlacklistEntry } from "$lib/sm-types";
 import { safeParseInt, zem } from "$lib/utils.js";
 import { BitField } from "$lib/utils/bitfields.js";
-import { SnowflakePredicate } from "$v1Api/assertions.js";
+import { SnowflakeSchema } from "$v1Api/assertions.js";
 import type { QueryFilter } from "mongoose";
 import z from "zod";
 
@@ -101,8 +101,8 @@ export async function GET({ locals, params, url }) {
 }
 
 const entrySchema = z.object({
-  id: SnowflakePredicate,
-  guildId: SnowflakePredicate.optional(), // optional because we get this one from the route - the field itself is just for validation
+  id: SnowflakeSchema,
+  guildId: SnowflakeSchema.optional(), // optional because we get this one from the route - the field itself is just for validation
   // scopes is a bitfield
   scopes: z.string().regex(/^\d+$/, zem("Invalid bitfield format (must only be numbers)")),
   _type: z.enum({

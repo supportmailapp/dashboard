@@ -3,7 +3,7 @@ import { CommandConfig, FlattenBigIntFields, FlattenDocToJSON } from "$lib/serve
 import { ZodValidator } from "$lib/server/validators/index.js";
 import type { APICommandConfig, ICommandConfig } from "$lib/sm-types/src/index.js";
 import { zem } from "$lib/utils.js";
-import { CommandConfigPutSchema, SnowflakePredicate } from "$v1Api/assertions.js";
+import { CommandConfigPutSchema, SnowflakeSchema } from "$v1Api/assertions.js";
 import { json } from "@sveltejs/kit";
 import type { QueryFilter } from "mongoose";
 import { inspect } from "util";
@@ -19,7 +19,7 @@ const pathValidator = (url: URL) => {
     return { error: JsonErrors.badRequest("Invalid command path format") };
   }
   const idParam = url.searchParams.get("id");
-  if (idParam && !SnowflakePredicate.safeParse(idParam).success) {
+  if (idParam && !SnowflakeSchema.safeParse(idParam).success) {
     return { error: JsonErrors.badRequest("Invalid command configuration ID format") };
   }
   if (!cmdPath && !idParam) {
@@ -115,7 +115,7 @@ export async function DELETE({ params, url }) {
     filter.id = pathRes.id;
   }
   const idParam = url.searchParams.get("id");
-  if (SnowflakePredicate.safeParse(idParam).success) {
+  if (SnowflakeSchema.safeParse(idParam).success) {
     filter.id = idParam;
   }
   try {
