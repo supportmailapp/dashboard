@@ -24,12 +24,14 @@
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import { slide } from "svelte/transition";
   import Emoji from "./Emoji.svelte";
+  import { getCategoriesManager } from "./categories.svelte";
 
   type Props = ComponentWithRemoveHandler<Omit<ClientSMSelect, "type" | "custom_id">>;
 
   let { placeholder = $bindable(), options = $bindable([]), onRemove }: Props = $props();
 
   const tagsManager = getTagsManager();
+  const catsManager = getCategoriesManager();
   type OptionError = "emoji" | "emptyLabel" | "noTag" | "noCategory";
   const optionErrorLabels = {
     emoji: "Invalid emoji format.",
@@ -73,6 +75,10 @@
     return filterByName(tagsManager.tags, tagId, search, commandKeywords);
   }
 
+  function filterTicketCategories(categoryId: string, search: string, commandKeywords?: string[]): number {
+    return filterByName(catsManager.cats, categoryId, search, commandKeywords);
+  }
+
   $effect(() => {
     untrack(() => console.log("Evaluating options"));
     if (options.length === 0) {
@@ -102,6 +108,18 @@
         optionEvals.delete(index);
       }
     });
+  });
+
+  $effect(() => {
+    if (openOption !== -1 && !tagsManager.loaded) {
+      untrack(() => tagsManager.fetchTags());
+    }
+  });
+
+  $effect(() => {
+    if (openOption !== -1 && !catsManager.loaded) {
+      untrack(() => catsManager.fetchCats());
+    }
   });
 </script>
 
@@ -239,6 +257,24 @@
                             .toArray()
                             .map(([id, name]) => ({ value: id, label: name }))}
                           filter={filterTags}
+                        />
+                      </Field.Field>
+                    {:else if options[index].action === "ticket:create"}
+                      <Field.Field orientation="vertical" class="gap-1">
+                        <Field.Label>Ticket Category (optional)</Field.Label>
+                        <Combobox
+                          popoverTriggerClass="w-full"
+                          label={!opt.value
+                            ? "Select a category"
+                            : (catsManager.cats.get(opt.value) ?? "Unknown Category")}
+                          closeOnSelect
+                          selected={opt.value ? [opt.value] : []}
+                          onSelect={(value) => (options[index].value = value)}
+                          options={catsManager.cats
+                            .entries()
+                            .toArray()
+                            .map(([id, name]) => ({ value: id, label: name }))}
+                          filter={filterTicketCategories}
                         />
                       </Field.Field>
                     {/if}
