@@ -6,7 +6,7 @@
   import Files from "@lucide/svelte/icons/files";
   import PanelEditor from "./PanelEditor.svelte";
   import { toast } from "svelte-sonner";
-  import PanelDisplay from "./PanelDisplay.svelte";
+  import PanelDisplay, { resetClickedSpoilers } from "./PanelDisplay.svelte";
 
   interface Props {
     open?: boolean;
@@ -21,7 +21,15 @@
     class="dark flex h-[90vh] w-[90vw] flex-col sm:w-[90vw] sm:max-w-screen"
     style="color-scheme: dark;"
   >
-    <Tabs.Root value="preview" class="flex flex-1 flex-col overflow-hidden">
+    <Tabs.Root
+      value="preview"
+      onValueChange={(newTab) => {
+        if (newTab === "edit" || newTab === "preview") {
+          resetClickedSpoilers();
+        }
+      }}
+      class="flex flex-1 flex-col overflow-hidden"
+    >
       <Tabs.List class="mt-3 w-full shrink-0">
         <Tabs.Trigger value="edit">Edit</Tabs.Trigger>
         <Tabs.Trigger value="preview">Preview</Tabs.Trigger>

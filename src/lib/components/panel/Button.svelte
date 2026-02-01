@@ -51,6 +51,7 @@
   import LoadingSpinner from "../LoadingSpinner.svelte";
   import twemoji from "@discordapp/twemoji";
   import Emoji from "./Emoji.svelte";
+  import Switch from "$ui/switch/switch.svelte";
 
   type Props = ComponentWithRemoveHandler<{
     action: SMCustomAction;
@@ -64,6 +65,7 @@
      */
     customId?: string;
     style: Exclude<ButtonStyle, ButtonStyle.Premium>;
+    disabled?: boolean;
   }>;
 
   let {
@@ -73,6 +75,7 @@
     emoji = $bindable(),
     style = $bindable(),
     customId = $bindable(),
+    disabled = $bindable(),
     onRemove = () => undefined,
   }: Props = $props();
 
@@ -151,7 +154,7 @@
 
 <!-- Imitate Discord's button component -->
 <RemoveButtonWrapper {onRemove} class="flex-0">
-  <div class={cn("max-w-100 truncate", buttonStyleClasses.base, buttonStyleClasses[style])}>
+  <div class={cn("max-w-100 truncate", buttonStyleClasses.base, buttonStyleClasses[style], disabled && "opacity-50 cursor-not-allowed")}>
     <!-- Button Config popover -->
     <Popover.Root bind:open={buttonSettingsOpen}>
       <Popover.Trigger class={buttonVariants({ variant: "ghost", size: "icon-sm" })}>
@@ -207,6 +210,13 @@
                 {/each}
               </Select.Content>
             </Select.Root>
+          </Field.Field>
+
+          <Field.Field orientation="horizontal" class="grid grid-cols-3 items-center gap-2">
+            <Field.Label>Disabled</Field.Label>
+            <div class="col-span-2 flex justify-end">
+              <Switch bind:checked={disabled} />
+            </div>
           </Field.Field>
 
           <!-- Conditional Inputs; URL when Link; Category when Ticket Create -->

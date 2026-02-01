@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { SMComponentInActionRow, SMSelect } from "$lib/sm-types/src";
+  import type { SMActionRowButton, SMComponentInActionRow, SMSelect } from "$lib/sm-types/src";
   import { ButtonStyle, ComponentType } from "discord-api-types/v10";
   import RemoveButtonWrapper from "./RemoveButtonWrapper.svelte";
   import Button from "./Button.svelte";
@@ -72,6 +72,7 @@
               if (component.style !== 5) component.custom_id = v || "";
             }
           }
+          bind:disabled={() => !!(component as SMActionRowButton).disabled, (v) => (component.disabled = v)}
           onRemove={() => (components = components.filter((_, i) => i !== index))}
         />
       {:else}

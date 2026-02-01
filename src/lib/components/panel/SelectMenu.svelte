@@ -155,7 +155,7 @@
               <div class="flex w-fit flex-col justify-center px-2 py-1">
                 <p class="text-sm font-semibold text-white">{opt.label}</p>
                 {#if opt.description}
-                  <p class="text-sm text-gray-400">{opt.description}</p>
+                  <p class="text-muted-foreground text-sm">{opt.description}</p>
                 {/if}
               </div>
 
