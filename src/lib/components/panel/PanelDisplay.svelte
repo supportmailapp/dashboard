@@ -103,7 +103,11 @@
   let hasErrors = $derived(components ? components.length !== validComps.length : false);
 </script>
 
-{#snippet TextDisplay({ content }: APITextDisplayComponent, index: number, index2: number = -1)}
+{#snippet TextDisplay(
+  { content }: APITextDisplayComponent,
+  index: number | string,
+  index2: number | string = -1,
+)}
   {#key resetSpoilers}
     <div
       id="text-display-{index}-{index2}"
@@ -191,8 +195,8 @@
   </div>
 {/snippet}
 
-{#snippet Section({ components, accessory }: SMSectionComponent, index: number)}
-  <div class="flex w-full flex-col gap-2 rounded border p-2 sm:flex-row">
+{#snippet Section({ components, accessory }: SMSectionComponent, index: number | string)}
+  <div class="flex w-full flex-col gap-2 sm:flex-row">
     <div class="flex flex-1 flex-col gap-2">
       {#each components as td, index2 (index2)}
         {@render TextDisplay(td, index, index2)}
@@ -223,6 +227,8 @@
         {@render ActionRow(ccomponent)}
       {:else if ccomponent.type === ComponentType.TextDisplay}
         {@render TextDisplay(ccomponent, index, cindex)}
+      {:else if ccomponent.type === ComponentType.Section}
+        {@render Section(ccomponent, `${index}-${cindex}`)}
       {/if}
     {/each}
     {#if spoiler && !clickedSpoilers.has(`container-${index}`)}
@@ -245,6 +251,7 @@
     </Card.Header>
   </Card.Root>
 {/if}
+
 <div
   style="background-color: rgb(54, 57, 62)"
   class="prose prose-invert discord-message w-full max-w-none overflow-y-auto rounded-lg px-3 py-2"
@@ -256,6 +263,8 @@
       {@render TextDisplay(component, index)}
     {:else if component.type === ComponentType.Container}
       {@render Container(component, index)}
+    {:else if component.type === ComponentType.Section}
+      {@render Section(component, index)}
     {/if}
   {/each}
 </div>
