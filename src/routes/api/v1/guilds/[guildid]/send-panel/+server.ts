@@ -6,8 +6,7 @@ import {
   setChannelCache,
   setNonExistingChannel,
 } from "$lib/server/caches/guilds.js";
-import { TicketCategory } from "$lib/server/db/index.js";
-import { FlattenDocToJSON } from "$lib/server/db/utils.js";
+import { DBTag, TicketCategory } from "$lib/server/db/index.js";
 import { ComponentParser } from "$lib/utils/formatting.js";
 import { json } from "@sveltejs/kit";
 import {
@@ -18,12 +17,12 @@ import {
   type RESTPostAPIChannelMessageJSONBody,
 } from "discord-api-types/v10";
 import userCache from "$lib/server/caches/userGuilds.js";
-import { parseIconToURL } from "$lib/utils.js";
 import { BurstyRateLimiter, RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
 import equal from "fast-deep-equal";
 import { ZodValidator } from "$lib/server/validators/index.js";
 import { PanelSchema } from "$v1Api/assertions.js";
 import clientApi from "$lib/server/utils/clientApi";
+import { inspect } from "util";
 
 const ratelimiter = new BurstyRateLimiter(
   // 2 requests every 5 seconds with a burst of 20 requests per minute
@@ -134,11 +133,17 @@ export async function POST({ request, params, locals, setHeaders }) {
 
   const categoryDocs = await TicketCategory.find({ guildId }, { _id: 1 });
   const cats = categoryDocs.map((d) => d._id.toString());
+  const tagDocs = await DBTag.find({ guildId }, { _id: 1 });
+  const tags = tagDocs.map((d) => d._id.toString());
 
   const guild = userCache.getUserGuilds(locals.user.id)?.find((g) => g.id === guildId);
   if (!guild) return JsonErrors.forbidden("User is not in guild");
 
-  const parsed = new ComponentParser(data, cats).parse();
+  const parsed = new ComponentParser(data, {
+    categories: cats,
+    tags: tags,
+  }).parse();
+  console.log(inspect(parsed));
 
   const payload: RESTPostAPIChannelMessageJSONBody = {
     flags: MessageFlags.IsComponentsV2,
@@ -199,5 +204,3 @@ export async function POST({ request, params, locals, setHeaders }) {
 
   return json({ message: apiMessage });
 }
-
-async function validateAllowedMentions() {}

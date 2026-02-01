@@ -283,11 +283,16 @@ export class ComponentParser {
     "ticket:create": "createTicket",
     reply: "replyTo",
   } as const satisfies Record<Exclude<SMCustomAction, "link">, string>;
+  private categories: string[];
+  private tags: string[];
 
   constructor(
     private components: SMTopLevelMessageComponent[],
-    private categories: string[],
-  ) {}
+    additional: { categories?: string[]; tags?: string[] } = {},
+  ) {
+    this.categories = additional.categories ?? [];
+    this.tags = additional.tags ?? [];
+  }
 
   parse(): APIMessageTopLevelComponent[] {
     return this.components.map((comp) => this.parseComponent(comp)).filter((c) => c != undefined);
@@ -359,7 +364,10 @@ export class ComponentParser {
         disabled: comp.disabled,
       };
     } else if (comp.style !== ButtonStyle.Link && comp.action !== "link") {
-      if (!this.categories.includes(comp.action)) {
+      if (
+        (comp.action === "ticket:create" && !this.categories.includes(comp.custom_id ?? "")) ||
+        (comp.action === "reply" && !this.tags.includes(comp.custom_id ?? ""))
+      ) {
         return undefined; // invalid action/category
       }
       const actionPrefix = ComponentParser.ActionMapping[comp.action];
