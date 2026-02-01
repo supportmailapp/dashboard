@@ -1,0 +1,57 @@
+<script lang="ts">
+  import type { SMTopLevelMessageComponent } from "$lib/sm-types/src";
+  import Button from "$ui/button/button.svelte";
+  import * as Dialog from "$ui/dialog/index.js";
+  import * as Tabs from "$ui/tabs/index.js";
+  import Files from "@lucide/svelte/icons/files";
+  import PanelEditor from "./PanelEditor.svelte";
+  import { toast } from "svelte-sonner";
+  import PanelDisplay from "./PanelDisplay.svelte";
+
+  interface Props {
+    open?: boolean;
+    components?: SMTopLevelMessageComponent[];
+  }
+
+  let { open = $bindable(false), components = $bindable([]) }: Props = $props();
+</script>
+
+<Dialog.Root bind:open>
+  <Dialog.Content
+    class="dark flex h-[90vh] w-[90vw] flex-col sm:w-[90vw] sm:max-w-screen"
+    style="color-scheme: dark;"
+  >
+    <Tabs.Root value="preview" class="flex flex-1 flex-col overflow-hidden">
+      <Tabs.List class="mt-3 w-full shrink-0">
+        <Tabs.Trigger value="edit">Edit</Tabs.Trigger>
+        <Tabs.Trigger value="preview">Preview</Tabs.Trigger>
+        <Tabs.Trigger value="raw">Raw</Tabs.Trigger>
+      </Tabs.List>
+      <Tabs.Content value="edit" class="mt-4 flex flex-1 flex-col overflow-y-auto">
+        <PanelEditor bind:components />
+      </Tabs.Content>
+      <Tabs.Content value="preview" class="mt-4 flex flex-col overflow-y-auto">
+        <PanelDisplay {components} />
+      </Tabs.Content>
+      <Tabs.Content value="raw" class="mt-4 flex flex-col overflow-hidden">
+        <div class="bg-card relative flex flex-1 overflow-hidden rounded border p-4">
+          <div class="flex w-full overflow-y-auto font-mono text-sm whitespace-pre-wrap">
+            {JSON.stringify(components, null, 2)}
+          </div>
+          <Button
+            variant="secondary"
+            size="icon"
+            class="absolute top-4 right-4"
+            onclick={() => {
+              navigator.clipboard.writeText(JSON.stringify(components, null, 2)).then(() => {
+                toast.success("Copied to clipboard");
+              });
+            }}
+          >
+            <Files />
+          </Button>
+        </div>
+      </Tabs.Content>
+    </Tabs.Root>
+  </Dialog.Content>
+</Dialog.Root>

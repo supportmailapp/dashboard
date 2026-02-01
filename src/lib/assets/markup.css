@@ -152,6 +152,12 @@ strong {
   font-weight: 900;
 }
 
+@layer prose {
+  :where(img):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+    margin: 0;
+  }
+}
+
 @font-face {
   font-family: "Whitney";
   src: url("https://cdn.skyra.pw/whitney-font/v2/Book.woff") format("woff");

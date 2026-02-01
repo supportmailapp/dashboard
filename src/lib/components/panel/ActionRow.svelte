@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { SMComponentInActionRow } from "$lib/sm-types/src";
+  import type { SMComponentInActionRow, SMSelect } from "$lib/sm-types/src";
   import { ButtonStyle, ComponentType } from "discord-api-types/v10";
   import RemoveButtonWrapper from "./RemoveButtonWrapper.svelte";
   import Button from "./Button.svelte";
@@ -76,8 +76,11 @@
         />
       {:else}
         <SelectMenu
-          options={component.options}
-          placeholder={component.placeholder}
+          bind:options={component.options}
+          bind:placeholder={
+            () => (components[index] as SMSelect).placeholder || "",
+            (v) => ((components[index] as SMSelect).placeholder = v)
+          }
           onRemove={() => (components = components.filter((_, i) => i !== index))}
         />
       {/if}

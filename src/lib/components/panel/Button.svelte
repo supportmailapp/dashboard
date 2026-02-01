@@ -22,6 +22,15 @@
 
     return 0;
   }
+
+  export const buttonStyleClasses = {
+    base: "discord-btn",
+    [ButtonStyle.Primary]: "discord-primary",
+    [ButtonStyle.Secondary]: "discord-secondary",
+    [ButtonStyle.Success]: "discord-success",
+    [ButtonStyle.Danger]: "discord-danger",
+    [ButtonStyle.Link]: "discord-secondary",
+  };
 </script>
 
 <script lang="ts">
@@ -40,6 +49,8 @@
   import Combobox from "$ui/combobox/Combobox.svelte";
   import { getTagsManager } from "./tags.svelte";
   import LoadingSpinner from "../LoadingSpinner.svelte";
+  import twemoji from "@discordapp/twemoji";
+  import Emoji from "./Emoji.svelte";
 
   type Props = ComponentWithRemoveHandler<{
     action: SMCustomAction;
@@ -80,15 +91,6 @@
     [ButtonStyle.Success]: "Success",
     [ButtonStyle.Danger]: "Danger",
     [ButtonStyle.Link]: "Link",
-  };
-
-  const buttonStyleClasses = {
-    base: "discord-btn",
-    [ButtonStyle.Primary]: "discord-primary",
-    [ButtonStyle.Secondary]: "discord-secondary",
-    [ButtonStyle.Success]: "discord-success",
-    [ButtonStyle.Danger]: "discord-danger",
-    [ButtonStyle.Link]: "discord-secondary",
   };
 
   const buttonActionLabels = {
@@ -154,23 +156,7 @@
     <Popover.Root bind:open={buttonSettingsOpen}>
       <Popover.Trigger class={buttonVariants({ variant: "ghost", size: "icon-sm" })}>
         {#if !!emoji && emoji.length > 0}
-          {@const parsed = validateEmoji(emoji) ?? null}
-          {@const emojiUrl = `https://cdn.discordapp.com/emojis/${parsed?.id ?? ""}.webp?size=96&quality=lossless`}
-          {#if parsed && !parsed.id}
-            <span class="size-[1.1rem]">{parsed.name}</span>
-          {:else if parsed?.id}
-            <img class="size-[1.1rem]" src={emojiUrl} alt="Button Emoji" />
-          {:else}
-            <span
-              class="animate-pulse-fast size-[1.1rem]"
-              {@attach () => {
-                emojiValid = false;
-                return () => (emojiValid = true);
-              }}
-            >
-              ❌
-            </span>
-          {/if}
+          <Emoji {emoji} />
         {:else}
           <Cog class="size-4.5" />
         {/if}

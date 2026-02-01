@@ -1,6 +1,5 @@
 <script lang="ts">
   import ContentEditor from "$lib/components/ContentEditor.svelte";
-  import { cn } from "$lib/utils";
   import * as Dialog from "$ui/dialog/index.js";
   import type { ClassValue } from "clsx";
   import type { Snippet } from "svelte";

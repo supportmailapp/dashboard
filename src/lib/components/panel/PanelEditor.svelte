@@ -13,6 +13,7 @@
   import { setTagsManager } from "./tags.svelte";
   import MediaGallery from "./MediaGallery.svelte";
   import Section from "./Section.svelte";
+  import { cn } from "$lib/utils";
 
   let {
     components = $bindable([]),
@@ -110,10 +111,14 @@
   <DropdownMenu.Root bind:open={selectorOpen}>
     <DropdownMenu.Trigger
       disabled={totalComponents >= 40}
-      class={buttonVariants({ variant: "outline", size: "sm", class: "mx-auto w-fit" })}
+      class={buttonVariants({
+        variant: totalComponents < 40 ? "outline" : "destructive",
+        size: "sm",
+        class: "mx-auto w-fit",
+      })}
     >
-      <Plus />
-      {totalComponents < 40 ? "Component" : "Component Limit Reached"}
+      <Plus class={totalComponents >= 40 ? "hidden" : ""} />
+      {totalComponents < 40 ? "Component" : "You have reached the maximum of 40 components."}
     </DropdownMenu.Trigger>
     <DropdownMenu.Content>
       <DropdownMenu.Group>
@@ -126,7 +131,4 @@
       </DropdownMenu.Group>
     </DropdownMenu.Content>
   </DropdownMenu.Root>
-  {#if totalComponents >= 40}
-    <p class="text-error text-sm">You have reached the maximum of 40 components.</p>
-  {/if}
 </div>

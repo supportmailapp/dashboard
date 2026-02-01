@@ -19,15 +19,15 @@
   import Trash from "@lucide/svelte/icons/trash";
   import Combobox from "$ui/combobox/Combobox.svelte";
   import { filterTagsByName } from "./Button.svelte";
-  import twemoji from "@discordapp/twemoji";
   import Separator from "$ui/separator/separator.svelte";
   import { untrack } from "svelte";
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import { slide } from "svelte/transition";
+  import Emoji from "./Emoji.svelte";
 
   type Props = ComponentWithRemoveHandler<Omit<ClientSMSelect, "type" | "custom_id">>;
 
-  let { placeholder, options = $bindable([]), onRemove }: Props = $props();
+  let { placeholder = $bindable(), options = $bindable([]), onRemove }: Props = $props();
 
   const tagsManager = getTagsManager();
   type OptionError = "emoji" | "emptyLabel" | "noTag" | "noCategory";
@@ -143,27 +143,13 @@
             {@const handleEmojiBlur = () => (options[index].emoji = emojiBuffers.get(opt._id)?.trim() || "")}
             <div
               class={cn(
-                "flex flex-row items-center gap-2 p-2 transition-colors duration-75 ease-in hover:bg-[#36393f]",
+                "flex flex-row items-center gap-2 p-1.5 transition-colors duration-75 ease-in hover:bg-[#36393f]",
                 optionEvals.has(index) && "stripes-background",
               )}
               transition:slide={{ duration: 150, axis: "y" }}
             >
               {#if !!emoji && emoji.length > 0}
-                {@const parsed = validateEmoji(emoji) ?? null}
-                {@const emojiUrl = `https://cdn.discordapp.com/emojis/${parsed?.id ?? ""}.webp?size=96&quality=lossless`}
-                {#if parsed && !parsed.id}
-                  {@const html = twemoji.parse(emoji, { className: "size-5" })}
-                  {@html html}
-                {:else if parsed?.id}
-                  <img style="width: 1.1rem; height: 1.1rem;" src={emojiUrl} alt="Button Emoji" />
-                {:else}
-                  <span
-                    style="width: 1.1rem; height: 1.1rem;"
-                    class="animate-pulse-fast inline-block aspect-square text-[1rem]"
-                  >
-                    ❌
-                  </span>
-                {/if}
+                <Emoji {emoji} />
               {/if}
 
               <div class="flex w-fit flex-col justify-center px-2 py-1">

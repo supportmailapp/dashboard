@@ -1,5 +1,4 @@
 <script lang="ts">
-  // import "@skyra/discord-components-core"; | maybe this isn't needed after all
   import "$lib/assets/markup.css";
   import { browser } from "$app/environment";
   import * as Tabs from "$ui/tabs/index.js";
