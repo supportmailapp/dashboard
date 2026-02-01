@@ -17,7 +17,7 @@ class TagsManager {
   async fetchTags() {
     if (this.tags.size === 0) {
       const res = await apiClient.get<{ _id: string; name: string }[]>(
-        APIRoutes.tags(/* page.params.guildid! */ "1114825999155200101", true),
+        APIRoutes.tags(page.params.guildid!, true),
       );
       if (res.ok) {
         const data = await res.json();

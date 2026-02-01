@@ -49,6 +49,7 @@
     SMSelectOptionSchema,
   } from "$lib/utils/panelValidators";
   import { Separator as UISeparator } from "$ui/separator";
+  import ExternalLink from "@lucide/svelte/icons/external-link";
 
   let {
     components,
@@ -166,9 +167,12 @@
     )}
   >
     {#if !!emoji && emoji.length > 0}
-      <Emoji {emoji} />
+      <Emoji {emoji} class="inline me-1" />
     {/if}
     <span class="font-medium">{label}</span>
+    {#if style === 5}
+      <ExternalLink class="size-4.5" />
+    {/if}
   </div>
 {/snippet}
 
@@ -288,8 +292,7 @@
 {/if}
 
 <div
-  style="background-color: rgb(54, 57, 62)"
-  class="prose prose-invert discord-message w-full max-w-none overflow-y-auto rounded-lg px-3 py-2"
+  class="prose dark:prose-invert discord-message w-full max-w-none overflow-y-auto rounded-lg px-3 py-2 bg-(--discord-light-background) dark:bg-(--discord-dark-background)"
 >
   {#each validComps as component, index}
     {#if component.type === ComponentType.ActionRow}

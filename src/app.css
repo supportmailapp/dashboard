@@ -17,6 +17,8 @@
   --discord-success-hover: #217739;
   --discord-danger: #f23f43;
   --discord-danger-hover: #b92d30;
+  --discord-dark-background: rgb(54, 57, 62);
+  --discord-light-background: #f6f6f6;
 
   --font-geist-sans: "Geist Variable", sans-serif;
   --font-geist-mono: "Geist Mono", monospace;
@@ -262,7 +264,7 @@
   }
 
   .discord-btn {
-    @apply rounded-md px-2 py-1 transition duration-150 ease-in-out;
+    @apply rounded-md px-3 py-1 transition duration-150 ease-in-out;
     color: white;
     background-color: var(--discord-secondary);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -288,11 +290,12 @@
 
   .discord-secondary,
   .discord-link {
-    @apply bg-card/20 text-foreground hover:bg-card/40 dark:bg-(--discord-secondary) dark:hover:bg-(--discord-secondary-hover);
-    /* background-color: var(--discord-secondary);
-    &:hover {
-      background-color: var(--discord-secondary-hover);
-    } */
+    @apply text-foreground border border-gray-300 bg-[#dfdfdf]/20 hover:bg-[#d2d2d2]/40 dark:border-0 dark:bg-(--discord-secondary) dark:hover:bg-(--discord-secondary-hover);
+
+    svg {
+      display: inline;
+      margin-inline-end: 2px;
+    }
   }
 
   .discord-success {

@@ -4,7 +4,7 @@
    * It should return a number between 0 and 1, with 1 being a perfect match, and 0 being no match,
    * resulting in the item being hidden entirely.
    */
-  export function filterTagsByName(
+  export function filterByName(
     tags: Map<string, string>,
     tagId: string,
     search: string,
@@ -52,6 +52,7 @@
   import twemoji from "@discordapp/twemoji";
   import Emoji from "./Emoji.svelte";
   import Switch from "$ui/switch/switch.svelte";
+  import { getCategoriesManager } from "./categories.svelte";
 
   type Props = ComponentWithRemoveHandler<{
     action: SMCustomAction;
@@ -80,7 +81,7 @@
   }: Props = $props();
 
   const tagsManager = getTagsManager();
-  let emojiValid = $state(true);
+  const catsManager = getCategoriesManager();
   let emojiBuffer = $state(emoji);
   let buttonSettingsOpen = $state(false);
 
@@ -136,12 +137,22 @@
   }
 
   function filterTags(tagId: string, search: string, commandKeywords?: string[]): number {
-    return filterTagsByName(tagsManager.tags, tagId, search, commandKeywords);
+    return filterByName(tagsManager.tags, tagId, search, commandKeywords);
+  }
+
+  function filterTicketCategories(id: string, search: string, commandKeywords?: string[]): number {
+    return filterByName(catsManager.cats, id, search, commandKeywords);
   }
 
   $effect(() => {
     if (buttonSettingsOpen && action === "reply" && !tagsManager.loaded) {
       untrack(() => tagsManager.fetchTags());
+    }
+  });
+
+  $effect(() => {
+    if (buttonSettingsOpen && action === "ticket:create" && !catsManager.loaded) {
+      untrack(() => catsManager.fetchCats());
     }
   });
 
@@ -265,6 +276,31 @@
             <p class="text-muted-foreground text-center text-sm">
               <LoadingSpinner class="inline-block size-5" />
               Loading tags...
+            </p>
+          {:else if action === "ticket:create" && catsManager.cats.size > 0}
+            <Field.Field orientation="vertical" class="gap-1">
+              <Field.Label>Ticket Category (optional)</Field.Label>
+              <Combobox
+                popoverTriggerClass="w-full"
+                label={!customId
+                  ? "Select a category"
+                  : (catsManager.cats.get(customId) ?? "Unknown Category")}
+                closeOnSelect
+                selected={customId ? [customId] : []}
+                onSelect={(value) => (customId = value)}
+                options={catsManager.cats
+                  .entries()
+                  .toArray()
+                  .map(([id, name]) => ({ value: id, label: name }))}
+                filter={filterTicketCategories}
+              />
+            </Field.Field>
+          {:else if action === "ticket:create" && catsManager.cats.size === 0 && catsManager.loaded}
+            <p class="text-muted-foreground text-center text-sm">No ticket categories available.</p>
+          {:else if action === "ticket:create" && !catsManager.loaded}
+            <p class="text-muted-foreground text-center text-sm">
+              <LoadingSpinner class="inline-block size-5" />
+              Loading categories...
             </p>
           {/if}
         </Field.Group>

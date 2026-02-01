@@ -10,10 +10,8 @@
   import Container from "./Container.svelte";
   import ComponentTypeIcon from "./ComponentTypeIcon.svelte";
   import ActionRow from "./ActionRow.svelte";
-  import { setTagsManager } from "./tags.svelte";
   import MediaGallery from "./MediaGallery.svelte";
   import Section from "./Section.svelte";
-  import { cn } from "$lib/utils";
 
   let {
     components = $bindable([]),
@@ -23,7 +21,6 @@
     totalComponents?: number;
   } = $props();
 
-  setTagsManager();
   let selectorOpen = $state(false);
   function addComponent(type: keyof typeof componentDefaults) {
     components = [...components, { type, ...componentDefaults[type] } as any];

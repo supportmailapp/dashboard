@@ -7,7 +7,14 @@ import { TicketCategoriesPUTSchema } from "$v1Api/assertions";
 import { json } from "@sveltejs/kit";
 import type { HydratedDocument } from "mongoose";
 
-export async function GET({ params }) {
+export async function GET({ params, url }) {
+  const partial = url.searchParams.get("partial") === "true";
+  if (partial) {
+    const cats = await TicketCategory.find({ guildId: params.guildid }, { label: 1, _id: 1 });
+    return json(
+      cats.sort((a, b) => a.index - b.index).map((cat) => ({ _id: cat._id.toString(), label: cat.label })),
+    );
+  }
   const cats = await getTicketCategories(params.guildid);
   return json(
     cats

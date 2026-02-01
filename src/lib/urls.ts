@@ -97,7 +97,8 @@ const APIRoutes = {
     `${API_GUILD_BASE}/${guildId}/config/tickets/feedback/setup` as const,
   memberSearch: (guildId: string, query: string, filter?: "bot") =>
     `${API_GUILD_BASE}/${guildId}/member-search?q=${encodeURIComponent(query)}${addFilterParam(filter)}` as const,
-  ticketCategories: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/tickets/categories` as const,
+  ticketCategories: (guildId: string, partial?: boolean) =>
+    `${API_GUILD_BASE}/${guildId}/config/tickets/categories${partial ? "?partial=true" : ""}` as const,
   ticketCategory: (guildId: string, categoryId: string) =>
     `${API_GUILD_BASE}/${guildId}/config/tickets/categories/${categoryId}` as const,
   ticketsFeedback: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/tickets/feedback` as const,

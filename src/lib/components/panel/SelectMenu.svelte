@@ -18,7 +18,7 @@
   import { cn, SnowflakeUtil } from "$lib/utils";
   import Trash from "@lucide/svelte/icons/trash";
   import Combobox from "$ui/combobox/Combobox.svelte";
-  import { filterTagsByName } from "./Button.svelte";
+  import { filterByName } from "./Button.svelte";
   import Separator from "$ui/separator/separator.svelte";
   import { untrack } from "svelte";
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
@@ -70,7 +70,7 @@
   }
 
   function filterTags(tagId: string, search: string, commandKeywords?: string[]): number {
-    return filterTagsByName(tagsManager.tags, tagId, search, commandKeywords);
+    return filterByName(tagsManager.tags, tagId, search, commandKeywords);
   }
 
   $effect(() => {

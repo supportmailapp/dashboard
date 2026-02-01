@@ -23,7 +23,12 @@
   import Mention from "$lib/components/discord/Mention.svelte";
   import Input from "$ui/input/input.svelte";
   import { parseDiscordLink } from "$lib/utils/formatting";
+  import { setTagsManager } from "$lib/components/panel/tags.svelte";
+  import { setCategoriesManager } from "$lib/components/panel/categories.svelte";
 
+
+  setTagsManager();
+  setCategoriesManager();
   let oldPanel: APIPanel | null = null;
   let panel = $state<APIPanel | null>(null);
   let loading = $state(true);
