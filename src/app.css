@@ -17,8 +17,8 @@
   --discord-success-hover: #217739;
   --discord-danger: #f23f43;
   --discord-danger-hover: #b92d30;
-  --discord-dark-background: #36393e;
-  --discord-light-background: #f6f6f6;
+  --discord-dark-background: #1b1b1f;
+  --discord-light-background: #fcfbfb;
 
   --font-geist-sans: "Geist Variable", sans-serif;
   --font-geist-mono: "Geist Mono", monospace;
@@ -343,8 +343,12 @@
   }
 
   .container-component {
-    @apply dark:bg-[#373b3e] bg-[#d6d6d6];
+    @apply dark:bg-[#25252a] bg-white space-y-1 rounded-lg border;
     position: relative;
+    max-width: 825px;
+    width: 100%;
+    padding-inline: 12px;
+    padding-block: 8px;
 
     &::before {
       content: "";

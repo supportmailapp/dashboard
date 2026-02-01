@@ -270,7 +270,7 @@
 {#snippet Container({ accent_color, components, spoiler }: SMContainerComponent, index: number)}
   <div
     id="container-{index}"
-    class="container-component relative space-y-1 rounded border px-2 py-1"
+    class="container-component"
     style="--accentColor: {accent_color ? `#${numberToHex(accent_color)}` : 'transparent'};"
   >
     {#each components as ccomponent, cindex}

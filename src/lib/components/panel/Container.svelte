@@ -49,7 +49,7 @@
 <RemoveButtonWrapper {onRemove}>
   <div
     class={cn(
-      "container-component space-y-1 rounded border px-2 py-1 transition duration-200 ease-in-out",
+      "container-component transition duration-200 ease-in-out",
       spoiler && "bg-linear-to-br from-violet-500/20 to-blue-500/20",
     )}
     style="--accentColor: {accent_color ? `#${numberToHex(accent_color)}` : 'transparent'};"
