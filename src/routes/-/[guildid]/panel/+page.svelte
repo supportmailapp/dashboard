@@ -10,22 +10,33 @@
   import { toast } from "svelte-sonner";
   import * as Card from "$ui/card/index";
   import * as Field from "$ui/field/index";
-  import Button from "$ui/button/button.svelte";
+  import * as Tabs from "$ui/tabs/index";
+  import * as Popover from "$ui/popover/index";
+  import Button, { buttonVariants } from "$ui/button/button.svelte";
   import Pencil from "@lucide/svelte/icons/pencil";
   import PanelDialog from "$lib/components/panel/PanelDialog.svelte";
   import { fly } from "svelte/transition";
   import { afterNavigate } from "$app/navigation";
   import AllowedMentions from "./AllowedMentions.svelte";
+  import { ChannelType } from "discord-api-types/v10";
+  import ChannelSelect from "$lib/components/discord/ChannelSelect.svelte";
+  import Mention from "$lib/components/discord/Mention.svelte";
+  import Input from "$ui/input/input.svelte";
+  import { parseDiscordLink } from "$lib/utils/formatting";
 
   let oldPanel: APIPanel | null = null;
   let panel = $state<APIPanel | null>(null);
   let loading = $state(true);
   let saving = $state(false);
+  let sending = $state(false);
   let unsavedChanges = $derived(determineUnsavedChanges(oldPanel, $state.snapshot(panel)));
   const dialog = $state({
     panel: false,
     mentions: false,
+    channel: false,
   });
+
+  $inspect(panel?.messageId);
 
   async function fetchPanel() {
     loading = true;
@@ -79,6 +90,44 @@
     saving = false;
   }
 
+  async function sendPanel() {
+    if (!panel) {
+      toast.error("No panel to send.");
+      return;
+    }
+
+    if (!panel.channelId) {
+      toast.error("No channel selected to send the panel.");
+      return;
+    }
+
+    if (unsavedChanges) {
+      toast.error("Please save your changes before sending the panel.");
+      return;
+    }
+
+    sending = true;
+
+    const res = await apiClient.post<{ success: boolean; error?: string }>(
+      APIRoutes.sendPanel(page.params.guildid!),
+      {
+        json: panel,
+      },
+    );
+
+    if (res.ok) {
+      const jsonRes = await res.json();
+      if (jsonRes.success) {
+        toast.success("Panel sent successfully.");
+      } else {
+        toast.error(`Failed to send panel`, { description: `${jsonRes.error ?? "Unknown error"}` });
+      }
+    } else {
+      toast.error("Failed to send panel.");
+    }
+    sending = false;
+  }
+
   afterNavigate(fetchPanel);
 </script>
 
@@ -93,15 +142,11 @@
   saveData={savePanel}
 />
 
-<div class="container mb-40 max-w-4xl space-y-6" in:fly={{ x: -30, duration: 200 }}>
+<div class="container mb-40 max-w-3xl space-y-6" in:fly={{ x: -30, duration: 200 }}>
   <SiteHeading title="Panel" subtitle="Configure a custom message for your server" />
 
   <div class="flex flex-col gap-3">
-    {#if loading || !panel}
-      <div class="col-span-full text-center">
-        <LoadingSpinner />
-      </div>
-    {:else}
+    {#if !loading && panel}
       <Card.Root>
         <Card.Header>
           <Card.Title>Panel Configuration</Card.Title>
@@ -123,7 +168,112 @@
           </Field.Group>
         </Card.Content>
       </Card.Root>
+
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>Panel Actions</Card.Title>
+        </Card.Header>
+        <Card.Content>
+          <Tabs.Root value="send">
+            <Tabs.List class="mb-2 w-full">
+              <Tabs.Trigger value="send">Send</Tabs.Trigger>
+              <Tabs.Trigger value="edit">Edit</Tabs.Trigger>
+            </Tabs.List>
+            <Tabs.Content value="send">
+              <Field.Field>
+                <Field.Label>Channel</Field.Label>
+                {#if !panel.channelId}
+                  <Popover.Root bind:open={dialog.channel}>
+                    <Popover.Trigger
+                      class={buttonVariants({ variant: "outline", class: "w-fit" })}
+                      disabled={!!loading}
+                    >
+                      Select Channel
+                    </Popover.Trigger>
+                    <Popover.Content class="w-80">
+                      <div class="h-100 w-full max-w-100">
+                        <ChannelSelect
+                          selectedId={panel.channelId ?? undefined}
+                          channelTypes={[
+                            ChannelType.GuildText,
+                            ChannelType.GuildVoice,
+                            ChannelType.GuildStageVoice,
+                            ChannelType.GuildAnnouncement,
+                            ChannelType.AnnouncementThread,
+                            ChannelType.PublicThread,
+                            ChannelType.PrivateThread,
+                          ]}
+                          allowCustomChannels
+                          excludedChannelIds={panel.channelId ? [panel.channelId] : []}
+                          onSelect={(c) => {
+                            if (!panel) return;
+                            panel.channelId = c.id;
+                            panel.messageId = undefined;
+                            dialog.channel = false;
+                          }}
+                        />
+                      </div>
+                    </Popover.Content>
+                  </Popover.Root>
+                {:else}
+                  <Mention
+                    channelId={panel.channelId}
+                    onDelete={() => {
+                      if (!panel) return false;
+                      panel.channelId = undefined;
+                      panel.messageId = undefined;
+                      return true;
+                    }}
+                  />
+                {/if}
+              </Field.Field>
+            </Tabs.Content>
+            <Tabs.Content value="edit">
+              <Field.Field>
+                <Field.Label>Message Link</Field.Label>
+                <Input
+                  type="text"
+                  placeholder="Enter the link to the message to edit"
+                  value={panel.messageId
+                    ? `https://discord.com/channels/${page.params.guildid}/${panel.channelId}/${panel.messageId}`
+                    : ""}
+                  oninput={(e) => {
+                    if (!panel) return;
+                    const value = e.currentTarget.value;
+                    const parsed = parseDiscordLink(value);
+                    if (
+                      parsed &&
+                      parsed.channelId &&
+                      parsed.messageId &&
+                      parsed.guildId === page.params.guildid
+                    ) {
+                      panel.channelId = parsed.channelId;
+                      panel.messageId = parsed.messageId;
+                    }
+                  }}
+                />
+              </Field.Field>
+            </Tabs.Content>
+          </Tabs.Root>
+          <div class="mt-3 flex justify-start">
+            <Button
+              variant="default"
+              onclick={sendPanel}
+              showLoading={sending}
+              disabled={sending || !panel.channelId}
+              class="w-full"
+            >
+              {panel.messageId ? "Edit" : "Send"}
+            </Button>
+          </div>
+        </Card.Content>
+      </Card.Root>
+
       <PanelDialog bind:open={dialog.panel} bind:components={panel.data} />
+    {:else}
+      <div class="col-span-full text-center">
+        <LoadingSpinner />
+      </div>
     {/if}
   </div>
 </div>

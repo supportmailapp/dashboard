@@ -140,6 +140,7 @@ const APIRoutes = {
   },
 
   panel: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/panel` as const,
+  sendPanel: (guildId: string) => `${API_GUILD_BASE}/${guildId}/send-panel` as const,
 };
 
 const LegalLinks = {
