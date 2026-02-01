@@ -167,7 +167,7 @@
     )}
   >
     {#if !!emoji && emoji.length > 0}
-      <Emoji {emoji} class="inline me-1" />
+      <Emoji {emoji} class="me-1 inline" />
     {/if}
     <span class="font-medium">{label}</span>
     {#if style === 5}
@@ -241,12 +241,25 @@
   />
 {/snippet}
 
-{#snippet MediaGallery({ items }: SMMediaGalleryComponent)}
+{#snippet MediaGallery({ items }: SMMediaGalleryComponent, index: number | string)}
   {@const gridCols =
     items.length === 1 ? "grid-cols-1" : items.length === 2 ? "grid-cols-2" : "sm:grid-cols-3 grid-cols-2"}
   <div class={cn(`grid max-w-xl gap-2`, gridCols)}>
-    {#each items as item}
-      <img src={item.url} alt={item.description || "Media Item"} class="w-full rounded-lg object-cover" />
+    {#each items as item, cindex}
+      {#if item.spoiler}
+        <div class="relative">
+          <img src={item.url} alt={item.description || "Media Item"} class="w-full rounded-lg object-cover" />
+          {#if !clickedSpoilers.has(`media-gallery-${index}-${cindex}`)}
+            <button
+              aria-label="Reveal Spoiler"
+              class="absolute -inset-px rounded bg-[#1a1a1a]"
+              onclick={() => clickedSpoilers.add(`media-gallery-${index}-${cindex}`)}
+            ></button>
+          {/if}
+        </div>
+      {:else}
+        <img src={item.url} alt={item.description || "Media Item"} class="w-full rounded-lg object-cover" />
+      {/if}
     {/each}
   </div>
 {/snippet}
@@ -267,7 +280,7 @@
       {:else if ccomponent.type === ComponentType.Separator}
         {@render Separator(ccomponent)}
       {:else if ccomponent.type === ComponentType.MediaGallery}
-        {@render MediaGallery(ccomponent)}
+        {@render MediaGallery(ccomponent, cindex)}
       {/if}
     {/each}
     {#if spoiler && !clickedSpoilers.has(`container-${index}`)}
@@ -292,7 +305,7 @@
 {/if}
 
 <div
-  class="prose dark:prose-invert discord-message w-full max-w-none overflow-y-auto rounded-lg px-3 py-2 bg-(--discord-light-background) dark:bg-(--discord-dark-background)"
+  class="prose dark:prose-invert discord-message w-full max-w-none overflow-y-auto rounded-lg bg-(--discord-light-background) px-3 py-2 dark:bg-(--discord-dark-background)"
 >
   {#each validComps as component, index}
     {#if component.type === ComponentType.ActionRow}
@@ -306,7 +319,7 @@
     {:else if component.type === ComponentType.Separator}
       {@render Separator(component)}
     {:else if component.type === ComponentType.MediaGallery}
-      {@render MediaGallery(component)}
+      {@render MediaGallery(component, index)}
     {/if}
   {/each}
 </div>
