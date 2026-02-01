@@ -18,9 +18,15 @@
     SMContainerComponent,
     SMSectionComponent,
     SMTopLevelMessageComponent,
+    SMMediaGalleryComponent,
   } from "$lib/sm-types/src";
   import { discordMdToHtml } from "$lib/utils/markup";
-  import { type APITextDisplayComponent, ComponentType } from "discord-api-types/v10";
+  import {
+    type APISeparatorComponent,
+    type APITextDisplayComponent,
+    ComponentType,
+    SeparatorSpacingSize,
+  } from "discord-api-types/v10";
   import LoadingSpinner from "../LoadingSpinner.svelte";
   import { buttonStyleClasses } from "./Button.svelte";
   import { cn } from "$lib/utils";
@@ -42,6 +48,7 @@
     TextDisplayComponentSchema,
     SMSelectOptionSchema,
   } from "$lib/utils/panelValidators";
+  import { Separator as UISeparator } from "$ui/separator";
 
   let {
     components,
@@ -101,6 +108,14 @@
     (components?.map((c) => validateComponent(c)).filter(Boolean) ?? []) as SMTopLevelMessageComponent[],
   );
   let hasErrors = $derived(components ? components.length !== validComps.length : false);
+  let hasMediaGallery = $derived(
+    validComps.some(
+      (c) =>
+        c.type === ComponentType.MediaGallery ||
+        (c.type === ComponentType.Container &&
+          c.components.some((cc) => cc.type === ComponentType.MediaGallery)),
+    ),
+  );
 </script>
 
 {#snippet TextDisplay(
@@ -216,6 +231,22 @@
   </div>
 {/snippet}
 
+{#snippet Separator({ divider, spacing }: APISeparatorComponent)}
+  <UISeparator
+    class={cn(spacing === SeparatorSpacingSize.Small ? "my-1" : "my-2.5", !divider && "bg-transparent")}
+  />
+{/snippet}
+
+{#snippet MediaGallery({ items }: SMMediaGalleryComponent)}
+  {@const gridCols =
+    items.length === 1 ? "grid-cols-1" : items.length === 2 ? "grid-cols-2" : "sm:grid-cols-3 grid-cols-2"}
+  <div class={cn(`grid max-w-xl gap-2`, gridCols)}>
+    {#each items as item}
+      <img src={item.url} alt={item.description || "Media Item"} class="w-full rounded-lg object-cover" />
+    {/each}
+  </div>
+{/snippet}
+
 {#snippet Container({ accent_color, components, spoiler }: SMContainerComponent, index: number)}
   <div
     id="container-{index}"
@@ -229,6 +260,10 @@
         {@render TextDisplay(ccomponent, index, cindex)}
       {:else if ccomponent.type === ComponentType.Section}
         {@render Section(ccomponent, `${index}-${cindex}`)}
+      {:else if ccomponent.type === ComponentType.Separator}
+        {@render Separator(ccomponent)}
+      {:else if ccomponent.type === ComponentType.MediaGallery}
+        {@render MediaGallery(ccomponent)}
       {/if}
     {/each}
     {#if spoiler && !clickedSpoilers.has(`container-${index}`)}
@@ -265,6 +300,23 @@
       {@render Container(component, index)}
     {:else if component.type === ComponentType.Section}
       {@render Section(component, index)}
+    {:else if component.type === ComponentType.Separator}
+      {@render Separator(component)}
+    {:else if component.type === ComponentType.MediaGallery}
+      {@render MediaGallery(component)}
     {/if}
   {/each}
 </div>
+
+{#if hasMediaGallery}
+  <Card.Root class="bg-primary/10 border-primary/40 mt-2 border p-2">
+    <Card.Header class="px-1">
+      <Card.Title class="text-primary">Media Gallery Notice</Card.Title>
+      <Card.Description>
+        The Media Gallery layout is <b>not</b> correct in this preview because only Discord Gods know how it
+        actually works.<br />
+        Please test in a real message to see the correct layout.
+      </Card.Description>
+    </Card.Header>
+  </Card.Root>
+{/if}

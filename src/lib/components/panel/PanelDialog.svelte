@@ -7,6 +7,7 @@
   import PanelEditor from "./PanelEditor.svelte";
   import { toast } from "svelte-sonner";
   import PanelDisplay, { resetClickedSpoilers } from "./PanelDisplay.svelte";
+  import X from "@lucide/svelte/icons/x";
 
   interface Props {
     open?: boolean;
@@ -18,8 +19,9 @@
 
 <Dialog.Root bind:open>
   <Dialog.Content
-    class="dark flex h-[90vh] w-[90vw] flex-col sm:w-[90vw] sm:max-w-screen"
+    class="dark flex h-[calc(100vh-2rem)] w-screen max-w-screen flex-col sm:w-full sm:max-w-[calc(100vw-2rem)]"
     style="color-scheme: dark;"
+    showCloseButton={false}
   >
     <Tabs.Root
       value="preview"
@@ -30,11 +32,23 @@
       }}
       class="flex flex-1 flex-col overflow-hidden"
     >
-      <Tabs.List class="mt-3 w-full shrink-0">
-        <Tabs.Trigger value="edit">Edit</Tabs.Trigger>
-        <Tabs.Trigger value="preview">Preview</Tabs.Trigger>
-        <Tabs.Trigger value="raw">Raw</Tabs.Trigger>
-      </Tabs.List>
+      <div class="mt-3 flex items-center justify-between gap-2">
+        <Tabs.List class="flex-1 shrink-0">
+          <Tabs.Trigger value="edit">Edit</Tabs.Trigger>
+          <Tabs.Trigger value="preview">Preview</Tabs.Trigger>
+          <Tabs.Trigger value="raw">Raw</Tabs.Trigger>
+        </Tabs.List>
+        <Button
+          variant="outline"
+          size="icon-sm"
+          class="text-destructive"
+          onclick={() => {
+            open = false;
+          }}
+        >
+          <X />
+        </Button>
+      </div>
       <Tabs.Content value="edit" class="mt-4 flex flex-1 flex-col overflow-y-auto">
         <PanelEditor bind:components />
       </Tabs.Content>
