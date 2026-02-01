@@ -17,6 +17,7 @@
   import Ticket from "@lucide/svelte/icons/ticket";
   import Section from "@lucide/svelte/icons/section";
   import SquareSlash from "@lucide/svelte/icons/square-slash";
+  import MessageSquareText from "@lucide/svelte/icons/message-square-text";
 
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
@@ -126,6 +127,12 @@
           name: "Command Config",
           href: "/command-config",
           icon: SquareSlash,
+        },
+        {
+          id: "panel",
+          name: "Panel Builder",
+          href: "/panel",
+          icon: MessageSquareText,
         },
       ],
     },
