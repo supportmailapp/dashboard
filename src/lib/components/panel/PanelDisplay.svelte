@@ -237,7 +237,10 @@
 
 {#snippet Separator({ divider, spacing }: APISeparatorComponent)}
   <UISeparator
-    class={cn(spacing === SeparatorSpacingSize.Small ? "my-1" : "my-2.5", !divider && "bg-transparent")}
+    class={cn(
+      spacing === SeparatorSpacingSize.Small ? "my-1" : divider ? "my-2" : "my-2.5",
+      !divider && "bg-transparent",
+    )}
   />
 {/snippet}
 
