@@ -18,7 +18,7 @@
   import { fly } from "svelte/transition";
   import { afterNavigate } from "$app/navigation";
   import AllowedMentions from "./AllowedMentions.svelte";
-  import { ChannelType } from "discord-api-types/v10";
+  import { type APIMessage, ChannelType } from "discord-api-types/v10";
   import ChannelSelect from "$lib/components/discord/ChannelSelect.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
   import Input from "$ui/input/input.svelte";
@@ -104,15 +104,9 @@
       toast.error("No channel selected to send the panel.");
       return;
     }
-
-    if (unsavedChanges) {
-      toast.error("Please save your changes before sending the panel.");
-      return;
-    }
-
     sending = true;
 
-    const res = await apiClient.post<{ success: boolean; error?: string }>(
+    const res = await apiClient.post<APIMessage>(
       APIRoutes.sendPanel(page.params.guildid!),
       {
         json: panel,
@@ -120,14 +114,10 @@
     );
 
     if (res.ok) {
-      const jsonRes = await res.json();
-      if (jsonRes.success) {
         toast.success("Panel sent successfully.");
-      } else {
-        toast.error(`Failed to send panel`, { description: `${jsonRes.error ?? "Unknown error"}` });
-      }
     } else {
-      toast.error("Failed to send panel.");
+      const jsonRes = await res.json().catch(() => ({}) as any);
+      toast.error(`Failed to send panel`, { description: `${jsonRes.message ?? "Unknown error"}` });
     }
     sending = false;
   }
