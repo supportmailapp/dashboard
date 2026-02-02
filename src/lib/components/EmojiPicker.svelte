@@ -84,7 +84,7 @@
             <Command.List class="max-h-80 overflow-y-auto">
               <Command.Empty>No emojis found</Command.Empty>
               <Command.Group>
-                <div class="flex flex-wrap gap-0.5 p-2">
+                <div class="flex flex-wrap gap-0.5 p-2 justify-center">
                   {#each emojis.values() as emoji}
                     <Command.Item
                       value={emoji.id}
