@@ -249,6 +249,18 @@
             />
           </div>
 
+          <div class="flex w-full max-w-sm flex-col gap-1.5">
+            <Label for="edit-description">Description</Label>
+            <Input
+              type="text"
+              id="edit-description"
+              bind:value={field.description}
+              placeholder="A short description for this field"
+              minlength={1}
+              maxlength={100}
+            />
+          </div>
+
           {#if field.type !== ComponentType.FileUpload}
             <div class="flex w-full max-w-sm flex-col gap-1.5">
               <Label for="edit-ph">Placeholder</Label>
