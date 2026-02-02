@@ -11,7 +11,6 @@
   import { page } from "$app/state";
   import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
-  import EmojiInput from "$lib/components/EmojiInput.svelte";
   import SaveAlert from "$lib/components/SaveAlert.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import {
@@ -50,7 +49,7 @@
 
   let { data } = $props();
 
-  type CategoryData = DocumentWithId<ITicketCategory>;
+  type CategoryData = DocumentWithId<Omit<ITicketCategory, "tag" | "index">>;
 
   const config = $state({
     old: null as CategoryData | null,
@@ -113,11 +112,10 @@
     const payload = $state.snapshot(config.current);
 
     // Remove the index field from the payload
-    const { index, ...payloadWithoutIndex } = payload;
 
     try {
       const res = await apiClient.put(APIRoutes.ticketCategory(page.params.guildid!, config.current._id), {
-        json: payloadWithoutIndex,
+        json: payload,
       });
 
       if (!res.ok) {

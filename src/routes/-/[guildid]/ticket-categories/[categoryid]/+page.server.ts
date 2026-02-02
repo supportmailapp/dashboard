@@ -7,6 +7,6 @@ export async function load({ parent, params, depends }) {
   const category = await TicketCategory.findOne({ guildId: params.guildid, _id: params.categoryid });
 
   return {
-    category: category ? FlattenDocToJSON(category, true) : null,
+    category: category ? FlattenDocToJSON(category, true, ["tag", "index"]) : null,
   };
 }
