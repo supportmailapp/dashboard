@@ -41,7 +41,7 @@ export const StringSelectOptionSchema = z
 const BaseFormComponentSchema = z.object({
   id: SnowflakeSchema.default(() => SnowflakeUtil.generate().toString()),
   _id: z.string().trim().optional(),
-  required: z.boolean().default(false).optional(),
+  required: z.boolean().default(false),
   local: z.literal(true, zem("Local must be true (Contact developer, this should not happen)")).optional(), // Used client-side only
 });
 

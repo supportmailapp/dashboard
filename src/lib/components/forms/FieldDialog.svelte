@@ -137,10 +137,10 @@
         return {
           ...base,
           type: newType,
-          label: getOldOrDefault<string>("label", "New Text Input"),
+          label: getOldOrDefault("label", "New Text Input"),
           style: 1,
-          placeholder: getOldOrDefault<string>("placeholder", ""),
-          required: getOldOrDefault<boolean>("required", false),
+          placeholder: getOldOrDefault("placeholder", ""),
+          required: getOldOrDefault("required", false),
           minLength: 0,
           maxLength: 4000,
         };
@@ -148,21 +148,21 @@
         return {
           ...base,
           type: newType,
-          label: getOldOrDefault<string>("label", "New Select Menu"),
-          placeholder: getOldOrDefault<string>("placeholder", ""),
-          required: getOldOrDefault<boolean>("required", false),
-          minValues: getOldOrDefault<number>("minValues", 0),
-          maxValues: getOldOrDefault<number>("maxValues", 1),
+          label: getOldOrDefault("label", "New Select Menu"),
+          placeholder: getOldOrDefault("placeholder", ""),
+          required: getOldOrDefault("required", false),
+          minValues: getOldOrDefault("minValues", 0),
+          maxValues: getOldOrDefault("maxValues", 1),
           options: [],
         };
       case ComponentType.FileUpload:
         return {
           ...base,
           type: newType,
-          label: getOldOrDefault<string>("label", "New File Upload"),
-          required: getOldOrDefault<boolean>("required", false),
-          minValues: getOldOrDefault<number>("minValues", 0),
-          maxValues: getOldOrDefault<number>("maxValues", 1),
+          label: getOldOrDefault("label", "New File Upload"),
+          required: getOldOrDefault("required", false),
+          minValues: getOldOrDefault("minValues", 0),
+          maxValues: getOldOrDefault("maxValues", 1),
         };
     }
 
@@ -379,7 +379,7 @@
               <Checkbox
                 bind:checked={
                   () => (field as RequireableFormComponent).required ?? false,
-                  (v) => ((field as RequireableFormComponent).required = v)
+                  (v) => ((field as RequireableFormComponent).required = !!v)
                 }
                 id="edit-required"
               />
@@ -399,14 +399,20 @@
               <Input
                 type="text"
                 id="edit-content"
-                bind:value={(field as ITextInputComponent).defaultValue}
+                bind:value={
+                  () => (field as ITextInputComponent).defaultValue ?? "",
+                  (v) => ((field as ITextInputComponent).defaultValue = v || "")
+                }
                 class="rounded-md border p-2"
               />
             {:else}
               <Textarea
                 id="edit-content"
                 rows={4}
-                bind:value={field.defaultValue}
+                bind:value={
+                  () => (field as ITextInputComponent).defaultValue ?? "",
+                  (v) => ((field as ITextInputComponent).defaultValue = v || "")
+                }
                 class="rounded-md border p-2"
               />
             {/if}
