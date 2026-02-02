@@ -279,8 +279,12 @@ export function parseDiscordLink(
 }
 
 export class ComponentParser {
-  static readonly ActionMapping = {
+  static readonly ButtonActionMapping = {
     "ticket:create": "createTicket/createTicket",
+    reply: "replyTo",
+  } as const satisfies Record<Exclude<SMCustomAction, "link">, string>;
+  static readonly SelectOptionActionMapping = {
+    "ticket:create": "createTicket",
     reply: "replyTo",
   } as const satisfies Record<Exclude<SMCustomAction, "link">, string>;
   private categories: string[];
@@ -370,7 +374,7 @@ export class ComponentParser {
       ) {
         return undefined; // invalid action/category
       }
-      const actionPrefix = ComponentParser.ActionMapping[comp.action];
+      const actionPrefix = ComponentParser.ButtonActionMapping[comp.action];
       return {
         type: ComponentType.Button,
         style: comp.style,
@@ -395,7 +399,7 @@ export class ComponentParser {
       custom_id: "panelSelect",
       options: comp.options.map((opt) => ({
         label: opt.label,
-        value: opt.value,
+        value: `${ComponentParser.SelectOptionActionMapping[opt.action]}${opt.value ? `/${opt.value}` : ""}`,
         description: opt.description,
         emoji: opt.emoji ? validateEmoji(opt.emoji) : undefined,
       })),
