@@ -43,17 +43,16 @@
   import { cn } from "$lib/utils";
   import type { SMCustomAction } from "$lib/sm-types/src";
   import RemoveButtonWrapper from "./RemoveButtonWrapper.svelte";
-  import { validateEmoji } from "$lib/utils/formatting";
-  import { Button, buttonVariants } from "$ui/button";
+  import { Button } from "$ui/button";
   import Input from "$ui/input/input.svelte";
   import Combobox from "$ui/combobox/Combobox.svelte";
   import { getTagsManager } from "./tags.svelte";
   import LoadingSpinner from "../LoadingSpinner.svelte";
-  import twemoji from "@discordapp/twemoji";
   import Emoji from "./Emoji.svelte";
   import Switch from "$ui/switch/switch.svelte";
   import { getCategoriesManager } from "./categories.svelte";
   import Trash from "@lucide/svelte/icons/trash";
+  import EmojiPicker from "../EmojiPicker.svelte";
 
   type Props = ComponentWithRemoveHandler<{
     action: SMCustomAction;
@@ -85,6 +84,8 @@
   const catsManager = getCategoriesManager();
   let emojiBuffer = $state(emoji);
   let buttonSettingsOpen = $state(false);
+  let emojiPickerOpen = $state(false);
+  let emojiPickerAnchor = $state<HTMLElement | null>(null);
 
   function handleEmojiBlur() {
     emoji = emojiBuffer;
@@ -185,23 +186,45 @@
         )}
       >
         {#if !!emoji && emoji.length > 0}
-          <Emoji {emoji} />
+          <div class="inline-block aspect-square size-5">
+            <Emoji {emoji} class="h-5" />
+          </div>
         {:else}
-          <Cog class="size-4.5" />
+          <Cog class="size-5" />
         {/if}
       </Popover.Trigger>
       <Popover.Content class="flex w-xs flex-col gap-3 p-3" sideOffset={5}>
         <Field.Field class="gap-2">
           <Field.Label>Emoji</Field.Label>
-          <Input
-            type="text"
-            class="w-full text-sm"
-            placeholder="<:emoji_name:emoji_id> or 😀"
-            bind:value={emojiBuffer}
-            onblur={handleEmojiBlur}
-            min="3"
-            max="100"
-          />
+          <div class="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              class="flex-1"
+              bind:ref={emojiPickerAnchor}
+              onclick={() => {
+                emojiPickerOpen = true;
+              }}
+            >
+              {#if emoji}
+                <Emoji {emoji} />
+              {:else}
+                Pick Emoji
+              {/if}
+            </Button>
+            {#if emoji}
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                onclick={() => {
+                  emoji = "";
+                }}
+              >
+                <Trash />
+              </Button>
+            {/if}
+          </div>
         </Field.Field>
 
         <Field.Group>
@@ -341,3 +364,18 @@
     />
   </div>
 </RemoveButtonWrapper>
+
+{#if emojiPickerAnchor}
+  <EmojiPicker
+    anchor={emojiPickerAnchor}
+    bind:open={emojiPickerOpen}
+    onPick={(data) => {
+      if (data.custom) {
+        emoji = `<${data.emoji.animated ? "a" : ""}:${data.emoji.name}:${data.emoji.id}>`;
+      } else {
+        emoji = data.emoji.name || "";
+      }
+      emojiPickerOpen = false;
+    }}
+  />
+{/if}

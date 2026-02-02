@@ -6,6 +6,9 @@
   import * as Dialog from "$ui/dialog/index.js";
   import { Input } from "$ui/input/index.js";
   import { Label } from "$ui/label/index.js";
+  import EmojiPicker from "../EmojiPicker.svelte";
+  import Emoji from "../panel/Emoji.svelte";
+  import Trash from "@lucide/svelte/icons/trash";
 
   interface Props {
     option: IStringSelectOption | null;
@@ -15,6 +18,9 @@
   }
 
   let { option = $bindable(null), open = $bindable(false), saveBtnLabel = "Save", onSave }: Props = $props();
+
+  let emojiPickerOpen = $state(false);
+  let emojiPickerAnchor = $state<HTMLElement | null>(null);
 
   function ensureId(opt: IStringSelectOption) {
     if (!opt._id) opt._id = SnowflakeUtil.generate().toString();
@@ -67,11 +73,36 @@
         </div>
 
         <div class="flex w-full max-w-sm flex-col gap-1.5">
-          <Label>Emoji (markdown)</Label>
-          <Input type="text" bind:value={option.emoji} maxlength={100} placeholder=":smile:" />
-          <p class="text-muted-foreground text-sm">
-            Pass emojis as markdown (e.g. <code>:smile:</code> or unicode).
-          </p>
+          <Label>Emoji</Label>
+          <div class="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              class="flex-1"
+              bind:ref={emojiPickerAnchor}
+              onclick={() => (emojiPickerOpen = !emojiPickerOpen)}
+            >
+              {#if option.emoji}
+                <div class="inline-block aspect-square size-5">
+                  <Emoji emoji={option.emoji} class="h-5" />
+                </div>
+              {:else}
+                Pick Emoji
+              {/if}
+            </Button>
+            {#if option.emoji}
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                onclick={() => {
+                  if (option) option.emoji = "";
+                }}
+              >
+                <Trash />
+              </Button>
+            {/if}
+          </div>
         </div>
 
         <div class="flex w-full max-w-sm flex-col gap-1.5">
@@ -89,3 +120,20 @@
     {/if}
   </Dialog.Content>
 </Dialog.Root>
+
+{#if emojiPickerAnchor}
+  <EmojiPicker
+    anchor={emojiPickerAnchor}
+    bind:open={emojiPickerOpen}
+    onPick={(data) => {
+      if (option) {
+        if (data.custom) {
+          option.emoji = `<${data.emoji.animated ? "a" : ""}:${data.emoji.name}:${data.emoji.id}>`;
+        } else {
+          option.emoji = data.emoji.name || "";
+        }
+      }
+      emojiPickerOpen = false;
+    }}
+  />
+{/if}

@@ -43,8 +43,8 @@
   );
   let loaded = $state(false);
   let lastHoveredEmojiName = $state<string | null>(null);
-  let standardInputValue = $state("");
-  let standardEmojiData = $derived(validateEmoji(standardInputValue || ""));
+  let otherEmojiInput = $state("");
+  let otherEmojiData = $derived(validateEmoji(otherEmojiInput || ""));
 
   onMount(async function () {
     const res = await apiClient.get<APICustomEmoji[]>(APIRoutes.listGuildEmojis("1114825999155200101"));
@@ -64,7 +64,7 @@
   bind:open
   onOpenChangeComplete={() => {
     lastHoveredEmojiName = null;
-    standardInputValue = "";
+    otherEmojiInput = "";
   }}
 >
   <Popover.Content customAnchor={anchor} class="max-w-72 p-1">
@@ -119,14 +119,26 @@
           </a> or standard unicode emoji like 🔥, ✅ or 🧙‍♂️
         </p>
 
-        {#if standardEmojiData}
+        {#if otherEmojiData}
           <p class="flex justify-center select-none">
-            <Emoji class="flex size-10 align-middle" data={standardEmojiData} />
+            <Emoji class="flex size-10 align-middle" data={otherEmojiData} />
           </p>
         {/if}
 
-        <Input bind:value={standardInputValue} class="mt-2 rounded-b-none" placeholder="Standard emoji" />
-        <Button variant="secondary" class="w-full rounded-t-none" disabled={!standardEmojiData}>Use</Button>
+        <Input bind:value={otherEmojiInput} class="mt-2 rounded-b-none" placeholder="Standard emoji" />
+        <Button
+          variant="secondary"
+          class="w-full rounded-t-none"
+          disabled={!otherEmojiData}
+          onclick={() => {
+            const parsed = otherEmojiInput ? validateEmoji(otherEmojiInput || "") : undefined;
+            if (parsed) {
+              onPick?.({ emoji: parsed, custom: !!parsed?.id });
+            }
+          }}
+        >
+          Use
+        </Button>
       </Tabs.Content>
     </Tabs.Root>
     {#if activeTab === "server"}

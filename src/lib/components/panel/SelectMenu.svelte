@@ -25,6 +25,7 @@
   import { slide } from "svelte/transition";
   import Emoji from "./Emoji.svelte";
   import { getCategoriesManager } from "./categories.svelte";
+  import EmojiPicker from "../EmojiPicker.svelte";
 
   type Props = ComponentWithRemoveHandler<Omit<ClientSMSelect, "type" | "custom_id">>;
 
@@ -45,6 +46,9 @@
   const optionEvals = new SvelteMap<number, OptionError[]>();
   const emojiBuffers = new SvelteMap<string, string>();
   let openOption = $state<number>(-1);
+  let emojiPickerOpen = $state(false);
+  let emojiPickerAnchor = $state<HTMLElement | null>(null);
+  let editingEmojiIndex = $state<number>(-1);
 
   const OptionLabels = {
     reply: "Reply with a Tag",
@@ -155,7 +159,6 @@
         <div class="flex max-h-100 flex-col overflow-clip overflow-y-auto rounded-md bg-[#2f3136]">
           {#each options as opt, index (opt._id)}
             {@const emoji = opt.emoji}
-            {@const handleEmojiBlur = () => (options[index].emoji = emojiBuffers.get(opt._id)?.trim() || "")}
             <div
               class={cn(
                 "flex flex-row items-center gap-2 p-1.5 transition-colors duration-75 ease-in hover:bg-[#36393f]",
@@ -164,7 +167,9 @@
               transition:slide={{ duration: 150, axis: "y" }}
             >
               {#if !!emoji && emoji.length > 0}
-                <Emoji {emoji} />
+                <div class="ms-2 inline-block aspect-square size-5">
+                  <Emoji emoji={opt.emoji} class="h-5" />
+                </div>
               {/if}
 
               <div class="flex w-fit flex-col justify-center px-2 py-1">
@@ -194,17 +199,36 @@
 
                     <Field.Field class="gap-2">
                       <Field.Label>Emoji</Field.Label>
-                      <Input
-                        type="text"
-                        class="w-full text-sm"
-                        placeholder="<:emoji_name:emoji_id> or 😀"
-                        bind:value={
-                          () => emojiBuffers.get(opt._id) ?? "", (v) => emojiBuffers.set(opt._id, v)
-                        }
-                        onblur={handleEmojiBlur}
-                        min="3"
-                        max="100"
-                      />
+                      <div class="flex gap-2">
+                        <Button
+                          variant="outline"
+                          class="flex-1"
+                          bind:ref={emojiPickerAnchor}
+                          onclick={() => {
+                            editingEmojiIndex = index;
+                            emojiPickerOpen = true;
+                          }}
+                        >
+                          {#if opt.emoji}
+                            <div class="inline-block aspect-square size-5">
+                              <Emoji emoji={opt.emoji} class="h-5" />
+                            </div>
+                          {:else}
+                            Pick Emoji
+                          {/if}
+                        </Button>
+                        {#if opt.emoji}
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            onclick={() => {
+                              options[index].emoji = "";
+                            }}
+                          >
+                            <Trash />
+                          </Button>
+                        {/if}
+                      </div>
                     </Field.Field>
 
                     <Field.Separator />
@@ -344,3 +368,22 @@
     </Dialog.Root>
   </div>
 </RemoveButtonWrapper>
+
+{#if emojiPickerAnchor}
+  <EmojiPicker
+    anchor={emojiPickerAnchor}
+    bind:open={emojiPickerOpen}
+    onPick={(data) => {
+      if (editingEmojiIndex !== -1) {
+        if (data.custom) {
+          options[editingEmojiIndex].emoji =
+            `<${data.emoji.animated ? "a" : ""}:${data.emoji.name}:${data.emoji.id}>`;
+        } else {
+          options[editingEmojiIndex].emoji = data.emoji.name || "";
+        }
+      }
+      emojiPickerOpen = false;
+      editingEmojiIndex = -1;
+    }}
+  />
+{/if}

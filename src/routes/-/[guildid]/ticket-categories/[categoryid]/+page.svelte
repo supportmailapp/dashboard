@@ -45,6 +45,8 @@
   import { guildHref } from "$lib/stores/site.svelte.js";
   import ContentEditorDialog from "$lib/components/ContentEditorDialog.svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
+  import EmojiPicker from "$lib/components/EmojiPicker.svelte";
+  import Emoji from "$lib/components/panel/Emoji.svelte";
 
   let { data } = $props();
 
@@ -71,6 +73,8 @@
 
   let editDialogOpen = $state(false);
   let editField = $state<AnyAPIFormComponent | null>(null);
+  let emojiPickerOpen = $state(false);
+  let emojiPickerAnchor = $state<HTMLElement | null>(null);
 
   afterNavigate(() => {
     if (data.category) {
@@ -297,16 +301,21 @@
             <Switch bind:checked={config.current.enabled} id="cat-enabled" />
           </div>
           <div class="flex items-center justify-start gap-2">
-            <EmojiInput
-              bind:emoji={
-                () => config.current?.emoji || "",
-                (v) => {
-                  if (config.current) {
-                    config.current.emoji = v;
-                  }
-                }
-              }
-            />
+            <Button
+              variant="outline"
+              size={config.current?.emoji ? "icon-lg" : "lg"}
+              bind:ref={emojiPickerAnchor}
+              onclick={() => (emojiPickerOpen = !emojiPickerOpen)}
+              disabled={config.loading}
+            >
+              {#if config.current?.emoji}
+                <div class="inline-block aspect-square size-5">
+                  <Emoji emoji={config.current.emoji} class="h-5" />
+                </div>
+              {:else}
+                Pick Emoji
+              {/if}
+            </Button>
             {#if config.current && validateEmoji(config.current.emoji || "")}
               <Button
                 size="icon"
@@ -316,7 +325,7 @@
                     config.current.emoji = "";
                   }
                 }}
-                aria-label="Reset "
+                aria-label="Reset"
               >
                 <XIcon />
               </Button>
@@ -574,3 +583,20 @@
     </Card.Root>
   {/if}
 </div>
+
+{#if emojiPickerAnchor}
+  <EmojiPicker
+    anchor={emojiPickerAnchor}
+    bind:open={emojiPickerOpen}
+    onPick={(data) => {
+      if (config.current) {
+        if (data.custom) {
+          config.current.emoji = `<${data.emoji.animated ? "a" : ""}:${data.emoji.name}:${data.emoji.id}>`;
+        } else {
+          config.current.emoji = data.emoji.name || "";
+        }
+      }
+      emojiPickerOpen = false;
+    }}
+  />
+{/if}
