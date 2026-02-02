@@ -306,7 +306,7 @@
               <Field.Label>Ticket Category (optional)</Field.Label>
               <div class="flex justify-between gap-1">
                 <Combobox
-                  popoverTriggerClass="w-full"
+                  popoverTriggerClass="flex-1"
                   label={!customId
                     ? "Select a category"
                     : (catsManager.cats.get(customId) ?? "Unknown Category")}
