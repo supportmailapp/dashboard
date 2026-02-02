@@ -172,6 +172,10 @@ class DiscordBotAPI extends BaseDiscordAPI {
       () => this.rest.patch(Routes.channelMessage(channelId, messageId), { body: payload }) as any,
     );
   }
+
+  async listGuildEmojis(guildId: string): Promise<SafeResponse<APICustomEmoji[]>> {
+    return this.doSafeRequest(() => this.rest.get(Routes.guildEmojis(guildId)) as any);
+  }
 }
 
 export { DiscordBotAPI };

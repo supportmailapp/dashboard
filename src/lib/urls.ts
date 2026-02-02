@@ -142,6 +142,8 @@ const APIRoutes = {
 
   panel: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/panel` as const,
   sendPanel: (guildId: string) => `${API_GUILD_BASE}/${guildId}/send-panel` as const,
+
+  listGuildEmojis: (guildId: string) => `${API_GUILD_BASE}/${guildId}/emojis` as const,
 };
 
 const LegalLinks = {
@@ -152,8 +154,10 @@ const LegalLinks = {
 } as const;
 
 const DocsLinks = {
-  LanguageDeterminationInGuild: "https://docs.supportmail.dev/f/preferences#language-determination-and-usage",
-  TicketCategories: "https://docs.supportmail.dev/features/ticket-categories",
+  LanguageDeterminationInGuild:
+    "https://docs.supportmail.dev/getting-support/preferences/#how-language-is-determined",
+  TicketCategories: "https://docs.supportmail.dev/configuration/ticket-categories/",
+  EmojiMarkdownFormat: "https://docs.supportmail.dev/guides/emoji-markdown",
 };
 
 export { APIRoutes, cdnUrls, DISCORD_CDN_BASE, discordUrls, DocsLinks, LegalLinks };

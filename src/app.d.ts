@@ -6,6 +6,7 @@ import type { EventsMap } from "$lib/utils/websocket";
 import type {
   APIChannel,
   APIDMChannel,
+  APIEmoji,
   APIGroupDMChannel,
   APIRole,
   APIThreadChannel,
@@ -56,6 +57,8 @@ declare global {
       user: APIUser | null;
     }
   }
+
+  type APICustomEmoji = APIEmoji & { id: string; name: string };
 
   type FlatUserToken = FlattenMaps<IUserToken>;
 

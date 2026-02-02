@@ -1,19 +1,31 @@
 <script lang="ts">
+  import type { IPartialEmoji } from "$lib/sm-types/src";
   import { cn } from "$lib/utils";
   import { validateEmoji } from "$lib/utils/formatting";
   import twemoji from "@discordapp/twemoji";
   import type { ClassValue } from "clsx";
 
-  let { emoji, class: className }: { emoji: string; class?: ClassValue } = $props();
+  let {
+    emoji,
+    data,
+    class: className,
+  }: { emoji?: string; data?: IPartialEmoji; class?: ClassValue } = $props();
+  let parsedEmoji = $derived(data ? data : emoji ? (validateEmoji(emoji) ?? null) : null);
+  let stringifiedEmoji = $derived(
+    parsedEmoji
+      ? parsedEmoji.id
+        ? `<${parsedEmoji.animated ? "a" : ""}:${parsedEmoji.name}:${parsedEmoji.id}>`
+        : parsedEmoji.name
+      : null,
+  );
 </script>
 
-{#if !!emoji && emoji.length > 0}
-  {@const parsed = validateEmoji(emoji) ?? null}
-  {@const emojiUrl = `https://cdn.discordapp.com/emojis/${parsed?.id ?? ""}.webp?size=96&quality=lossless`}
-  {#if parsed && !parsed.id}
-    {@const html = twemoji.parse(emoji, { className: `size-5 m-0 ${className ?? ""}`.trim() })}
+{#if parsedEmoji && stringifiedEmoji}
+  {#if !stringifiedEmoji?.startsWith("<:")}
+    {@const html = twemoji.parse(stringifiedEmoji, { className: `size-5 m-0 ${className ?? ""}`.trim() })}
     {@html html}
-  {:else if parsed?.id}
-    <img style="width: 1.1rem; height: 1.1rem;" src={emojiUrl} alt="Button Emoji" class={cn(className)} />
+  {:else}
+    {@const emojiUrl = `https://cdn.discordapp.com/emojis/${parsedEmoji?.id ?? ""}.${parsedEmoji?.animated ? "gif" : "webp"}?size=96&quality=lossless`}
+    <img src={emojiUrl} alt="Button Emoji" class={cn("size-[1.1rem]", className)} />
   {/if}
 {/if}
