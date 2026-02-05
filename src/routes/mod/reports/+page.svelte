@@ -154,7 +154,9 @@
           </Table.Row>
           <Table.Row class="h-auto">
             <Table.Cell>Message</Table.Cell>
-            <Table.Cell class="max-w-100 wrap-break-word">{selected.data.messageContent}</Table.Cell>
+            <Table.Cell class="max-w-100 text-wrap wrap-break-word">
+              {selected.data.messageContent}
+            </Table.Cell>
           </Table.Row>
           <Table.Row>
             <Table.Cell>Guild Data</Table.Cell>
