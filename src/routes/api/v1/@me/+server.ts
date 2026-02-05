@@ -1,5 +1,5 @@
 import { JsonErrors, zodLanguage } from "$lib/constants";
-import { DBUser, getDBUser } from "$lib/server/db/index.js";
+import { DBUser } from "$lib/server/db/index.js";
 import { ZodValidator } from "$lib/server/validators/index.js";
 import z from "zod";
 
@@ -8,7 +8,7 @@ export async function GET({ locals }) {
     return JsonErrors.unauthorized();
   }
 
-  const user = await getDBUser(locals.user.id);
+  const user = await DBUser.findOne({ id: locals.user.id });
   const sanitizedUser: { language: string; autoRedirect: boolean } = {
     language: user?.language || "en",
     autoRedirect: Boolean(user?.autoRedirect),
