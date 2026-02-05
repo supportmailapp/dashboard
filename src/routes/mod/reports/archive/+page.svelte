@@ -143,7 +143,7 @@
     }
   }}
 >
-  <Dialog.Content class="w-full max-w-4xl">
+  <Dialog.Content class="w-full sm:max-w-4xl">
     {#if selected.data}
       <Table.Root>
         <Table.Body>
@@ -177,9 +177,9 @@
               <Mention userId={selected.data.authorId} buttons="copy" />
             </Table.Cell>
           </Table.Row>
-          <Table.Row>
+          <Table.Row class="h-auto">
             <Table.Cell>Message</Table.Cell>
-            <Table.Cell class="max-w-100">{selected.data.messageContent}</Table.Cell>
+            <Table.Cell class="max-w-100 wrap-break-word">{selected.data.messageContent}</Table.Cell>
           </Table.Row>
           <Table.Row>
             <Table.Cell>Guild Data</Table.Cell>
