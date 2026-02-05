@@ -15,6 +15,7 @@
   import { fetchGuild } from "$lib/stores/guilds.svelte";
   import Skeleton from "$ui/skeleton/skeleton.svelte";
   import { parseIconToURL } from "$lib/utils";
+  import { goto } from "$app/navigation";
 
   let { data } = $props();
 
@@ -60,7 +61,12 @@
   </Button>
 </div>
 
-<Pagination.Root count={data.maxPages} page={data.page} class="my-2">
+<Pagination.Root
+  class="my-2"
+  count={data.maxPages}
+  page={data.page}
+  onPageChange={(num) => goto(`?page=${num}`)}
+>
   {#snippet children({ pages, currentPage })}
     <Pagination.Content>
       <Pagination.Item>
