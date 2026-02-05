@@ -44,6 +44,9 @@ class SessionManager {
   static async createSession(data: CreateSessionOps): Promise<string> {
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
+    const modUser = await DBUser.exists({ id: data.userId, roles: { $in: [UserRole.Moderator] } });
+    const isMod = !!modUser;
+
     // Encrpytion happens automatically in the UserToken model
     const tokenData = await UserToken.findOneAndUpdate(
       { userId: data.userId },
@@ -51,7 +54,7 @@ class SessionManager {
         expiresAt: expiresAt,
         accessToken: data.tokens.accessToken,
         refreshToken: data.tokens.refreshToken ?? null,
-        clearance: data.userId === env.OWNER_ID ? "admin" : "user",
+        clearance: data.userId === env.OWNER_ID ? "admin" : isMod ? "mod" : "user",
       },
       { new: true, upsert: true },
     );

@@ -113,12 +113,6 @@ export async function GET({ url, cookies }) {
     userId: user.id,
   });
 
-  const userRoles = [UserRole.User];
-
-  await updateDBUser(user.id, {
-    roles: userRoles,
-  });
-
   // Set session cookie
   cookies.set("session_id", sessionToken, {
     path: "/",

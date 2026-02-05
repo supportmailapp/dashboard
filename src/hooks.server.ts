@@ -249,6 +249,39 @@ const adminAuthRoutes = ["/api/*/admin/**", "/admin/**"];
 const compiledAdminRoutes = adminAuthRoutes.map((pattern) =>
   pattern.includes("*") ? wildcardMatch(pattern, { flags: "i" }) : null,
 );
+const modAuthRoutes = ["/mod/**"];
+const compiledModRoutes = modAuthRoutes.map((pattern) =>
+  pattern.includes("*") ? wildcardMatch(pattern, { flags: "i" }) : null,
+);
+
+const modAuthGuard: Handle = async ({ event, resolve }) => {
+  const pathname = event.url.pathname;
+
+  event.locals.isMod = () => {
+    const clearance = event.locals.token?.clearance;
+    return clearance === "admin" || clearance === "mod";
+  };
+
+  const isModRoute = compiledModRoutes.some((matcher) =>
+    matcher ? matcher(pathname) : modAuthRoutes.includes(pathname),
+  );
+
+  if (!isModRoute) {
+    return resolve(event);
+  }
+
+  if (!event.locals.token || !event.locals.user) {
+    return JsonErrors.unauthorized();
+  }
+
+  // Require at least mod clearance
+  const clearance = event.locals.token.clearance;
+  if (clearance !== "admin" && clearance !== "mod") {
+    return JsonErrors.forbidden();
+  }
+
+  return resolve(event);
+};
 
 const adminAuthGuard: Handle = async ({ event, resolve }) => {
   const pathname = event.url.pathname;
@@ -282,12 +315,15 @@ export const handle = sequence(
     enableLogs: true,
     tracesSampleRate: dev ? 1.0 : 0.5,
   }),
-  Sentry.sentryHandle(),
+  Sentry.sentryHandle({
+    handleUnknownRoutes: false,
+  }),
   authentification,
   authorization,
   apiRateLimitCheck,
   apiAuthGuard,
   guildAuthGuard,
+  modAuthGuard,
   adminAuthGuard,
 );
 

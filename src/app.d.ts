@@ -41,6 +41,10 @@ declare global {
        * @returns Whether the user is an admin.
        */
       isAdmin?: () => boolean;
+      /**
+       * @returns Whether the user is a moderator.
+       */
+      isMod?: () => boolean;
       user: APIUser | null;
       token: FlatUserToken | null;
       discordRest: DiscordBotAPI;
