@@ -1,11 +1,14 @@
 <script lang="ts">
-  import AppSidebar from "$lib/components/mod-sidebar.svelte";
-  import * as Breadcrumb from "$lib/components/ui/breadcrumb/index.js";
-  import { Separator } from "$lib/components/ui/separator/index.js";
-  import * as Sidebar from "$lib/components/ui/sidebar/index.js";
+  import { onDestroy, onMount } from "svelte";
   import { getBreadcrumbs } from "./breadcrumb.svelte";
 
   const crumbs = getBreadcrumbs();
+  onMount(() => {
+    crumbs.push("Home");
+  });
+  onDestroy(() => {
+    crumbs.pop();
+  });
 </script>
 
-asdasd
+You are a mod, do mod stuff here.
