@@ -206,29 +206,6 @@
           </Table.Row>
         </Table.Body>
       </Table.Root>
-
-      <div class="mt-4 flex justify-between">
-        <!-- Options: ["ban_reporter", "ban_guild", "manual", "ignored"] -->
-        <Select.Root
-          type="single"
-          bind:value={() => selected.selectedAction || "", (v) => (selected.selectedAction = v || null)}
-        >
-          <Select.Trigger class="w-48">
-            {selected.selectedAction ? actionLabels[selected.selectedAction] : "Select Action"}
-          </Select.Trigger>
-          <Select.Content>
-            {#each Object.entries(actionLabels) as [value, label]}
-              <Select.Item {value}>
-                {label}
-              </Select.Item>
-            {/each}
-          </Select.Content>
-        </Select.Root>
-
-        <Button variant="default" onclick={() => toast("Action executed: " + selected.selectedAction)}>
-          Execute
-        </Button>
-      </div>
     {/if}
   </Dialog.Content>
 </Dialog.Root>
