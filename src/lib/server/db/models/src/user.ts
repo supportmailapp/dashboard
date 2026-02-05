@@ -9,6 +9,7 @@ export const userSchema = new Schema<IDBUser>(
     autoRedirect: { type: Boolean, default: false },
     t_left: { type: Number, default: 50 },
     tips: { type: Boolean, default: true },
+    roles: { type: [Number], default: [] },
   },
   { timestamps: true },
 );

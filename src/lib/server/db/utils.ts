@@ -98,16 +98,8 @@ export function getDBUser(userId: string) {
 export async function updateDBUser(
   userId: string,
   update: UpdateQuery<IDBUser> | UpdateWithAggregationPipeline,
-  upsert = false,
 ) {
-  if (upsert) {
-    const userExists = await DBUser.exists({ id: userId });
-    if (!userExists) {
-      await DBUser.create({ id: userId });
-    }
-  }
-
-  return await DBUser.updateOne({ id: userId }, update);
+  return await DBUser.findOneAndUpdate({ id: userId }, update, { upsert: false, new: true });
 }
 
 export function getTicketCategories(guildId: string, label?: string) {

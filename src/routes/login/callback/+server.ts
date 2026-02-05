@@ -1,9 +1,9 @@
 import { redirectToLoginWithError } from "$lib";
 import { SessionManager } from "$lib/server/auth";
 import { discord } from "$lib/server/constants";
-import { BlacklistEntry } from "$lib/server/db/index.js";
+import { BlacklistEntry, updateDBUser } from "$lib/server/db/index.js";
 import { DiscordUserAPI } from "$lib/server/discord";
-import { BlacklistScope, EntityType } from "$lib/sm-types/src/index.js";
+import { BlacklistScope, EntityType, UserRole } from "$lib/sm-types/src/index.js";
 import { discordUrls } from "$lib/urls";
 import * as Sentry from "@sentry/sveltekit";
 import { redirect } from "@sveltejs/kit";
@@ -111,6 +111,12 @@ export async function GET({ url, cookies }) {
       expiresIn: expires_in,
     },
     userId: user.id,
+  });
+
+  const userRoles = [UserRole.User];
+
+  await updateDBUser(user.id, {
+    roles: userRoles,
   });
 
   // Set session cookie
