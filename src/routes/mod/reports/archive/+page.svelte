@@ -66,7 +66,10 @@
   class="my-2"
   count={data.maxPages}
   page={data.page}
-  onPageChange={(num) => goto(`?page=${num}`)}
+  onPageChange={async (num) => {
+    console.log("Page changed to", num);
+    await goto(`?page=${num}`, { replaceState: true });
+  }}
 >
   {#snippet children({ pages, currentPage })}
     <Pagination.Content>
