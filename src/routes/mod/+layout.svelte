@@ -22,10 +22,16 @@
             <Breadcrumb.Link href="/mod">Moderation</Breadcrumb.Link>
           </Breadcrumb.Item>
           {#if crumbs.crumbs.length > 0}
-            <Breadcrumb.Separator class="hidden md:block" />
             {#each crumbs.crumbs as crumb}
+              <Breadcrumb.Separator class="hidden md:block" />
               <Breadcrumb.Item>
-                <Breadcrumb.Page>{crumb}</Breadcrumb.Page>
+                {#if typeof crumb === "string"}
+                  <Breadcrumb.Page>{crumb}</Breadcrumb.Page>
+                {:else}
+                  <Breadcrumb.Link href={`/mod${crumb.href}`.replace(/\/$/, "")}>
+                    {crumb.label}
+                  </Breadcrumb.Link>
+                {/if}
               </Breadcrumb.Item>
             {/each}
           {/if}

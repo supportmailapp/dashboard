@@ -1,5 +1,4 @@
 import { page } from "$app/state";
-import type { EventsMap } from "$lib/utils/websocket";
 import type { APIUser } from "discord-api-types/v10";
 import { SvelteMap } from "svelte/reactivity";
 

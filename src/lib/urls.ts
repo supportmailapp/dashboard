@@ -144,6 +144,13 @@ const APIRoutes = {
   sendPanel: (guildId: string) => `${API_GUILD_BASE}/${guildId}/send-panel` as const,
 
   listGuildEmojis: (guildId: string) => `${API_GUILD_BASE}/${guildId}/emojis` as const,
+
+  /**
+   * Returns the URL for a specific guild.
+   * 
+   * Can only be used by mods and higher.
+   */
+  guild: (guildId: string) => `${API_GUILD_BASE}/${guildId}` as const,
 };
 
 const LegalLinks = {

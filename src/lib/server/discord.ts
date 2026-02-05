@@ -4,6 +4,7 @@ import { BOT_TOKEN } from "$env/static/private";
 import UserGuildsCache from "$lib/server/caches/userGuilds.js";
 import {
   Routes,
+  type APIGuild,
   type APIGuildMember,
   type APIMessage,
   type APIRole,
@@ -119,30 +120,34 @@ class DiscordBotAPI extends BaseDiscordAPI {
     super(BOT_TOKEN, "Bot");
   }
 
-  public async getGuildChannels(guildId: string): Promise<SafeResponse<GuildCoreChannel[]>> {
+  async getGuild(guildId: string): Promise<SafeResponse<APIGuild>> {
+    return this.doSafeRequest(() => this.rest.get(`${Routes.guild(guildId)}?with_counts=true`) as any);
+  }
+
+  async getGuildChannels(guildId: string): Promise<SafeResponse<GuildCoreChannel[]>> {
     return this.doSafeRequest(() => this.rest.get(Routes.guildChannels(guildId)) as any);
   }
 
-  public async getGuildChannel<T extends APIGuildChannel>(channelId: string): Promise<SafeResponse<T>> {
+  async getGuildChannel<T extends APIGuildChannel>(channelId: string): Promise<SafeResponse<T>> {
     return this.doSafeRequest(() => this.rest.get(Routes.channel(channelId)) as any);
   }
 
-  public async editGuildChannel<T extends APIGuildChannel>(
+  async editGuildChannel<T extends APIGuildChannel>(
     channelId: string,
     data: RESTPatchAPIChannelJSONBody,
   ): Promise<SafeResponse<T>> {
     return this.doSafeRequest(() => this.rest.patch(Routes.channel(channelId), { body: data }) as any);
   }
 
-  public async getGuildRoles(guildId: string): Promise<SafeResponse<APIRole[]>> {
+  async getGuildRoles(guildId: string): Promise<SafeResponse<APIRole[]>> {
     return this.doSafeRequest(() => this.rest.get(Routes.guildRoles(guildId)) as any);
   }
 
-  public async getGuildMember(guildId: string, memberId: string): Promise<SafeResponse<APIGuildMember>> {
+  async getGuildMember(guildId: string, memberId: string): Promise<SafeResponse<APIGuildMember>> {
     return this.doSafeRequest(() => this.rest.get(Routes.guildMember(guildId, memberId)) as any);
   }
 
-  public async searchServerMembers(
+  async searchServerMembers(
     guildId: string,
     query: string,
     limit = 1,

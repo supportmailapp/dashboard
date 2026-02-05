@@ -60,7 +60,7 @@
         </Sidebar.MenuItem>
         {#each data.navMain as item (item.title)}
           <Sidebar.MenuItem>
-            <Sidebar.MenuButton isActive={isCurrentPage("/mod" + item.href, false)}>
+            <Sidebar.MenuButton isActive={isCurrentPage("/mod" + item.href, true)}>
               {#snippet child({ props })}
                 <a href={"/mod" + item.href} class="font-medium" {...props}>
                   {item.title}

@@ -1,24 +1,37 @@
 import { createContext } from "svelte";
 
-class BreabcrumbStack {
-  public readonly crumbs = $state<string[]>([]);
+type Breadcrumb = { label: string; href: string } | string;
 
-  push(crumb: string) {
-    this.crumbs.push(crumb);
+class BreabcrumbStack {
+  private _crumbs = $state<Breadcrumb[]>([]);
+
+  /**
+   * Returns the current stack of breadcrumbs.
+   */
+  get crumbs() {
+    return this._crumbs;
+  }
+
+  set(...crumbs: Breadcrumb[]) {
+    this._crumbs = crumbs;
+  }
+
+  push(crumb: Breadcrumb) {
+    this._crumbs.push(crumb);
   }
 
   /**
    * Removes the last breadcrumb from the stack.
    */
   pop() {
-    this.crumbs.pop();
+    this._crumbs.pop();
   }
 
   /**
    * Clears all breadcrumbs from the stack.
    */
   clear() {
-    this.crumbs.length = 0;
+    this._crumbs.length = 0;
   }
 }
 

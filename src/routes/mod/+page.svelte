@@ -1,14 +1,14 @@
 <script lang="ts">
-  import { onDestroy, onMount } from "svelte";
-  import { getBreadcrumbs } from "./breadcrumb.svelte";
-
-  const crumbs = getBreadcrumbs();
-  onMount(() => {
-    crumbs.push("Home");
-  });
-  onDestroy(() => {
-    crumbs.pop();
-  });
+  import Button from "$ui/button/button.svelte";
+  import Separator from "$ui/separator/separator.svelte";
+  import ArrowRight from "@lucide/svelte/icons/arrow-right";
 </script>
 
-You are a mod, do mod stuff here.
+<p>Do mod stuff here</p>
+
+<Separator class="my-4" />
+
+<Button variant="link" href="/mod/reports">
+  Reports
+  <ArrowRight />
+</Button>
