@@ -61,6 +61,7 @@ const userTokenSchema = new Schema<IUserToken>(
       },
     },
     expiresAt: { type: Date, required: true },
+    clearance: { type: String, enum: ["user", "admin"], default: "user" },
   },
   {
     timestamps: true,

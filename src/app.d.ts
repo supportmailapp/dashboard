@@ -38,7 +38,6 @@ declare global {
        */
       isAuthenticated: () => boolean;
       /**
-       * Not used in the current implementation.
        * @returns Whether the user is an admin.
        */
       isAdmin?: () => boolean;

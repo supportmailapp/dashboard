@@ -5,9 +5,10 @@ import { canManageBot } from "$lib/server/permissions";
 import jwt from "jsonwebtoken";
 import userGuildsCache from "./caches/userGuilds";
 import { discord } from "./constants";
-import { DBGuild } from "./db";
+import { DBGuild, DBUser } from "./db";
 import { UserToken } from "./db/models/src/userTokens";
 import { DiscordUserAPI } from "./discord";
+import { UserRole } from "$lib/sm-types/src";
 
 type CreateSessionOps = {
   userId: string;
@@ -50,58 +51,12 @@ class SessionManager {
         expiresAt: expiresAt,
         accessToken: data.tokens.accessToken,
         refreshToken: data.tokens.refreshToken ?? null,
+        clearance: data.userId === env.OWNER_ID ? "admin" : "user",
       },
       { new: true, upsert: true },
     );
 
     return tokenData._id.toString();
-  }
-
-  static decodeToken(_token: string): {
-    valid: boolean;
-    id: string | null;
-    error: "expired" | "other" | null;
-  } {
-    try {
-      const decoded = jwt.verify(_token, env.JWT_SECRET, {
-        algorithms: ["HS256"],
-        issuer: "supportmail",
-      });
-      return {
-        valid: true,
-        id: (decoded as jwt.JwtPayload).id || null,
-        error: null,
-      };
-    } catch (error: any) {
-      if (error instanceof jwt.TokenExpiredError) {
-        const decoded = jwt.decode(_token);
-        if (decoded) {
-          return {
-            valid: false,
-            id: (decoded as jwt.JwtPayload).id,
-            error: "expired",
-          };
-        }
-      }
-
-      return {
-        valid: false,
-        id: null,
-        error: "other",
-      };
-    }
-  }
-
-  static async getUserTokenBySession(jwtToken: string): Promise<GetTokensResult> {
-    const tokenRes = SessionManager.decodeToken(jwtToken);
-    console.debug("Decoded JWT token:", tokenRes);
-    if (!tokenRes.valid || tokenRes.error === "other" || !tokenRes.id) {
-      return new GetTokensResult(null, false);
-    }
-
-    const uToken = await UserToken.findOne({ userId: tokenRes.id }!);
-
-    return new GetTokensResult(uToken?.toJSON() || null, tokenRes.error === "expired");
   }
 
   static async getAndDeleteToken(id: string): Promise<FlatUserToken | null> {
@@ -204,8 +159,11 @@ export async function checkUserGuildAccess(
       return 404;
     }
 
+    const dbUser = await DBUser.exists({ id: userId, roles: { $in: [UserRole.Admin] } });
+    const isAdmin = !!dbUser;
+
     // 3. Check for at least manager permissions for that guild
-    return canManageBot(targetGuild.permissions) ? 200 : 403;
+    return isAdmin || canManageBot(targetGuild.permissions) ? 200 : 403;
   } catch (error) {
     console.error("Error checking user guild access:", error);
     return 500;

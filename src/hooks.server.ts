@@ -213,6 +213,10 @@ const guildAuthGuard: Handle = async ({ event, resolve }) => {
     return JsonErrors.unauthorized();
   }
 
+  if (event.locals.token.clearance === "admin") {
+    return resolve(event); // Admins have full access
+  }
+
   const userRest = new DiscordUserAPI(event.locals.token.accessToken);
   event.locals.discordUserRest = userRest;
 
