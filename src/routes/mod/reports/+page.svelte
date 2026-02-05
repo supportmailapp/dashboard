@@ -98,13 +98,13 @@
   <Table.Body>
     {#each data.reports as report (report._id)}
       <Table.Row>
-        <Table.Cell>
-          <Mention userId={report.reporterUserId} buttons="copy" />
-        </Table.Cell>
         <Table.Cell class="font-mono">
           {report._id.slice(0, 8)}
         </Table.Cell>
         <Table.Cell>{new Date(report.createdAt).toLocaleString()}</Table.Cell>
+        <Table.Cell>
+          <Mention userId={report.reporterUserId} buttons="copy" />
+        </Table.Cell>
         <Table.Cell>
           <Button variant="outline" onclick={() => selected.select(report._id)}>
             <Expand />
