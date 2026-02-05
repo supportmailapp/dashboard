@@ -114,11 +114,11 @@
   <Table.Body>
     {#each data.reports as report (report._id)}
       <Table.Row>
-        <Table.Cell>
-          {@render actionBadge(report.actionTaken)}
-        </Table.Cell>
         <Table.Cell class="font-mono">
           {report._id.slice(0, 8)}
+        </Table.Cell>
+        <Table.Cell>
+          {@render actionBadge(report.actionTaken)}
         </Table.Cell>
         <Table.Cell>{new Date(report.createdAt).toLocaleString()}</Table.Cell>
         <Table.Cell>
