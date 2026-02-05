@@ -271,13 +271,13 @@ const modAuthGuard: Handle = async ({ event, resolve }) => {
   }
 
   if (!event.locals.token || !event.locals.user) {
-    return JsonErrors.unauthorized();
+    return redirect(303, `/login` + (pathname.length > 1 ? `?next=${encodeURIComponent(pathname)}` : ""));
   }
 
   // Require at least mod clearance
   const clearance = event.locals.token.clearance;
   if (clearance !== "admin" && clearance !== "mod") {
-    return JsonErrors.forbidden();
+    return error(403, { message: "You ain't no Mod, bro" });
   }
 
   return resolve(event);
@@ -297,12 +297,12 @@ const adminAuthGuard: Handle = async ({ event, resolve }) => {
   }
 
   if (!event.locals.token || !event.locals.user) {
-    return JsonErrors.unauthorized();
+    return redirect(303, `/login` + (pathname.length > 1 ? `?next=${encodeURIComponent(pathname)}` : ""));
   }
 
   // Require admin clearance
   if (event.locals.token.clearance !== "admin") {
-    return JsonErrors.forbidden();
+    return error(403, { message: "You ain't no Admin, bro" });
   }
 
   return resolve(event);
