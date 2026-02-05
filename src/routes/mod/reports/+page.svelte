@@ -120,6 +120,7 @@
   onOpenChangeComplete={(_open) => {
     if (!_open) {
       selected.data = undefined;
+      selected.selectedAction = null;
     }
   }}
 >
