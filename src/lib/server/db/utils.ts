@@ -91,10 +91,6 @@ export function updateDBGuild(
   return DBGuild.findOneAndUpdate({ id: guildId }, update, { new: true });
 }
 
-export function getDBUser(userId: string) {
-  return DBUser.findOne({ id: userId }, null, { lean: true });
-}
-
 export async function updateDBUser(
   userId: string,
   update: UpdateQuery<IDBUser> | UpdateWithAggregationPipeline,
