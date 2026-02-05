@@ -19,7 +19,7 @@ export function getUser(userId: string): APIUser | undefined {
   return users.get(userId);
 }
 
-export async function fetchUser(userId: string, filters?: { bot?: boolean }): Promise<APIUser | undefined> {
+export async function fetchGuildUser(userId: string, filters?: { bot?: boolean }): Promise<APIUser | undefined> {
   const user = getUser(userId);
   if (user) {
     return user;

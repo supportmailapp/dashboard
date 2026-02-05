@@ -11,7 +11,7 @@
   import Skeleton from "$ui/skeleton/skeleton.svelte";
   import Button, { buttonVariants } from "$ui/button/button.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
-  import { fetchUser } from "$lib/stores/users.svelte";
+  import { fetchMentionUsers, mentionUsers } from "$lib/stores/users.svelte";
   import { type IDBUser, UserRole } from "$lib/sm-types";
   import { toast } from "svelte-sonner";
   import apiClient from "$lib/utils/apiClient.js";
@@ -166,9 +166,10 @@
     {#each data.users as user}
       <Table.Row>
         <Table.Cell>
-          {#await fetchUser(user.id)}
+          {#await fetchMentionUsers(user.id)}
             <Skeleton class="h-5 w-32" />
-          {:then userData}
+          {:then}
+            {@const userData = mentionUsers.get(user.id)}
             {#if userData}
               <div class="flex items-center gap-2">
                 <Avatar.Root class="aspect-square size-8">
