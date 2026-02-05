@@ -1,5 +1,5 @@
 <script lang="ts">
-  import UserStar from "@lucide/svelte/icons/user-star";
+  import ShieldBan from "@lucide/svelte/icons/shield-ban";
   import { page } from "$app/state";
   import * as Avatar from "$lib/components/ui/avatar/index.js";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
@@ -12,8 +12,8 @@
   const data = {
     navMain: [
       {
-        title: "Reports",
-        href: "/reports",
+        title: "Users",
+        href: "/users",
       },
       {
         title: "Config",
@@ -41,7 +41,7 @@
                 </Avatar.Root>
                 <div class="flex flex-col gap-0 -space-y-1 leading-tight">
                   <span class="text-lg font-bold">SupportMail</span>
-                  <span class="text-muted-foreground text-sm">Moderator Dashboard</span>
+                  <span class="text-muted-foreground text-sm">Admin Dashboard</span>
                 </div>
               </a>
             </div>
@@ -54,45 +54,30 @@
     <Sidebar.Group>
       <Sidebar.Menu class="gap-2">
         <Sidebar.MenuItem>
-          <Sidebar.MenuButton isActive={"/mod" === page.url.pathname}>
+          <Sidebar.MenuButton isActive={"/admin" === page.url.pathname}>
             {#snippet child({ props })}
-              <a href="/mod" class="font-medium" {...props}>Home (Mod)</a>
+              <a href="/admin" class="font-medium" {...props}>Home (Admin)</a>
             {/snippet}
           </Sidebar.MenuButton>
         </Sidebar.MenuItem>
         {#each data.navMain as item (item.title)}
           <Sidebar.MenuItem>
-            <Sidebar.MenuButton isActive={isCurrentPage("/mod" + item.href, true)}>
+            <Sidebar.MenuButton isActive={isCurrentPage("/admin" + item.href, true)}>
               {#snippet child({ props })}
-                <a href={"/mod" + item.href} class="font-medium" {...props}>
+                <a href={"/admin" + item.href} class="font-medium" {...props}>
                   {item.title}
                 </a>
               {/snippet}
             </Sidebar.MenuButton>
-            <!-- {#if item.items?.length}
-              <Sidebar.MenuSub class="ms-0 border-s-0 px-1.5">
-                {#each item.items as subItem (subItem.title)}
-                  <Sidebar.MenuSubItem>
-                    <Sidebar.MenuSubButton isActive={subItem.isActive}>
-                      {#snippet child({ props })}
-                        <a href={subItem.href} {...props}>{subItem.title}</a>
-                      {/snippet}
-                    </Sidebar.MenuSubButton>
-                  </Sidebar.MenuSubItem>
-                {/each}
-              </Sidebar.MenuSub>
-            {/if} -->
           </Sidebar.MenuItem>
         {/each}
       </Sidebar.Menu>
     </Sidebar.Group>
   </Sidebar.Content>
-  {#if !!page.data.isAdmin}
-    <Sidebar.Footer>
-      <Button variant="link" href="/admin" class="w-full">
-        <UserStar />
-        Admin Dash
-      </Button>
-    </Sidebar.Footer>
-  {/if}
+  <Sidebar.Footer>
+    <Button variant="link" href="/mod" class="w-full">
+      <ShieldBan />
+      Moderator Dash
+    </Button>
+  </Sidebar.Footer>
 </Sidebar.Root>
