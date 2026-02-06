@@ -3,19 +3,18 @@
   import Expand from "@lucide/svelte/icons/expand";
   import { onDestroy, onMount } from "svelte";
   import { getBreadcrumbs } from "../../breadcrumb.svelte";
-  import Button from "$ui/button/button.svelte";
+  import Button, { buttonVariants } from "$ui/button/button.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
   import * as Pagination from "$ui/pagination/index.js";
   import * as Table from "$ui/table/index.js";
   import * as Dialog from "$ui/dialog/index.js";
   import * as Avatar from "$ui/avatar/index.js";
-  import * as Select from "$ui/select/index.js";
   import Badge from "$ui/badge/badge.svelte";
   import type { IDMReport } from "$lib/server/db";
   import { toast } from "svelte-sonner";
   import { fetchGuild } from "$lib/stores/guilds.svelte";
   import Skeleton from "$ui/skeleton/skeleton.svelte";
-  import { parseIconToURL } from "$lib/utils";
+  import { cn, parseIconToURL } from "$lib/utils";
   import { goto } from "$app/navigation";
 
   let { data } = $props();
@@ -29,10 +28,22 @@
   });
 
   const actionLabels = {
-    ban_reporter: "Ban Reporter",
-    ban_guild: "Ban Guild",
-    manual: "Manual Review",
-    ignored: "Ignore Report",
+    ban_reporter: {
+      class: "bg-red-500/10 text-red-500",
+      label: "Reporter Banned",
+    },
+    ban_guild: {
+      class: "bg-orange-500/10 text-orange-500",
+      label: "Guild Banned",
+    },
+    manual: {
+      class: "bg-sky-500/10 text-sky-500",
+      label: "Manual Review",
+    },
+    ignored: {
+      class: "bg-green-500/10 text-green-500",
+      label: "Ignored",
+    },
   };
 
   class SelectedReport {
@@ -84,7 +95,11 @@
         {:else}
           <Pagination.Item>
             <Pagination.Link {page} isActive={currentPage === page.value}>
-              {page.value}
+              {#snippet child({ ...props })}
+                <a href="?page={page.value}" class={buttonVariants({ variant: "outline", size: "sm" })}>
+                  {page.value}
+                </a>
+              {/snippet}
             </Pagination.Link>
           </Pagination.Item>
         {/if}
@@ -97,14 +112,10 @@
 </Pagination.Root>
 
 {#snippet actionBadge(status?: "ban_reporter" | "ban_guild" | "manual" | "ignored")}
-  {#if status === "ban_reporter"}
-    <Badge variant="outline" class="border bg-red-500/10 text-red-500">Reporter Banned</Badge>
-  {:else if status === "ban_guild"}
-    <Badge variant="outline" class="border bg-orange-500/10 text-orange-500">Guild Banned</Badge>
-  {:else if status === "manual"}
-    <Badge variant="outline" class="border bg-sky-500/10 text-sky-500">Manual Review</Badge>
-  {:else if status === "ignored"}
-    <Badge variant="outline" class="border bg-green-500/10 text-green-500">Ignored</Badge>
+  {#if !!status}
+    <Badge variant="outline" class={cn("border", actionLabels[status].class)}>
+      {actionLabels[status].label}
+    </Badge>
   {:else}
     <Badge variant="outline">Unknown</Badge>
   {/if}

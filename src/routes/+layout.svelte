@@ -15,7 +15,7 @@
   const guildsManager = getManager();
 
   beforeNavigate((nav) => {
-    if (nav.from?.url.pathname === nav.to?.url.pathname) {
+    if (nav.from?.url.toString() === nav.to?.url.toString()) {
       nav.cancel();
       return;
     }
