@@ -16,6 +16,7 @@
   import { toast } from "svelte-sonner";
   import apiClient from "$lib/utils/apiClient.js";
   import { parseIconToURL } from "$lib/utils";
+  import { page } from "$app/state";
 
   let { data } = $props();
 
@@ -166,24 +167,28 @@
     {#each data.users as user}
       <Table.Row>
         <Table.Cell>
-          {#await fetchMentionUsers(user.id)}
+          {#if !page.data.ws?.connected}
             <Skeleton class="h-5 w-32" />
-          {:then}
-            {@const userData = mentionUsers.get(user.id)}
-            {#if userData}
-              <div class="flex items-center gap-2">
-                <Avatar.Root class="aspect-square size-8">
-                  <Avatar.Image src={parseIconToURL(userData.avatar, userData.id, "user", 64)} alt={userData.username} />
-                  <Avatar.Fallback>{userData.username.slice(0, 2).toUpperCase()}</Avatar.Fallback>
-                </Avatar.Root>
-                <Mention userId={user.id} />
-              </div>
-            {:else}
+          {:else}
+            {#await fetchMentionUsers(user.id)}
+              <Skeleton class="h-5 w-32" />
+            {:then}
+              {@const userData = mentionUsers.get(user.id)}
+              {#if userData}
+                <div class="flex items-center gap-2">
+                  <Avatar.Root class="aspect-square size-8">
+                    <Avatar.Image src={parseIconToURL(userData.avatar, userData.id, "user", 64)} alt={userData.username} />
+                    <Avatar.Fallback>{userData.username.slice(0, 2).toUpperCase()}</Avatar.Fallback>
+                  </Avatar.Root>
+                  <Mention userId={user.id} />
+                </div>
+              {:else}
+                <span>{user.id}</span>
+              {/if}
+            {:catch}
               <span>{user.id}</span>
-            {/if}
-          {:catch}
-            <span>{user.id}</span>
-          {/await}
+            {/await}
+          {/if}
         </Table.Cell>
         <Table.Cell class="gap-1 flex flex-wrap">{@render roleBadges(user.roles || [])}</Table.Cell>
         <Table.Cell>
