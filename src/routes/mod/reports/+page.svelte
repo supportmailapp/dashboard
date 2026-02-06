@@ -83,11 +83,7 @@
         {:else}
           <Pagination.Item>
             <Pagination.Link {page} isActive={currentPage === page.value}>
-              {#snippet child({ ...props })}
-                <a href="?page={page.value}" class={buttonVariants({ variant: "outline", size: "sm" })}>
-                  {page.value}
-                </a>
-              {/snippet}
+              {page.value}
             </Pagination.Link>
           </Pagination.Item>
         {/if}
