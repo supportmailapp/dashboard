@@ -33,16 +33,12 @@ export function hasPermissions(
 /**
  * Checks if the given permissions include the ability to manage the bot.
  *
- * This function verifies if the provided `permissions` contain both
- * "Administrator" and "ManageGuild" permissions.
+ * This function verifies if the provided `permissions` contain either
+ * "Administrator" or "ManageGuild" permissions.
  *
  * @param permissions - The permission bits to check.
- * @returns `true` if the permissions include both "administrator" and "manageGuild", otherwise `false`.
+ * @returns `true` if the permissions include either "administrator" or "manageGuild", otherwise `false`.
  */
 export function canManageBot(permissions: bigint | string): boolean {
-  return hasPermissions(
-    typeof permissions === "bigint" ? permissions : BigInt(permissions),
-    "Administrator",
-    "ManageGuild",
-  );
+  return hasPermission(BigInt(permissions), "Administrator") || hasPermission(BigInt(permissions), "ManageGuild");
 }
