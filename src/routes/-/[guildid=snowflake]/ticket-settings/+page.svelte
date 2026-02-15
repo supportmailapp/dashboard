@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { afterNavigate } from "$app/navigation";
   import { page } from "$app/state";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import SaveAlert from "$lib/components/SaveAlert.svelte";
@@ -6,6 +7,7 @@
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import type { DBGuildProjectionReturns } from "$lib/server/db";
   import { APIRoutes } from "$lib/urls";
+  import { determineUnsavedChanges } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
   import Separator from "$ui/separator/separator.svelte";
   import dayjs from "dayjs";
@@ -13,14 +15,12 @@
   import { toast } from "svelte-sonner";
   import type { TicketsPUTFields } from "../../../api/v1/guilds/[guildid]/config/tickets/+server";
   import AnonymSettings from "./AnonymSettings.svelte";
+  import DefaultMessages from "./DefaultMessages.svelte";
   import MessageHandling from "./MessageHandling.svelte";
+  import PingsCard from "./PingsCard.svelte";
   import ResetStuff from "./ResetStuff.svelte";
   import SystemControl from "./SystemControl.svelte";
   import TicketForumCard from "./TicketForumCard.svelte";
-  import { determineUnsavedChanges } from "$lib/utils";
-  import { afterNavigate } from "$app/navigation";
-  import DefaultMessages from "./DefaultMessages.svelte";
-  import PingsCard from "./PingsCard.svelte";
 
   type TicketConfig = DBGuildProjectionReturns["generalTicketSettings"];
 
@@ -171,9 +171,11 @@
     <AnonymSettings bind:anonymSettings={config.current.anonym} />
     <DefaultMessages
       bind:creationMessage={
-        () => config.current!.creationMessage || "", (v) => (config.current!.creationMessage = v)
+        () => config.current!.creationMessage || "", (v) => (config.current!.creationMessage = v || null)
       }
-      bind:closeMessage={() => config.current!.closeMessage || "", (v) => (config.current!.closeMessage = v)}
+      bind:closeMessage={
+        () => config.current!.closeMessage || "", (v) => (config.current!.closeMessage = v || null)
+      }
     />
     <Separator class="col-span-full my-5" />
     <ResetStuff discardChanges={resetConfig} />

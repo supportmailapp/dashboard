@@ -62,17 +62,18 @@ export async function PUT({ request, params }) {
   }
 
   // Validation
-  const validationRes = new ZodValidator(patchSchema).validate(body);
+  const valRes = new ZodValidator(patchSchema).validate(body);
 
-  if (!validationRes.success) {
-    return JsonErrors.badRequest(validationRes.error.message);
+  if (!valRes.success) {
+    return JsonErrors.badRequest(valRes.error.message);
   }
+
+  const { data } = valRes;
 
   const guild = await getDBGuild(params.guildid, "full");
   if (!guild) {
     return JsonErrors.notFound();
   }
-  const { data } = validationRes;
 
   const pauseDjs = data.pausedUntil.date ? dayjs(data.pausedUntil.date) : null;
   if (pauseDjs && !pauseDjs.isValid()) {

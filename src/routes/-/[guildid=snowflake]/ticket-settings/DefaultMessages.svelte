@@ -6,9 +6,9 @@
   import Pencil from "@lucide/svelte/icons/pencil";
 
   let {
-    creationMessage = $bindable(),
-    closeMessage = $bindable(),
-  }: { creationMessage: string; closeMessage: string } = $props();
+    creationMessage = $bindable(""),
+    closeMessage = $bindable(""),
+  }: { creationMessage: string | null; closeMessage: string | null } = $props();
 
   let dialogState = $state({
     isOpen: false,
@@ -55,7 +55,7 @@
     </Field.Field>
   </Field.Group>
   <ContentEditorDialog
-    title="Ticket Creation Message"
+    title={dialogState.type === "create" ? "Ticket Creation Message" : "Ticket Close Message"}
     bind:open={dialogState.isOpen}
     bind:rawText={dialogState.rawText}
     onRawTextChange={(text) => {
