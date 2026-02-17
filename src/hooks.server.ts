@@ -24,12 +24,7 @@ export async function init() {
 const aj = arcjet({
   key: env.ARCJET_KEY!,
   characteristics: ["ip.src"],
-  rules: [
-    // filter({
-    //   mode: env.ARCJET_MODE! as any,
-    //   deny: ["ip.src.vpn"],
-    // }),
-  ],
+  rules: [],
 });
 
 const apiAj = aj
