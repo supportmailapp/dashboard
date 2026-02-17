@@ -45,6 +45,7 @@ declare global {
        * @returns Whether the user is a moderator.
        */
       isMod?: () => boolean;
+      isVpn: boolean;
       user: APIUser | null;
       token: FlatUserToken | null;
       discordRest: DiscordBotAPI;

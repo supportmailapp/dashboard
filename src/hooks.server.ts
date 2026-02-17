@@ -6,7 +6,7 @@ import guildAccessCache from "$lib/server/caches/guildAccess.js";
 import sessionCache from "$lib/server/caches/sessions.js";
 import { dbConnect, UserToken } from "$lib/server/db";
 import { DiscordBotAPI, DiscordUserAPI } from "$lib/server/discord";
-import arcjet, { detectBot, shield, slidingWindow } from "@arcjet/sveltekit";
+import arcjet, { detectBot, filter, shield, slidingWindow } from "@arcjet/sveltekit";
 import * as Sentry from "@sentry/sveltekit";
 import { error, redirect, type Handle } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
@@ -25,32 +25,57 @@ const aj = arcjet({
   key: env.ARCJET_KEY!,
   characteristics: ["ip.src"],
   rules: [
-    shield({ mode: env.ARCJET_MODE! as any }),
+    // filter({
+    //   mode: env.ARCJET_MODE! as any,
+    //   deny: ["ip.src.vpn"],
+    // }),
+  ],
+});
+
+const apiAj = aj
+  .withRule(shield({ mode: env.ARCJET_MODE! as any }))
+  .withRule(
     detectBot({
       mode: env.ARCJET_MODE! as any,
       allow: [],
     }),
+  )
+  .withRule(
     slidingWindow({
       mode: env.ARCJET_MODE! as any,
       interval: dev ? 60000 : 60,
       max: dev ? 8000 : 100,
     }),
-  ],
-});
+  );
 
-const apiRateLimitCheck: Handle = async ({ event, resolve }) => {
+const dashAj = aj.withRule(
+  filter({
+    mode: env.ARCJET_MODE! as any,
+    allow: ["ip.src.vpn"],
+  }),
+);
+
+const protectIt: Handle = async ({ event, resolve }) => {
   if (event.url.pathname.startsWith("/api")) {
-    const rateLimit = await aj.protect(event);
+    const decision = await apiAj.protect(event);
 
-    if (rateLimit.isDenied()) {
-      if (rateLimit.reason.isRateLimit()) {
+    if (decision.isDenied()) {
+      if (decision.reason.isRateLimit()) {
         return JsonErrors.tooManyRequests();
-      } else if (rateLimit.reason.isBot()) {
+      } else if (decision.reason.isBot()) {
         return JsonErrors.forbidden("Bot access is not allowed");
       } else {
         return JsonErrors.serverError("Rate limit check failed");
       }
     }
+  } else if (event.url.pathname.startsWith("/-/")) {
+    const decision = await dashAj.protect(event);
+
+    if (decision.ip.isVpn()) {
+      event.locals.isVpn = true; // We just wanna know if the user is on a VPN so we can show a warning, not block them entirely
+    }
+  } else {
+    event.locals.isVpn = false;
   }
 
   return resolve(event);
@@ -320,7 +345,7 @@ export const handle = sequence(
   }),
   authentification,
   authorization,
-  apiRateLimitCheck,
+  protectIt,
   apiAuthGuard,
   guildAuthGuard,
   modAuthGuard,
