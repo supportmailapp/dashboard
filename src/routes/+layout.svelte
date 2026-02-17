@@ -7,8 +7,16 @@
   import { Toaster } from "$ui/sonner/index.js";
   import { getManager, setManager } from "$lib/stores/GuildsManager.svelte";
   import { setSnowflakes } from "$lib/stores/SnowflakeControls.svelte";
+  import { isVpn } from "$lib/stores/vpn.svelte";
 
   let { children, data } = $props();
+
+  $effect(() => {
+    console.log("Layout data changed:", data);
+    if (data.isVpn && isVpn.current.value === null) {
+      isVpn.current = { seen: false, value: true };
+    }
+  });
 
   setManager();
   setSnowflakes();

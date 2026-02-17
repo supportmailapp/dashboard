@@ -56,6 +56,7 @@ const dashAj = aj.withRule(
 );
 
 const protectIt: Handle = async ({ event, resolve }) => {
+  event.locals.isVpn = false;
   if (event.url.pathname.startsWith("/api")) {
     const decision = await apiAj.protect(event);
 
@@ -74,8 +75,6 @@ const protectIt: Handle = async ({ event, resolve }) => {
     if (decision.ip.isVpn()) {
       event.locals.isVpn = true; // We just wanna know if the user is on a VPN so we can show a warning, not block them entirely
     }
-  } else {
-    event.locals.isVpn = false;
   }
 
   return resolve(event);

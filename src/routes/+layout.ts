@@ -6,5 +6,6 @@ export async function load({ data }) {
   return {
     user: data.user,
     ws: data.wsToken && browser ? createWebSocketConnection(WS_ORIGIN, data.wsToken) : undefined,
+    isVpn: data.isVpn,
   };
 }

@@ -4,8 +4,10 @@
   import { cdnUrls } from "$lib/urls";
   import { cn } from "$lib/utils";
   import * as Avatar from "$ui/avatar";
-  import { Button } from "$ui/button";
   import * as Sidebar from "$ui/sidebar/index.js";
+  import * as Dialog from "$ui/dialog/index.js";
+  import * as Alert from "$ui/alert/index.js";
+  import { Button, buttonVariants } from "$ui/button";
   import { Skeleton } from "$ui/skeleton";
   import { fade, slide } from "svelte/transition";
   import { IsMobile } from "$lib/hooks/is-mobile.svelte";
@@ -14,6 +16,8 @@
   import { mode } from "mode-watcher";
   import { untrack } from "svelte";
   import { getManager } from "$lib/stores/GuildsManager.svelte";
+  import { isVpn } from "$lib/stores/vpn.svelte";
+  import AlertCircleIcon from "@lucide/svelte/icons/alert-circle";
 
   let { children } = $props();
 
@@ -21,6 +25,9 @@
   let currentGuild = $derived(guildsManager.currentGuild);
   let guildsSelectOpen = $state(false);
   Sidebar.useSidebar();
+  let vpnAlert = $derived(isVpn.current);
+
+  $inspect("vpnAlert", vpnAlert);
 
   const isMobile = new IsMobile();
 
@@ -48,7 +55,7 @@
       nav.from?.params?.guildid !== nav.to?.params?.guildid;
     if (guildChanged) {
       console.log("layout-load-layout.svelte-afterNavigate.ts-before");
-      await invalidate("guild:layout");
+      await invalidate("root:layout");
       console.log("layout-load-layout.svelte-afterNavigate.ts-after");
     }
   });
@@ -114,6 +121,31 @@
 </Sidebar.Provider>
 
 <ServerSelector bind:open={guildsSelectOpen} />
+
+{#if vpnAlert.value && vpnAlert.seen === false}
+  <Dialog.Root
+    open
+    onOpenChange={(_open) => {
+      if (!vpnAlert.seen) {
+        isVpn.current = { seen: true, value: true };
+      }
+    }}
+  >
+    <Dialog.Content interactOutsideBehavior="ignore" showCloseButton={false} class="bg-transparent border-0">
+      <Alert.Root variant="warning">
+        <AlertCircleIcon />
+        <Alert.Title>VPN Detected</Alert.Title>
+        <Alert.Description>
+          You seem to be using a VPN. This isn't necessarily a problem, but if you experience any issues with
+          loading or using the dashboard, please try disabling your VPN and see if that resolves the issue.
+        </Alert.Description>
+      </Alert.Root>
+      <Dialog.Footer class="sm:justify-center w-full">
+        <Dialog.Close class={buttonVariants({ variant: "secondary", class: "min-w-xs" })}>OK</Dialog.Close>
+      </Dialog.Footer>
+    </Dialog.Content>
+  </Dialog.Root>
+{/if}
 
 <style>
   :root {

@@ -59,6 +59,7 @@ declare global {
       wsToken?: string;
       ws?: Socket<EventsMap>;
       user: APIUser | null;
+      isVpn: boolean;
     }
   }
 

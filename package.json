@@ -61,10 +61,11 @@
     "mongoose": "^9.1.2",
     "node-cache": "^5.1.2",
     "rate-limiter-flexible": "^7.4.0",
+    "runed": "^0.37.1",
     "socket.io-client": "^4.8.3",
     "wildcard-match": "^5.1.4",
     "zod": "^4.3.5",
     "zod-validation-error": "^5.0.0"
   },
-  "packageManager": "pnpm@10.28.1"
+  "packageManager": "pnpm@10.29.3"
 }
