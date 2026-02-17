@@ -5,7 +5,7 @@ import type { ITicket } from "$lib/sm-types";
 import { TicketStatus } from "$lib/sm-types";
 import { safeParseInt } from "$lib/utils.js";
 import type { QueryFilter } from "mongoose";
-import type { TicketSearchScope } from "../../../../../-/[guildid]/tickets/FilterControls.svelte";
+import type { TicketSearchScope } from "../../../../../-/[guildid=snowflake]/tickets/FilterControls.svelte";
 import { json } from "@sveltejs/kit";
 
 export type PaginatedResponseWithError<T> = PaginatedResponse<T> & {

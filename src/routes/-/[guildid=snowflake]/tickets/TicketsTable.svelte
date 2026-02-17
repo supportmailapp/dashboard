@@ -6,7 +6,7 @@
   import { Button } from "$ui/button";
   import * as Table from "$ui/table";
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
-  import type { PaginatedTicketsResponse } from "../../../api/v1/guilds/[guildid]/tickets/+server";
+  import type { PaginatedTicketsResponse } from "$v1Api/guilds/[guildid=snowflake]/tickets/+server";
   import { guildHref } from "$lib/stores/site.svelte";
   import Badge from "$ui/badge/badge.svelte";
 

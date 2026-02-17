@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { APIBlacklistEntry } from "../../../api/v1/guilds/[guildid]/blacklist/+server";
+  import type { APIBlacklistEntry } from "$v1Api/guilds/[guildid=snowflake]/blacklist/+server";
   import Mention from "$lib/components/discord/Mention.svelte";
   import { EntityType, BlacklistScope } from "$lib/sm-types";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";

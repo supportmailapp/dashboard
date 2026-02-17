@@ -11,7 +11,7 @@
   import equal from "fast-deep-equal/es6";
   import { TicketStatus } from "$lib/sm-types";
   import { toast } from "svelte-sonner";
-  import type { PaginatedTicketsResponse } from "../../../api/v1/guilds/[guildid]/tickets/+server";
+  import type { PaginatedTicketsResponse } from "$v1Api/guilds/[guildid=snowflake]/tickets/+server";
   import FilterControls, { type TicketSearchScope } from "./FilterControls.svelte";
   import TicketsTable from "./TicketsTable.svelte";
   import FolderOpen from "@lucide/svelte/icons/folder-open";

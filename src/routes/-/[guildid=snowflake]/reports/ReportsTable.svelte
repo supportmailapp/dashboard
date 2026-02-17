@@ -10,7 +10,7 @@
   import MessageSquare from "@lucide/svelte/icons/message-square";
   import UserIcon from "@lucide/svelte/icons/user";
   import type { ClassValue } from "clsx";
-  import type { PaginatedReportsResponse } from "../../../api/v1/guilds/[guildid]/reports/+server";
+  import type { PaginatedReportsResponse } from "$v1Api/guilds/[guildid=snowflake]/reports/+server";
   import { guildHref } from "$lib/stores/site.svelte";
 
   let { items }: { items: PaginatedReportsResponse["data"] } = $props();

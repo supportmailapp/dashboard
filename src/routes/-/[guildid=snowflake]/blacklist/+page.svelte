@@ -13,7 +13,7 @@
   import {
     type APIBlacklistEntry,
     type PaginatedBlacklistResponse,
-  } from "../../../api/v1/guilds/[guildid]/blacklist/+server";
+  } from "$v1Api/guilds/[guildid=snowflake]/blacklist/+server";
   import EntriesTable from "./EntriesTable.svelte";
   import FilterControls from "./FilterControls.svelte";
   import { BLEntry, dialogFields } from "./entry.svelte";

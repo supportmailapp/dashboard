@@ -14,7 +14,7 @@
   import FolderOpen from "@lucide/svelte/icons/folder-open";
   import equal from "fast-deep-equal/es6";
   import { toast } from "svelte-sonner";
-  import type { PaginatedReportsResponse } from "../../../api/v1/guilds/[guildid]/reports/+server";
+  import type { PaginatedReportsResponse } from "$v1Api/guilds/[guildid=snowflake]/reports/+server";
   import FilterControls, { type ReportSearchScope, type ReportSearchType } from "./FilterControls.svelte";
   import ReportsTable from "./ReportsTable.svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";

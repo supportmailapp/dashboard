@@ -3,7 +3,7 @@
   import SaveAlert from "$lib/components/SaveAlert.svelte";
   import { APIRoutes } from "$lib/urls";
   import { determineUnsavedChanges } from "$lib/utils";
-  import type { APITag, TagsResponse } from "$v1Api/guilds/[guildid]/tags/+server";
+  import type { APITag, TagsResponse } from "$v1Api/guilds/[guildid=snowflake]/tags/+server";
   import { page } from "$app/state";
   import { toast } from "svelte-sonner";
   import apiClient from "$lib/utils/apiClient";

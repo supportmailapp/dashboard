@@ -13,7 +13,7 @@
   import dayjs from "dayjs";
   import { onDestroy, untrack } from "svelte";
   import { toast } from "svelte-sonner";
-  import type { TicketsPUTFields } from "../../../api/v1/guilds/[guildid]/config/tickets/+server";
+  import type { TicketsPUTFields } from "$v1Api/guilds/[guildid=snowflake]/config/tickets/+server";
   import AnonymSettings from "./AnonymSettings.svelte";
   import DefaultMessages from "./DefaultMessages.svelte";
   import MessageHandling from "./MessageHandling.svelte";

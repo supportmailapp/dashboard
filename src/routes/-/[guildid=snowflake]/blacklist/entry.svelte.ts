@@ -1,7 +1,7 @@
 import { BlacklistScope, EntityType } from "$lib/sm-types";
 import { SvelteBitfield } from "$lib/utils/reactiveBitfield.svelte";
 import type { APIUser } from "discord-api-types/v10";
-import type { APIBlacklistEntry } from "../../../api/v1/guilds/[guildid]/blacklist/+server";
+import type { APIBlacklistEntry } from "$v1Api/guilds/[guildid=snowflake]/blacklist/+server";
 
 export class BLEntry {
   id = $state("");
