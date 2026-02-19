@@ -1,6 +1,6 @@
 <script lang="ts">
   import "$lib/assets/markup.css";
-  import { browser } from "$app/environment";
+  import { Debounced } from "runed";
   import * as Tabs from "$ui/tabs/index.js";
   import type { ClassValue } from "clsx";
   import { cn } from "$lib/utils";
@@ -22,21 +22,11 @@
     onRawTextChange?: (text: string) => void;
   } = $props();
 
-  let markupDebounceTimer: ReturnType<typeof setTimeout> | null = null;
-  let debouncedRaw = $state($state.snapshot(rawText));
   let currentTab = $state<"editor" | "preview">("preview");
-  let markupDebounceMs = $derived(currentTab === "editor" ? 1000 : 400);
-
-  function debounceRawText() {
-    if (!browser) return;
-    onRawTextChange?.(rawText);
-    if (markupDebounceTimer) clearTimeout(markupDebounceTimer);
-
-    markupDebounceTimer = setTimeout(async () => {
-      debouncedRaw = $state.snapshot(rawText);
-      console.log("Debounced raw text updated:", String.raw`${debouncedRaw}`);
-    }, markupDebounceMs);
-  }
+  const debouncedRaw = new Debounced(
+    () => rawText,
+    () => (currentTab === "editor" ? 1000 : 400),
+  );
 </script>
 
 <!-- TODO: Make maxLength a prop -->
@@ -53,7 +43,7 @@
         placeholder="Enter your markdown here..."
         rows={10}
         class="w-full flex-1 resize-none bg-zinc-900"
-        oninput={debounceRawText}
+        oninput={() => onRawTextChange?.(rawText)}
         {maxlength}
       />
     </Tabs.Content>
@@ -82,7 +72,7 @@
           });
         }}
       >
-        {#await discordMdToHtml(debouncedRaw)}
+        {#await discordMdToHtml(debouncedRaw.current)}
           <LoadingSpinner />
         {:then html}
           {@html html}
