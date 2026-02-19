@@ -22,17 +22,16 @@
     onRawTextChange?: (text: string) => void;
   } = $props();
 
-  let currentTab = $state<"editor" | "preview">("preview");
   const debouncedRaw = new Debounced(
     () => rawText,
-    () => (currentTab === "editor" ? 1000 : 400),
+    () => (activeTab === "editor" ? 1000 : 400),
   );
 </script>
 
 <!-- TODO: Make maxLength a prop -->
 
 <div class={cn("flex h-full w-full overflow-hidden", className)}>
-  <Tabs.Root bind:value={currentTab} class="flex h-full w-full flex-col gap-3 overflow-hidden">
+  <Tabs.Root bind:value={activeTab} class="flex h-full w-full flex-col gap-3 overflow-hidden">
     <Tabs.List class="w-full *:text-lg *:font-semibold">
       <Tabs.Trigger value="editor">Editor</Tabs.Trigger>
       <Tabs.Trigger value="preview">Preview</Tabs.Trigger>
