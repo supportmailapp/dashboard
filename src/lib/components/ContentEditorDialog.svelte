@@ -14,6 +14,7 @@
     /** @default "preview" */
     activeTab?: "editor" | "preview";
     onRawTextChange?: (text: string) => void;
+    onOpenChangeComplete?: (open: boolean) => void;
   }
 
   let {
@@ -24,10 +25,11 @@
     titleChild,
     contentEditorClasses,
     onRawTextChange,
+    onOpenChangeComplete,
   }: Props = $props();
 </script>
 
-<Dialog.Root bind:open>
+<Dialog.Root bind:open {onOpenChangeComplete}>
   <Dialog.Content
     class="flex h-screen w-screen flex-col sm:max-h-[calc(100%-2rem)] sm:max-w-[calc(100%-2rem)]"
   >

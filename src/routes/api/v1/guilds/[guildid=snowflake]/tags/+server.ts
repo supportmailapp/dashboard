@@ -18,9 +18,12 @@ export type APITag = Omit<ITag, "createdAt" | "updatedAt"> & {
 
 export async function GET({ params, url }) {
   const partial = url.searchParams.get("partial") === "true";
-  const tags = await DBTag.find({
-    guildId: params.guildid,
-  }, partial ? { _id: 1, name: 1 } : null);
+  const tags = await DBTag.find(
+    {
+      guildId: params.guildid,
+    },
+    partial ? { _id: 1, name: 1 } : null,
+  ).sort({ createdAt: 1 });
 
   return json(
     tags
@@ -77,9 +80,14 @@ export async function PUT({ request, params }) {
 
   const toDelete = tagsToDelete.map((tag) => tag._id!);
 
-  const allTags = [...updatedTags.filter((tag) => !!tag), ...createdTags]
-    .map((tag) => FlattenDocToJSON(tag!))
-    .map((tag) => FlattenDateFields(tag, "createdAt", "updatedAt"));
+  // Fetch all tags to return the complete list
+  const allTags = await DBTag.find({
+    guildId: params.guildid,
+  }).sort({ createdAt: 1 });
 
-  return json(allTags);
+  return json(
+    allTags
+      .map((tag) => FlattenDocToJSON(tag!))
+      .map((tag) => FlattenDateFields(tag, "createdAt", "updatedAt")),
+  );
 }

@@ -20,6 +20,7 @@
   import Pencil from "@lucide/svelte/icons/pencil";
   import Trash from "@lucide/svelte/icons/trash";
   import ContentEditorDialog from "$lib/components/ContentEditorDialog.svelte";
+  import { activeElement } from "runed";
 
   // svelte-ignore non_reactive_update
   let fetchedTags: TagsResponse | null = null;
@@ -29,6 +30,7 @@
   const editTag = $state({
     data: null as APITag | null,
     open: false,
+    activeTab: "editor" as "editor" | "preview",
   });
 
   let query = $state("");
@@ -38,10 +40,12 @@
           (tag) =>
             !tag.delete &&
             (tag.name.toLowerCase().includes(query.toLowerCase()) ||
-              tag.content.toLowerCase().includes(query.toLowerCase())),
+              (tag.content?.toLowerCase() ?? "").includes(query.toLowerCase())),
         )
       : null,
   );
+
+  let editorTitle = $derived(editTag.data?.name ? `Edit ${editTag.data.name}` : "Edit Tag");
 
   function createTag() {
     if (!tags) return;
@@ -50,18 +54,24 @@
       newNameIndex++;
     }
     const newTagName = `new-tag-${newNameIndex}`;
-    tags = [
-      ...tags,
-      {
-        _id: new Date().toISOString(), // temp unique id
-        local: true,
-        guildId: page.params.guildid!,
-        name: newTagName,
-        content: "",
-        onlyTickets: false,
-        createdAt: new Date().toISOString(),
-      },
-    ].sort((a, b) => a.createdAt!.localeCompare(b.createdAt!)) as TagsResponse;
+    const newTagId = new Date().toISOString();
+    const newTag = {
+      _id: newTagId, // temp unique id
+      local: true,
+      guildId: page.params.guildid!,
+      name: newTagName,
+      content: "",
+      onlyTickets: false,
+      createdAt: new Date().toISOString(),
+    } as APITag;
+
+    tags = [...tags, newTag].sort((a, b) => a.createdAt!.localeCompare(b.createdAt!)) as TagsResponse;
+
+    const addedTag = tags.find((t) => t._id === newTagId);
+    if (addedTag) {
+      editTag.data = addedTag;
+      editTag.open = true;
+    }
   }
 
   function findTagIndex(id: string) {
@@ -225,12 +235,15 @@
     () => editTag.open,
     (v) => {
       editTag.open = v;
-      if (!v) {
-        editTag.data = null;
-      }
     }
   }
-  title={`Edit ${editTag.data?.name}`}
+  onOpenChangeComplete={(open) => {
+    if (!open) {
+      editTag.data = null;
+    }
+  }}
+  title={editorTitle}
+  bind:activeTab={editTag.activeTab}
   bind:rawText={
     () => editTag.data?.content ?? "",
     (v) => {
