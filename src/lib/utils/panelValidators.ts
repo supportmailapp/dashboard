@@ -18,7 +18,7 @@ const SMThumbnailComponentSchema = z.extend(SMMediaItemSchema, {
 const SMCustomActionSchema = z.enum(["ticket:create", "reply", "link"]);
 
 // Button schemas
-const SMActionRowButtonSchema = z.union([
+const SMActionRowButtonSchema = z.xor([
   z.object({
     action: z.literal("link"),
     type: z.literal(ComponentType.Button),
@@ -38,7 +38,7 @@ const SMActionRowButtonSchema = z.union([
         z.literal(ButtonStyle.Success),
         z.literal(ButtonStyle.Danger),
       ]),
-      custom_id: ObjectIdSchema,
+      custom_id: z.optional(z.xor([ObjectIdSchema, z.literal("")])),
       label: z.optional(z.string()),
       emoji: z.optional(z.string()),
       disabled: z.optional(z.boolean()),
