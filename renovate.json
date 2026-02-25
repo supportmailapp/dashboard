@@ -1,6 +1,34 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
+  "extends": ["config:recommended"],
+  "semanticCommits": "enabled",
+  "packageRules": [
+    {
+      "matchPackageNames": ["svelte", "@sveltejs/kit"],
+      "groupName": "svelte packages"
+    },
+    {
+      "matchPackageNames": [
+        "tailwindcss",
+        "@tailwindcss/typography",
+        "@tailwindcss/vite",
+        "tailwind-merge",
+        "tailwind-variants"
+      ],
+      "groupName": "tailwindcss packages"
+    },
+    {
+      "matchPackageNames": ["prettier", "prettier-plugin-svelte", "prettier-plugin-tailwindcss"],
+      "groupName": "prettier packages"
+    },
+    {
+      "matchPackageNames": [
+        "vite",
+        "@sveltejs/vite-plugin-svelte",
+        "@sveltejs/vite-plugin-svelte-inspector",
+        "vite-plugin-devtools-json"
+      ],
+      "groupName": "vite packages"
+    }
   ]
 }
