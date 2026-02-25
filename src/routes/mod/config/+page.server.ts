@@ -9,12 +9,18 @@ import {
   FlattenBigIntFields,
   FlattenDateFields,
   FlattenDocToJSON,
+  logThis,
   Panel,
   TicketCategory,
 } from "$lib/server/db/index.js";
 import * as Sentry from "@sentry/sveltekit";
+import { LogEventType } from "$lib/sm-types/src";
+import { error } from "@sveltejs/kit";
 
 export async function load({ url, locals }) {
+  if (!locals.user) {
+    error(401, "Unauthorized");
+  }
   const { data } = validateSearchParams(url, searchParamsSchema);
   if (data.guild && !/^\d+$/.test(data.guild)) {
     return {
@@ -27,10 +33,25 @@ export async function load({ url, locals }) {
   const selected = new Set(data.selected);
   const configData: Partial<Record<ConfigKey, any>> = {};
 
+  if (!guildId) {
+    return {
+      status: 200,
+      configs: configData,
+    };
+  }
+
   Sentry.metrics.count("config_viewer_load", 1, {
     attributes: {
       selected: Array.from(selected).join(",") || "none",
       user_id: locals.user?.id,
+    },
+  });
+  await logThis({
+    typ: LogEventType.InternalConfigLoad,
+    guildId: guildId,
+    extra: {
+      keys: Array.from(selected).join(",") || "none",
+      userId: locals.user?.id,
     },
   });
 

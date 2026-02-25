@@ -5,9 +5,10 @@ import type {
   MentionableEntity,
   ReportLimitsConfig,
   SpecialChannelType,
+  TLogEvent,
 } from "$lib/sm-types";
 import type { Document, Types, UpdateQuery, UpdateWithAggregationPipeline } from "mongoose";
-import { DBGuild, DBUser } from "./models";
+import { DBGuild, DBUser, LogEvent } from "./models";
 import { TicketCategory } from "./models/src/ticketCategory";
 
 type DBGuildProjection = "full" | "generalTicketSettings" | "language" | "reportSettings";
@@ -219,4 +220,8 @@ export function FlattenDateFields<T extends Record<string, any>, K extends keyof
     }
   }
   return newObj;
+}
+
+export async function logThis(event: Partial<TLogEvent> & Pick<TLogEvent, "typ" | "guildId">) {
+  await LogEvent.create(event);
 }
