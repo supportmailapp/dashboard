@@ -5,6 +5,9 @@ import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig } from "vite";
 
 export default defineConfig({
+  build: {
+    sourcemap: "hidden",
+  },
   plugins: [
     sentrySvelteKit({
       org: "lukez-dev",
@@ -13,7 +16,7 @@ export default defineConfig({
       authToken: process.env.SENTRY_AUTH_TOKEN,
       autoUploadSourceMaps: true,
       sourcemaps: {
-        filesToDeleteAfterUpload: ["./**/*.map", ".*/**/public/**/*.map", "./dist/**/client/**/*.map"],
+        filesToDeleteAfterUpload: ["./**/*.map", ".svelte-kit/**/*.map"],
       },
     }),
     tailwindcss(),
