@@ -36,6 +36,8 @@
     value: false,
   });
 
+  $inspect("creationMessage", config.current?.creationMessage);
+
   let showDateError = $state(false);
   let unsavedChanges = $derived(
     determineUnsavedChanges(

@@ -45,6 +45,8 @@ const ticketConfigSchema = new Schema<ITicketConfig>({
   allowedBots: { type: [String], required: false },
   webhookDocId: { type: String, required: false },
   pings: { type: [EntitySchema], required: false },
+  creationMessage: { type: String, required: false },
+  closeMessage: { type: String, required: false },
 });
 
 const reportLimitsSchema = new Schema<ReportLimitsConfig>(
