@@ -12,7 +12,7 @@
 
 <Sidebar.Provider style="--sidebar-width: 19rem;">
   <AdminSidebar />
-  <Sidebar.Inset>
+  <Sidebar.Inset class="flex h-screen w-screen overflow-hidden">
     <header class="flex h-16 shrink-0 items-center gap-2 px-4">
       <Sidebar.Trigger class="-ms-1" />
       <Separator orientation="vertical" class="me-2 data-[orientation=vertical]:h-4" />
@@ -38,7 +38,7 @@
         </Breadcrumb.List>
       </Breadcrumb.Root>
     </header>
-    <div class="flex flex-1 flex-col gap-4 p-3 pt-0">
+    <div class="overflow-auto p-2">
       <div class="bg-muted/50 min-h-screen flex-1 rounded-xl p-3 md:min-h-min">
         {@render children?.()}
       </div>

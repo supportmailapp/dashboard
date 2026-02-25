@@ -65,6 +65,9 @@ importers:
       socket.io-client:
         specifier: ^4.8.3
         version: 4.8.3
+      svelte-highlight:
+        specifier: ^7.9.0
+        version: 7.9.0
       wildcard-match:
         specifier: ^5.1.4
         version: 5.1.4
@@ -1516,6 +1519,10 @@ packages:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
 
+  highlight.js@11.11.1:
+    resolution: {integrity: sha512-Xwwo44whKBVCYoliBQwaPvtd/2tYFkRQtXDWj1nackaV2JPXx3L0+Jvd8/qCJ2p+ML0/XVkJ2q+Mr+UVdpJK5w==}
+    engines: {node: '>=12.0.0'}
+
   https-proxy-agent@5.0.1:
     resolution: {integrity: sha512-dFcAjpTQFgoLMzC2VwU+C/CbS7uRL0lWmxDITmqm7C+7F0Odmj6s9l6alZc6AELXhrnggM2CeWSXHGOdX2YtwA==}
     engines: {node: '>= 6'}
@@ -2131,6 +2138,9 @@ packages:
     peerDependencies:
       svelte: ^4.0.0 || ^5.0.0-next.0
       typescript: '>=5.0.0'
+
+  svelte-highlight@7.9.0:
+    resolution: {integrity: sha512-226LBTtvTnM2L2JkQq8mZeKEeMfPLYyta7VxZatFT4UPX5zdHEerKeMTvrfbxm7MVTWc7TPThsNoVdhWC177KQ==}
 
   svelte-sonner@1.0.7:
     resolution: {integrity: sha512-1EUFYmd7q/xfs2qCHwJzGPh9n5VJ3X6QjBN10fof2vxgy8fYE7kVfZ7uGnd7i6fQaWIr5KvXcwYXE/cmTEjk5A==}
@@ -3755,6 +3765,8 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
+  highlight.js@11.11.1: {}
+
   https-proxy-agent@5.0.1:
     dependencies:
       agent-base: 6.0.2
@@ -4263,6 +4275,10 @@ snapshots:
       typescript: 5.9.3
     transitivePeerDependencies:
       - picomatch
+
+  svelte-highlight@7.9.0:
+    dependencies:
+      highlight.js: 11.11.1
 
   svelte-sonner@1.0.7(svelte@5.46.1):
     dependencies:
