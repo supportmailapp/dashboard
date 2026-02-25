@@ -268,7 +268,7 @@ const adminAuthRoutes = ["/api/*/admin/**", "/admin/**"];
 const compiledAdminRoutes = adminAuthRoutes.map((pattern) =>
   pattern.includes("*") ? wildcardMatch(pattern, { flags: "i" }) : null,
 );
-const modAuthRoutes = ["/mod/**"];
+const modAuthRoutes = ["/api/*/mod/**", "/mod/**"];
 const compiledModRoutes = modAuthRoutes.map((pattern) =>
   pattern.includes("*") ? wildcardMatch(pattern, { flags: "i" }) : null,
 );

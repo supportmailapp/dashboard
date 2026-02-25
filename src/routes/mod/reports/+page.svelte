@@ -3,7 +3,7 @@
   import Expand from "@lucide/svelte/icons/expand";
   import { onDestroy, onMount } from "svelte";
   import { getBreadcrumbs } from "../breadcrumb.svelte";
-  import Button, { buttonVariants } from "$ui/button/button.svelte";
+  import Button from "$ui/button/button.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
   import * as Pagination from "$ui/pagination/index.js";
   import * as Table from "$ui/table/index.js";

@@ -15,10 +15,6 @@
         title: "Users",
         href: "/users",
       },
-      {
-        title: "Config",
-        href: "/config",
-      },
     ],
   };
 </script>
