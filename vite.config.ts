@@ -11,6 +11,10 @@ export default defineConfig({
       project: "supportmail-dashboard",
       adapter: "node",
       authToken: process.env.SENTRY_AUTH_TOKEN,
+      autoUploadSourceMaps: true,
+      sourcemaps: {
+        filesToDeleteAfterUpload: ["./**/*.map", ".*/**/public/**/*.map", "./dist/**/client/**/*.map"],
+      },
     }),
     tailwindcss(),
     sveltekit(),
