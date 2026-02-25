@@ -12,8 +12,9 @@ import {
   Panel,
   TicketCategory,
 } from "$lib/server/db/index.js";
+import * as Sentry from "@sentry/sveltekit";
 
-export async function load({ url }) {
+export async function load({ url, locals }) {
   const { data } = validateSearchParams(url, searchParamsSchema);
   if (data.guild && !/^\d+$/.test(data.guild)) {
     return {
@@ -26,7 +27,13 @@ export async function load({ url }) {
   const selected = new Set(data.selected);
   const configData: Partial<Record<ConfigKey, any>> = {};
 
-  console.log("Selected config keys:", selected);
+  Sentry.metrics.count("config_viewer_load", 1, {
+    attributes: {
+      selected: Array.from(selected).join(",") || "none",
+      user_id: locals.user?.id,
+    },
+  });
+
   if (!selected.size) {
     return {
       status: 200,
