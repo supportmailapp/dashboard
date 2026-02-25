@@ -327,20 +327,11 @@ const adminAuthGuard: Handle = async ({ event, resolve }) => {
 
   return resolve(event);
 };
-/*
-Sentry.initCloudflareSentryHandle({
-  dsn: "https://f3539027417a80678d1015bba5b684e5@o4508704165265408.ingest.de.sentry.io/4508704168018000",
-  environment: building ? "production" : NODE_ENV || "development",
-  sendDefaultPii: true,
-  enableLogs: true,
-  tracesSampleRate: dev ? 1.0 : 0.5,
-}),
-Sentry.sentryHandle({
-  handleUnknownRoutes: false,
-}),
-*/
 
 export const handle = sequence(
+  Sentry.sentryHandle({
+    handleUnknownRoutes: false,
+  }),
   authentification,
   authorization,
   protectIt,

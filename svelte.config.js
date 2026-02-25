@@ -9,6 +9,7 @@ const config = {
       out: "build",
       precompress: false,
     }),
+
     alias: {
       $ui: "src/lib/components/ui",
       $lib: "src/lib",
@@ -16,6 +17,7 @@ const config = {
       $db: "src/lib/server/db",
       $v1Api: "src/routes/api/v1",
     },
+
     csp: {
       mode: "auto",
       directives: {
@@ -28,7 +30,18 @@ const config = {
         ],
       },
     },
+
     prerender: { handleHttpError: "warn", origin: "https://supportmail.dev" },
+
+    experimental: {
+      tracing: {
+        server: true,
+      },
+
+      instrumentation: {
+        server: true,
+      },
+    },
   },
   vitePlugin: {
     inspector:
