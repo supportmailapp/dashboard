@@ -127,12 +127,7 @@ export const TicketCategoriesPUTSchema = z.preprocess(
     return obj;
   },
   // ensure unqiue _ids
-  PartialTicketCategorySchema.array()
-    .max(10, zem("A maximum of 10 ticket categories are allowed"))
-    .refine(
-      (cats) => cats.length === new Set(cats.map((c) => c._id)).size,
-      zem("Duplicate _id values found in ticket categories"),
-    ),
+  PartialTicketCategorySchema.array().max(10, zem("A maximum of 10 ticket categories are allowed")),
 );
 
 export type PartialTicketCategory = z.infer<typeof PartialTicketCategorySchema>;

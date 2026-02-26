@@ -9,7 +9,7 @@
   import * as Alert from "$ui/alert/index.js";
   import { Button, buttonVariants } from "$ui/button";
   import { Skeleton } from "$ui/skeleton";
-  import { fade, slide } from "svelte/transition";
+  import { fade, scale, slide } from "svelte/transition";
   import { IsMobile } from "$lib/hooks/is-mobile.svelte";
   import Mounter from "./Mounter.svelte";
   import ServerSelector from "./ServerSelector.svelte";
@@ -18,6 +18,8 @@
   import { getManager } from "$lib/stores/GuildsManager.svelte";
   import { isVpn } from "$lib/stores/vpn.svelte";
   import AlertCircleIcon from "@lucide/svelte/icons/alert-circle";
+  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
+  import { Portal } from "bits-ui";
 
   let { children } = $props();
 
@@ -131,7 +133,7 @@
       }
     }}
   >
-    <Dialog.Content interactOutsideBehavior="ignore" showCloseButton={false} class="bg-transparent border-0">
+    <Dialog.Content interactOutsideBehavior="ignore" showCloseButton={false} class="border-0 bg-transparent">
       <Alert.Root variant="warning">
         <AlertCircleIcon />
         <Alert.Title>VPN Detected</Alert.Title>
@@ -140,12 +142,20 @@
           loading or using the dashboard, please try disabling your VPN and see if that resolves the issue.
         </Alert.Description>
       </Alert.Root>
-      <Dialog.Footer class="sm:justify-center w-full">
+      <Dialog.Footer class="w-full sm:justify-center">
         <Dialog.Close class={buttonVariants({ variant: "secondary", class: "min-w-xs" })}>OK</Dialog.Close>
       </Dialog.Footer>
     </Dialog.Content>
   </Dialog.Root>
 {/if}
+
+<Portal>
+  {#if !guildsManager.loaded}
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-background" out:fade={{ duration: 200 }}>
+      <LoadingSpinner />
+    </div>
+  {/if}
+</Portal>
 
 <style>
   :root {

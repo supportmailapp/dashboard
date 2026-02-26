@@ -343,7 +343,7 @@
   }
 
   .container-component {
-    @apply dark:bg-[#25252a] bg-white space-y-1 rounded-lg border;
+    @apply space-y-1 rounded-lg border bg-white dark:bg-[#25252a];
     position: relative;
     max-width: 825px;
     width: 100%;

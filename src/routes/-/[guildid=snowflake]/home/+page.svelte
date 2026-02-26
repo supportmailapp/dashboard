@@ -17,7 +17,6 @@
   import equal from "fast-deep-equal/es6";
   import InfoDialog from "$lib/components/InfoDialog.svelte";
   import { afterNavigate } from "$app/navigation";
-  import { discordMdToHtml } from "$lib/utils/markup";
 
   const config = $state({
     old: null as OverviewConfig | null,
