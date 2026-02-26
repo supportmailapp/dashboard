@@ -47,7 +47,7 @@ export async function PATCH({ request }) {
       id: valRes.data.id,
       roles: valRes.data.roles,
     },
-    { new: true, upsert: true },
+    { returnDocument: "after", upsert: true },
   );
 
   return json(FlattenDocToJSON(user), { status: 200 });

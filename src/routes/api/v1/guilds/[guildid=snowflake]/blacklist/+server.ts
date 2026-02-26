@@ -135,7 +135,7 @@ export async function PUT({ request, params }) {
         _type: data._type,
         scopes: scopes.bits,
       },
-      { upsert: true, new: true, setDefaultsOnInsert: true },
+      { upsert: true, returnDocument: "after", setDefaultsOnInsert: true },
     );
 
     return Response.json(FlattenBigIntFields(FlattenDocToJSON(entry, true)), { status: 200 });

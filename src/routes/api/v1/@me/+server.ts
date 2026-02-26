@@ -37,7 +37,7 @@ export async function PATCH({ locals, request }) {
     valRes.data,
     {
       upsert: true,
-      new: true,
+      returnDocument: "after",
     },
   );
 

@@ -52,7 +52,7 @@ export async function PUT({ request, params }) {
         TicketCategory.findOneAndUpdate(
           { guildId, _id: category._id },
           { index: category.index },
-          { new: true, upsert: true },
+          { returnDocument: "after", upsert: true },
         ),
       ),
     );

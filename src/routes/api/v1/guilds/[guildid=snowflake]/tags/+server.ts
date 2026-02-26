@@ -64,7 +64,7 @@ export async function PUT({ request, params }) {
           content: tag.content,
           onlyTickets: tag.onlyTickets,
         },
-        { new: true },
+        { returnDocument: "after" },
       ),
     ),
   );

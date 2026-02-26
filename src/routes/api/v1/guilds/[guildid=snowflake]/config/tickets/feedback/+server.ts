@@ -40,7 +40,7 @@ export async function PUT({ request, params }) {
 
   try {
     const newDoc = await FeedbackConfig.findOneAndUpdate({ guildId: params.guildid }, updatePayload, {
-      new: true,
+      returnDocument: "after",
       upsert: true,
       setDefaultsOnInsert: true,
     });

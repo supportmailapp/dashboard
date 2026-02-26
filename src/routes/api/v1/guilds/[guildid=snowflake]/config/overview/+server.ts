@@ -32,7 +32,7 @@ export async function PUT({ request, params }) {
     {
       lang: valRes.data.language,
     },
-    { new: true },
+    { returnDocument: "after" },
   );
 
   return json({

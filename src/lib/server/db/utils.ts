@@ -89,14 +89,14 @@ export function updateDBGuild(
   guildId: string,
   update: UpdateQuery<IDBGuild> | UpdateWithAggregationPipeline,
 ) {
-  return DBGuild.findOneAndUpdate({ id: guildId }, update, { new: true });
+  return DBGuild.findOneAndUpdate({ id: guildId }, update, { returnDocument: "after" });
 }
 
 export async function updateDBUser(
   userId: string,
   update: UpdateQuery<IDBUser> | UpdateWithAggregationPipeline,
 ) {
-  return await DBUser.findOneAndUpdate({ id: userId }, update, { upsert: false, new: true });
+  return await DBUser.findOneAndUpdate({ id: userId }, update, { upsert: false, returnDocument: "after" });
 }
 
 export function getTicketCategories(guildId: string, label?: string) {

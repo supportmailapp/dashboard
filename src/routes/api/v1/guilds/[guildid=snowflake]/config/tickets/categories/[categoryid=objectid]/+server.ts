@@ -38,7 +38,7 @@ export async function PUT({ request, locals, params }) {
 
   const cat = await TicketCategory.findOneAndUpdate({ guildId, _id: valRes.data._id }, sanitizedData, {
     upsert: true,
-    new: true,
+    returnDocument: "after",
     setDefaultsOnInsert: true,
   });
 

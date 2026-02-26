@@ -56,7 +56,7 @@ class SessionManager {
         refreshToken: data.tokens.refreshToken ?? null,
         clearance: data.userId === env.OWNER_ID ? "admin" : isMod ? "mod" : "user",
       },
-      { new: true, upsert: true },
+      { returnDocument: "after", upsert: true },
     );
 
     return tokenData._id.toString();
