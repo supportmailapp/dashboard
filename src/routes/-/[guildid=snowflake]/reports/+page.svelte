@@ -18,6 +18,7 @@
   import FilterControls, { type ReportSearchScope, type ReportSearchType } from "./FilterControls.svelte";
   import ReportsTable from "./ReportsTable.svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
+  import { watch } from "runed";
 
   const pageData = $state({
     page: safeParseInt(page.url.searchParams.get("page"), 1),
@@ -142,12 +143,14 @@
     return `${page.url.origin}${page.url.pathname}?${params.toString()}`;
   }
 
-  afterNavigate(() => {
-    // Fetch reports when the component mounts
-    fetchReports().then(() => {
-      console.log("Reports fetched successfully");
-    });
-  });
+  watch(
+    () => $state.snapshot(page.params.guildid),
+    () => {
+      fetchReports().then(() => {
+        console.log("Reports fetched successfully");
+      });
+    },
+  );
 </script>
 
 <SiteHeading title="Reports" />
