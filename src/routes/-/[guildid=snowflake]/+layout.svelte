@@ -9,7 +9,7 @@
   import * as Alert from "$ui/alert/index.js";
   import { Button, buttonVariants } from "$ui/button";
   import { Skeleton } from "$ui/skeleton";
-  import { fade, scale, slide } from "svelte/transition";
+  import { fade, fly, scale, slide } from "svelte/transition";
   import { IsMobile } from "$lib/hooks/is-mobile.svelte";
   import Mounter from "./Mounter.svelte";
   import ServerSelector from "./ServerSelector.svelte";
@@ -20,6 +20,8 @@
   import AlertCircleIcon from "@lucide/svelte/icons/alert-circle";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import { Portal } from "bits-ui";
+  import { useInterval } from "runed";
+  import { cubicInOut } from "svelte/easing";
 
   let { children } = $props();
 
@@ -28,10 +30,30 @@
   let guildsSelectOpen = $state(false);
   Sidebar.useSidebar();
   let vpnAlert = $derived(isVpn.current);
-
-  $inspect("vpnAlert", vpnAlert);
-
   const isMobile = new IsMobile();
+
+  const randomLoadingMessages = [
+    "Just a moment",
+    "Loading up the magic",
+    "Summoning the servers",
+    "Brewing some coffee",
+    "Warming up the bits",
+    "Polishing the pixels",
+    "Aligning the bits and bytes",
+    "Reticulating splines",
+    "Optimizing the flux capacitor",
+    "Charging the warp drive",
+    "Calibrating the quantum entanglement",
+    "Herding the cats",
+    "Going after the easter bunny with a water gun",
+  ];
+  let loadingMessageIndex = $state<number>(Math.floor(Math.random() * randomLoadingMessages.length));
+
+  const interval = useInterval(() => 3000, {
+    callback: () => {
+      loadingMessageIndex = (loadingMessageIndex + 1) % randomLoadingMessages.length;
+    },
+  });
 
   $effect(() => {
     if (guildsManager.loaded) {
@@ -150,9 +172,19 @@
 {/if}
 
 <Portal>
-  {#if !guildsManager.loaded}
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-background" out:fade={{ duration: 200 }}>
+  {#if guildsManager.loaded}
+    <div
+      class="bg-background fixed inset-0 z-500 flex flex-col items-center justify-center gap-4"
+      out:fade={{ duration: 200 }}
+    >
       <LoadingSpinner />
+      <div class="flex h-20 w-full flex-col items-center justify-center overflow-hidden">
+        {#key loadingMessageIndex}
+          <p class="text-muted-foreground text-center text-lg" in:fly={{ duration: 180, y: 20 }}>
+            {randomLoadingMessages[loadingMessageIndex]}
+          </p>
+        {/key}
+      </div>
     </div>
   {/if}
 </Portal>
