@@ -79,8 +79,8 @@
                     excludedRoleIds={allowedMentions.roles ?? []}
                     bots={false}
                     onSelect={(roleId) => {
-                      if (!allowedMentions.roles!.includes(roleId)) {
-                        allowedMentions.roles = [...allowedMentions.roles!, roleId];
+                      if (!allowedMentions.roles?.includes(roleId)) {
+                        allowedMentions.roles = [...(allowedMentions.roles ?? []), roleId];
                       }
                     }}
                   />
@@ -128,8 +128,8 @@
                     excludedUserIds={allowedMentions.users ?? []}
                     onSelect={(user) => {
                       users.set(user.id, user);
-                      if (!allowedMentions.users!.includes(user.id)) {
-                        allowedMentions.users = [...allowedMentions.users!, user.id];
+                      if (!allowedMentions.users?.includes(user.id)) {
+                        allowedMentions.users = [...(allowedMentions.users ?? []), user.id];
                       }
                     }}
                   />
