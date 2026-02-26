@@ -108,7 +108,6 @@
         pageData.totalPages = data.pagination.totalPages;
         fetchedData = $state.snapshot(pageData);
         ticketsStatus = "loaded";
-        await goto(buildUrlWithParams(), { replaceState: true });
       } else {
         if (res.headers.get("Content-Type")?.includes("application/json")) {
           const errorData = await res.json();
@@ -124,14 +123,22 @@
     }
   }
 
-  watch(
-    () => $state.snapshot(page.params.guildid),
-    () => {
+  afterNavigate(() => {
+    // Reset pagination to page 1 when guild changes
+    if (page.params.guildid) {
+      pageData.page = safeParseInt(page.url.searchParams.get("page"), 1);
+      pageData.perPage = safeParseInt(page.url.searchParams.get("count"), 20);
+      pageData.status = page.url.searchParams.has("status")
+        ? parseStatus(page.url.searchParams.get("status")!)
+        : null;
+      pageData.anonym = (page.url.searchParams.get("anonym") || "") === "true";
+      pageData.search = page.url.searchParams.get("search") || "";
+      pageData.searchScope = (page.url.searchParams.get("sscope") || "all") as TicketSearchScope;
       fetchTickets(true).then(() => {
         console.log("Tickets fetched successfully");
       });
-    },
-  );
+    }
+  });
 </script>
 
 <SiteHeading title="Tickets" />
