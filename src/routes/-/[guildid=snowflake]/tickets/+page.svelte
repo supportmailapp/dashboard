@@ -16,6 +16,7 @@
   import TicketsTable from "./TicketsTable.svelte";
   import FolderOpen from "@lucide/svelte/icons/folder-open";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
+  import { watch } from "runed";
 
   const pageData = $state({
     page: safeParseInt(page.url.searchParams.get("page"), 1),
@@ -123,13 +124,14 @@
     }
   }
 
-  afterNavigate(() => {
-    console.log("refetching tickets after navigation");
-    // Fetch tickets when the component mounts
-    fetchTickets(true).then(() => {
-      console.log("Tickets fetched successfully");
-    });
-  });
+  watch(
+    () => $state.snapshot(page.params.guildid),
+    () => {
+      fetchTickets(true).then(() => {
+        console.log("Tickets fetched successfully");
+      });
+    },
+  );
 </script>
 
 <SiteHeading title="Tickets" />
