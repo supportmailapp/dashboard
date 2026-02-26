@@ -361,7 +361,7 @@ export class ComponentParser {
     if (comp.style === ButtonStyle.Link && comp.action === "link") {
       return {
         type: ComponentType.Button,
-        style: comp.style,
+        style: 5,
         label: comp.label,
         emoji: comp.emoji ? validateEmoji(comp.emoji) : undefined,
         url: comp.url,
@@ -369,7 +369,9 @@ export class ComponentParser {
       };
     } else if (comp.style !== ButtonStyle.Link && comp.action !== "link") {
       if (
-        (comp.action === "ticket:create" && !this.categories.includes(comp.custom_id ?? "")) ||
+        (comp.action === "ticket:create" &&
+          !!comp.custom_id &&
+          !this.categories.includes(comp.custom_id ?? "")) ||
         (comp.action === "reply" && !this.tags.includes(comp.custom_id ?? ""))
       ) {
         return undefined; // invalid action/category
