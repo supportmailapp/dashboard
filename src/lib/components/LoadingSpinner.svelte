@@ -5,14 +5,10 @@
   let { size, class: classValue }: { size?: string; class?: ClassValue } = $props();
 </script>
 
-<div role="status" class="relative">
+<div role="status" class={cn("relative", classValue, size ? `size-${size}` : "size-20")}>
   <svg
     aria-hidden="true"
-    class={cn(
-      "absolute top-0 left-0 min-h-10 fill-slate-600 text-transparent",
-      size ? `size-${size}` : "size-20",
-      classValue ?? "",
-    )}
+    class={cn("absolute top-0 left-0 min-h-10 fill-slate-600 text-transparent")}
     style="animation: spin 2.2s cubic-bezier(0.1, 0.1, 0.1, 0.3) infinite; animation-delay: 200ms;"
     viewBox="0 0 100 101"
     stroke="currentColor"
@@ -29,11 +25,7 @@
 
   <svg
     aria-hidden="true"
-    class={cn(
-      "fill-primary primary-spinner absolute top-0 left-0 min-h-10 text-transparent",
-      size ? `size-${size}` : "size-20",
-      classValue ?? "",
-    )}
+    class={cn("fill-primary primary-spinner absolute top-0 left-0 min-h-10 text-transparent")}
     style="animation: spin 2s cubic-bezier(0.25, 0.8, 0.75, 0.2) infinite"
     viewBox="0 0 100 101"
     stroke="currentColor"
