@@ -67,5 +67,5 @@
     "zod": "^4.3.5",
     "zod-validation-error": "^5.0.0"
   },
-  "packageManager": "pnpm@10.30.2"
+  "packageManager": "pnpm@10.30.3"
 }
