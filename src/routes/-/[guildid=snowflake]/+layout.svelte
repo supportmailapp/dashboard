@@ -172,7 +172,7 @@
 {/if}
 
 <Portal>
-  {#if guildsManager.loaded}
+  {#if !guildsManager.loaded}
     <div
       class="bg-background fixed inset-0 z-500 flex flex-col items-center justify-center gap-4"
       out:fade={{ duration: 200 }}
