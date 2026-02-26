@@ -280,7 +280,7 @@ export function parseDiscordLink(
 
 export class ComponentParser {
   static readonly ButtonActionMapping = {
-    "ticket:create": "createTicket/createTicket",
+    "ticket:create": "createTicket/panel",
     reply: "replyTo",
   } as const satisfies Record<Exclude<SMCustomAction, "link">, string>;
   static readonly SelectOptionActionMapping = {

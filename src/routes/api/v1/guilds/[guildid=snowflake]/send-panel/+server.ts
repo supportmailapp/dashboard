@@ -139,11 +139,10 @@ export async function POST({ request, params, locals, setHeaders }) {
   const guild = userCache.getUserGuilds(locals.user.id)?.find((g) => g.id === guildId);
   if (!guild) return JsonErrors.forbidden("User is not in guild");
 
-  const parsed = new ComponentParser(data, {
+  const parsed = new ComponentParser(data as any, {
     categories: cats,
     tags: tags,
   }).parse();
-  console.log(inspect(parsed));
 
   const payload: RESTPostAPIChannelMessageJSONBody = {
     flags: MessageFlags.IsComponentsV2,
