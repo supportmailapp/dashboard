@@ -18,7 +18,6 @@
   import FilterControls, { type ReportSearchScope, type ReportSearchType } from "./FilterControls.svelte";
   import ReportsTable from "./ReportsTable.svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
-  import { watch } from "runed";
 
   const pageData = $state({
     page: safeParseInt(page.url.searchParams.get("page"), 1),
@@ -62,7 +61,6 @@
         pageData.totalPages = data.pagination.totalPages;
         fetchedData = $state.snapshot(pageData);
         reportsStatus = "loaded";
-        await goto(buildUrlWithParams(false), { replaceState: true });
       } else {
         if (res.headers.get("Content-Type")?.includes("application/json")) {
           const errorData = await res.json();
@@ -143,14 +141,22 @@
     return `${page.url.origin}${page.url.pathname}?${params.toString()}`;
   }
 
-  watch(
-    () => $state.snapshot(page.params.guildid),
-    () => {
+  afterNavigate(() => {
+    // Sync URL params and fetch when guild changes
+    if (page.params.guildid) {
+      pageData.page = safeParseInt(page.url.searchParams.get("page"), 1);
+      pageData.perPage = safeParseInt(page.url.searchParams.get("count"), 20);
+      pageData.status = page.url.searchParams.has("status")
+        ? parseStatus(page.url.searchParams.get("status")!)
+        : null;
+      pageData.search = page.url.searchParams.get("search") || "";
+      pageData.searchScope = (page.url.searchParams.get("sscope") || "all") as ReportSearchScope;
+      pageData.reportType = (page.url.searchParams.get("type") || "all") as ReportSearchType;
       fetchReports().then(() => {
         console.log("Reports fetched successfully");
       });
-    },
-  );
+    }
+  });
 </script>
 
 <SiteHeading title="Reports" />
