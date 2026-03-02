@@ -1,13 +1,23 @@
 import { redirectToLoginWithError } from "$lib";
 import { SessionManager } from "$lib/server/auth";
 import { discord } from "$lib/server/constants";
-import { BlacklistEntry, updateDBUser } from "$lib/server/db/index.js";
+import { BlacklistEntry } from "$lib/server/db/index.js";
 import { DiscordUserAPI } from "$lib/server/discord";
-import { BlacklistScope, EntityType, UserRole } from "$lib/sm-types/src/index.js";
+import { BlacklistScope, EntityType } from "$lib/sm-types/src/index.js";
 import { discordUrls } from "$lib/urls";
+import { SnowflakeSchema } from "$v1Api/assertions";
 import * as Sentry from "@sentry/sveltekit";
 import { redirect } from "@sveltejs/kit";
 import type { RESTPostOAuth2AccessTokenResult } from "discord.js";
+import z from "zod";
+
+const postLoginRedirectSchema = z.object({
+  dm: SnowflakeSchema.optional(),
+  guildId: SnowflakeSchema.optional(),
+  path: z.array(z.string()).optional().refine((arr) => !arr || arr.every((str) => decodeURIComponent(str) === str), {
+    error: "Dont mess with the redirect path",
+  })
+});
 
 export async function GET({ url, cookies }) {
   const code = url.searchParams.get("code");
@@ -125,6 +135,25 @@ export async function GET({ url, cookies }) {
     maxAge: 60 * 60 * 24 * 30, // 30 days
   });
 
+  let redirectUrl = "/";
+  const postLoginRedirect = cookies.get("post_login_redirect");
+  if (postLoginRedirect) {
+    try {
+      const rawData = JSON.parse(postLoginRedirect);
+      const data = postLoginRedirectSchema.parse(rawData);
+      if (data.dm) {
+        redirectUrl = `https://discord.com/channels/@me/${data.dm}`;
+      } else if (data.guildId) {
+        redirectUrl = `/-/${data.guildId}${data.path?.length ? `/${data.path.join("/")}` : ""}`;
+      } else if (data.path?.length) {
+        redirectUrl = `/?next=${encodeURIComponent(data.path.join("/"))}`;
+      }
+    } catch (e) {
+      // Ignore parsing errors
+    }
+    cookies.delete("post_login_redirect", { path: "/" });
+  }
+
   // Redirect to dashboard
-  redirect(302, "/");
+  redirect(302, redirectUrl);
 }

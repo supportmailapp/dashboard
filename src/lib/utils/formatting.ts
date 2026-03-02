@@ -13,6 +13,7 @@ import {
   type APIButtonComponentWithCustomId,
   type APIButtonComponentWithURL,
   type APISectionAccessoryComponent,
+  type APIStringSelectComponent,
 } from "discord-api-types/v10";
 import { FullTwemojiRegex } from "./twemojiRegex";
 import type {
@@ -366,7 +367,7 @@ export class ComponentParser {
         emoji: comp.emoji ? validateEmoji(comp.emoji) : undefined,
         url: comp.url,
         disabled: comp.disabled,
-      };
+      } satisfies APIButtonComponentWithURL;
     } else if (comp.style !== ButtonStyle.Link && comp.action !== "link") {
       if (
         (comp.action === "ticket:create" &&
@@ -384,29 +385,29 @@ export class ComponentParser {
         emoji: comp.emoji ? validateEmoji(comp.emoji) : undefined,
         custom_id: `${actionPrefix}${comp.custom_id ? `/${comp.custom_id}` : ""}`,
         disabled: comp.disabled,
-      };
+      } satisfies APIButtonComponentWithCustomId;
     }
     return undefined;
   }
 
-  private parseComponentInActionRow(
-    comp: SMComponentInActionRow,
-  ): Extract<APIComponentInMessageActionRow, { type: SMComponentInActionRow["type"] }> | undefined {
+  private parseComponentInActionRow(comp: SMComponentInActionRow) {
     if (comp.type === ComponentType.Button) {
       return this.parseButton(comp);
     }
 
     return {
-      type: comp.type,
+      type: ComponentType.StringSelect,
       custom_id: "panelSelect",
       options: comp.options.map((opt) => ({
         label: opt.label,
         value: `${ComponentParser.SelectOptionActionMapping[opt.action]}${opt.value ? `/${opt.value}` : ""}`,
-        description: opt.description,
+        description: opt.description || undefined,
         emoji: opt.emoji ? validateEmoji(opt.emoji) : undefined,
       })),
       placeholder: comp.placeholder,
-    };
+      min_values: 1,
+      max_values: 1,
+    } satisfies APIStringSelectComponent;
   }
 
   private parseMediaItem(item: SMMediaItem, asThumbnail: true): APIThumbnailComponent;

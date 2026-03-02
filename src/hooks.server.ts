@@ -1,6 +1,5 @@
-import { building, dev } from "$app/environment";
+import { dev } from "$app/environment";
 import { env } from "$env/dynamic/private";
-import { NODE_ENV } from "$env/static/private";
 import { JsonErrors } from "$lib/constants.js";
 import { checkUserGuildAccess } from "$lib/server/auth";
 import guildAccessCache from "$lib/server/caches/guildAccess.js";
@@ -100,7 +99,7 @@ const authentification: Handle = async ({ event, resolve }) => {
         event.cookies.delete("session_id", { path: "/" });
         return redirect(303, "/login?error=invalid_session");
       }
-
+ 
       tokenData = {
         user: discordUser.data,
         token: dbToken.toJSON(),
@@ -123,20 +122,24 @@ const authentification: Handle = async ({ event, resolve }) => {
 
 const authorization: Handle = async ({ event, resolve }) => {
   if (event.url.pathname.startsWith("/-") && !event.locals.user) {
-    const next = "/" + event.url.pathname.split("/").slice(2).join("/");
     const guild = event.params.guildid;
+    let nextPath = "/";
+    if (guild) {
+      nextPath = event.url.pathname.substring(event.url.pathname.indexOf(guild) + guild.length) || "/";
+    }
 
-    if (next || guild) {
-      const redirectData: Record<string, string> = {};
-      if (next && next !== "/") redirectData.next = next;
-      if (guild) redirectData.guild = guild;
-      event.cookies.set("login_redirect", JSON.stringify(redirectData), {
+    if (nextPath !== "/" || guild) {
+      const redirectData: Record<string, any> = {};
+      if (nextPath !== "/") {
+        redirectData.path = nextPath.split("/").filter(Boolean);
+      }
+      if (guild) redirectData.guildId = guild;
+      event.cookies.set("post_login_redirect", JSON.stringify(redirectData), {
         path: "/",
-        maxAge: 600,
       });
     }
 
-    if (next && next !== "/") redirect(303, `/login?next=${encodeURIComponent(next)}`);
+    if (nextPath !== "/") redirect(303, `/login?next=${encodeURIComponent(nextPath)}`);
     else redirect(303, `/login`);
   }
 
@@ -228,7 +231,8 @@ const guildAuthGuard: Handle = async ({ event, resolve }) => {
   // Authentication check
   if (!event.locals.token || !event.locals.user) {
     if (pathname.startsWith("/-")) {
-      redirect(303, `/login` + (pathname.length > 1 ? `?next=${pathname}` : ""));
+      const rest = guildId ? pathname.substring(pathname.indexOf(guildId) + guildId.length) : "";
+      redirect(303, `/login` + (rest ? `?next=${encodeURIComponent(rest)}` : ""));
     }
     return JsonErrors.unauthorized();
   }

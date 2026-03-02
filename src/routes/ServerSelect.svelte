@@ -1,13 +1,13 @@
 <script lang="ts">
-  import * as Command from "$ui/command/index.js";
-  import * as Avatar from "$ui/avatar/index.js";
   import { page } from "$app/state";
   import { getNextPathFromGuildPath } from "$lib";
+  import { getManager } from "$lib/stores/GuildsManager.svelte";
   import { cdnUrls } from "$lib/urls";
   import { cn } from "$lib/utils";
+  import * as Avatar from "$ui/avatar/index.js";
+  import * as Command from "$ui/command/index.js";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
   import Plus from "@lucide/svelte/icons/plus";
-  import { getManager } from "$lib/stores/GuildsManager.svelte";
 
   let { hrefAfterSelection }: { hrefAfterSelection?: string } = $props();
 
@@ -23,11 +23,13 @@
   <Command.List class="max-h-auto h-full py-0.5">
     <Command.Empty>No servers found.</Command.Empty>
     {#each guildsManager.guilds as guild (guild.id)}
+      {@const guildPath = getNextPathFromGuildPath(page.url.pathname)}
+      {@const suffix = guildPath !== "/" ? guildPath : (hrefAfterSelection || "/home")}
       {@const _guildHref = guild.isConfigured
-        ? `/-/${guild.id + getNextPathFromGuildPath(page.url.pathname)}`
+        ? `/-/${guild.id}${suffix.startsWith("/") ? suffix : `/${suffix}`}`
         : `/invite/${guild.id}`}
       <Command.LinkItem
-        href={_guildHref + (hrefAfterSelection ?? "").replace(/^\//, "")}
+        href={_guildHref}
         value="{guild.id}:{guild.name}"
         class={cn("transition-all duration-120", !guild.isConfigured && "text-foreground/70")}
       >

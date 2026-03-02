@@ -1,5 +1,6 @@
 import { env } from "$env/dynamic/private";
 import { discordUrls } from "$lib/urls";
+import { SnowflakeSchema } from "$v1Api/assertions.js";
 import { redirect } from "@sveltejs/kit";
 import jwt from "jsonwebtoken";
 
@@ -37,6 +38,13 @@ export const actions = {
       path: "/login/callback",
       sameSite: "lax",
     });
+
+    if (url.searchParams.get("dm") && SnowflakeSchema.safeParse(url.searchParams.get("dm")).success) {
+      cookies.set("post_login_redirect", JSON.stringify({ dm: url.searchParams.get("dm") }), {
+        httpOnly: true,
+        path: "/",
+      });
+    }
 
     return {
       success: true,
