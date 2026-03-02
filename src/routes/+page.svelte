@@ -81,16 +81,7 @@
       <Branding />
     </Card.Header>
     <Card.Content class="flex min-h-0 flex-1 flex-col">
-      {#if loading || guildsManager.guilds.length === 0}
-        <div
-          class="grid h-full w-full place-items-center py-3"
-          transition:slide={{ duration: 200, axis: "x" }}
-        >
-          <LoadingSpinner size="20" />
-        </div>
-      {:else}
-        <ServerSelect {hrefAfterSelection} />
-      {/if}
+      <ServerSelect {hrefAfterSelection} showLoading={loading} />
     </Card.Content>
     <Card.Footer class="text-muted-foreground flex flex-col gap-2 text-center text-xs">
       <div class="grid w-full grid-cols-[1fr_auto_1fr_auto_1fr] place-items-center gap-4 px-3">
