@@ -88,10 +88,10 @@
           {#if showLoading}
             <LoadingSpinner size="8" />
           {:else}
-            <img src="/icons/discord-mark-white.svg" alt="Discord Logo" class="size-8" />
+            <img src="/icons/discord-mark-white.svg" alt="Discord Logo" class="size-7" />
           {/if}
 
-          <span class="text-lg text-white">{showLoading ? "Logging in..." : "Login with Discord"}</span>
+          <span class="text-lg text-white">{showLoading ? "Please wait..." : "Login with Discord"}</span>
         </Button>
       </form>
     </Card.Content>

@@ -8,7 +8,7 @@ import { dbConnect, UserToken } from "$lib/server/db";
 import { DiscordBotAPI, DiscordUserAPI } from "$lib/server/discord";
 import arcjet, { detectBot, filter, shield, slidingWindow } from "@arcjet/sveltekit";
 import * as Sentry from "@sentry/sveltekit";
-import { error, redirect, type Handle } from "@sveltejs/kit";
+import { error, redirect, type Handle, type RequestEvent } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
 import dayjs from "dayjs";
 import { isValidObjectId } from "mongoose";
@@ -120,20 +120,22 @@ const authentification: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
-const authorization: Handle = async ({ event, resolve }) => {
-  if (event.url.pathname.startsWith("/-") && !event.locals.user) {
-    const guild = event.params.guildid;
+function triggerLoginRedirect(event: RequestEvent): never {
+  const { pathname } = event.url;
+  const guildId = event.params.guildid;
+
+  if (pathname.startsWith("/-")) {
     let nextPath = "/";
-    if (guild) {
-      nextPath = event.url.pathname.substring(event.url.pathname.indexOf(guild) + guild.length) || "/";
+    if (guildId) {
+      nextPath = pathname.substring(pathname.indexOf(guildId) + guildId.length) || "/";
     }
 
-    if (nextPath !== "/" || guild) {
+    if (nextPath !== "/" || guildId) {
       const redirectData: Record<string, any> = {};
       if (nextPath !== "/") {
         redirectData.path = nextPath.split("/").filter(Boolean);
       }
-      if (guild) redirectData.guildId = guild;
+      if (guildId) redirectData.guildId = guildId;
       event.cookies.set("post_login_redirect", JSON.stringify(redirectData), {
         path: "/",
       });
@@ -141,6 +143,14 @@ const authorization: Handle = async ({ event, resolve }) => {
 
     if (nextPath !== "/") redirect(303, `/login?next=${encodeURIComponent(nextPath)}`);
     else redirect(303, `/login`);
+  }
+
+  redirect(303, `/login` + (pathname.length > 1 ? `?next=${encodeURIComponent(pathname)}` : ""));
+}
+
+const authorization: Handle = async ({ event, resolve }) => {
+  if (event.url.pathname.startsWith("/-") && !event.locals.user) {
+    triggerLoginRedirect(event);
   }
 
   return resolve(event);
@@ -231,8 +241,7 @@ const guildAuthGuard: Handle = async ({ event, resolve }) => {
   // Authentication check
   if (!event.locals.token || !event.locals.user) {
     if (pathname.startsWith("/-")) {
-      const rest = guildId ? pathname.substring(pathname.indexOf(guildId) + guildId.length) : "";
-      redirect(303, `/login` + (rest ? `?next=${encodeURIComponent(rest)}` : ""));
+      triggerLoginRedirect(event);
     }
     return JsonErrors.unauthorized();
   }
@@ -295,13 +304,14 @@ const modAuthGuard: Handle = async ({ event, resolve }) => {
   }
 
   if (!event.locals.token || !event.locals.user) {
-    return redirect(303, `/login` + (pathname.length > 1 ? `?next=${encodeURIComponent(pathname)}` : ""));
+    if (pathname.startsWith("/api/")) return JsonErrors.unauthorized();
+    triggerLoginRedirect(event);
   }
 
   // Require at least mod clearance
   const clearance = event.locals.token.clearance;
   if (clearance !== "admin" && clearance !== "mod") {
-    return error(403, { message: "You ain't no Mod, bro" });
+    return error(403, { message: "You ain't no Mod bro" });
   }
 
   return resolve(event);
@@ -321,12 +331,13 @@ const adminAuthGuard: Handle = async ({ event, resolve }) => {
   }
 
   if (!event.locals.token || !event.locals.user) {
-    return redirect(303, `/login` + (pathname.length > 1 ? `?next=${encodeURIComponent(pathname)}` : ""));
+    if (pathname.startsWith("/api/")) return JsonErrors.unauthorized();
+    triggerLoginRedirect(event);
   }
 
   // Require admin clearance
   if (event.locals.token.clearance !== "admin") {
-    return error(403, { message: "You ain't no Admin, bro" });
+    return error(403, { message: "You ain't no Admin bro" });
   }
 
   return resolve(event);
