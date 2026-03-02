@@ -49,17 +49,6 @@
   });
 </script>
 
-<svelte:head>
-  <!-- SEO... -->
-  <title>Dashboard | SupportMail</title>
-  <meta property="og:title" content="Dashboard | SupportMail" />
-  <meta property="og:description" content="Manage your Discord server's support mail system with ease" />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content={page.url.href} />
-  <meta property="og:site_name" content="SupportMail" />
-  <meta property="theme-color" content="#1146E5" />
-</svelte:head>
-
 <ModeWatcher />
 
 {@render children?.()}
