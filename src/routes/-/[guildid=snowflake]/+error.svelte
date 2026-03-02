@@ -1,15 +1,10 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import { IsMobile } from "$lib/hooks/is-mobile.svelte";
-  import { getManager } from "$lib/stores/GuildsManager.svelte";
   import * as Alert from "$ui/alert/index.js";
-  import { Button, buttonVariants } from "$ui/button";
-  import * as Sidebar from "$ui/sidebar/index.js";
+  import { Button } from "$ui/button";
   import AlertCircleIcon from "@lucide/svelte/icons/alert-circle";
   import ArrowLeft from "@lucide/svelte/icons/arrow-left";
   import Home from "@lucide/svelte/icons/home";
-  import { mode } from "mode-watcher";
-  import { fade, slide } from "svelte/transition";
 
   const statusMessages = {
     400: "Bad Request - Did you forget how to internet?",
@@ -26,7 +21,6 @@
   let status = $derived(page.status || 500);
 </script>
 
-
 <div class="flex h-full items-center justify-center">
   <Alert.Root variant="destructive" class="max-w-2xl border-2 [&>svg]:size-5">
     <AlertCircleIcon />
@@ -39,10 +33,10 @@
         <ArrowLeft />
         Go Back
       </Button>
-      <a href="/" class={buttonVariants({ variant: "default" })}>
+      <Button href="/">
         <Home />
         Return Home
-      </a>
+      </Button>
     </div>
   </Alert.Root>
 </div>

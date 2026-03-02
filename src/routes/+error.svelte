@@ -1,26 +1,34 @@
 <script lang="ts">
   import { page } from "$app/state";
   import Button from "$ui/button/button.svelte";
+  import ArrowLeft from "@lucide/svelte/icons/arrow-left";
+  import Home from "@lucide/svelte/icons/home";
 
-  let statusText = $derived(
-    page.status === 404
-      ? "Not Found"
-      : page.status === 500
-        ? "Server Error"
-        : page.status === 403
-          ? "Forbidden"
-          : "Error",
-  );
+  const statusLabels = {
+    400: "Bad Request",
+    401: "Unauthorized",
+    403: "Forbidden",
+    404: "Not Found",
+    500: "Internal Server Error",
+    502: "Bad Gateway",
+    503: "Service Unavailable",
+    504: "Gateway Timeout",
+  }
+  
+  const statusMessages = {
+    400: "Did you forget how to internet?",
+    401: "Nice try, but this isn't for you.",
+    403: "You shall not pass! 🧙",
+    404: "Even we can't find this page. It's gone. Poof.",
+    500: "Our hamsters are tired. Let them rest.",
+    502: "The server hiccupped. Technology is hard.",
+    503: "We're taking a coffee break. Back soon! (Hopefully)",
+    504: "The server is thinking... still thinking... 🤔",
+  };
 
-  let errorDescription = $derived(
-    page.status === 404
-      ? "The page you are looking for does not exist."
-      : page.status === 500
-        ? "Something went wrong on our end. Please try again later."
-        : page.status === 403
-          ? "You do not have permission to access this page."
-          : "An unexpected error occurred.",
-  );
+  let error = $derived(page.error?.message || "An unexpected error occurred");
+  let statusLabel = $derived(page.status ? statusLabels[page.status as keyof typeof statusLabels] || "Unknown Error" : "Unknown Error");
+  let statusText = $derived(page.status ? statusMessages[page.status as keyof typeof statusMessages] || error : error);
 </script>
 
 <div class="from-primary/70 to-base-300/20 flex min-h-screen items-center justify-center bg-linear-to-br p-8">
@@ -29,24 +37,16 @@
       {page.status}
     </h1>
     <h2 class="mt-4 text-3xl font-semibold text-white md:text-4xl">
-      {statusText}
+      {statusLabel}
     </h2>
     <p class="mt-6 text-lg text-white/90 md:text-xl">
-      {page.error?.message || errorDescription}
+      {statusText}
     </p>
     {#if page.error?.status}
       <p class="mt-3 text-sm text-white/70">Error code: {page.error.status}</p>
     {/if}
-    <div class="mt-8 flex flex-col justify-center gap-3">
-      <Button variant="secondary" size="lg" href="/">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path
-            d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"
-          />
-        </svg>
-        Go to Homepage
-      </Button>
-      <Button variant="default" size="lg" onclick={() => location.reload()}>
+    <div class="mt-8 flex flex-col justify-center items-center gap-3">
+      <Button href="/" variant="outline" class="w-70" size="lg">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
           <path
             fill-rule="evenodd"
@@ -55,6 +55,14 @@
           />
         </svg>
         Try Again
+      </Button>
+      <Button onclick={() => history.back()} variant="secondary" class="w-70" size="lg">
+        <ArrowLeft />
+        Go Back
+      </Button>
+      <Button href="/" class="w-70" size="lg">
+        <Home />
+        Return Home
       </Button>
     </div>
   </div>
