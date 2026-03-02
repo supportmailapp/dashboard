@@ -1,26 +1,25 @@
 <script lang="ts">
   import { afterNavigate } from "$app/navigation";
+  import { page } from "$app/state";
+  import ContentEditorDialog from "$lib/components/ContentEditorDialog.svelte";
+  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import SaveAlert from "$lib/components/SaveAlert.svelte";
   import { APIRoutes } from "$lib/urls";
   import { determineUnsavedChanges } from "$lib/utils";
-  import type { APITag, TagsResponse } from "$v1Api/guilds/[guildid=snowflake]/tags/+server";
-  import { page } from "$app/state";
-  import { toast } from "svelte-sonner";
   import apiClient from "$lib/utils/apiClient";
-  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
-  import { fly } from "svelte/transition";
-  import SearchIcon from "@lucide/svelte/icons/search";
-  import * as InputGroup from "$ui/input-group/index.js";
-  import * as Empty from "$ui/empty/index.js";
-  import * as Item from "$ui/item/index.js";
   import Button from "$ui/button/button.svelte";
-  import Plus from "@lucide/svelte/icons/plus";
+  import * as Empty from "$ui/empty/index.js";
+  import * as InputGroup from "$ui/input-group/index.js";
   import Input from "$ui/input/input.svelte";
+  import * as Item from "$ui/item/index.js";
+  import type { APITag, TagsResponse } from "$v1Api/guilds/[guildid=snowflake]/tags/+server";
   import FolderOpen from "@lucide/svelte/icons/folder-open";
   import Pencil from "@lucide/svelte/icons/pencil";
+  import Plus from "@lucide/svelte/icons/plus";
+  import SearchIcon from "@lucide/svelte/icons/search";
   import Trash from "@lucide/svelte/icons/trash";
-  import ContentEditorDialog from "$lib/components/ContentEditorDialog.svelte";
-  import { activeElement } from "runed";
+  import { toast } from "svelte-sonner";
+  import { fly } from "svelte/transition";
 
   // svelte-ignore non_reactive_update
   let fetchedTags: TagsResponse | null = null;
@@ -177,7 +176,7 @@
         </Empty.Root>
       {/if}
       {#if filteredTags && filteredTags.length > 0}
-        {#each filteredTags as tag (tag.name)}
+        {#each filteredTags as tag (tag._id)}
           <Item.Root variant="outline" class="w-full">
             <Item.Content>
               <Input
