@@ -21,7 +21,7 @@ export function redirectToLoginWithError({
   );
 }
 
-export function getNextPathFromGuildPath(pathname: string) {
+export function getNextPathFromGuildPath(pathname: string): string {
   if (pathname.startsWith("/-/")) {
     return pathname.replace(/^\/-\/\d+/, "") || "/";
   }

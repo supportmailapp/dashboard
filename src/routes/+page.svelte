@@ -4,54 +4,38 @@
   import { page } from "$app/state";
   import Branding from "$lib/assets/Branding.svelte";
   import BackgroundImage from "$lib/components/BackgroundImage.svelte";
-  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import { getManager } from "$lib/stores/GuildsManager.svelte";
   import { site } from "$lib/stores/site.svelte";
   import { LegalLinks } from "$lib/urls";
+  import { buttonVariants } from "$ui/button";
   import * as Card from "$ui/card/index.js";
   import * as DropdownMenu from "$ui/dropdown-menu/index.js";
   import { Separator } from "$ui/separator/index.js";
-  import { slide } from "svelte/transition";
   import ServerSelect from "./ServerSelect.svelte";
-  import { buttonVariants } from "$ui/button";
 
   let loading = $derived(site.showLoading);
-  let hrefAfterLogin = $state<string | null>(null);
-  let hrefAfterSelection = $state<string>("/home");
   const guildsManager = getManager();
+
+  let hrefAfterSelection = $derived.by(() => {
+    const nextUrl = page.url.searchParams.get("next");
+    if (nextUrl && nextUrl !== "/") {
+      return nextUrl.startsWith("/") ? nextUrl : `/${nextUrl}`;
+    }
+    if (browser && localStorage?.getItem("urlAfterServerSelection")) {
+      const storedPath = localStorage.getItem("urlAfterServerSelection")!;
+      if (storedPath.length > 1) {
+        localStorage.removeItem("urlAfterServerSelection");
+        return storedPath.startsWith("/") ? storedPath : `/${storedPath}`;
+      }
+    };
+    return "/home";
+  });
 
   $effect(() => {
     if (guildsManager.loaded) {
       site.showLoading = false;
     } else {
       site.showLoading = true;
-    }
-  });
-
-  $effect(() => {
-    if (!browser) return;
-
-    site.showLoading = true;
-    const nextUrl = page.url.searchParams.get("next");
-    if (nextUrl?.startsWith("/-/")) {
-      goto(nextUrl);
-    } else if (nextUrl?.startsWith("/")) {
-      hrefAfterSelection = nextUrl;
-    }
-
-    const lsHrefAfterLogin = localStorage.getItem("urlAfterLogin") ?? null;
-    const lshrefAfterSelection = localStorage.getItem("urlAfterSelection") ?? null;
-    if (lsHrefAfterLogin) {
-      hrefAfterLogin = lsHrefAfterLogin;
-      localStorage.removeItem("urlAfterLogin");
-    }
-    if (lshrefAfterSelection && hrefAfterSelection !== "/home") {
-      hrefAfterSelection = lshrefAfterSelection;
-      localStorage.removeItem("urlAfterSelection");
-    }
-
-    if (hrefAfterLogin !== null) {
-      goto(hrefAfterLogin);
     }
   });
 

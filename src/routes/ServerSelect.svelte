@@ -36,8 +36,9 @@
       {#each guildsManager.guilds as guild (guild.id)}
         {@const guildPath = getNextPathFromGuildPath(page.url.pathname)}
         {@const suffix = guildPath !== "/" ? guildPath : (hrefAfterSelection || "/home")}
+        {@const encodedSuffix = suffix.startsWith("/") ? suffix : `/${suffix}`}
         {@const _guildHref = guild.isConfigured
-          ? `/-/${guild.id}${suffix.startsWith("/") ? suffix : `/${suffix}`}`
+          ? `/-/${guild.id}${encodedSuffix}`
           : `/invite/${guild.id}`}
         <Command.LinkItem
           href={_guildHref}
