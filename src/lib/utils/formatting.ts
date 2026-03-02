@@ -383,7 +383,7 @@ export class ComponentParser {
         style: comp.style,
         label: comp.label,
         emoji: comp.emoji ? validateEmoji(comp.emoji) : undefined,
-        custom_id: `${actionPrefix}${comp.custom_id ? `/${comp.custom_id}` : ""}`,
+        custom_id: `${actionPrefix}${comp.custom_id ? `?${comp.custom_id}` : ""}`,
         disabled: comp.disabled,
       } satisfies APIButtonComponentWithCustomId;
     }
