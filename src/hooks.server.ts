@@ -175,6 +175,7 @@ type APIRouteConfig = {
 };
 
 const UNAUTHENTICATED_ROUTES: Record<string, APIRouteConfig> = {
+  "/login/*": { allowUnauthenticated: true },
   "/api/*/testing": { allowUnauthenticated: true },
   "/api/*/health": { allowUnauthenticated: true },
   "/test": { allowUnauthenticated: true },

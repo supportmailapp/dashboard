@@ -27,7 +27,7 @@ export async function load({ parent, cookies, url }) {
 }
 
 export const actions = {
-  login: async ({ cookies, url }) => {
+  login: async ({ cookies, url, request }) => {
     const state = crypto.randomUUID();
 
     const wasLoggedIn = !!cookies.get("was_logged_in");
@@ -39,8 +39,11 @@ export const actions = {
       sameSite: "lax",
     });
 
-    if (url.searchParams.get("dm") && SnowflakeSchema.safeParse(url.searchParams.get("dm")).success) {
-      cookies.set("post_login_redirect", JSON.stringify({ dm: url.searchParams.get("dm") }), {
+    const formData = await request.formData();
+    const dmParam = formData.get("dm")?.toString();
+    if (dmParam && SnowflakeSchema.safeParse(dmParam).success) {
+      console.log("Setting post-login DM redirect:", dmParam);
+      cookies.set("post_login_redirect", JSON.stringify({ dm: dmParam }), {
         httpOnly: true,
         path: "/",
       });

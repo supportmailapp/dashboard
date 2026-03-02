@@ -1,5 +1,6 @@
 import { env } from "$env/dynamic/private";
 import { UNSPLASH_APP_ID, UNSPLASH_ACCESS_KEY } from "$env/static/private";
+import { JsonErrors } from "$lib/constants.js";
 import { images } from "$lib/server/caches/images.js";
 import { error, json } from "@sveltejs/kit";
 import jwt from "jsonwebtoken";
@@ -20,17 +21,17 @@ function verifyToken(token: string): boolean {
 
 export async function GET({ locals, url, cookies, setHeaders }) {
   if (!locals.user || !locals.token) {
-    return error(401, { message: "Unauthorized (no user)", status: 401 });
+    return JsonErrors.unauthorized("Unauthorized (no user)");
   }
 
   const token = cookies.get("img_token");
   if (!token) {
-    return error(401, { message: "Unauthorized (no token)", status: 401 });
+    return JsonErrors.unauthorized("Unauthorized (no token)");
   }
 
   const isValid = verifyToken(token);
   if (!isValid) {
-    return error(401, { message: "Unauthorized (invalid token)", status: 401 });
+    return JsonErrors.unauthorized("Unauthorized (invalid token)");
   }
 
   const dimensions = url.searchParams.get("dim") || "1920x1080";
@@ -51,10 +52,7 @@ export async function GET({ locals, url, cookies, setHeaders }) {
 
   const unsplashRes = await getRandomUnsplashImage(orientation);
   if (unsplashRes.type === "error") {
-    return json({
-      type: "error",
-      message: "Failed to fetch image from Unsplash",
-    });
+    return JsonErrors.serverError("Failed to fetch image from Unsplash");
   }
 
   if (unsplashRes.cache) {

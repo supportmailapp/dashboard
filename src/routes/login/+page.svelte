@@ -84,6 +84,7 @@
           };
         }}
       >
+        <input type="hidden" name="dm" value={page.url.searchParams.get("dm") ?? ""} />
         <Button type="submit" class="w-full max-w-xs hover:scale-102" disabled={showLoading}>
           {#if showLoading}
             <LoadingSpinner size="8" />

@@ -142,7 +142,7 @@ export async function GET({ url, cookies }) {
       const rawData = JSON.parse(postLoginRedirect);
       const data = postLoginRedirectSchema.parse(rawData);
       if (data.dm) {
-        redirectUrl = `https://discord.com/channels/@me/${data.dm}`;
+        redirectUrl = `/login/backToDM/${data.dm}`;
       } else if (data.guildId) {
         redirectUrl = `/-/${data.guildId}${data.path?.length ? `/${data.path.join("/")}` : ""}`;
       } else if (data.path?.length) {

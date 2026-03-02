@@ -1,3 +1,4 @@
+import { JsonErrors } from "$lib/constants.js";
 import { error, json } from "@sveltejs/kit";
 
 // yes, the original hostname is longer with "@" but the sentry client will parse it and only send the hostname part to the tunnel, so we need to use the parsed hostname here
@@ -14,10 +15,10 @@ export async function POST({ request }) {
     const project_id = dsn.pathname?.replace("/", "");
     if (dsn.hostname !== SENTRY_HOST) {
       console.log("dsn hostname unvalid", dsn.hostname);
-      error(400, `Invalid sentry hostname: ${dsn.hostname}`);
+      return JsonErrors.badRequest(`Invalid sentry hostname: ${dsn.hostname}`);
     }
     if (project_id !== PROJECT_ID) {
-      error(400, `Invalid sentry project id: ${project_id}`);
+      return JsonErrors.badRequest(`Invalid sentry project id: ${project_id}`);
     }
     const upstream_sentry_url = `https://${SENTRY_HOST}/api/${project_id}/envelope/`;
     await fetch(upstream_sentry_url, {
