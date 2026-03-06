@@ -156,8 +156,6 @@
       reloadBtnDisabled = false;
     }, 30_000);
   }
-
-  let { onClick }: { onClick?: () => void } = $props();
 </script>
 
 <Sidebar.Root side="left" variant="sidebar" class="select-none">
@@ -183,7 +181,7 @@
             <Sidebar.MenuItem>
               <Sidebar.MenuButton isActive={isCurrentPage(item.href, false)}>
                 {#snippet child({ props })}
-                  <a {href} {...props} onclick={onClick}>
+                  <a {href} {...props}>
                     <item.icon />
                     <span>{item.name}</span>
                   </a>
@@ -200,7 +198,7 @@
                 <Sidebar.MenuItem>
                   <Sidebar.MenuButton isActive={isCurrentPage(subItem.href, true)}>
                     {#snippet child({ props })}
-                      <a {href} {...props} onclick={onClick}>
+                      <a {href} {...props}>
                         <subItem.icon />
                         <span>{subItem.name}</span>
                       </a>
