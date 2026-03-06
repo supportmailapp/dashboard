@@ -9,7 +9,7 @@
   import * as Alert from "$ui/alert/index.js";
   import { Button, buttonVariants } from "$ui/button";
   import { Skeleton } from "$ui/skeleton";
-  import { fade, fly, scale, slide } from "svelte/transition";
+  import { fade, fly, slide } from "svelte/transition";
   import { IsMobile } from "$lib/hooks/is-mobile.svelte";
   import Mounter from "./Mounter.svelte";
   import ServerSelector from "./ServerSelector.svelte";
@@ -21,16 +21,14 @@
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import { Portal } from "bits-ui";
   import { useInterval } from "runed";
-  import { cubicInOut } from "svelte/easing";
 
   let { children } = $props();
 
   let guildsManager = getManager();
   let currentGuild = $derived(guildsManager.currentGuild);
   let guildsSelectOpen = $state(false);
-  Sidebar.useSidebar();
+  const sidebar = Sidebar.useSidebar();
   let vpnAlert = $derived(isVpn.current);
-  const isMobile = new IsMobile();
 
   const randomLoadingMessages = [
     "Just a moment",
@@ -49,7 +47,7 @@
   ];
   let loadingMessageIndex = $state<number>(Math.floor(Math.random() * randomLoadingMessages.length));
 
-  const interval = useInterval(() => 3000, {
+  useInterval(() => 3000, {
     callback: () => {
       loadingMessageIndex = (loadingMessageIndex + 1) % randomLoadingMessages.length;
     },
@@ -128,7 +126,7 @@
       <!-- Branding on Right -->
       <div class="flex items-center">
         <a href="/" class="flex items-center gap-2 transition-opacity duration-150 hover:opacity-70">
-          {#if !isMobile.current}
+          {#if !sidebar.isMobile}
             <span class="text-lg font-bold" transition:slide={{ duration: 200, axis: "x" }}>SupportMail</span>
           {/if}
           <Avatar.Root class="aspect-square size-8">

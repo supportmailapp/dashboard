@@ -84,6 +84,7 @@ const APIRoutes = {
     `${API_GUILD_BASE}/${guildId}/channels/${channelId}` as const,
   guildRoles: (guildId: string, force = false) =>
     `${API_GUILD_BASE}/${guildId}/roles${force ? "?cache=false" : ""}` as const,
+  listGuildEmojis: (guildId: string) => `${API_GUILD_BASE}/${guildId}/emojis` as const,
 
   overview: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/overview` as const,
 
@@ -143,11 +144,9 @@ const APIRoutes = {
   panel: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/panel` as const,
   sendPanel: (guildId: string) => `${API_GUILD_BASE}/${guildId}/send-panel` as const,
 
-  listGuildEmojis: (guildId: string) => `${API_GUILD_BASE}/${guildId}/emojis` as const,
-
   /**
    * Returns the URL for a specific guild.
-   * 
+   *
    * Can only be used by mods and higher.
    */
   guild: (guildId: string) => `${API_GUILD_BASE}/${guildId}` as const,

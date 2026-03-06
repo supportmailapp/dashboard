@@ -54,7 +54,7 @@
     class={cn(
       buttonVariants({
         variant: "outline",
-        class: "w-[280px] justify-start text-left font-normal",
+        class: "w-70 justify-start text-left font-normal",
       }),
       !value && "text-muted-foreground",
       showError && "text-destructive hover:text-destructive",

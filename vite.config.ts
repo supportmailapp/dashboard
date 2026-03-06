@@ -6,7 +6,7 @@ import { defineConfig, loadEnv } from "vite";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
-  console.log("Sentr yauth token", env.SENTRY_AUTH_TOKEN?.slice(0, 5) + "...");
+  console.log("Sentry auth token", env.SENTRY_AUTH_TOKEN?.slice(0, 5) + "...");
 
   return {
     build: {

@@ -4,7 +4,7 @@
   import * as Select from "$ui/select/index.js";
   import { LANGUAGES } from "$lib/constants";
   import { APIRoutes, DocsLinks } from "$lib/urls";
-  import { cn } from "$lib/utils";
+  import { cn, determineUnsavedChanges } from "$lib/utils";
   import { userDisplayName } from "$lib/utils/formatting";
   import { buttonVariants } from "$ui/button";
   import * as Card from "$ui/card/index.js";
@@ -14,7 +14,6 @@
   import SaveAlert from "$lib/components/SaveAlert.svelte";
   import apiClient from "$lib/utils/apiClient";
   import type { OverviewConfig } from "$v1Api/assertions";
-  import equal from "fast-deep-equal/es6";
   import InfoDialog from "$lib/components/InfoDialog.svelte";
   import { afterNavigate } from "$app/navigation";
 
@@ -25,7 +24,7 @@
     loading: false,
   });
   let unsavedChanges = $derived(
-    !equal(
+    determineUnsavedChanges(
       untrack(() => config.old),
       config.current,
     ),

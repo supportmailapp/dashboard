@@ -1,3 +1,20 @@
+<!-- Usage example:
+
+<Popover.Root>
+  <Popover.Trigger
+    class={buttonVariants({ variant: "outline", size: "icon", class: "size-7" })}
+  >
+    <Plus class="size-4" />
+  </Popover.Trigger>
+  <Popover.Content>
+    <RoleSelect
+      excludedRoleIds={selectedSubcommand?.roles ?? []}
+      onSelect={(rid) => addIdToSelected(rid, "roles")}
+    />
+  </Popover.Content>
+</Popover.Root>
+
+-->
 <script lang="ts">
   import { getManager } from "$lib/stores/GuildsManager.svelte";
   import * as Command from "$ui/command/index.js";

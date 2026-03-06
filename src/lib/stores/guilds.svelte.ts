@@ -1,6 +1,6 @@
 import { APIRoutes } from "$lib/urls";
 import apiClient from "$lib/utils/apiClient";
-import type { PartialGuild } from "$v1Api/guilds/[guildid]/+server";
+import type { PartialGuild } from "$v1Api/guilds/[guildid=snowflake]/+server";
 import { SvelteMap } from "svelte/reactivity";
 
 export const guilds = new SvelteMap<string, PartialGuild>();
