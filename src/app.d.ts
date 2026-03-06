@@ -398,6 +398,8 @@ declare global {
   }
 
   type ComponentWithRemoveHandler<T extends Record<string, any> = {}> = T & { onRemove: () => void };
+
+  type ValueOf<T> = T[keyof T];
 }
 
 export {};

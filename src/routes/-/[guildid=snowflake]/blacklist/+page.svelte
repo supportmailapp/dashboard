@@ -6,7 +6,7 @@
   import ChevronsRight from "@lucide/svelte/icons/chevrons-right";
   import Plus from "@lucide/svelte/icons/plus";
 
-  import { BlacklistScope, EntityType } from "$lib/sm-types";
+  import { BlacklistScopes, EntityType } from "$lib/sm-types";
   import equal from "fast-deep-equal/es6";
   import { toast } from "svelte-sonner";
 
@@ -51,7 +51,7 @@
     totalPages: null as number | null,
     search: "" as string,
     scopes: new SvelteBitfield(
-      BlacklistScope.tickets | BlacklistScope.reports | BlacklistScope.tags,
+      BlacklistScopes.tickets | BlacklistScopes.reports | BlacklistScopes.tags,
     ) as SvelteBitfield,
     filterType: -1 as Exclude<EntityType, EntityType.guild> | -1,
     sorting: "newestFirst" as "newestFirst" | "oldestFirst",

@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { APIBlacklistEntry } from "$v1Api/guilds/[guildid=snowflake]/blacklist/+server";
   import Mention from "$lib/components/discord/Mention.svelte";
-  import { EntityType, BlacklistScope } from "$lib/sm-types";
+  import { EntityType, BlacklistScopes } from "$lib/sm-types";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import { cn } from "$lib/utils";
   import { Button } from "$ui/button";
@@ -43,7 +43,7 @@
 
   function getScopeNames(scopesBigint: string): string[] {
     const bitfield = new SvelteBitfield(BigInt(scopesBigint));
-    return Object.entries(BlacklistScope)
+    return Object.entries(BlacklistScopes)
       .filter(([key, value]) => typeof value === "number" && bitfield.has(value))
       .map(([key]) => key);
   }

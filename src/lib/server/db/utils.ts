@@ -186,7 +186,7 @@ export function FlattenDocToJSON<T, K extends keyof Omit<T, "__v" | "_id"> = nev
       }
       return { ...finalRet, _id: _id.toString() };
     },
-  }) as FlattenDocResult<T, typeof with_Id, K>;
+  }) as unknown as FlattenDocResult<T, typeof with_Id, K>;
 }
 
 type FlattenBigIntResult<T> = {

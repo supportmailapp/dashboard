@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { BlacklistScope, EntityType } from "$lib/sm-types";
+  import { BlacklistScopes, EntityType } from "$lib/sm-types";
   import { cn } from "$lib/utils";
   import type { SvelteBitfield } from "$lib/utils/reactiveBitfield.svelte";
   import * as Dropdown from "$ui/dropdown-menu/index.js";
@@ -27,10 +27,10 @@
     sorting = $bindable("newestFirst"),
   }: Props = $props();
 
-  const filterScopeOptions: { value: BlacklistScope; label: string }[] = [
-    { value: BlacklistScope.tickets, label: "Tickets" },
-    { value: BlacklistScope.reports, label: "Reports" },
-    { value: BlacklistScope.tags, label: "Tags" },
+  const filterScopeOptions: { value: ValueOf<typeof BlacklistScopes>; label: string }[] = [
+    { value: BlacklistScopes.tickets, label: "Tickets" },
+    { value: BlacklistScopes.reports, label: "Reports" },
+    { value: BlacklistScopes.tags, label: "Tags" },
   ];
 
   const filterTypeOptions: { value: Exclude<EntityType, EntityType.guild> | -1; label: string }[] = [
