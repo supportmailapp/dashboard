@@ -13,6 +13,7 @@
   import { validateEmoji } from "$lib/utils/formatting";
   import type { IPartialEmoji } from "$lib/sm-types/src";
   import Emoji from "./panel/Emoji.svelte";
+  import { page } from "$app/state";
 
   type EmojiPickCallbackData = { emoji: IPartialEmoji; custom: boolean };
 
@@ -44,7 +45,7 @@
   let otherEmojiData = $derived(validateEmoji(otherEmojiInput || ""));
 
   onMount(async function () {
-    const res = await apiClient.get<APICustomEmoji[]>(APIRoutes.listGuildEmojis("1114825999155200101"));
+    const res = await apiClient.get<APICustomEmoji[]>(APIRoutes.listGuildEmojis(page.params.guildid!));
     if (res.ok) {
       const data = await res.json();
       for (const emoji of data) {
