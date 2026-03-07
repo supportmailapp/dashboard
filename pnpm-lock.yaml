@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@arcjet/inspect':
         specifier: ^1.1.0
-        version: 1.1.0
+        version: 1.2.0
       '@arcjet/sveltekit':
         specifier: ^1.1.0
         version: 1.1.0(svelte@5.53.7)
@@ -172,6 +172,10 @@ packages:
     resolution: {integrity: sha512-TFt5PdlQVOngGTL+Q02NLGtv6Ks15m68a5Jksk9rEDM8vVzwoFE6KXawPNPm0pcwow4a/C+GcYwYprDm7MpXlw==}
     engines: {node: '>=20'}
 
+  '@arcjet/cache@1.2.0':
+    resolution: {integrity: sha512-vMPIlf6bIHVU59u313UaLOTWafIy0+aR9QmGr/dNBlNikeAaeGUyD8aj3W7T9G1Teognw+5wYj7BtFW65NZvTg==}
+    engines: {node: '>=20'}
+
   '@arcjet/duration@1.1.0':
     resolution: {integrity: sha512-22MVyEnJgRv4RpFol6LefKAjh2ei7ekBIkawPZi+F0YNQtGPTTJP7r+gLT615oUcZFptBxiuogsXk6zhFycSsA==}
     engines: {node: '>=20'}
@@ -184,8 +188,8 @@ packages:
     resolution: {integrity: sha512-V4PVy84gxc30g8CGZaLl//QAogdaAKJ2Sbtjccd5iUmxeUXXdqW3L0/xwm0xCebwB8rxojwhG7CzD3uv781Zdw==}
     engines: {node: '>=20'}
 
-  '@arcjet/inspect@1.1.0':
-    resolution: {integrity: sha512-yaBGbG/iwfpR/mfyiomLGzePjUr7YFzLi2qss/TjDLcX6TvQ4nW+HqOidGzAE5IVqdtl13TG9vD2f2tv9AkIog==}
+  '@arcjet/inspect@1.2.0':
+    resolution: {integrity: sha512-f8SIHfjDyE03Xblluh9F8sghJ8QXbSSdCnEv7hAugXb7CAB3Gj6TH0pX6IDq5zf1LXC3rk/vR5JAmtmNgIOP7g==}
     engines: {node: '>=20'}
 
   '@arcjet/ip@1.1.0':
@@ -198,6 +202,10 @@ packages:
 
   '@arcjet/protocol@1.1.0':
     resolution: {integrity: sha512-evjUsyOh04bQgH9lWm/xIyqF3C8XkiKvRa/QYuUvMYEpe/J1hndHaOZqzqlzQqkm44cbM5l8s+06SpHyaG/iFg==}
+    engines: {node: '>=20'}
+
+  '@arcjet/protocol@1.2.0':
+    resolution: {integrity: sha512-v0VDEtZKkJtzVJvEKaWgt+3/pAJt72blLIzdDnrsWkrv9TZLfbkjDYd3fwxPXjKYoMeFCuCHe4UpW9JdJPkV9Q==}
     engines: {node: '>=20'}
 
   '@arcjet/runtime@1.1.0':
@@ -2369,15 +2377,17 @@ snapshots:
 
   '@arcjet/cache@1.1.0': {}
 
+  '@arcjet/cache@1.2.0': {}
+
   '@arcjet/duration@1.1.0': {}
 
   '@arcjet/env@1.1.0': {}
 
   '@arcjet/headers@1.1.0': {}
 
-  '@arcjet/inspect@1.1.0':
+  '@arcjet/inspect@1.2.0':
     dependencies:
-      '@arcjet/protocol': 1.1.0
+      '@arcjet/protocol': 1.2.0
 
   '@arcjet/ip@1.1.0': {}
 
@@ -2388,6 +2398,13 @@ snapshots:
   '@arcjet/protocol@1.1.0':
     dependencies:
       '@arcjet/cache': 1.1.0
+      '@bufbuild/protobuf': 2.11.0
+      '@connectrpc/connect': 2.1.1(@bufbuild/protobuf@2.11.0)
+      typeid-js: 1.2.0
+
+  '@arcjet/protocol@1.2.0':
+    dependencies:
+      '@arcjet/cache': 1.2.0
       '@bufbuild/protobuf': 2.11.0
       '@connectrpc/connect': 2.1.1(@bufbuild/protobuf@2.11.0)
       typeid-js: 1.2.0
