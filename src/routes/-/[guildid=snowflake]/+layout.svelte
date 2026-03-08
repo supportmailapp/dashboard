@@ -21,13 +21,13 @@
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import { Portal } from "bits-ui";
   import { useInterval } from "runed";
+  import SidebarHeaderBranding from "./SidebarHeaderBranding.svelte";
 
   let { children } = $props();
 
   let guildsManager = getManager();
   let currentGuild = $derived(guildsManager.currentGuild);
   let guildsSelectOpen = $state(false);
-  const sidebar = Sidebar.useSidebar();
   let vpnAlert = $derived(isVpn.current);
 
   const randomLoadingMessages = [
@@ -125,15 +125,7 @@
 
       <!-- Branding on Right -->
       <div class="flex items-center">
-        <a href="/" class="flex items-center gap-2 transition-opacity duration-150 hover:opacity-70">
-          {#if !sidebar.isMobile}
-            <span class="text-lg font-bold" transition:slide={{ duration: 200, axis: "x" }}>SupportMail</span>
-          {/if}
-          <Avatar.Root class="aspect-square size-8">
-            <Avatar.Image src="/logo.png" alt="Logo" />
-            <Avatar.Fallback>SM</Avatar.Fallback>
-          </Avatar.Root>
-        </a>
+        <SidebarHeaderBranding />
       </div>
     </header>
     <main class="main-content overflow-y-auto p-3 md:p-5" transition:fade={{ duration: 200 }}>
