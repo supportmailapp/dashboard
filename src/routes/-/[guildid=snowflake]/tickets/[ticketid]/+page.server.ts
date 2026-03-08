@@ -19,7 +19,7 @@ export async function load({ params }) {
   const sanitizedTicket: FlattenDocResult<ITicket & { userId?: string }, true> = FlattenDocToJSON(
     ticket,
     true,
-  );
+  ); 
   if (sanitizedTicket.alias) {
     sanitizedTicket.userId = undefined as any;
   }

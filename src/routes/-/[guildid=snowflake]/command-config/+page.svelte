@@ -259,7 +259,7 @@
                   >
                     <Plus class="size-4" />
                   </Popover.Trigger>
-                  <Popover.Content>
+                  <Popover.Content class="p-0">
                     <ChannelSelect
                       selectCategories
                       allowCustomChannels
