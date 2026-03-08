@@ -1,11 +1,12 @@
 <script lang="ts">
   import { discordMdToHtml } from "$lib/utils/markup";
   import * as AlertDialog from "$ui/alert-dialog/index.js";
-  import type { ClassValue } from "clsx";
   import type { Snippet } from "svelte";
+  import type { ClassValue } from "svelte/elements";
 
   interface Props {
     onYes: () => void;
+    class?: ClassValue;
     title?: string;
     /**
      * Optional description for the dialog.
@@ -21,6 +22,7 @@
 
   let {
     onYes,
+    class: className,
     title = "Are you absolutely sure?",
     description,
     disabled = false,
@@ -36,7 +38,7 @@
   {#if child}
     {@render child()}
   {:else if children}
-    <AlertDialog.Trigger {disabled}>
+    <AlertDialog.Trigger {disabled} class={className}>
       {@render children()}
     </AlertDialog.Trigger>
   {/if}
