@@ -8,7 +8,7 @@
   import Trash from "@lucide/svelte/icons/trash";
   import GitCompareArrows from "@lucide/svelte/icons/git-compare-arrows";
 
-  import equal from "fast-deep-equal/es6";
+  import { equal } from "@lukez/fast-deep-equal";
   import { onDestroy, untrack } from "svelte";
   import { toast } from "svelte-sonner";
   import { flip } from "svelte/animate";

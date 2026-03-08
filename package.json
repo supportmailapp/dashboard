@@ -1,7 +1,7 @@
 {
   "name": "dashboard",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.2.1",
   "type": "module",
   "scripts": {
     "start": "pnpm run build && pm2 start pm2.config.js --env production",
@@ -48,12 +48,12 @@
     "@discordapp/twemoji": "^16.0.1",
     "@fontsource-variable/geist": "^5.2.8",
     "@fontsource-variable/raleway": "^5.2.8",
+    "@lukez/fast-deep-equal": "^4.1.0",
     "@sapphire/snowflake": "^3.5.5",
     "@sentry/sveltekit": "^10.40.0",
     "dayjs": "^1.11.19",
     "discord-api-types": "^0.38.37",
     "discord.js": "^14.25.1",
-    "fast-deep-equal": "^3.1.3",
     "jsonwebtoken": "^9.0.3",
     "ky": "^1.14.2",
     "marked": "^17.0.1",

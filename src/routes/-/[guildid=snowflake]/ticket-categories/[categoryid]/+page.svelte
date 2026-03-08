@@ -33,7 +33,7 @@
   import * as Field from "$ui/field/index.js";
   import { Switch } from "$ui/switch";
   import { ComponentType, type APIUser } from "discord-api-types/v10";
-  import equal from "fast-deep-equal/es6";
+  import { equal } from "@lukez/fast-deep-equal";
   import { onDestroy, untrack } from "svelte";
   import { toast } from "svelte-sonner";
   import { flip } from "svelte/animate";

@@ -8,7 +8,7 @@
   import * as Popover from "$ui/popover/index.js";
   import Plus from "@lucide/svelte/icons/plus";
   import type { APIUser } from "discord-api-types/v10";
-  import equal from "fast-deep-equal/es6";
+  import { equal } from "@lukez/fast-deep-equal";
 
   type Props = {
     entities?: MentionableEntity[];

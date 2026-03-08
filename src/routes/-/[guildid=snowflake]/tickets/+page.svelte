@@ -8,7 +8,7 @@
   import { Button } from "$ui/button";
   import * as Pagination from "$ui/pagination/index.js";
   import * as Empty from "$ui/empty/index.js";
-  import equal from "fast-deep-equal/es6";
+  import { equal } from "@lukez/fast-deep-equal";
   import { TicketStatus } from "$lib/sm-types";
   import { toast } from "svelte-sonner";
   import type { PaginatedTicketsResponse } from "$v1Api/guilds/[guildid=snowflake]/tickets/+server";

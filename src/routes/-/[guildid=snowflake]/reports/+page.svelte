@@ -12,7 +12,7 @@
   import Files from "@lucide/svelte/icons/files";
   import * as Empty from "$ui/empty/index.js";
   import FolderOpen from "@lucide/svelte/icons/folder-open";
-  import equal from "fast-deep-equal/es6";
+  import { equal } from "@lukez/fast-deep-equal";
   import { toast } from "svelte-sonner";
   import type { PaginatedReportsResponse } from "$v1Api/guilds/[guildid=snowflake]/reports/+server";
   import FilterControls, { type ReportSearchScope, type ReportSearchType } from "./FilterControls.svelte";

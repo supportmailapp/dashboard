@@ -26,7 +26,7 @@
   import Plus from "@lucide/svelte/icons/plus";
   import Trash from "@lucide/svelte/icons/trash";
   import { ChannelType, ComponentType } from "discord-api-types/v10";
-  import equal from "fast-deep-equal/es6";
+  import { equal } from "@lukez/fast-deep-equal";
   import { onDestroy } from "svelte";
   import { toast } from "svelte-sonner";
   import { flip } from "svelte/animate";

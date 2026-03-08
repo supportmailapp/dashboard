@@ -7,7 +7,7 @@
   import Plus from "@lucide/svelte/icons/plus";
 
   import { BlacklistScopes, EntityType } from "$lib/sm-types";
-  import equal from "fast-deep-equal/es6";
+  import { equal } from "@lukez/fast-deep-equal";
   import { toast } from "svelte-sonner";
 
   import {

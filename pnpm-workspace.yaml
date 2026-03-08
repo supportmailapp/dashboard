@@ -6,3 +6,5 @@ onlyBuiltDependencies:
 packages:
   - "."
   - "src/lib/sm-types"
+
+ignoreWorkspaceRootCheck: true
