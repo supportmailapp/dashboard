@@ -1,4 +1,4 @@
-import { z } from "zod/mini";
+import * as z from "zod/mini";
 import { ButtonStyle, ComponentType, SeparatorSpacingSize } from "discord-api-types/v10";
 import { SnowflakeUtil } from "$lib/utils";
 

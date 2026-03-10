@@ -82,14 +82,9 @@
 
   const tagsManager = getTagsManager();
   const catsManager = getCategoriesManager();
-  let emojiBuffer = $state(emoji);
   let buttonSettingsOpen = $state(false);
   let emojiPickerOpen = $state(false);
   let emojiPickerAnchor = $state<HTMLElement | null>(null);
-
-  function handleEmojiBlur() {
-    emoji = emojiBuffer;
-  }
 
   const buttonStyleLabels = {
     [ButtonStyle.Primary]: "Primary",
