@@ -45,6 +45,7 @@ export async function getDBGuild<T extends DBGuildProjection>(
     return (_config ? FlattenDocToJSON(_config) : null) as DBGuildProjectionReturns[T] | null;
   }
 
+  console.log(_config.toObject());
   const jsonConfig = FlattenDocToJSON(_config, true);
   const defaultP = {
     value: false,
@@ -181,10 +182,8 @@ export function FlattenDocToJSON<T, K extends keyof Omit<T, "__v" | "_id"> = nev
         return finalRet;
       }
       const { _id, ...finalRet } = cleanRet;
-      if (_id === undefined) {
-        return finalRet;
-      }
-      return { ...finalRet, _id: _id.toString() };
+      console.log("typeof _id:", typeof _id);
+      return { ...finalRet, _id: !_id || typeof _id === "string" ? _id : _id.toHexString() };
     },
   }) as unknown as FlattenDocResult<T, typeof with_Id, K>;
 }
