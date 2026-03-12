@@ -10,7 +10,6 @@
   import { Button, buttonVariants } from "$ui/button";
   import { Skeleton } from "$ui/skeleton";
   import { fade, fly, slide } from "svelte/transition";
-  import { IsMobile } from "$lib/hooks/is-mobile.svelte";
   import Mounter from "./Mounter.svelte";
   import ServerSelector from "./ServerSelector.svelte";
   import { mode } from "mode-watcher";

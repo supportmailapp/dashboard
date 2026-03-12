@@ -40,8 +40,6 @@
     channel: false,
   });
 
-  $inspect(panel?.messageId);
-
   async function fetchPanel() {
     loading = true;
     const res = await apiClient.get<APIPanel>(APIRoutes.panel(page.params.guildid!));
