@@ -36,7 +36,7 @@
     value: false,
   });
 
-  $inspect("creationMessage", config.current?.creationMessage);
+  $inspect("forumId", config.current?.forumId);
 
   let showDateError = $state(false);
   let unsavedChanges = $derived(
@@ -164,10 +164,10 @@
       bind:autoForward={config.current.autoForwarding}
     />
     <TicketForumCard
-      forumId={config.current.forumId ?? null}
-      oldCfg={config.old}
-      currentCfg={config.current}
-      loading={config.loading}
+      bind:forumId={() => config.current!.forumId ?? null, (v) => (config.current!.forumId = v)}
+      bind:oldCfg={config.old}
+      bind:currentCfg={config.current}
+      bind:loading={config.loading}
     />
     <PingsCard bind:pings={config.current!.pings!} />
     <AnonymSettings bind:anonymSettings={config.current.anonym} />

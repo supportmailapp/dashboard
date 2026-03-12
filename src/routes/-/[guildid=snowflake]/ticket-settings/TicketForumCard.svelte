@@ -25,16 +25,16 @@
     loading: boolean;
   };
   let {
-    forumId: fetchedForumId,
+    forumId: fetchedForumId = $bindable(),
     oldCfg = $bindable(),
     currentCfg = $bindable(),
     loading = $bindable(),
   }: Props = $props();
 
-  const guildsManager = getManager();
+  const manager = getManager();
   let forum = $state<GuildCoreChannel | null>(null);
-  let channelsLoaded = $derived(guildsManager.channelsLoaded);
-  let channels = $derived(channelsLoaded ? guildsManager.channels : []);
+  let channelsLoaded = $derived(manager.channelsLoaded);
+  let channels = $derived(channelsLoaded ? manager.channels : []);
   let newCategoryId = $state<string | null>(null);
   let categorySelectOpen = $state(false);
   let settingUp = $state(false);
@@ -62,6 +62,8 @@
       oldCfg = { ...json };
       currentCfg = { ...json };
       fetchedForumId = json.forumId!;
+
+      manager.loadChannels(true);
 
       toast.success("Config updated");
     } catch (err: any) {
