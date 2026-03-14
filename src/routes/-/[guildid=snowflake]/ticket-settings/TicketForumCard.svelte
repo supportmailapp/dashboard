@@ -45,7 +45,7 @@
       settingUp = true;
       const res = await apiClient.post(APIRoutes.ticketSetup(page.params.guildid!), {
         json: {
-          categoryId: newCategoryId,
+          categoryId: $state.snapshot(newCategoryId) || undefined,
         },
       });
 
