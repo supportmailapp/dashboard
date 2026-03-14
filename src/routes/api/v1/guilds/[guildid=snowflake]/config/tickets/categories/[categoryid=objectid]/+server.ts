@@ -16,7 +16,7 @@ export async function PUT({ request, locals, params }) {
 
   const valRes = new ZodValidator(TicketCategorySchema.omit({ index: true })).validate(body);
   if (!valRes.success) {
-    return JsonErrors.badRequest(valRes.error.message);
+    return JsonErrors.badRequest(valRes.error);
   }
 
   valRes.data.guildId = guildId;

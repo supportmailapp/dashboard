@@ -18,7 +18,7 @@ export async function POST({ request }) {
   }
   const valRes = new ZodValidator(dbUserSchema).validate(jsonReq);
   if (!valRes.success) {
-    return JsonErrors.badRequest(valRes.error.message);
+    return JsonErrors.badRequest(valRes.error);
   }
 
   const user = await DBUser.create({
@@ -36,7 +36,7 @@ export async function PATCH({ request }) {
   }
   const valRes = new ZodValidator(dbUserSchema).validate(jsonReq);
   if (!valRes.success) {
-    return JsonErrors.badRequest(valRes.error.message);
+    return JsonErrors.badRequest(valRes.error);
   }
 
   const user = await DBUser.findOneAndUpdate(

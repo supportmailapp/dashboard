@@ -31,7 +31,7 @@ export async function PATCH({ request, locals, params }) {
   const validationRes = new ZodValidator(patchSchema).validate(body);
 
   if (!validationRes.success) {
-    return JsonErrors.badRequest(validationRes.error.message);
+    return JsonErrors.badRequest(validationRes.error);
   }
 
   const guild = await getDBGuild(params.guildid, "full");

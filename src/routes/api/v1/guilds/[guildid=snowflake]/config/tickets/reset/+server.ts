@@ -17,7 +17,7 @@ export async function POST({ params, locals, request }) {
 
   const valRes = new ZodValidator(ResetTicketsSchema).validate(body);
   if (!valRes.success) {
-    return JsonErrors.badRequest(valRes.error.message);
+    return JsonErrors.badRequest(valRes.error);
   }
 
   const toReset = valRes.data;

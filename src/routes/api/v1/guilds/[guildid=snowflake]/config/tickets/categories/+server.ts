@@ -35,7 +35,7 @@ export async function PUT({ request, params }) {
   ).validate(body);
 
   if (!valRes.success) {
-    return JsonErrors.badRequest(valRes.error.message);
+    return JsonErrors.badRequest(valRes.error);
   }
 
   // ensure index is sequential and starts from 0

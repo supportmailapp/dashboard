@@ -52,10 +52,14 @@ export async function POST({ locals, request, params }) {
 
   const _body = await request.json().catch(() => null);
 
+  if (!_body) {
+    return JsonErrors.badRequest("Invalid JSON body");
+  }
+
   const valRes = new ZodValidator(routePredicate).validate(_body);
 
   if (!valRes.success) {
-    return JsonErrors.badRequest(String(valRes.error.message ?? valRes.error));
+    return JsonErrors.badRequest(valRes.error.toString());
   }
 
   const { categoryId } = valRes.data;

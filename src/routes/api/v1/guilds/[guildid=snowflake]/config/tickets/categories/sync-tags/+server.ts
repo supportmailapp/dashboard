@@ -20,7 +20,7 @@ export async function POST({ request, params }) {
 
   const valRes = new ZodValidator(predicate).validate(body);
   if (!valRes.success) {
-    return JsonErrors.badRequest(valRes.error.message || "Invalid request body.");
+    return JsonErrors.badRequest(valRes.error || "Invalid request body.");
   }
 
   const categories = await TicketCategory.find({

@@ -103,7 +103,7 @@ export async function PUT({ request, locals, params }) {
   const valRes = new ZodValidator(putSchema).validate(body);
   if (!valRes.success) {
     console.error(valRes.error);
-    return JsonErrors.badRequest(valRes.error.message);
+    return JsonErrors.badRequest(valRes.error);
   }
 
   const guild = await getDBGuild(params.guildid, "full");
