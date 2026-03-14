@@ -8,9 +8,10 @@ import { canManageBot } from "$lib/server/permissions.js";
 import { json } from "@sveltejs/kit";
 import type { KyResponse } from "ky";
 import z from "zod";
+import { SnowflakeSchema } from "$v1Api/assertions.js";
 
 const routePredicate = z.object({
-  categoryId: z.string().regex(/^\d+$/, { error: "Malformed categoryId snowflake" }).optional(),
+  categoryId: SnowflakeSchema.optional(),
 });
 
 export async function POST({ locals, request, params }) {
