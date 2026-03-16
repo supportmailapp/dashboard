@@ -101,25 +101,22 @@ export async function POST({ locals, request, params }) {
         }) as KyResponse<ClientAPI.POSTTicketSetupJSONResult>,
     );
 
-  if (!res.ok) {
-    // This only happens on 500 errors
-    Sentry.captureMessage("Ticket setup failed with non-200 status", {
-      level: "error",
-      extra: {
-        guildId,
-        categoryId,
-        response: await res.text().catch(() => "Could not read response body"),
-      },
-    });
-    return new Response(null, { status: res.status, statusText: res.statusText });
-  }
+  const jsonRes = await res.json().catch(() => ({
+    success: false,
+    error: {
+      code: SMErrorCodes.UnknownError,
+      message: "Invalid JSON response from ticket setup",
+    },
+  }) as ClientAPI.POSTTicketSetupJSONResultError);
 
-  const jsonRes = await res.json();
 
   if (!jsonRes.success) {
     switch (jsonRes.error.code ?? 500) {
       case SMErrorCodes.MissingPermissions:
-        return JsonErrors.forbidden("Bot missing required permissions");
+        return json({
+          message: "Bot is missing permissions.",
+          details: jsonRes.error.permissionsMissing?.join(", ") ?? "Unknown permissions",
+        })
       case SMErrorCodes.CategoryNotFound:
         return JsonErrors.notFound("Category not found");
       case SMErrorCodes.CategoryCreationFailed:

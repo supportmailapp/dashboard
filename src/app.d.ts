@@ -220,7 +220,8 @@ declare global {
           | SMErrorCodes.ForumCreationFailed
           | SMErrorCodes.CommunityRequired
           | SMErrorCodes.MissingPermissions
-          | SMErrorCodes.CategoryNotFound;
+          | SMErrorCodes.CategoryNotFound
+          | SMErrorCodes.UnknownError;
         message: string;
         permissionsMissing?: string[];
       };
