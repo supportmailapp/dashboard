@@ -108,8 +108,7 @@ export async function POST({ locals, request, params }) {
       extra: {
         guildId,
         categoryId,
-        status: res.status,
-        statusText: res.statusText,
+        response: await res.text().catch(() => "Could not read response body"),
       },
     });
     return new Response(null, { status: res.status, statusText: res.statusText });
