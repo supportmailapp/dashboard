@@ -9,6 +9,7 @@ import { json } from "@sveltejs/kit";
 import type { KyResponse } from "ky";
 import z from "zod";
 import { SnowflakeSchema } from "$v1Api/assertions.js";
+import * as Sentry from "@sentry/sveltekit";
 
 const routePredicate = z.object({
   categoryId: SnowflakeSchema.optional(),
@@ -102,6 +103,15 @@ export async function POST({ locals, request, params }) {
 
   if (!res.ok) {
     // This only happens on 500 errors
+    Sentry.captureMessage("Ticket setup failed with non-200 status", {
+      level: "error",
+      extra: {
+        guildId,
+        categoryId,
+        status: res.status,
+        statusText: res.statusText,
+      },
+    });
     return new Response(null, { status: res.status, statusText: res.statusText });
   }
 
