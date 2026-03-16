@@ -43,25 +43,42 @@
   async function setupFn() {
     try {
       settingUp = true;
-      const res = await apiClient.post(APIRoutes.ticketSetup(page.params.guildid!), {
+      toast.info("Setup in progress", { description: "This may take a few seconds" });
+
+      const res = await apiClient.post<
+        ClientAPI.POSTTicketSetupJSONResultSuccess | { success: false; message: string; details?: string }
+      >(APIRoutes.ticketSetup(page.params.guildid!), {
         json: {
           categoryId: $state.snapshot(newCategoryId) || undefined,
         },
       });
 
-      if (!res.ok) {
-        const errJson = await res.json<any>();
-        const errText = errJson?.message || "Unknown Error";
-        throw new Error(errText);
+      const jsonRes = await res.json().catch(() => null);
+      if (!jsonRes) {
+        toast.error("Setup failed.", {
+          description: "Invalid response from server. You should tell the dev about this.",
+        });
+        return;
       }
 
-      toast.info("Setup in progress", { description: "This may take a few seconds" });
+      if (!jsonRes.success) {
+        toast.error(jsonRes.message || "Setup failed.", {
+          description: jsonRes.details ? jsonRes.details : undefined,
+        });
+        return;
+      }
 
-      const json = await res.json<TicketConfig>();
-
-      oldCfg = { ...json };
-      currentCfg = { ...json };
-      fetchedForumId = json.forumId!;
+      Object.defineProperty(oldCfg!, "forumId", {
+        value: jsonRes.data.forumId,
+        writable: true,
+        configurable: true,
+      });
+      Object.defineProperty(currentCfg!, "forumId", {
+        value: jsonRes.data.forumId,
+        writable: true,
+        configurable: true,
+      });
+      fetchedForumId = jsonRes.data.forumId;
 
       manager.loadChannels(true);
 
