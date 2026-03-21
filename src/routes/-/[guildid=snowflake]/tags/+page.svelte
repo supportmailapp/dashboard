@@ -249,4 +249,7 @@
       if (editTag.data) editTag.data.content = v;
     }
   }
+  onRawTextChange={(v) => {
+    if (editTag.data?._id) updateTagById(editTag.data._id, { content: v });
+  }}
 />
