@@ -1,8 +1,7 @@
 <script lang="ts">
   import style from "svelte-highlight/styles/atom-one-dark-reasonable";
   import json from "svelte-highlight/languages/json";
-  import Highlight, { LineNumbers } from "svelte-highlight";
-  import * as Tabs from "$ui/tabs/index.js";
+  import Highlight from "svelte-highlight";
   import { page } from "$app/state";
 
   let hash = $derived(page.url.hash); // We assume this is base64 encoded JSON that should be displayed

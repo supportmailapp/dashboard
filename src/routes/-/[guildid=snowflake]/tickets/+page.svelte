@@ -81,11 +81,6 @@
     return params;
   }
 
-  function buildUrlWithParams() {
-    const params = buildSearchParams();
-    return `${page.url.origin}${page.url.pathname}?${params.toString()}`;
-  }
-
   async function fetchTickets(force = false) {
     if (equal(fetchedData, $state.snapshot(pageData)) && ticketsStatus === "loaded" && !force) {
       toast.info("Nothing changed, not fetching tickets again.");
