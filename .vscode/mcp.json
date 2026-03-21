@@ -1,0 +1,13 @@
+{
+	"servers": {
+		"svelte": {
+			"type": "stdio",
+			"command": "bunx",
+			"args": [
+				"-y",
+				"@sveltejs/mcp"
+			]
+		}
+	},
+	"inputs": []
+}
