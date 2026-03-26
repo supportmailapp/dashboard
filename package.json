@@ -71,6 +71,11 @@
   "pnpm": {
     "overrides": {
       "vite": "^7.0.0"
+    },
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "@sveltejs/vite-plugin-svelte-inspector>@sveltejs/vite-plugin-svelte": "7"
+      }
     }
   }
 }
