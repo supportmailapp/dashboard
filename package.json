@@ -4,7 +4,7 @@
   "version": "1.2.1",
   "type": "module",
   "scripts": {
-    "start": "pnpm run build && pm2 start pm2.config.js --env production",
+    "start": "pnpm run build && pm2 start pm2.config.cjs --env production",
     "dev": "vite dev",
     "build": "pnpm run update:submodules && vite build",
     "preview": "vite preview",

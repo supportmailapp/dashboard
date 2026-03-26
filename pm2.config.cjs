@@ -3,7 +3,7 @@ module.exports = {
   apps: [
     {
       name: "sm-dashboard",
-      interpreter_args: "--env-file=.env.production",
+      node_args: "--env-file=.env.production",
       script: "build/index.js", // The built SvelteKit server
       interpreter: "node",
       instances: 1,

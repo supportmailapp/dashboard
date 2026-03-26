@@ -72,4 +72,4 @@ Shadcn-svelte components live in `src/lib/components/ui/`. Custom components (em
 
 ### Production
 
-PM2 (`pm2.config.js`) runs the Node adapter output on port 5050. Source maps are uploaded to Sentry but excluded from the build output. Environment-specific config uses `.env.production`.
+PM2 (`pm2.config.cjs`) runs the Node adapter output on port 5050. Source maps are uploaded to Sentry but excluded from the build output. Environment-specific config uses `.env.production`.
