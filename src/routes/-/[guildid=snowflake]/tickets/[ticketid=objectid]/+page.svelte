@@ -13,7 +13,7 @@
   import Timestamp from "$components/discord/Timestamp.svelte";
   import type { APIUser } from "discord-api-types/v10";
   import { onMount } from "svelte";
-  import { users, getMentionUser, fetchMentionUsers } from "$lib/stores/users.svelte.js";
+  import { fetchMentionUsers, getMentionUser } from "$lib/stores/users.svelte.js";
   import Skeleton from "$ui/skeleton/skeleton.svelte";
   import { userDisplayName } from "$lib/utils/formatting.js";
   import { APIRoutes, cdnUrls } from "$lib/urls.svelte.js";
@@ -30,7 +30,7 @@
 
   const cats = getCategoriesManager();
   let ticket = $derived(data.ticket);
-  let author = $state<APIUser | null>(null);
+  let author = $derived(ticket.userId ? getMentionUser(ticket.userId) || null : null);
   // let closer = $state<APIUser | null>(null);
   // let closeRequester = $state<APIUser | null>(null);
   let feedback = $state<APIFeedback | null>(null);
@@ -84,7 +84,7 @@
   {/if}
 {/snippet}
 
-{#snippet userDisplay(user: APIUser | null)}
+{#snippet userDisplay(user: APIUser | MentionUser | null)}
   {#if !user}
     <Skeleton class="h-8 w-32" />
   {:else}
