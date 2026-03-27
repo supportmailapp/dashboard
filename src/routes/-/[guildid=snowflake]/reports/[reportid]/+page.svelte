@@ -5,7 +5,7 @@
   import Info from "@lucide/svelte/icons/info";
   import Users from "@lucide/svelte/icons/users";
 
-  import { page } from "$app/state";
+  import { fly } from "svelte/transition";
   import Mention from "$lib/components/discord/Mention.svelte";
   import Timestamp from "$lib/components/discord/Timestamp.svelte";
   import Link from "$lib/components/Link.svelte";
@@ -47,8 +47,9 @@
 </Button>
 
 {#if report}
+  <div class="flex min-w-lg flex-col gap-4" in:fly={{ x: 30, duration: 200 }}>
   <!-- Card 1: Report Overview (Most Important Info) -->
-  <Card.Root>
+  <Card.Root class="w-full max-w-4xl">
     <Card.Header>
       <Card.Title class="inline-flex items-center gap-2 text-xl">
         <Info class="size-4.5" />
@@ -127,7 +128,7 @@
   </Card.Root>
 
   <!-- Card 2: People Involved -->
-  <Card.Root class="mt-4">
+  <Card.Root class="w-full max-w-4xl">
     <Card.Header>
       <Card.Title class="inline-flex items-center gap-2 text-xl">
         <Users class="size-4.5" />
@@ -164,7 +165,7 @@
   </Card.Root>
 
   <!-- Card 3: Report Details & Actions -->
-  <Card.Root class="mt-4">
+  <Card.Root class="w-full max-w-4xl">
     <Card.Header>
       <Card.Title class="inline-flex items-center gap-2 text-xl">
         <FileText class="size-4.5" />
@@ -210,6 +211,7 @@
       </Table.Root>
     </Card.Content>
   </Card.Root>
+  </div>
 {:else}
   <Skeleton class="h-6 w-3xl" />
 {/if}

@@ -22,17 +22,13 @@ export async function load({ params }) {
   console.log("report", report);
 
   if (!report) {
-    // return {
-    //   report: null,
-    //   error: "Report not found",
-    // };
     error(404, {
       message: "Report not found",
       status: 404,
     });
   }
 
-  const sanitizedReport: FlattenDocResult<IReport, true> = FlattenDocToJSON(report, true);
+  const sanitizedReport = FlattenDocToJSON(report, true);
 
   return {
     report: sanitizedReport,
