@@ -37,65 +37,62 @@
 
     async save() {
       if (!this.selected) return;
-      
-      const res = await apiClient.patch<IDBUser | { message: string }>(`/api/v1/admin/users`, {
+
+      const res = await apiClient.patch<IDBUser>(`/api/v1/admin/users`, {
         json: {
           id: $state.snapshot(this.selected.id),
           roles: $state.snapshot(this.selected.roles),
-        }
+        },
       });
 
-      const jsonRes = await res.json();
-      if (res.ok && "id" in jsonRes) {
+      if (res.ok) {
         toast.success("User updated successfully!");
         this.dialogOpen = false;
         const index = data.users.findIndex((u) => u.id === this.selected?.id);
         if (index !== -1) {
-          data.users[index] = jsonRes;
+          data.users[index] = res.data;
         }
-      } else if (!res.ok && "message" in jsonRes) {
-        toast.error(jsonRes.message);
       } else {
-        toast.error("An unknown error occurred.");
+        toast.error("An unknown error occurred.", { description: res.error });
       }
     }
   }
   const selected = new SelectedUser();
-  
+
   class NewUser {
     dialogOpen = $state(false);
     id = $state("");
     roles = $state<UserRole[]>([UserRole.User]);
     saving = $state(false);
-  
+
     setRoles(roles: UserRole[]) {
       const includesUser = roles.includes(UserRole.User);
-      if (!includesUser) toast.warning("User role is mandatory and cannot be removed!")
+      if (!includesUser) toast.warning("User role is mandatory and cannot be removed!");
       this.roles = !includesUser ? [...roles, UserRole.User] : roles;
     }
 
     async save() {
       this.saving = true;
-      const res = await apiClient.post<IDBUser | { message: string }>("/api/v1/admin/users", {
+      const res = await apiClient.post<IDBUser>("/api/v1/admin/users", {
         json: {
           id: $state.snapshot(this.id),
           roles: $state.snapshot(this.roles),
-        }
+        },
       });
 
-      const jsonRes = await res.json();
-
-      if (res.ok && "id" in jsonRes) {
-        toast.success("User added successfully!");
-        this.dialogOpen = false;
-        this.id = "";
-        this.roles = [UserRole.User];
-        data.users = [...data.users, jsonRes];
-      } else if (!res.ok && "message" in jsonRes) {
-        toast.error(jsonRes.message);
-      } else {
-        toast.error("An unknown error occurred.");
+      if (!res.ok) {
+        this.saving = false;
+        toast.error("Failed to add user.", {
+          description: (res as any).error ?? "Please check the input and try again.",
+        });
+        return;
       }
+
+      toast.success("User added successfully!");
+      this.dialogOpen = false;
+      this.id = "";
+      this.roles = [UserRole.User];
+      data.users = [...data.users, res.data];
       this.saving = false;
     }
   }
@@ -106,12 +103,17 @@
 
 {#snippet roleBadges(roles: UserRole[])}
   {#each roles as role}
-    {@const className = role === UserRole.Admin ? "bg-red-500/10 text-red-500" : role === UserRole.Moderator ? "bg-yellow-500/10 text-yellow-500" : ""}
+    {@const className =
+      role === UserRole.Admin
+        ? "bg-red-500/10 text-red-500"
+        : role === UserRole.Moderator
+          ? "bg-yellow-500/10 text-yellow-500"
+          : ""}
     <Badge variant="outline" class="border {className}">{UserRole[role]}</Badge>
   {/each}
 {/snippet}
 
-<div class="flex items-center justify-start mb-4">
+<div class="mb-4 flex items-center justify-start">
   <Dialog.Root>
     <Dialog.Trigger class={buttonVariants({ variant: "default" })}>
       <Plus />
@@ -120,24 +122,27 @@
     <Dialog.Content>
       <Dialog.Header>
         <Dialog.Title>Add User</Dialog.Title>
-        <Dialog.Description>
-          Add a user to the dashboard by their Discord ID.
-        </Dialog.Description>
+        <Dialog.Description>Add a user to the dashboard by their Discord ID.</Dialog.Description>
       </Dialog.Header>
       <Field.Group>
         <Field.Field orientation="responsive">
           <Field.Label class="w-24">User ID</Field.Label>
-          <Input type="text" placeholder="123456789012345678" bind:value={() => newUser.id, (v) => newUser.id = /^\d+$/.test(v) ? v : newUser.id} />
+          <Input
+            type="text"
+            placeholder="123456789012345678"
+            bind:value={() => newUser.id, (v) => (newUser.id = /^\d+$/.test(v) ? v : newUser.id)}
+          />
         </Field.Field>
-        
+
         <Field.Field orientation="responsive">
           <Field.Label>Roles</Field.Label>
-          <Select.Root type="multiple" bind:value={() => newUser.roles.map(String), (v) => newUser.setRoles(v.map(Number) as UserRole[])}>
-            <Select.Trigger class={buttonVariants({ variant: "outline" })}>
-              Select Roles
-            </Select.Trigger>
+          <Select.Root
+            type="multiple"
+            bind:value={() => newUser.roles.map(String), (v) => newUser.setRoles(v.map(Number) as UserRole[])}
+          >
+            <Select.Trigger class={buttonVariants({ variant: "outline" })}>Select Roles</Select.Trigger>
             <Select.Content>
-              {#each (Object.values(UserRole).filter(r => typeof r === "number")) as role}
+              {#each Object.values(UserRole).filter((r) => typeof r === "number") as role}
                 <Select.Item value={String(role)}>{UserRole[role]}</Select.Item>
               {/each}
             </Select.Content>
@@ -177,7 +182,10 @@
               {#if userData}
                 <div class="flex items-center gap-2">
                   <Avatar.Root class="aspect-square size-8">
-                    <Avatar.Image src={parseIconToURL(userData.avatar, userData.id, "user", 64)} alt={userData.username} />
+                    <Avatar.Image
+                      src={parseIconToURL(userData.avatar, userData.id, "user", 64)}
+                      alt={userData.username}
+                    />
                     <Avatar.Fallback>{userData.username.slice(0, 2).toUpperCase()}</Avatar.Fallback>
                   </Avatar.Root>
                   <Mention userId={user.id} />
@@ -190,12 +198,9 @@
             {/await}
           {/if}
         </Table.Cell>
-        <Table.Cell class="gap-1 flex flex-wrap">{@render roleBadges(user.roles || [])}</Table.Cell>
+        <Table.Cell class="flex flex-wrap gap-1">{@render roleBadges(user.roles || [])}</Table.Cell>
         <Table.Cell>
-          <Button
-            variant="outline"
-            onclick={() => selected.select(user.id)}
-          >
+          <Button variant="outline" onclick={() => selected.select(user.id)}>
             <Pencil />
           </Button>
         </Table.Cell>
@@ -203,9 +208,7 @@
     {/each}
     {#if data.users.length === 0}
       <Table.Row>
-        <Table.Cell colspan={3} class="text-center text-muted-foreground">
-          No users found.
-        </Table.Cell>
+        <Table.Cell colspan={3} class="text-muted-foreground text-center">No users found.</Table.Cell>
       </Table.Row>
     {/if}
   </Table.Body>
@@ -215,21 +218,23 @@
   <Dialog.Content>
     <Dialog.Header>
       <Dialog.Title>Edit User</Dialog.Title>
-      <Dialog.Description>
-        Modify the user's roles.
-      </Dialog.Description>
+      <Dialog.Description>Modify the user's roles.</Dialog.Description>
     </Dialog.Header>
     {#if selected.selected}
       <Mention userId={selected.selected.id} />
 
       <Field.Field orientation="responsive">
         <Field.Label>Roles</Field.Label>
-        <Select.Root type="multiple" bind:value={() => selected.selected!.roles?.map(String) || [], (v) => selected.selected!.roles = v.map(Number) as UserRole[]}>
-          <Select.Trigger class={buttonVariants({ variant: "outline" })}>
-            Select Roles
-          </Select.Trigger>
+        <Select.Root
+          type="multiple"
+          bind:value={
+            () => selected.selected!.roles?.map(String) || [],
+            (v) => (selected.selected!.roles = v.map(Number) as UserRole[])
+          }
+        >
+          <Select.Trigger class={buttonVariants({ variant: "outline" })}>Select Roles</Select.Trigger>
           <Select.Content>
-            {#each (Object.values(UserRole).filter(r => typeof r === "number")) as role}
+            {#each Object.values(UserRole).filter((r) => typeof r === "number") as role}
               <Select.Item value={String(role)}>{UserRole[role]}</Select.Item>
             {/each}
           </Select.Content>
@@ -237,15 +242,17 @@
       </Field.Field>
 
       <Dialog.Footer>
-        <Button variant="outline" onclick={() => selected.dialogOpen = false}>Close</Button>
-        <Button onclick={async () => selected.save()} disabled={selected.saving} showLoading={selected.saving}>
+        <Button variant="outline" onclick={() => (selected.dialogOpen = false)}>Close</Button>
+        <Button
+          onclick={async () => selected.save()}
+          disabled={selected.saving}
+          showLoading={selected.saving}
+        >
           Save
         </Button>
       </Dialog.Footer>
     {:else}
-      <div class="p-4 text-center">
-        User not found.
-      </div>
+      <div class="p-4 text-center">User not found.</div>
     {/if}
   </Dialog.Content>
 </Dialog.Root>

@@ -11,9 +11,8 @@ export async function fetchGuild(guildId: string): Promise<PartialGuild | null> 
   }
   const res = await apiClient.get<PartialGuild>(APIRoutes.guild(guildId));
   if (res.ok) {
-    const data = await res.json();
-    guilds.set(guildId, data);
-    return data;
+    guilds.set(guildId, res.data);
+    return res.data;
   }
   return null;
 }

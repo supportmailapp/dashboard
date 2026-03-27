@@ -131,20 +131,12 @@
       guildsManager.customChannels.get(oldFetchInput) ||
       guildsManager.channels.find((c) => c.id === oldFetchInput);
 
-    try {
-      const res = await apiClient.get(APIRoutes.guildChannel(page.params.guildid!, oldFetchInput));
+    const res = await apiClient.get<APIGuildChannel>(APIRoutes.guildChannel(oldFetchInput));
 
-      if (!res.ok) {
-        buttonLoading = false;
-        throw new Error(`Failed to find channel with ID ${oldFetchInput}`);
-      }
-
-      channel = await res.json<APIGuildChannel>();
-      guildsManager.customChannels.set(channel.id, channel);
-    } catch (err: any) {
+    if (!res.ok) {
       buttonDisabled = true;
       buttonLoading = false;
-      toast.error("Failed to find channel", { description: String(err.message ?? err) });
+      toast.error("Failed to find channel", { description: res.error });
       await new Promise((r) =>
         setTimeout(() => {
           buttonDisabled = false;
@@ -153,6 +145,9 @@
       );
       return;
     }
+
+    channel = res.data;
+    guildsManager.customChannels.set(channel.id, channel);
 
     if (isChannelExcluded(channel as GuildCoreChannel)) {
       toast.error("Channel is excluded.", { description: "Please select a different channel." });

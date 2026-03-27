@@ -17,11 +17,10 @@ class TagsManager {
   async fetchTags() {
     if (this.tags.size === 0) {
       const res = await apiClient.get<{ _id: string; name: string }[]>(
-        APIRoutes.tags(page.params.guildid!, true),
+        APIRoutes.tags(true),
       );
       if (res.ok) {
-        const data = await res.json();
-        data.forEach((tag) => {
+        res.data.forEach((tag) => {
           this.tags.set(tag._id, tag.name);
         });
         this._loaded = true;

@@ -42,19 +42,17 @@
 
     loading.fetching = true;
 
-    try {
-      const res = await apiClient.get<APIUser[]>(
-        APIRoutes.memberSearch(page.params.guildid!, userSearchInput, botsOnly ? "bot" : undefined),
-      );
+    const res = await apiClient.get<APIUser[]>(
+      APIRoutes.memberSearch(userSearchInput, botsOnly ? "bot" : undefined),
+    );
 
-      const users = await res.json();
+    if (res.ok) {
+      const users = res.data;
       fetchedUsers = excludedUserIds ? users.filter((user) => !excludedUserIds.includes(user.id)) : users;
-    } catch (err: any) {
-      console.error(err);
-      toast.error("Failed to fetch users");
-    } finally {
-      loading.fetching = false;
+    } else {
+      toast.error("Failed to fetch users", { description: res.error });
     }
+    loading.fetching = false;
   }
 
   function selectUser(user: APIUser) {

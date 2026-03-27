@@ -38,20 +38,19 @@ export class GuildsManager {
 
   async loadGuilds() {
     this.loaded = false;
-    const guildsRes = await apiClient.get(APIRoutes.userGuilds(true));
+    const res = await apiClient.get<BotGuild[]>(APIRoutes.userGuilds(true));
 
-    if (guildsRes.ok) {
-      let guildsJson: BotGuild[] = await guildsRes.json();
-      console.log("guildsJson", guildsJson);
+    if (res.ok) {
+      console.log("guildsJson", res.data);
       // Separate configured and unconfigured guilds
-      const configuredGuilds = guildsJson.filter((g) => g.isConfigured);
-      const unconfiguredGuilds = guildsJson.filter((g) => !g.isConfigured);
+      const configuredGuilds = res.data.filter((g) => g.isConfigured);
+      const unconfiguredGuilds = res.data.filter((g) => !g.isConfigured);
       // Sort each group by number of features
       configuredGuilds.sort((a, b) => b.features.length - a.features.length);
       unconfiguredGuilds.sort((a, b) => b.features.length - a.features.length);
       // Combine the two groups
-      guildsJson = [...configuredGuilds, ...unconfiguredGuilds];
-      this.guilds = guildsJson;
+      const guilds = [...configuredGuilds, ...unconfiguredGuilds];
+      this.guilds = guilds;
       this.loaded = true;
     } else {
       this.loaded = false;
@@ -66,11 +65,10 @@ export class GuildsManager {
 
     this.channelsLoaded = false;
 
-    const channelsRes = await apiClient.get(APIRoutes.guildChannels(this.currentGuild.id, force));
+    const res = await apiClient.get<GuildCoreChannel[]>(APIRoutes.guildChannels(force));
 
-    if (channelsRes.ok) {
-      let channelsJson: GuildCoreChannel[] = await channelsRes.json();
-      this.channels = sortByPositionAndId(channelsJson);
+    if (res.ok) {
+      this.channels = sortByPositionAndId(res.data);
       this.channelsLoaded = true;
     } else {
       console.error("Failed to load channels for guild:", this.currentGuild.id);
@@ -86,11 +84,10 @@ export class GuildsManager {
     }
     this.rolesLoaded = false;
 
-    const rolesRes = await apiClient.get(APIRoutes.guildRoles(this.currentGuild.id, force));
+    const res = await apiClient.get<APIRole[]>(APIRoutes.guildRoles(force));
 
-    if (rolesRes.ok) {
-      let rolesJson: APIRole[] = await rolesRes.json();
-      sortByPositionAndId(rolesJson).forEach((r) => this.roles.set(r.id, r));
+    if (res.ok) {
+      sortByPositionAndId(res.data).forEach((r) => this.roles.set(r.id, r));
       this.rolesLoaded = true;
     } else {
       console.error("Failed to load roles for guild:", this.currentGuild.id);
@@ -111,10 +108,9 @@ export class GuildsManager {
     }
 
     // fetch from API
-    const channelRes = await apiClient.get<APIGuildChannel>(APIRoutes.guildChannel(this.currentGuild.id, id));
-    if (channelRes) {
-      const channel = await channelRes.json();
-      this.customChannels.set(id, channel);
+    const res = await apiClient.get<APIGuildChannel>(APIRoutes.guildChannel(id));
+    if (res.ok) {
+      this.customChannels.set(id, res.data);
     }
     return this.customChannels.get(id);
   }

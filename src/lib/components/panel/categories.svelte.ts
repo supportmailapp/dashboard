@@ -17,11 +17,10 @@ class CategoriesManager {
   async fetchCats() {
     if (this.cats.size === 0) {
       const res = await apiClient.get<{ _id: string; label: string }[]>(
-        APIRoutes.ticketCategories(page.params.guildid!, true),
+        APIRoutes.ticketCategories(true),
       );
       if (res.ok) {
-        const data = await res.json();
-        data.forEach((tag) => {
+        res.data.forEach((tag) => {
           this.cats.set(tag._id, tag.label);
         });
         this._loaded = true;

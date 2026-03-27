@@ -45,14 +45,13 @@
   let otherEmojiData = $derived(validateEmoji(otherEmojiInput || ""));
 
   onMount(async function () {
-    const res = await apiClient.get<APICustomEmoji[]>(APIRoutes.listGuildEmojis(page.params.guildid!));
+    const res = await apiClient.get<APICustomEmoji[]>(APIRoutes.listGuildEmojis());
     if (res.ok) {
-      const data = await res.json();
-      for (const emoji of data) {
+      for (const emoji of res.data) {
         emojis.set(emoji.id, emoji);
       }
     } else {
-      console.error("Failed to fetch emojis:", res.statusText);
+      console.error("Failed to fetch emojis:", res.error);
     }
     loaded = true;
   });
