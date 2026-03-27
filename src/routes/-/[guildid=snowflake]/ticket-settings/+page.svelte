@@ -68,39 +68,33 @@
       return;
     }
 
-    try {
-      const res = await apiClient.put(APIRoutes.ticketsConfig(page.params.guildid!), {
-        json: {
-          allowedBots: current.allowedBots,
-          enabled: current.enabled,
-          anonym: {
-            enabled: !!current.anonym.enabled,
-            user: !!current.anonym.user,
-          },
-          autoForwarding: current.autoForwarding,
-          pausedUntil: pausedPayload,
-          creationMessage: current.creationMessage,
-          closeMessage: current.closeMessage,
-          pings: current.pings,
-        } as TicketsPUTFields,
+    const res = await apiClient.put<TicketConfig>(APIRoutes.ticketsConfig(), {
+      json: {
+        allowedBots: current.allowedBots,
+        enabled: current.enabled,
+        anonym: {
+          enabled: !!current.anonym.enabled,
+          user: !!current.anonym.user,
+        },
+        autoForwarding: current.autoForwarding,
+        pausedUntil: pausedPayload,
+        creationMessage: current.creationMessage,
+        closeMessage: current.closeMessage,
+        pings: current.pings,
+      } as TicketsPUTFields,
+    });
+
+    if (!res.ok) {
+      toast.error("Failed to save ticket configuration.", {
+        description: "Please try again later.",
       });
-
-      if (!res.ok) {
-        const error = await res.json<any>();
-        throw new Error(error.message || "Failed to save ticket configuration.");
-      }
-
-      const json = await res.json<TicketConfig>();
-      config.old = { ...json };
-      config.current = { ...json };
-      fetchedPauseState = json.pausedUntil;
-
+    } else {
+      config.old = { ...res.data };
+      config.current = { ...res.data };
+      fetchedPauseState = res.data.pausedUntil;
       toast.success("Ticket configuration saved successfully.");
-    } catch (error: any) {
-      toast.error(`Failed to save ticket configuration: ${error.message}`);
-    } finally {
-      config.saving = false;
     }
+    config.saving = false;
   }
 
   function resetConfig() {
@@ -110,27 +104,18 @@
   }
 
   afterNavigate(async () => {
-    try {
-      const res = await apiClient.get(APIRoutes.ticketsConfig(page.params.guildid!));
+    const res = await apiClient.get<TicketConfig>(APIRoutes.ticketsConfig());
 
-      if (!res.ok) {
-        toast.error("Failed to load ticket configuration.", {
-          description: "Please try again later.",
-        });
-        return;
-      }
-
-      const jsonRes: TicketConfig = await res.json();
-      config.old = { ...jsonRes };
-      config.current = { ...jsonRes };
-      fetchedPauseState = jsonRes.pausedUntil;
-    } catch (err: any) {
+    if (!res.ok) {
       toast.error("Failed to load ticket configuration.", {
-        description: err.message,
+        description: "Please try again later.",
       });
-    } finally {
-      config.loading = false;
+    } else {
+      config.old = { ...res.data };
+      config.current = { ...res.data };
+      fetchedPauseState = res.data.pausedUntil;
     }
+    config.loading = false;
   });
 
   onDestroy(resetConfig);

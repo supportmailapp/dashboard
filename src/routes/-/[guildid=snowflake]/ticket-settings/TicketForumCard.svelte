@@ -41,57 +41,48 @@
   let dialogOpen = $state(false);
 
   async function setupFn() {
-    try {
-      settingUp = true;
-      toast.info("Setup in progress", { description: "This may take a few seconds" });
+    settingUp = true;
+    toast.info("Setup in progress", { description: "This may take a few seconds" });
 
-      const res = await apiClient.post<
-        ClientAPI.POSTTicketSetupJSONResultSuccess | { success: false; message: string; details?: string }
-      >(APIRoutes.ticketSetup(page.params.guildid!), {
-        json: {
-          categoryId: $state.snapshot(newCategoryId) || undefined,
-        },
+    const res = await apiClient.post<
+      ClientAPI.POSTTicketSetupJSONResultSuccess | { success: false; message: string; details?: string }
+    >(APIRoutes.ticketSetup(), {
+      json: {
+        categoryId: $state.snapshot(newCategoryId) || undefined,
+      },
+    });
+
+    if (!res.ok) {
+      toast.error("Setup failed.", {
+        description: res.error ?? "Invalid response from server. You should tell the dev about this.",
       });
-
-      const jsonRes = await res.json().catch(() => null);
-      if (!jsonRes) {
-        toast.error("Setup failed.", {
-          description: "Invalid response from server. You should tell the dev about this.",
-        });
-        return;
-      }
-
-      if (!jsonRes.success) {
-        toast.error(jsonRes.message || "Setup failed.", {
-          description: jsonRes.details ? jsonRes.details : undefined,
-        });
-        return;
-      }
+      return;
+    } else if (!res.data.success) {
+      toast.error(res.data.message, {
+        description: res.data.details ?? "Unknown error occurred.",
+      });
+    } else {
+      const { data } = res.data;
 
       Object.defineProperty(oldCfg!, "forumId", {
-        value: jsonRes.data.forumId,
+        value: data.forumId,
         writable: true,
         configurable: true,
       });
       Object.defineProperty(currentCfg!, "forumId", {
-        value: jsonRes.data.forumId,
+        value: data.forumId,
         writable: true,
         configurable: true,
       });
-      fetchedForumId = jsonRes.data.forumId;
+      fetchedForumId = data.forumId;
 
       manager.loadChannels(true);
 
       toast.success("Config updated");
-    } catch (err: any) {
-      toast.error("Setup failed.", {
-        description: String(err.message ?? err),
-      });
-    } finally {
-      settingUp = false;
-      dialogOpen = false;
-      newCategoryId = null;
     }
+    settingUp = false;
+    dialogOpen = false;
+    newCategoryId = null;
   }
 
   $effect(() => {
