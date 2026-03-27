@@ -6,7 +6,7 @@
   import SettingsGrid from "$lib/components/SettingsGrid.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import type { DBGuildProjectionReturns } from "$lib/server/db";
-  import { APIRoutes } from "$lib/urls";
+  import { APIRoutes } from "$lib/urls.svelte";
   import { determineUnsavedChanges } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
   import Separator from "$ui/separator/separator.svelte";

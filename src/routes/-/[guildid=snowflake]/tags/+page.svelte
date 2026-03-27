@@ -4,7 +4,7 @@
   import ContentEditorDialog from "$lib/components/ContentEditorDialog.svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import SaveAlert from "$lib/components/SaveAlert.svelte";
-  import { APIRoutes } from "$lib/urls";
+  import { APIRoutes } from "$lib/urls.svelte";
   import { determineUnsavedChanges } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
   import Button from "$ui/button/button.svelte";

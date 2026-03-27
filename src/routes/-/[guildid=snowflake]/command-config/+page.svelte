@@ -10,7 +10,7 @@
   import { SpecialChannelType, type APICommandConfig } from "$lib/sm-types";
   import { cn, determineUnsavedChanges } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
-  import { APIRoutes } from "$lib/urls";
+  import { APIRoutes } from "$lib/urls.svelte";
   import { page } from "$app/state";
   import { afterNavigate } from "$app/navigation";
   import Mention from "$lib/components/discord/Mention.svelte";
@@ -21,7 +21,7 @@
   import { ChannelType } from "discord-api-types/v10";
   import { fade } from "svelte/transition";
   import { GetPermissionsArray, PermissionFlagsBits } from "$lib/utils/permissions.js";
-  import Combobox from "$ui/combobox/Combobox.svelte";
+  import Combobox from "$ui/combobox/combobox.svelte";
   import { BitField } from "$lib/utils/bitfields";
   import { toast } from "svelte-sonner";
   import Button from "$ui/button/button.svelte";

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { afterNavigate, beforeNavigate, invalidate } from "$app/navigation";
   import AppSidebar from "$lib/components/app-sidebar.svelte";
-  import { cdnUrls } from "$lib/urls";
+  import { cdnUrls } from "$lib/urls.svelte";
   import { cn } from "$lib/utils";
   import * as Avatar from "$ui/avatar";
   import * as Sidebar from "$ui/sidebar/index.js";

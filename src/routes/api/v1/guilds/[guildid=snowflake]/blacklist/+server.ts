@@ -8,7 +8,7 @@ import { SnowflakeSchema } from "$v1Api/assertions.js";
 import type { QueryFilter } from "mongoose";
 import z from "zod";
 
-export type APIBlacklistEntry = DocumentWithId<Omit<IBlacklistEntry, "scopes" | "scope" | "_type">> & {
+export type APIBlacklistEntry = WithId<Omit<IBlacklistEntry, "scopes" | "scope" | "_type">> & {
   /**
    * An stringified int64 representing the scopes (bitfield) this entry is applied to.
    */

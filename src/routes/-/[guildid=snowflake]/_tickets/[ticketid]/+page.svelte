@@ -5,7 +5,7 @@
   import { TicketState, TicketStatus, type APIFeedback } from "$lib/sm-types";
   import { guildHref } from "$lib/stores/site.svelte.js";
   import { getMentionUser, fetchMentionUsers } from "$lib/stores/users.svelte";
-  import { APIRoutes, cdnUrls } from "$lib/urls";
+  import { APIRoutes, cdnUrls } from "$lib/urls.svelte.js";
   import { cn, makeFallbackInitials } from "$lib/utils.js";
   import apiClient from "$lib/utils/apiClient.js";
   import { dateToLocalString, userDisplayName } from "$lib/utils/formatting.js";

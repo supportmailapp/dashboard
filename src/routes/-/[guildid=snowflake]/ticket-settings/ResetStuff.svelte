@@ -2,13 +2,13 @@
   import * as Card from "$ui/card/index.js";
   import * as Field from "$ui/field/index.js";
   import * as Dialog from "$ui/dialog/index.js";
-  import Combobox from "$ui/combobox/Combobox.svelte";
+  import Combobox from "$ui/combobox/combobox.svelte";
   import { buttonVariants } from "$ui/button";
   import Button from "$ui/button/button.svelte";
   import Input from "$ui/input/input.svelte";
   import { slide } from "svelte/transition";
   import apiClient from "$lib/utils/apiClient";
-  import { APIRoutes } from "$lib/urls";
+  import { APIRoutes } from "$lib/urls.svelte";
   import { page } from "$app/state";
   import { toast } from "svelte-sonner";
 

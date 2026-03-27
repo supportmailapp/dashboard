@@ -22,7 +22,7 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
   import VenocixBranding from "$lib/assets/VenocixBranding.svelte";
-  import { cdnUrls } from "$lib/urls";
+  import { cdnUrls } from "$lib/urls.svelte";
   import { cn } from "$lib/utils";
   import { userDisplayName } from "$lib/utils/formatting";
   import * as Avatar from "$ui/avatar";

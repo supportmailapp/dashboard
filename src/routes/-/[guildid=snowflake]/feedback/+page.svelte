@@ -9,7 +9,7 @@
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import type { AnyAPIFeedbackFormComponent, APIFeedbackConfig } from "$lib/sm-types";
   import { getManager } from "$lib/stores/GuildsManager.svelte";
-  import { APIRoutes } from "$lib/urls";
+  import { APIRoutes } from "$lib/urls.svelte";
   import { cn, isChannelSendable, SnowflakeUtil } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
   import { Badge } from "$ui/badge/index.js";

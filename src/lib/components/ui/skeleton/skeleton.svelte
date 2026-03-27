@@ -3,21 +3,22 @@
   import type { HTMLAttributes } from "svelte/elements";
 
   let {
-    delayMs = 0,
     ref = $bindable(null),
     class: className,
+    animationDelay,
     ...restProps
-  }: WithoutChildren<
-    WithElementRef<HTMLAttributes<HTMLDivElement>> & {
-      delayMs?: number;
-    }
-  > = $props();
+  }: WithoutChildren<WithElementRef<HTMLAttributes<HTMLDivElement>>> & {
+    /**
+     * Delay in milliseconds before the skeleton animation starts. Useful for staggering multiple skeletons.
+     */
+    animationDelay?: number;
+  } = $props();
 </script>
 
 <div
   bind:this={ref}
   data-slot="skeleton"
-  class={cn("bg-accent animate-pulse rounded-md", className)}
-  style="animation-delay: {delayMs}ms;"
+  class={cn("animate-pulse rounded-md bg-accent", className)}
+  style={animationDelay ? `animation-delay: ${animationDelay}ms` : undefined}
   {...restProps}
 ></div>

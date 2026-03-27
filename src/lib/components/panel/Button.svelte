@@ -45,7 +45,7 @@
   import RemoveButtonWrapper from "./RemoveButtonWrapper.svelte";
   import { Button } from "$ui/button";
   import Input from "$ui/input/input.svelte";
-  import Combobox from "$ui/combobox/Combobox.svelte";
+  import Combobox from "$ui/combobox/combobox.svelte";
   import { getTagsManager } from "./tags.svelte";
   import LoadingSpinner from "../LoadingSpinner.svelte";
   import Emoji from "./Emoji.svelte";

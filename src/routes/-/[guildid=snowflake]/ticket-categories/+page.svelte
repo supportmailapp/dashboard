@@ -32,7 +32,7 @@
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import type { APITicketCategory } from "$lib/sm-types";
   import { guildHref } from "$lib/stores/site.svelte";
-  import { APIRoutes, DocsLinks } from "$lib/urls";
+  import { APIRoutes, DocsLinks } from "$lib/urls.svelte";
   import { cn } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
 

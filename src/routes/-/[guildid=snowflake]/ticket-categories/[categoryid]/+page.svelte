@@ -21,7 +21,7 @@
     type ITicketCategory,
     type MentionableEntity,
   } from "$lib/sm-types";
-  import { APIRoutes } from "$lib/urls.js";
+  import { APIRoutes } from "$lib/urls.svelte.js";
   import { cn, SnowflakeUtil } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient.js";
   import { Badge } from "$ui/badge/index.js";
@@ -49,7 +49,7 @@
 
   let { data } = $props();
 
-  type CategoryData = DocumentWithId<Omit<ITicketCategory, "tag" | "index">>;
+  type CategoryData = WithId<Omit<ITicketCategory, "tag" | "index">>;
 
   const config = $state({
     old: null as CategoryData | null,

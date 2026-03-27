@@ -37,6 +37,4 @@ export class ZodValidator<V extends z.ZodType> {
 }
 
 export const SnowflakeSchema = z.string().regex(/^\d{17,23}$/i);
-export const MiniSnowflakeSchema = zMini.string().check(zMini.regex(/^\d{17,23}$/i));
 export const ObjectIdSchema = z.string().regex(/^[a-fA-F0-9]{24}$/i);
-export const MiniObjectIdSchema = zMini.string().check(zMini.regex(/^[a-fA-F0-9]{24}$/i));

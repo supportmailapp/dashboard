@@ -3,7 +3,7 @@
   import { page } from "$app/state";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import { ReportStatus } from "$lib/sm-types";
-  import { APIRoutes } from "$lib/urls";
+  import { APIRoutes } from "$lib/urls.svelte";
   import { safeParseInt } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
   import { Button } from "$ui/button";

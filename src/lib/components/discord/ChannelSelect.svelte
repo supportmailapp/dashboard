@@ -4,7 +4,7 @@
   import { ChannelType } from "discord-api-types/v10";
 
   import { getManager } from "$lib/stores/GuildsManager.svelte";
-  import { APIRoutes } from "$lib/urls";
+  import { APIRoutes } from "$lib/urls.svelte";
   import { cn } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
   import { parseDiscordLink, sortChannels } from "$lib/utils/formatting";

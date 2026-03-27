@@ -5,7 +5,7 @@
   import Mention from "$lib/components/discord/Mention.svelte";
   import type { DBGuildProjectionReturns } from "$lib/server/db";
   import { getManager } from "$lib/stores/GuildsManager.svelte";
-  import { APIRoutes } from "$lib/urls";
+  import { APIRoutes } from "$lib/urls.svelte";
   import apiClient from "$lib/utils/apiClient";
   import { Button, buttonVariants } from "$ui/button/index.js";
   import XIcon from "@lucide/svelte/icons/x";

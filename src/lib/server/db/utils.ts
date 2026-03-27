@@ -114,7 +114,7 @@ export type FlattenDocResult<
   IncludeId extends boolean,
   ExcludedFields extends Exclude<keyof T, "_id" | "__v"> = never,
 > = IncludeId extends true
-  ? DocumentWithId<ExcludeFields<Omit<T, "__v" | "_id">, ExcludedFields>>
+  ? WithId<ExcludeFields<Omit<T, "__v" | "_id">, ExcludedFields>>
   : ExcludeFields<Omit<T, "__v" | "_id">, ExcludedFields>;
 
 export function FlattenDocToJSON<T, K extends keyof Omit<T, "__v" | "_id"> = never>(

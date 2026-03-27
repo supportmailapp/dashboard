@@ -3,7 +3,7 @@
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import * as Select from "$ui/select/index.js";
   import { LANGUAGES } from "$lib/constants";
-  import { APIRoutes, DocsLinks } from "$lib/urls";
+  import { APIRoutes, DocsLinks } from "$lib/urls.svelte";
   import { cn, determineUnsavedChanges } from "$lib/utils";
   import { userDisplayName } from "$lib/utils/formatting";
   import { buttonVariants } from "$ui/button";

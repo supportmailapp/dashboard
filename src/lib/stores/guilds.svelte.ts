@@ -1,4 +1,4 @@
-import { APIRoutes } from "$lib/urls";
+import { APIRoutes } from "$lib/urls.svelte";
 import apiClient from "$lib/utils/apiClient";
 import type { PartialGuild } from "$v1Api/guilds/[guildid=snowflake]/+server";
 import { SvelteMap } from "svelte/reactivity";

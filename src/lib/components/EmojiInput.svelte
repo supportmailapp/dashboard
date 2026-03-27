@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { cdnUrls } from "$lib/urls";
+  import { cdnUrls } from "$lib/urls.svelte";
   import { cn } from "$lib/utils";
   import { validateEmoji } from "$lib/utils/formatting";
   import { buttonVariants } from "$ui/button";

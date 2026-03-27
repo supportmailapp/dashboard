@@ -1,5 +1,5 @@
 import { page } from "$app/state";
-import { APIRoutes } from "$lib/urls";
+import { APIRoutes } from "$lib/urls.svelte";
 import apiClient from "$lib/utils/apiClient";
 import { sortByPositionAndId } from "$lib/utils/formatting.js";
 import type { APIRole } from "discord-api-types/v10";

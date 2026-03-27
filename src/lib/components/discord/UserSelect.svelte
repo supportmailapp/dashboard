@@ -2,7 +2,7 @@
   import { page } from "$app/state";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import { users } from "$lib/stores/users.svelte";
-  import { APIRoutes } from "$lib/urls";
+  import { APIRoutes } from "$lib/urls.svelte";
   import { cn, parseIconToURL } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
   import * as Avatar from "$ui/avatar/index.js";

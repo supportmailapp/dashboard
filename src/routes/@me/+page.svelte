@@ -2,7 +2,7 @@
   import { page } from "$app/state";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import { LANGUAGES } from "$lib/constants";
-  import { APIRoutes } from "$lib/urls";
+  import { APIRoutes } from "$lib/urls.svelte";
   import { cn, determineUnsavedChanges, parseIconToURL } from "$lib/utils";
   import { Button } from "$ui/button";
   import * as Select from "$ui/select/index.js";

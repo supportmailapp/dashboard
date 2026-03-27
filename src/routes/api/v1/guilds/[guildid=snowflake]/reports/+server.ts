@@ -10,7 +10,7 @@ import type {
 } from "../../../../../-/[guildid=snowflake]/reports/FilterControls.svelte";
 
 export type PaginatedReportsResponse = PaginatedResponse<
-  DocumentWithId<Pick<IReport, "authorId" | "userId" | "guildId" | "createdAt" | "status" | "message">>
+  WithId<Pick<IReport, "authorId" | "userId" | "guildId" | "createdAt" | "status" | "message">>
 >;
 
 export async function GET({ locals, url, params }) {

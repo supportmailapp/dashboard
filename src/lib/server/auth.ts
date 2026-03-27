@@ -1,6 +1,6 @@
 // Helper functions for session management
 import { env } from "$env/dynamic/private";
-import { discordUrls } from "$lib/urls";
+import { discordUrls } from "$lib/urls.svelte";
 import { canManageBot } from "$lib/server/permissions";
 import jwt from "jsonwebtoken";
 import userGuildsCache from "./caches/userGuilds";

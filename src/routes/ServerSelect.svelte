@@ -2,7 +2,7 @@
   import { page } from "$app/state";
   import { getNextPathFromGuildPath } from "$lib";
   import { getManager } from "$lib/stores/GuildsManager.svelte";
-  import { cdnUrls } from "$lib/urls";
+  import { cdnUrls } from "$lib/urls.svelte";
   import { cn } from "$lib/utils";
   import * as Avatar from "$ui/avatar/index.js";
   import * as Command from "$ui/command/index.js";

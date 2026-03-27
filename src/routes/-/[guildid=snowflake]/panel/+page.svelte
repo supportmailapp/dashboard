@@ -4,7 +4,7 @@
   import SaveAlert from "$lib/components/SaveAlert.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import type { APIPanel } from "$lib/sm-types/src";
-  import { APIRoutes } from "$lib/urls";
+  import { APIRoutes } from "$lib/urls.svelte";
   import { determineUnsavedChanges } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
   import { toast } from "svelte-sonner";

@@ -31,7 +31,7 @@
   import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
-  import { APIRoutes } from "$lib/urls";
+  import { APIRoutes } from "$lib/urls.svelte";
   import { cn, safeParseInt } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
   import { SvelteBitfield } from "$lib/utils/reactiveBitfield.svelte.js";

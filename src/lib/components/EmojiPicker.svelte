@@ -5,7 +5,7 @@
   import { onMount } from "svelte";
   import { SvelteMap } from "svelte/reactivity";
   import apiClient from "$lib/utils/apiClient";
-  import { APIRoutes, DocsLinks } from "$lib/urls";
+  import { APIRoutes, DocsLinks } from "$lib/urls.svelte";
   import Input from "$ui/input/input.svelte";
   import LoadingSpinner from "./LoadingSpinner.svelte";
   import { filterByName } from "./panel/Button.svelte";
