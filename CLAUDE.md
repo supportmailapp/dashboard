@@ -15,7 +15,7 @@ pnpm format       # Auto-format with Prettier
 
 There are no automated tests in this project.
 
-## Architecture
+## Critical Rules
 
 SupportMail Dashboard is a SvelteKit full-stack app for managing a Discord modmail/ticket bot. It uses Svelte 5 (runes), TypeScript strict mode, Tailwind CSS 4, MongoDB via Mongoose, and Discord OAuth2.
 
@@ -73,3 +73,21 @@ Shadcn-svelte components live in `src/lib/components/ui/`. Custom components (em
 ### Production
 
 PM2 (`pm2.config.cjs`) runs the Node adapter output on port 5050. Source maps are uploaded to Sentry but excluded from the build output. Environment-specific config uses `.env.production`.
+
+### API server routes: named exports only + no arrow functions
+SvelteKit requires named exports for route handlers, and using arrow functions just doesn't look right.
+```ts
+// ✅ Correct
+export async function GET({ locals }) { ... }
+
+// ❌ Wrong
+export const GET = async ({ locals }) => { ... }
+```
+
+### Client API calls
+Always use `apiClient` + `APIRoutes`:
+```ts
+const res = await apiClient.get(APIRoutes.ticketCategory(id));
+if (!res.ok) { toast.error("..."); return; }
+const data = res.data; # already types and parsed if `res.ok`
+```
