@@ -13,29 +13,26 @@
   import Timestamp from "$components/discord/Timestamp.svelte";
   import type { APIUser } from "discord-api-types/v10";
   import { onMount } from "svelte";
-  import { getUserManager } from "$lib/stores/users.svelte.js";
+  import { users, getMentionUser, fetchMentionUsers } from "$lib/stores/users.svelte.js";
   import Skeleton from "$ui/skeleton/skeleton.svelte";
   import { userDisplayName } from "$lib/utils/formatting.js";
   import { APIRoutes, cdnUrls } from "$lib/urls.svelte.js";
   import { toast } from "svelte-sonner";
-  import type { TicketStatus } from "$lib/server/db/index.js";
   import { getCategoriesManager } from "$lib/stores/categories.svelte.js";
   import humanizeDuration from "humanize-duration";
-  import type { APIFeedback } from "../../../../api/authed/guilds/[guildid=snowflake]/tickets/[ticketid=objectid]/feedback/+server.js";
   import apiClient from "$lib/utils/apiClient.js";
   import Separator from "$ui/separator/separator.svelte";
   import { cn } from "$lib/utils.js";
+  import { TicketStatus, type APIFeedback } from "$lib/sm-types/src/index.js";
   const { humanizer } = humanizeDuration; // cjs things
 
   let { data } = $props();
 
   const cats = getCategoriesManager();
-  const users = getUserManager();
   let ticket = $derived(data.ticket);
   let author = $state<APIUser | null>(null);
-  let claimer = $state<APIUser | null>(null);
-  let closer = $state<APIUser | null>(null);
-  let closeRequester = $state<APIUser | null>(null);
+  // let closer = $state<APIUser | null>(null);
+  // let closeRequester = $state<APIUser | null>(null);
   let feedback = $state<APIFeedback | null>(null);
 
   const formatter = humanizer({
@@ -61,24 +58,7 @@
 
   onMount(async () => {
     if (ticket.userId) {
-      users.fetch(ticket.userId).then((user) => {
-        author = user;
-      });
-    }
-    if (ticket.claimedBy) {
-      users.fetch(ticket.claimedBy).then((user) => {
-        claimer = user;
-      });
-    }
-    if (ticket.closedBy) {
-      users.fetch(ticket.closedBy).then((user) => {
-        closer = user;
-      });
-    }
-    if (ticket.closeRequest?.requestedBy) {
-      users.fetch(ticket.closeRequest.requestedBy).then((user) => {
-        closeRequester = user;
-      });
+      fetchMentionUsers(ticket.userId);
     }
 
     await apiClient.get<APIFeedback>(APIRoutes.ticketFeedback(ticket._id)).then((res) => {
@@ -95,12 +75,12 @@
 </Button>
 
 {#snippet statusBadge(status: TicketStatus)}
-  {#if status === "open"}
-    <Badge variant="default">Open</Badge>
-  {:else if status === "closed"}
-    <Badge variant="secondary">Closed</Badge>
-  {:else if status === "deleted"}
-    <Badge variant="destructive">Deleted</Badge>
+  {#if status === TicketStatus.open}
+    <Badge variant="default">O</Badge>
+  {:else if status === TicketStatus.closed}
+    <Badge variant="secondary">C</Badge>
+  {:else if status === TicketStatus.closeRequested}
+    <Badge variant="destructive">CR</Badge>
   {/if}
 {/snippet}
 
@@ -117,7 +97,7 @@
       </Avatar.Root>
       <div class="flex flex-col">
         <p class="text-sm font-medium">{userDisplayName(user)}</p>
-        <p class="text-xs text-muted-foreground">
+        <p class="text-muted-foreground text-xs">
           {user.id}
         </p>
       </div>
@@ -130,7 +110,7 @@
 {/snippet}
 
 <div class="flex min-w-lg flex-col gap-4" in:fly={{ x: 30, duration: 200 }}>
-  <Card.Root>
+  <Card.Root class="w-full max-w-4xl">
     <Card.Header>
       <Card.Title class="inline-flex items-center gap-2 text-xl">
         <Info class="size-4.5" />
@@ -181,10 +161,12 @@
           <Table.Row>
             {@render FirstCell("Category")}
             <Table.Cell>
-              {#if cats.loaded}
-                {cats.cats.get(ticket.category)?.name || "Unknown Category"}
+              {#if cats.loaded && ticket.categoryId}
+                {cats.cats.get(ticket.categoryId)?.label || "Unknown Category"}
+              {:else if !cats.loaded && ticket.categoryId}
+                <Skeleton class="animation-duration-1200 h-4.5 w-24" />
               {:else}
-                <Skeleton class="h-4.5 w-24 animation-duration-1200" />
+                No Category
               {/if}
             </Table.Cell>
           </Table.Row>
@@ -192,52 +174,24 @@
           <Table.Row>
             {@render FirstCell("Channel")}
             <Table.Cell>
-              <Mention channelId={ticket.channelId} buttons="copy" dontRetry />
+              <Mention channelId={ticket.postId} buttons="copy" dontRetry />
             </Table.Cell>
           </Table.Row>
 
-          {#if ticket.claimedBy}
-            <Table.Row>
-              {@render FirstCell("Claimed By")}
-              <Table.Cell class="py-2">
-                {@render userDisplay(claimer)}
-              </Table.Cell>
-            </Table.Row>
-          {/if}
-
-          {#if ticket.closedAt}
-            <Table.Row>
-              {@render FirstCell("Closed At")}
-              <Table.Cell>
-                <Timestamp date={ticket.closedAt} format="F" />
-              </Table.Cell>
-            </Table.Row>
-          {/if}
-
-          {#if ticket.closedBy}
-            <Table.Row>
-              {@render FirstCell("Closed By")}
-              <Table.Cell class="py-2">
-                {@render userDisplay(closer)}
-              </Table.Cell>
-            </Table.Row>
-          {/if}
-
-          {#if ticket.firstMessageAfter}
-            <Table.Row>
-              {@render FirstCell("First Response Time")}
-              <Table.Cell>
-                {formatter(ticket.firstMessageAfter)}
-              </Table.Cell>
-            </Table.Row>
-          {/if}
+          <Table.Row>
+            {@render FirstCell("Last Active")}
+            <Table.Cell>
+              <Timestamp date={ticket.lastActive} format="R" />
+            </Table.Cell>
+          </Table.Row>
         </Table.Body>
       </Table.Root>
     </Card.Content>
   </Card.Root>
 
-  {#if ticket.closeRequest}
-    <Card.Root class="bg-[color-mix(var(--card)_70%,var(--warning))]">
+  <!-- TODO: Store close request metadata first -->
+  <!-- {#if ticket.closeRequest}
+    <Card.Root class="bg-[color-mix(var(--card)_70%,var(--warning))] max-w-4xl w-full">
       <Card.Header>
         <Card.Title class="inline-flex items-center gap-2 text-xl">
           <Info class="size-4.5" />
@@ -277,17 +231,19 @@
         </Table.Root>
       </Card.Content>
     </Card.Root>
-  {/if}
+  {/if} -->
 
-  {#if feedback}
-    <Card.Root>
+  {#if ticket.feedbackId && !feedback}
+    <Skeleton class="h-40 w-full max-w-4xl" />
+  {:else if feedback}
+    <Card.Root class="w-full max-w-4xl">
       <Card.Header>
         <Card.Title class="inline-flex items-center gap-2 text-xl">
           <Citrus class="size-4.5" />
           Feedback
         </Card.Title>
         <Card.Description>
-          <Timestamp date={feedback.createdAt} format="F" />
+          <Timestamp date={feedback.timestamp} format="F" />
         </Card.Description>
       </Card.Header>
       <Card.Content>
@@ -304,8 +260,19 @@
           {/each}
         </div>
         <Separator class="my-2" />
-        {#if feedback.comment}
-          <span class="text-sm">{feedback.comment}</span>
+        {#if feedback.answers && feedback.answers.length > 0}
+          <Table.Root class="w-full min-w-80">
+            <Table.Body>
+              {#each feedback.answers as answer}
+                <Table.Row>
+                  <Table.Cell class="max-w-50 font-semibold">{answer.label}</Table.Cell>
+                  <Table.Cell>{answer.answer}</Table.Cell>
+                </Table.Row>
+              {/each}
+            </Table.Body>
+          </Table.Root>
+        {:else}
+          <p class="text-muted-foreground text-sm">No additional feedback provided.</p>
         {/if}
       </Card.Content>
     </Card.Root>

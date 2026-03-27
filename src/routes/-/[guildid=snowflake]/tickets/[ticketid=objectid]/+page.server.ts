@@ -14,7 +14,14 @@ export async function load({ params, fetch, locals }) {
     });
   }
 
+  const flat = FlattenDocToJSON(ticket, true);
+
+  if (flat.alias) {
+    // @ts-expect-error - userId always present
+    delete flat.userId;
+  }
+
   return {
-    ticket: FlattenDocToJSON(ticket, true),
+    ticket: flat as Omit<typeof flat, "userId"> & { userId?: string },
   };
 }

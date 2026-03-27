@@ -41,6 +41,7 @@
     updateURL: true,
     debounce: 250,
     pushHistory: true,
+    noScroll: true,
   });
 
   afterNavigate(({ from, to }) => {
@@ -146,16 +147,18 @@
       </Field.Field>
 
       <Field.Field>
-        <Field.Label>Anonymous Tickets</Field.Label>
-        <Checkbox bind:checked={params.anonym} />
-        <Field.Description>Include anonymous tickets in the results.</Field.Description>
+        <Checkbox bind:checked={params.anonym} id="filter-anon" />
+        <Field.Content>
+          <Field.Label for="filter-anon">Anonymous Tickets</Field.Label>
+          <Field.Description>Include anonymous tickets in the results.</Field.Description>
+        </Field.Content>
       </Field.Field>
 
       <Field.Field>
         <Field.Label>Close Comment</Field.Label>
         <Input
           // Trim 2+ whitespace to prevent users from accidentally entering long strings of spaces which would cause expensive regex queries
-          // trimming on start and end is done on server because a user might want to write a comment that includes a space and when type a space they might want to add text after that
+          // dint trim on end/start because they might want to type some spaces and then some text, and we dont want to trim those spaces until they actually submit the query
           bind:value={() => params.comment, (v) => (params.comment = v.replace(/\s{2,}/g, ""))}
           max={512}
         />

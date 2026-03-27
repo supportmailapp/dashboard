@@ -95,12 +95,12 @@ export class GuildsManager {
     }
   }
 
-  async fetchChannelById(id: string) {
+  async fetchChannelById(id: string, retry = true) {
     if (!this.currentGuild) {
       console.warn("No current guild set, cannot fetch channel.");
       return;
     }
-    // check cache first
+    // check caches first
     if (this.customChannels.has(id)) {
       return this.customChannels.get(id)!;
     } else if (this.channels.some((c) => c.id === id)) {
@@ -108,9 +108,11 @@ export class GuildsManager {
     }
 
     // fetch from API
-    const res = await apiClient.get<APIGuildChannel>(APIRoutes.guildChannel(id));
-    if (res.ok) {
-      this.customChannels.set(id, res.data);
+    const channelRes = await apiClient.get<APIGuildChannel>(APIRoutes.guildChannel(id), {
+      retry: retry ? undefined : 0,
+    });
+    if (channelRes.ok) {
+      this.customChannels.set(id, channelRes.data);
     }
     return this.customChannels.get(id);
   }

@@ -2,16 +2,16 @@
   import type { ClassValue } from "svelte/elements";
   import ChannelIcon from "./ChannelIcon.svelte";
   import { getManager } from "$lib/stores/GuildsManager.svelte";
-  import { onMount } from "svelte";
   import { browser } from "$app/environment";
 
   type Props = {
     channelId?: string;
     channel?: APIGuildChannel;
     class?: ClassValue;
+    dontRetry?: boolean;
   };
 
-  let { channel, channelId, class: className }: Props = $props();
+  let { channel, channelId, class: className, dontRetry }: Props = $props();
 
   const guildsManager = getManager();
   let fetchedChannel = $state<APIGuildChannel | null>(null);
@@ -26,7 +26,7 @@
       fetchedChannel = null;
       return;
     }
-    guildsManager.fetchChannelById(channelId).then((ch) => {
+    guildsManager.fetchChannelById(channelId, !dontRetry).then((ch) => {
       fetchedChannel = ch ?? null;
     });
   });
