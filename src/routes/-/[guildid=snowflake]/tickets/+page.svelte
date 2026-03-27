@@ -24,6 +24,7 @@
   import ChannelSelect from "$lib/components/discord/ChannelSelect.svelte";
   import { ChannelType } from "discord-api-types/v10";
   import Input from "$ui/input/input.svelte";
+  import Checkbox from "$ui/checkbox/checkbox.svelte";
 
   const ticketStatusOptions: Record<TicketStatus, string> = {
     [TicketStatus.open]: "Open",
@@ -142,6 +143,25 @@
         {:else}
           <Skeleton class="animation-duration-1200 h-8 w-32" />
         {/if}
+      </Field.Field>
+
+      <Field.Field>
+        <Field.Label>Anonymous Tickets</Field.Label>
+        <Checkbox bind:checked={params.anonym} />
+        <Field.Description>Include anonymous tickets in the results.</Field.Description>
+      </Field.Field>
+
+      <Field.Field>
+        <Field.Label>Close Comment</Field.Label>
+        <Input
+          // Trim 2+ whitespace to prevent users from accidentally entering long strings of spaces which would cause expensive regex queries
+          // trimming on start and end is done on server because a user might want to write a comment that includes a space and when type a space they might want to add text after that
+          bind:value={() => params.comment, (v) => (params.comment = v.replace(/\s{2,}/g, ""))}
+          max={512}
+        />
+        <Field.Description>
+          Filters by close comment content. This is case-insensitive and filters comments partially.
+        </Field.Description>
       </Field.Field>
     </Field.Group>
   </Sheet.Content>

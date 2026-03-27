@@ -104,6 +104,11 @@ export async function GET({ params, url, locals, isSubRequest }) {
     matchStage.status = statuses.length === 1 ? statuses[0] : { $in: statuses };
   }
 
+  const commentFilter = data.comment?.trim().replace(/\s{2,}/g, "");
+  if (commentFilter) {
+    matchStage.closeComment = { $regex: commentFilter, $options: "i" };
+  }
+
   const matchStageItem = { $match: matchStage };
 
   const [tickets, countResult] = await Promise.all([

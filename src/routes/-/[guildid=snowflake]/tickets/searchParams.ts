@@ -18,6 +18,7 @@ export const searchParamsSchema = z.object({
   postId: z._default(z.xor([MiniSnowflakeSchema, z.literal("")]), ""),
   category: z._default(z.array(MiniObjectIdSchema), []),
   anonym: z._default(z.coerce.boolean(), true),
+  comment: z._default(z.string(), "").check(z.maxLength(512, "Max comment length is 512 characters")),
   // before: z._default(ISOTimestampCodec, new Date()),
   // after: z._default(ISOTimestampCodec, new Date(0)),
 });
