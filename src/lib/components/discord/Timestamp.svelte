@@ -57,24 +57,22 @@
   });
 </script>
 
-<Tooltip.Provider delayDuration={0} disableCloseOnTriggerClick>
-  <Tooltip.Root>
-    <Tooltip.Trigger class="bg-card-foreground/20 rounded-[calc(var(--radius)-2px)] px-1 py-0.5">
-      {formattedDate}
-    </Tooltip.Trigger>
-    <Tooltip.Content class="bg-slate-300 select-none" arrowClasses="bg-slate-300">
-      <p>
-        {parsedDate.toDate().toLocaleDateString([], {
-          weekday: "long",
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-          hourCycle: "h24",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        })}
-      </p>
-    </Tooltip.Content>
-  </Tooltip.Root>
-</Tooltip.Provider>
+<Tooltip.Root delayDuration={0} disableCloseOnTriggerClick>
+  <Tooltip.Trigger class="bg-card-foreground/20 rounded-[calc(var(--radius)-2px)] px-1 py-0.5">
+    {formattedDate}
+  </Tooltip.Trigger>
+  <Tooltip.Content class="bg-slate-300 select-none" arrowClasses="bg-slate-300">
+    <p>
+      {parsedDate.toDate().toLocaleDateString([], {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+        hourCycle: "h24",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })}
+    </p>
+  </Tooltip.Content>
+</Tooltip.Root>

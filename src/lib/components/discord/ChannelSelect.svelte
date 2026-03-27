@@ -42,7 +42,7 @@
   };
 
   let {
-    selectedId = $bindable(),
+    selectedId,
     channelTypes = [],
     excludedChannelIds,
     selectCategories = false,

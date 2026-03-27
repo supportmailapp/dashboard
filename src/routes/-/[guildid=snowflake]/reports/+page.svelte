@@ -173,28 +173,26 @@
     <Button variant="default" onclick={fetchReports}>
       <span class="text-sm">Fetch</span>
     </Button>
-    <Tooltip.Provider delayDuration={100}>
-      <Tooltip.Root>
-        <Tooltip.Trigger>
-          {#snippet child({ props })}
-            <Button
-              {...props}
-              variant="outline"
-              size="icon"
-              onclick={() => {
-                navigator.clipboard.writeText(buildUrlWithParams(false));
-                toast.success("Link copied to clipboard!");
-              }}
-            >
-              <Files class="size-4" />
-            </Button>
-          {/snippet}
-        </Tooltip.Trigger>
-        <Tooltip.Content>
-          <p>Copy link</p>
-        </Tooltip.Content>
-      </Tooltip.Root>
-    </Tooltip.Provider>
+    <Tooltip.Root delayDuration={100}>
+      <Tooltip.Trigger>
+        {#snippet child({ props })}
+          <Button
+            {...props}
+            variant="outline"
+            size="icon"
+            onclick={() => {
+              navigator.clipboard.writeText(buildUrlWithParams(false));
+              toast.success("Link copied to clipboard!");
+            }}
+          >
+            <Files class="size-4" />
+          </Button>
+        {/snippet}
+      </Tooltip.Trigger>
+      <Tooltip.Content>
+        <p>Copy link</p>
+      </Tooltip.Content>
+    </Tooltip.Root>
   </div>
 </div>
 

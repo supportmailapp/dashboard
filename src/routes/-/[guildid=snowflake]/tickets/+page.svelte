@@ -7,10 +7,10 @@
   import * as Sheet from "$ui/sheet/index.js";
   import * as Select from "$ui/select/index.js";
   import * as Pagination from "$ui/pagination/index.js";
+  import * as Popover from "$ui/popover/index.js";
   import Combobox from "$ui/combobox/combobox.svelte";
   import Button from "$ui/button/button.svelte";
   import { buttonVariants } from "$ui/button/button.svelte";
-  import Input from "$ui/input/input.svelte";
   import { getCategoriesManager } from "$lib/stores/categories.svelte.js";
   import { afterNavigate } from "$app/navigation";
   import Mention from "$components/discord/Mention.svelte";
@@ -18,10 +18,18 @@
   import { Badge } from "$ui/badge/index.js";
   import Skeleton from "$ui/skeleton/skeleton.svelte";
   import Switch from "$ui/switch/switch.svelte";
-  import { DocsLinks } from "$lib/urls.svelte.js";
   import { fly } from "svelte/transition";
-  import { MiniSnowflakeSchema } from "$lib/utils/schemas.js";
   import { TicketStatus } from "$lib/sm-types/src";
+  import UserSelect from "$lib/components/discord/UserSelect.svelte";
+  import ChannelSelect from "$lib/components/discord/ChannelSelect.svelte";
+  import { ChannelType } from "discord-api-types/v10";
+  import Input from "$ui/input/input.svelte";
+
+  const ticketStatusOptions: Record<TicketStatus, string> = {
+    [TicketStatus.open]: "Open",
+    [TicketStatus.closed]: "Closed",
+    [TicketStatus.closeRequested]: "Close Requested",
+  };
 
   let { data } = $props();
 
@@ -32,11 +40,6 @@
     updateURL: true,
     debounce: 250,
     pushHistory: true,
-  });
-  let userIdInput = $state("");
-
-  $effect(() => {
-    console.log("Search params changed:", params.toURLSearchParams().toString());
   });
 
   afterNavigate(({ from, to }) => {
@@ -57,37 +60,72 @@
     <Field.Group>
       <Field.Field>
         <Field.Label>Status</Field.Label>
-        <Select.Root type="multiple" bind:value={params.status}>
+        <Select.Root
+          type="multiple"
+          bind:value={
+            () => params.status.map(String),
+            (vals) => {
+              params.status = vals.map((v) => Number(v) as TicketStatus);
+            }
+          }
+        >
           <Select.Trigger>Status</Select.Trigger>
           <Select.Content>
-            <Select.Item value="open">Open</Select.Item>
-            <Select.Item value="closed">Closed</Select.Item>
-            <Select.Item value="deleted">Deleted</Select.Item>
+            {#each Object.entries(ticketStatusOptions) as [value, label]}
+              <Select.Item value={String(value)}>{label}</Select.Item>
+            {/each}
           </Select.Content>
         </Select.Root>
       </Field.Field>
 
       <Field.Field>
-        <Field.Label>User ID</Field.Label>
-        <Input
-          autocomplete="off"
-          type="text"
-          placeholder="User ID"
-          bind:value={
-            () => userIdInput,
-            (v) => {
-              userIdInput = v;
-              params.userId = v?.trim() || "";
-            }
-          }
-        />
-        <Field.Description>User ID of ticket author or claimer</Field.Description>
-        {#if userIdInput && !MiniSnowflakeSchema.safeParse(userIdInput).success}
-          <Field.Error>
-            User ID is not a valid snowflake.
-            <a href={DocsLinks.findIds} target="_blank" class="link">Find a User ID</a>
-          </Field.Error>
+        <Field.Label>Ticket Author</Field.Label>
+        {#if params.userId}
+          <div class="bg-input rounded-md border px-2 py-1.5">
+            <Mention userId={params.userId} onDelete={() => (params.userId = "")} />
+          </div>
+        {:else}
+          <Popover.Root>
+            <Popover.Trigger class={buttonVariants({ variant: "outline", size: "sm" })}>
+              Ticket Author
+            </Popover.Trigger>
+            <Popover.Content>
+              <UserSelect
+                excludedUserIds={params.userId ? [params.userId] : []}
+                onSelect={({ id }) => (params.userId = id)}
+              />
+            </Popover.Content>
+          </Popover.Root>
         {/if}
+        <Field.Description>
+          User who created the Ticket<br />
+          <i>Anonymous tickets are never filtered by user</i>
+        </Field.Description>
+      </Field.Field>
+
+      <Field.Field>
+        <Field.Label>Post</Field.Label>
+        {#if params.postId}
+          <div class="bg-input rounded-md border px-2 py-1.5">
+            <Mention channelId={params.postId} onDelete={() => (params.postId = "")} />
+          </div>
+        {:else}
+          <Popover.Root>
+            <Popover.Trigger class={buttonVariants({ variant: "outline", size: "sm" })}>
+              Ticket Post
+            </Popover.Trigger>
+            <Popover.Content>
+              <ChannelSelect
+                allowCustomChannels
+                excludedChannelIds={params.postId ? [params.postId] : []}
+                channelTypes={[ChannelType.PublicThread]}
+                onSelect={({ id }) => (params.postId = id)}
+                selectedId={params.postId}
+              />
+            </Popover.Content>
+          </Popover.Root>
+        {/if}
+        <Field.Description>Post of the Ticket</Field.Description>
       </Field.Field>
 
       <Field.Field>
@@ -102,29 +140,8 @@
             bind:selected={params.category}
           />
         {:else}
-          <Skeleton class="h-8 w-32 animation-duration-1200" />
+          <Skeleton class="animation-duration-1200 h-8 w-32" />
         {/if}
-      </Field.Field>
-
-      <!-- uncategorized? -->
-      <Field.Field orientation="horizontal">
-        <Switch
-          bind:checked={params.uncategorized}
-          id="filter-uncat"
-          disabled={params.category.length === 0}
-        />
-        <Field.Content>
-          <Field.Label for="filter-uncat">Uncategorized</Field.Label>
-          {#if params.category.length === 0}
-            <Field.Description class="text-warning">
-              Select categories first to include uncategorized tickets
-            </Field.Description>
-          {:else}
-            <Field.Description>
-              Include tickets without a category in addition to selected categories
-            </Field.Description>
-          {/if}
-        </Field.Content>
       </Field.Field>
     </Field.Group>
   </Sheet.Content>
@@ -156,7 +173,11 @@
         <Table.Row>
           <Table.Cell>{@render statusBadge(ticket.status)}</Table.Cell>
           <Table.Cell>
-            <Mention userId={ticket.userId} buttons="copy" />
+            {#if ticket.userId && !ticket.alias}
+              <Mention userId={ticket.userId} buttons="copy" />
+            {:else if ticket.alias}
+              <Badge variant="outline">{ticket.alias}</Badge>
+            {/if}
           </Table.Cell>
           <Table.Cell>
             <Timestamp date={ticket.createdAt} format="R" />
@@ -165,7 +186,7 @@
             {#if cats.loaded}
               {cats.cats.get(ticket.category)?.label || "Unknown Category"}
             {:else}
-              <Skeleton class="h-4.5 w-24 animation-duration-1200" animationDelay={i * 200} />
+              <Skeleton class="animation-duration-1200 h-4.5 w-24" animationDelay={i * 200} />
             {/if}
           </Table.Cell>
           <Table.Cell>
@@ -209,4 +230,11 @@
       </Pagination.Content>
     {/snippet}
   </Pagination.Root>
+
+  <div class="flex w-fit">
+    <Field.Field orientation="horizontal" class="w-fit">
+      <Field.Label>Per Page</Field.Label>
+      <Input type="number" min={1} max={100} bind:value={params.limit} />
+    </Field.Field>
+  </div>
 </div>

@@ -76,25 +76,23 @@
   <div class="flex flex-col gap-2">
     <Label class="text-sm font-medium">
       Filter By Scope
-      <Tooltip.Provider delayDuration={100} disableCloseOnTriggerClick>
-        <Tooltip.Root>
-          <Tooltip.Trigger class="cursor-help">
-            <Info class="size-3.5" />
-          </Tooltip.Trigger>
-          <Tooltip.Content class="max-w-60">
-            <p>
-              Shows results where at least one selected scope matches.<br />
-              Example: If you filter for <strong>Tickets</strong> and <strong>Reports</strong>, you'll also
-              see entries that only have
-              <strong>Tickets</strong>
-              or only
-              <strong>Reports</strong>.<br />
-              If you filter only for <strong>Tickets</strong>, you'll also see entries that have more scopes
-              than just <strong>Tickets</strong>.
-            </p>
-          </Tooltip.Content>
-        </Tooltip.Root>
-      </Tooltip.Provider>
+      <Tooltip.Root delayDuration={100} disableCloseOnTriggerClick>
+        <Tooltip.Trigger class="cursor-help">
+          <Info class="size-3.5" />
+        </Tooltip.Trigger>
+        <Tooltip.Content class="max-w-60">
+          <p>
+            Shows results where at least one selected scope matches.<br />
+            Example: If you filter for <strong>Tickets</strong> and <strong>Reports</strong>, you'll also see
+            entries that only have
+            <strong>Tickets</strong>
+            or only
+            <strong>Reports</strong>.<br />
+            If you filter only for <strong>Tickets</strong>, you'll also see entries that have more scopes
+            than just <strong>Tickets</strong>.
+          </p>
+        </Tooltip.Content>
+      </Tooltip.Root>
     </Label>
     <Dropdown.Root>
       <Dropdown.Trigger

@@ -49,7 +49,6 @@
 
 {#snippet reportStatusDot(status: ReportStatus)}
   {@const _status = reportStatusMap[status]}
-  <Tooltip.Provider>
     <Tooltip.Root delayDuration={100}>
       <Tooltip.Trigger>
         <div class={cn("size-3 rounded-full", _status.color)}></div>
@@ -58,7 +57,6 @@
         {_status.label}
       </Tooltip.Content>
     </Tooltip.Root>
-  </Tooltip.Provider>
 {/snippet}
 
 <Table.Root class="w-full max-w-3xl">

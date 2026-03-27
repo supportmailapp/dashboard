@@ -1,11 +1,12 @@
 import { JsonErrors } from "$lib/constants.js";
 import { Ticket } from "$lib/server/db/index.js";
 import type { FlattenDocResult } from "$lib/server/db/utils.js";
-import type { ITicket } from "$lib/sm-types/src";
+import type { ITicket, TicketStatus } from "$lib/sm-types/src";
 import { json } from "@sveltejs/kit";
 import type { PipelineStage } from "mongoose";
 import { validateSearchParams } from "runed/kit";
 import { searchParamsSchema } from "../../../../../-/[guildid=snowflake]/tickets/searchParams.js";
+import type { QueryFilter } from "mongoose";
 
 export type APITicket = FlattenDocResult<
   Omit<ITicket, "createdAt" | "updatedAt" | "category"> & {
@@ -38,14 +39,28 @@ function makePaginatedResponse(
 }
 
 function transformTicketToAPI(ticket: any): APITicket {
-  return {
-    ...ticket,
+  const { alias, userId, ...rest } = ticket;
+  const returnBase = {
+    ...rest,
     _id: ticket._id.toString(),
-    category: ticket.category,
+    category: String(ticket.category),
     createdAt: ticket.createdAt.toISOString(),
     updatedAt: ticket.updatedAt.toISOString(),
     closedAt: ticket.closedAt ? ticket.closedAt.toISOString() : undefined,
   } as APITicket;
+
+  // userId cannot be exposed when alias is present, as that would leak the user's identity
+  if (alias) {
+    return {
+      ...returnBase,
+      alias: alias,
+    };
+  }
+
+  return {
+    ...returnBase,
+    userId: userId,
+  };
 }
 
 export async function GET({ params, url, locals, isSubRequest }) {
@@ -55,7 +70,7 @@ export async function GET({ params, url, locals, isSubRequest }) {
   const { data } = validateSearchParams(url, searchParamsSchema);
 
   const skip = (data.page - 1) * data.limit;
-  const statuses: string[] | undefined = data.status;
+  const statuses: TicketStatus[] | undefined = data.status;
 
   // const afterTimestamp =
   //   afterParam && dayjs(afterParam).isValid() && dayjs(afterParam).isBefore(new Date())
@@ -66,34 +81,34 @@ export async function GET({ params, url, locals, isSubRequest }) {
   //     ? dayjs(beforeParam).toDate()
   //     : undefined;
 
-  const matchStage: PipelineStage.Match["$match"] = { guildId };
+  const matchStage: QueryFilter<ITicket> = { guildId };
 
-  // Handle category and uncategorized filters
   if (data.category.length > 0) {
-    if (data.uncategorized) {
-      // Include both specific categories and uncategorized tickets
-      matchStage.$or = [{ category: { $in: data.category } }, { category: null }];
-    } else {
-      // Only specific categories
-      matchStage.category = { $in: data.category };
-    }
+    matchStage.category = { $in: data.category };
+  }
+
+  if (data.anonym === true) {
+    matchStage.alias = { $exists: true, $ne: null };
+  } else if (data.anonym === false) {
+    matchStage.$nor = [{ alias: { $exists: true, $ne: null } }];
   }
 
   if (data.userId) {
-    matchStage.userId = data.userId;
-    matchStage.claimedBy = data.userId;
+    // never filter by userId when alias is present, as that would leak the user's identity
+    matchStage.$and = [{ userId: data.userId }, { $or: [{ alias: { $exists: false } }, { alias: null }] }];
   }
+
   // if (afterTimestamp) matchStage.createdAt = { $gt: afterTimestamp };
   // if (beforeTimestamp) matchStage.createdAt = { ...matchStage.createdAt, $lt: beforeTimestamp };
   if (statuses && statuses.length > 0) {
     matchStage.status = statuses.length === 1 ? statuses[0] : { $in: statuses };
   }
 
-  const pipeline: PipelineStage[] = [{ $match: matchStage }];
+  const matchStageItem = { $match: matchStage };
 
   const [tickets, countResult] = await Promise.all([
-    Ticket.aggregate([...pipeline, { $skip: skip }, { $limit: data.limit }]),
-    Ticket.aggregate([...pipeline, { $count: "total" }]),
+    Ticket.aggregate<ITicket>([matchStageItem, { $skip: skip }, { $limit: data.limit }]),
+    Ticket.aggregate([matchStageItem, { $count: "total" }]),
   ]);
 
   const totalItems = countResult.length > 0 ? countResult[0].total : 0;
