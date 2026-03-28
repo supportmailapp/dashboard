@@ -74,9 +74,9 @@ export async function GET({ locals, params, url }) {
       data: entries.map((d) => FlattenDocToJSON(d, true)).map(FlattenBigIntFields) as APIBlacklistEntry[],
       pagination: {
         page: Params.page,
-        pageSize: Params.pageSize,
-        totalItems,
-        totalPages,
+        limit: Params.pageSize,
+        total: totalItems,
+        pages: totalPages,
       },
     };
 
@@ -89,11 +89,10 @@ export async function GET({ locals, params, url }) {
       data: [],
       pagination: {
         page: 1,
-        pageSize: 10,
-        totalItems: 0,
-        totalPages: 0,
+        limit: 10,
+        total: 0,
+        pages: 0,
       },
-      error: "Failed to fetch entries",
     };
 
     return Response.json(response, { status: 500 });
