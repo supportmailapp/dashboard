@@ -7,24 +7,27 @@ import { defineConfig, loadEnv } from "vite";
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   console.log("Sentry auth token", env.SENTRY_AUTH_TOKEN?.slice(0, 5) + "...");
+  const isDev = mode === "development";
 
   return {
     build: {
       sourcemap: "hidden",
     },
     plugins: [
+      tailwindcss(),
+      sveltekit(),
       sentrySvelteKit({
         org: "lukez-dev",
         project: "supportmail-dashboard",
         adapter: "node",
         authToken: env.SENTRY_AUTH_TOKEN,
         autoUploadSourceMaps: true,
-        sourcemaps: {
-          filesToDeleteAfterUpload: ["./**/*.map", ".svelte-kit/**/*.map"],
-        },
+        sourcemaps: isDev
+          ? undefined
+          : {
+              filesToDeleteAfterUpload: ["./**/*.map", ".svelte-kit/**/*.map"],
+            },
       }),
-      tailwindcss(),
-      sveltekit(),
       devtoolsJson({
         normalizeForWindowsContainer: true,
         uuid: "supportmail-dashboard-vite-config",
