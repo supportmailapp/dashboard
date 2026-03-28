@@ -6,8 +6,8 @@ import { arrayIsDistinct, zem } from "$lib/utils.js";
 import { PermissionFlagsBits } from "$lib/utils/permissions.js";
 import { CommandpathRegex } from "$lib/constants.js";
 import { type APIAllowedMentions } from "$lib/sm-types/src/utils/validators.js";
-import { SMTopLevelMessageComponentSchema } from "$lib/utils/panelValidators.js";
 import { AllowedMentionsTypes, ComponentType } from "discord-api-types/v10";
+import { SMTopLevelMessageComponentSchema } from "$lib/server/validators/panel.js";
 
 export const ObjectIdSchema = z.string().regex(/^[a-f\d]{24}$/i, zem("Invalid ObjectId format"));
 
@@ -347,9 +347,11 @@ export const PanelSchema = z.object({
   guildId: SnowflakeSchema.optional(),
   channelId: SnowflakeSchema.optional(),
   messageId: SnowflakeSchema.optional(),
-  allowedMentions: APIAllowedMentionsSchema.optional(), // zod mini things
+  allowedMentions: APIAllowedMentionsSchema.optional(),
   data: z
     .array(SMTopLevelMessageComponentSchema)
+    .min(1, zem("At least one component is required"))
+    .max(40, zem("A maximum of 40 components are allowed"))
     .refine(
       (components) => calculateComponentCount(components) <= 40,
       zem("A maximum of 40 components are allowed"),
