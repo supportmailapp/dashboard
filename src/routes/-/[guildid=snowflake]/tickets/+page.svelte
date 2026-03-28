@@ -119,6 +119,7 @@
             <Popover.Content>
               <ChannelSelect
                 allowCustomChannels
+                onlyCustomChannels
                 excludedChannelIds={params.postId ? [params.postId] : []}
                 channelTypes={[ChannelType.PublicThread]}
                 onSelect={({ id }) => (params.postId = id)}
@@ -146,7 +147,7 @@
         {/if}
       </Field.Field>
 
-      <Field.Field>
+      <Field.Field orientation="horizontal">
         <Checkbox bind:checked={params.anonym} id="filter-anon" />
         <Field.Content>
           <Field.Label for="filter-anon">Anonymous Tickets</Field.Label>

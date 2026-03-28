@@ -34,6 +34,7 @@
      */
     selectCategories?: boolean;
     allowCustomChannels?: boolean;
+    onlyCustomChannels?: boolean;
     /**
      * Callback when a channel is selected. When custom channels are allowed,
      * the channel can be anything. Otherwise, it will always be a guild core channel (category depends on `selectCategories`).
@@ -47,6 +48,7 @@
     excludedChannelIds,
     selectCategories = false,
     allowCustomChannels = false,
+    onlyCustomChannels = false,
     onSelect,
   }: Props = $props();
   let allowAllChannels = $derived(channelTypes.length === 0);
@@ -230,7 +232,7 @@
   </Command.Root>
 {/snippet}
 
-{#if allowCustomChannels}
+{#if allowCustomChannels && !onlyCustomChannels}
   <Tabs.Root value="selectChannel" class="w-full max-w-100">
     <Tabs.List class="w-full">
       <Tabs.Trigger value="selectChannel">Select Channel</Tabs.Trigger>
@@ -270,6 +272,33 @@
       </Button>
     </Tabs.Content>
   </Tabs.Root>
+{:else if onlyCustomChannels}
+  <Field.Group class="gap-3">
+    <Field.Field class="gap-0.5">
+      <Input
+        bind:value={channelIdInput}
+        placeholder="Channel/Thread ID or Link"
+        class="placeholder:text-muted-foreground placeholder:text-sm"
+      />
+      <Field.Description>
+        <a
+          href="http://dis.gd/findmyid?utm_source=supportmail"
+          target="_blank"
+          class="hover:text-accent underline"
+        >
+          Where to find a Channel/Thread ID
+        </a>
+      </Field.Description>
+    </Field.Field>
+    <Button
+      variant={channelButtonStyle}
+      onclick={findChannelByIdOrLink}
+      disabled={buttonDisabled}
+      showLoading={buttonLoading}
+    >
+      Find Channel
+    </Button>
+  </Field.Group>
 {:else}
   {@render channelsCommand()}
 {/if}
