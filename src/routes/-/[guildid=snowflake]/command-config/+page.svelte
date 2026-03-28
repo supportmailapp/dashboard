@@ -87,14 +87,11 @@
   }
 
   async function fetchCommand() {
-    const res = await apiClient.get<APICommandConfig[]>(
-      APIRoutes.commandConfig(page.params.guildid!, { path: "blacklist" }),
-    );
+    const res = await apiClient.get<APICommandConfig[]>(APIRoutes.commandConfig({ path: "blacklist" }));
 
     selectedSubcommandPath = "";
     if (res.ok) {
-      const jsonData = await res.json();
-      commands = jsonData.reduce(
+      commands = res.data.reduce(
         (acc, cmd) => {
           acc[cmd.commandPath] = cmd;
           return acc;
@@ -116,13 +113,12 @@
     if (!commands) return;
     loading = true;
 
-    const res = await apiClient.put<APICommandConfig[]>(APIRoutes.commandConfig(page.params.guildid!), {
+    const res = await apiClient.put<APICommandConfig[]>(APIRoutes.commandConfig(), {
       json: Object.values($state.snapshot(commands)),
     });
 
     if (res.ok) {
-      const jsonres = await res.json();
-      commands = jsonres.reduce(
+      commands = res.data.reduce(
         (acc, cmd) => {
           acc[cmd.commandPath] = cmd;
           return acc;
@@ -185,7 +181,7 @@
   async function reset() {
     if (!page.params.guildid) return;
     loading = true;
-    const res = await apiClient.delete(APIRoutes.commandConfig(page.params.guildid, { path: "blacklist" }));
+    const res = await apiClient.delete(APIRoutes.commandConfig({ path: "blacklist" }));
     if (res.ok) {
       toast.success("Command configuration has been reset to default.");
     } else {

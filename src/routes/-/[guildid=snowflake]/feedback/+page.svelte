@@ -55,46 +55,35 @@
 
     saving = true;
 
-    try {
-      const res = await apiClient.put(APIRoutes.ticketsFeedback(page.params.guildid!), {
-        json: current,
+    const res = await apiClient.put<APIFeedbackConfig>(APIRoutes.ticketsFeedback(), {
+      json: current,
+    });
+
+    if (!res.ok) {
+      toast.error("Failed to save feedback configuration.", {
+        description: res.error,
       });
-
-      if (!res.ok) {
-        const error = await res.json<any>();
-        throw new Error(error.message || "Failed to save ticket feedback configuration.");
-      }
-
-      const json = await res.json<APIFeedbackConfig>();
-
-      backupFeedback = { ...json };
-      feedbackConfig = { ...json };
+    } else {
+      backupFeedback = { ...res.data };
+      feedbackConfig = { ...res.data };
       toast.success("Feedback configuration saved.");
-    } catch (err: any) {
-      console.error("Failed to save ticket feedback configuration:", err);
-      toast.error("Failed to save ticket feedback configuration.", {
-        description: err.message,
-      });
-    } finally {
-      saving = false;
     }
+    saving = false;
   };
 
   afterNavigate(async () => {
     try {
-      const res = await apiClient.get<APIFeedbackConfig>(APIRoutes.ticketsFeedback(page.params.guildid!));
+      const res = await apiClient.get<APIFeedbackConfig>(APIRoutes.ticketsFeedback());
       if (!res.ok) {
-        const err = await res.json<any>();
         toast.error("Failed to load ticket configuration.", {
-          description: err.message || "Please try again later.",
+          description: res.error || "Please try again later.",
         });
         loading = false;
         return;
       }
 
-      const data = await res.json<APIFeedbackConfig>();
-      backupFeedback = { ...data };
-      feedbackConfig = { ...data };
+      backupFeedback = { ...res.data };
+      feedbackConfig = { ...res.data };
     } catch (err: any) {
       toast.error("Failed to load ticket configuration.", { description: String(err?.message || err) });
     } finally {
@@ -159,20 +148,16 @@
       return coreChannel as GuildSendableChannel;
     }
 
-    const res = await apiClient.get<APIGuildChannel>(
-      APIRoutes.guildChannel(page.params.guildid!, feedbackConfig.channelId),
-    );
+    const res = await apiClient.get<APIGuildChannel>(APIRoutes.guildChannel(feedbackConfig.channelId));
 
     if (!res.ok) {
       throw new Error("Failed to fetch feedback channel.");
     }
 
-    const data = await res.json();
-
-    if (isChannelSendable(data)) {
+    if (isChannelSendable(res.data)) {
       // Cache the fetched channel
-      guildsManager.customChannels.set(data.id, data);
-      return data;
+      guildsManager.customChannels.set(res.data.id, res.data);
+      return res.data;
     }
     toast.error("Invalid feedback channel", {
       description: "Channel is not a sendable channel.",

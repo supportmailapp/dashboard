@@ -37,30 +37,34 @@
     }
 
     config.saving = true;
-    const res = await apiClient.put<OverviewConfig>(APIRoutes.overview(page.params.guildid!), {
+    const res = await apiClient.put<OverviewConfig>(APIRoutes.overview(), {
       json: $state.snapshot(config.current),
     });
 
-    const _data = await res.json();
     if (res.ok) {
-      config.old = { ..._data };
-      config.current = { ..._data };
+      config.old = { ...res.data };
+      config.current = { ...res.data };
       toast.success("Configuration saved successfully.");
     } else {
-      toast.error(`Failed to save configuration: ${(_data as any).message}`);
+      toast.error("Failed to save configuration", {
+        description: res.error,
+      });
     }
     config.saving = false;
   }
 
   afterNavigate(async () => {
-    const initialRes = await apiClient.get<OverviewConfig>(APIRoutes.overview(page.params.guildid!));
+    const initialRes = await apiClient.get<OverviewConfig>(APIRoutes.overview());
 
-    const _data = await initialRes.json();
     if (initialRes.ok) {
-      config.old = { ..._data };
-      config.current = { ..._data };
+      config.old = { ...initialRes.data };
+      config.current = { ...initialRes.data };
     } else {
-      toast.error(`Failed to load configuration: ${(_data as any).message}`);
+      toast.error("Failed to fetch overview configuration", {
+        description: initialRes.error,
+      });
+      config.old = null;
+      config.current = null;
     }
     config.loading = false;
   });
