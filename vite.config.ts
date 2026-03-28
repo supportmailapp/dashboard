@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => {
         authToken: env.SENTRY_AUTH_TOKEN,
         autoUploadSourceMaps: true,
         sourcemaps: isDev
-          ? undefined
+          ? { disable: "disable-upload" }
           : {
               filesToDeleteAfterUpload: ["./**/*.map", ".svelte-kit/**/*.map"],
             },

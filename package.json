@@ -51,7 +51,7 @@
     "@fontsource-variable/raleway": "^5.2.8",
     "@lukez/fast-deep-equal": "^4.1.0",
     "@sapphire/snowflake": "^3.5.5",
-    "@sentry/sveltekit": "^10.46.0",
+    "@sentry/sveltekit": "^10.44.0",
     "dayjs": "^1.11.20",
     "discord-api-types": "^0.38.42",
     "discord.js": "^14.25.1",
