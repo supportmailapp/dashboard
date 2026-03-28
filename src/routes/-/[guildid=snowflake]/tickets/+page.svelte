@@ -43,6 +43,7 @@
     pushHistory: true,
     noScroll: true,
   });
+  let commentInput = $state("");
 
   afterNavigate(({ from, to }) => {
     // Reset filters when navigating away
@@ -159,8 +160,8 @@
         <Field.Label>Close Comment</Field.Label>
         <Input
           // Trim 2+ whitespace to prevent users from accidentally entering long strings of spaces which would cause expensive regex queries
-          // dint trim on end/start because they might want to type some spaces and then some text, and we dont want to trim those spaces until they actually submit the query
-          bind:value={() => params.comment, (v) => (params.comment = v.replace(/\s{2,}/g, ""))}
+          // dont trim on end/start because they might want to type some spaces and then some text, and we dont want to trim those spaces until they actually submit the query
+          bind:value={() => commentInput.trimStart().replace(/\s{2,}/g, " "), (v) => (commentInput = v)}
           max={512}
         />
         <Field.Description>
@@ -222,7 +223,7 @@
   </Table.Root>
 </div>
 
-<div class="mt-4 flex justify-center flex-col items-center gap-2">
+<div class="mt-4 flex flex-col items-center justify-center gap-2">
   <Pagination.Root
     bind:page={params.page}
     perPage={params.limit}
