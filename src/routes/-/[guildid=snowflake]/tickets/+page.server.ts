@@ -7,7 +7,7 @@ export async function load({ params, parent, url, fetch }) {
 
   const { searchParams } = validateSearchParams(url, searchParamsSchema);
 
-  const response = await fetch(`/api/authed/guilds/${params.guildid}/tickets?${searchParams.toString()}`);
+  const response = await fetch(`/api/v1/guilds/${params.guildid}/tickets?${searchParams.toString()}`);
 
   return {
     tickets: (await response.json()) as APITicketResponse,
