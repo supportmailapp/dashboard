@@ -221,7 +221,7 @@
   </Table.Root>
 </div>
 
-<div class="mt-4 flex justify-center">
+<div class="mt-4 flex justify-center flex-col items-center gap-2">
   <Pagination.Root
     bind:page={params.page}
     perPage={params.limit}
@@ -256,7 +256,7 @@
 
   <div class="flex w-fit">
     <Field.Field orientation="horizontal" class="w-fit">
-      <Field.Label>Per Page</Field.Label>
+      <Field.Label class="w-30">Per Page</Field.Label>
       <Input type="number" min={1} max={100} bind:value={params.limit} />
     </Field.Field>
   </div>

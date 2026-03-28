@@ -45,6 +45,7 @@ const config = {
     },
   },
   vitePlugin: {
+    prebundleSvelteLibraries: false,
     inspector:
       process.env.NODE_ENV === "development"
         ? {
