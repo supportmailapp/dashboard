@@ -87,49 +87,43 @@
       return;
     }
 
-    try {
-      const { pausedUntil, ...rest } = current ?? {
-        channelId: null,
-        pausedUntil: {
-          date: null,
-          value: false,
-        },
-        actionsEnabled: false,
-        enabled: false,
-        limits: { opens: 20, perUserCreate: 5, perUserReceive: 1 },
-        channels: { setting: "IN", ids: [] },
-        mods: [],
-        immune: [],
-        pings: [],
-        autoResolve: false,
-        notifications: [],
-      };
+    const { pausedUntil, ...rest } = current ?? {
+      channelId: null,
+      pausedUntil: {
+        date: null,
+        value: false,
+      },
+      actionsEnabled: false,
+      enabled: false,
+      limits: { opens: 20, perUserCreate: 5, perUserReceive: 1 },
+      channels: { setting: "IN", ids: [] },
+      mods: [],
+      immune: [],
+      pings: [],
+      autoResolve: false,
+      notifications: [],
+    };
 
-      const res = await apiClient.put(APIRoutes.reportsConfig(page.params.guildid!), {
-        json: {
-          ...rest,
-          enabled: !rest.channelId ? false : rest.enabled,
-          pausedUntil: pausedPayload,
-        } as PutFields,
+    const res = await apiClient.put<DBGuildProjectionReturns["reportSettings"]>(APIRoutes.reportsConfig(), {
+      json: {
+        ...rest,
+        enabled: !rest.channelId ? false : rest.enabled,
+        pausedUntil: pausedPayload,
+      } as PutFields,
+    });
+
+    if (!res.ok) {
+      toast.error("Failed to save report configuration.", {
+        description: res.error,
       });
-
-      if (!res.ok) {
-        const error = await res.json<any>();
-        throw new Error(error.message || "Failed to save report configuration.");
-      }
-
-      const json = await res.json<DBGuildProjectionReturns["reportSettings"]>();
-      config.old = { ...json };
-      config.current = { ...json };
-      setPauseState(json.pausedUntil);
-      fetchedState = json.pausedUntil;
-
+    } else {
+      config.old = { ...res.data };
+      config.current = { ...res.data };
+      setPauseState(res.data.pausedUntil);
+      fetchedState = res.data.pausedUntil;
       toast.success("Report configuration saved successfully.");
-    } catch (error: any) {
-      toast.error(`Failed to save report configuration: ${error.message}`);
-    } finally {
-      config.saving = false;
     }
+    config.saving = false;
   }
 
   function resetConfig() {
@@ -141,7 +135,7 @@
   }
 
   afterNavigate(() => {
-    fetch(APIRoutes.reportsConfig(page.params.guildid!))
+    fetch(APIRoutes.reportsConfig())
       .then((res) => {
         if (!res.ok) {
           toast.error("Failed to load report configuration.", {
