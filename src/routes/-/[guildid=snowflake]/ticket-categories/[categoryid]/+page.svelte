@@ -112,26 +112,23 @@
     const payload = $state.snapshot(config.current);
 
     // Remove the index field from the payload
+    // @ts-ignore
+    delete payload.index;
 
-    try {
-      const res = await apiClient.put(APIRoutes.ticketCategory(page.params.guildid!, config.current._id), {
-        json: payload,
+    const res = await apiClient.put<CategoryData>(APIRoutes.ticketCategory(config.current._id), {
+      json: payload,
+    });
+
+    if (!res.ok) {
+      toast.error("Failed to save ticket category.", {
+        description: res.error,
       });
-
-      if (!res.ok) {
-        const error = await res.json<any>();
-        throw new Error(error.message || "Failed to save ticket category.");
-      }
-
-      const _data = await res.json<CategoryData>();
-      config.old = { ..._data };
-      config.current = { ..._data };
+    } else {
+      config.old = { ...res.data };
+      config.current = { ...res.data };
       toast.success("Ticket category saved.");
-    } catch (error: any) {
-      toast.error(`Failed to save ticket category: ${error.message}`);
-    } finally {
-      config.saving = false;
     }
+    config.saving = false;
   }
 
   async function deleteCategory() {
@@ -139,21 +136,17 @@
 
     config.loading = true;
 
-    try {
-      const res = await apiClient.delete(APIRoutes.ticketCategory(page.params.guildid!, config.current._id));
+    const res = await apiClient.delete(APIRoutes.ticketCategory(config.current._id));
 
-      if (!res.ok) {
-        const error = await res.json<any>();
-        throw new Error(error.message || "Failed to delete ticket category.");
-      }
-
+    if (!res.ok) {
+      toast.error("Failed to delete ticket category.", {
+        description: res.error,
+      });
+    } else {
       toast.success("Ticket category deleted.");
       navigateBack();
-    } catch (error: any) {
-      toast.error(`Failed to delete ticket category: ${error.message}`);
-    } finally {
-      config.loading = false;
     }
+    config.loading = false;
   }
 
   function navigateBack() {

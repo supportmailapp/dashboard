@@ -30,7 +30,7 @@
 
   async function resetSettings() {
     loading = true;
-    const res = await apiClient.post(APIRoutes.resetTickets(page.params.guildid!), {
+    const res = await apiClient.post<null>(APIRoutes.resetTickets(), {
       json: $state.snapshot(selectedOptions),
     }); // Returns 204 No Content on success
 
