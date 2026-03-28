@@ -1,4 +1,4 @@
-import { discordUrls } from "$lib/urls";
+import { discordUrls } from "$lib/urls.svelte.js";
 import { redirect } from "@sveltejs/kit";
 
 export async function GET({ url }) {

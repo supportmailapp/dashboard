@@ -1,5 +1,5 @@
 import { env } from "$env/dynamic/private";
-import { discordUrls } from "$lib/urls";
+import { discordUrls } from "$lib/urls.svelte.js";
 import { SnowflakeSchema } from "$v1Api/assertions.js";
 import { redirect } from "@sveltejs/kit";
 import jwt from "jsonwebtoken";
