@@ -17,7 +17,6 @@
   import Timestamp from "$components/discord/Timestamp.svelte";
   import { Badge } from "$ui/badge/index.js";
   import Skeleton from "$ui/skeleton/skeleton.svelte";
-  import Switch from "$ui/switch/switch.svelte";
   import { fly } from "svelte/transition";
   import { TicketStatus } from "$lib/sm-types/src";
   import UserSelect from "$lib/components/discord/UserSelect.svelte";
@@ -25,6 +24,7 @@
   import { ChannelType } from "discord-api-types/v10";
   import Input from "$ui/input/input.svelte";
   import Checkbox from "$ui/checkbox/checkbox.svelte";
+  import { Debounced, watch } from "runed";
 
   const ticketStatusOptions: Record<TicketStatus, string> = {
     [TicketStatus.open]: "Open",
@@ -43,7 +43,17 @@
     pushHistory: true,
     noScroll: true,
   });
+
   let commentInput = $state("");
+  const debouncedComment = new Debounced(() => commentInput.trim(), 750);
+
+  watch(
+    () => debouncedComment.current,
+    (val) => {
+      params.comment = val;
+    },
+    { lazy: true }, // important! Otherwise we would navigate too quickly when the page loads.
+  );
 
   afterNavigate(({ from, to }) => {
     // Reset filters when navigating away
@@ -158,12 +168,7 @@
 
       <Field.Field>
         <Field.Label>Close Comment</Field.Label>
-        <Input
-          // Trim 2+ whitespace to prevent users from accidentally entering long strings of spaces which would cause expensive regex queries
-          // dont trim on end/start because they might want to type some spaces and then some text, and we dont want to trim those spaces until they actually submit the query
-          bind:value={() => commentInput.trimStart().replace(/\s{2,}/g, " "), (v) => (commentInput = v)}
-          max={512}
-        />
+        <Input bind:value={commentInput} max={512} />
         <Field.Description>
           Filters by close comment content. This is case-insensitive and filters comments partially.
         </Field.Description>
