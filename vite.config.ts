@@ -1,4 +1,4 @@
-import { sentrySvelteKit } from "@sentry/sveltekit";
+// import { sentrySvelteKit } from "@sentry/sveltekit";
 import devtoolsJson from "vite-plugin-devtools-json";
 import tailwindcss from "@tailwindcss/vite";
 import { sveltekit } from "@sveltejs/kit/vite";
@@ -16,18 +16,18 @@ export default defineConfig(({ mode }) => {
     plugins: [
       tailwindcss(),
       sveltekit(),
-      sentrySvelteKit({
-        org: "lukez-dev",
-        project: "supportmail-dashboard",
-        adapter: "node",
-        authToken: env.SENTRY_AUTH_TOKEN,
-        autoUploadSourceMaps: true,
-        sourcemaps: isDev
-          ? { disable: "disable-upload" }
-          : {
-              filesToDeleteAfterUpload: ["./**/*.map", ".svelte-kit/**/*.map"],
-            },
-      }),
+      // sentrySvelteKit({
+      //   org: "lukez-dev",
+      //   project: "supportmail-dashboard",
+      //   adapter: "node",
+      //   authToken: env.SENTRY_AUTH_TOKEN,
+      //   autoUploadSourceMaps: true,
+      //   sourcemaps: isDev
+      //     ? { disable: "disable-upload" }
+      //     : {
+      //         filesToDeleteAfterUpload: ["./**/*.map", ".svelte-kit/**/*.map"],
+      //       },
+      // }),
       devtoolsJson({
         normalizeForWindowsContainer: true,
         uuid: "supportmail-dashboard-vite-config",

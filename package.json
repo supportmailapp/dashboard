@@ -16,7 +16,6 @@
     "update:submodules": "git submodule update --init --recursive"
   },
   "devDependencies": {
-    "@internationalized/date": "^3.12.0",
     "@lucide/svelte": "^0.577.0",
     "@sveltejs/adapter-node": "^5.5.4",
     "@sveltejs/kit": "^2.55.0",
@@ -26,7 +25,7 @@
     "@tailwindcss/vite": "^4.2.2",
     "@types/humanize-duration": "^3.27.4",
     "@types/jsonwebtoken": "^9.0.10",
-    "bits-ui": "^2.16.4",
+    "bits-ui": "^2.16.3",
     "clsx": "^2.1.1",
     "mode-watcher": "^1.1.0",
     "prettier": "3.8.1",
@@ -49,9 +48,10 @@
     "@discordapp/twemoji": "^16.0.1",
     "@fontsource-variable/geist": "^5.2.8",
     "@fontsource-variable/raleway": "^5.2.8",
+    "@internationalized/date": "^3.12.0",
     "@lukez/fast-deep-equal": "^4.1.0",
     "@sapphire/snowflake": "^3.5.5",
-    "@sentry/sveltekit": "^10.44.0",
+    "@sentry/sveltekit": "^10.46.0",
     "dayjs": "^1.11.20",
     "discord-api-types": "^0.38.42",
     "discord.js": "^14.25.1",
