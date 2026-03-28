@@ -270,10 +270,10 @@ declare global {
        *
        * Only given if any were updated!
        */
-      data?: Array<{
+      data?: {
         categoryId: string;
         tagId: string;
-      }>;
+      }[];
       error?: string;
     }
   }

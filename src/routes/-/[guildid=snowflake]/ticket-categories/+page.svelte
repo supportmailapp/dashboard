@@ -122,23 +122,18 @@
     syncTags.loading = true;
 
     try {
-      const res = await apiClient.post<ClientAPI.CategoriesTagsResult>(
-        APIRoutes.syncTags(page.params.guildid!),
-        {
-          json: ($state.snapshot(config.old) ?? []).map((cat) => ({
-            _id: cat._id,
-            setTag: syncTags.selected.has(cat._id),
-          })),
-        },
-      );
+      const res = await apiClient.post<ClientAPI.CategoriesTagsResult>(APIRoutes.syncTags(), {
+        json: ($state.snapshot(config.old) ?? []).map((cat) => ({
+          _id: cat._id,
+          setTag: syncTags.selected.has(cat._id),
+        })),
+      });
 
       if (!res.ok) {
-        const error = await res.json<any>();
-        throw new Error(error.message || "Failed to sync ticket category tags.");
+        throw new Error(res.error || "Failed to sync ticket category tags.");
       }
 
-      const jsonRes = await res.json();
-      if (jsonRes.data) {
+      if (res.data) {
         function updateStateWithNewData(
           state: APITicketCategory[],
           data: {
@@ -163,8 +158,10 @@
         }
 
         // update current before old to reduce latency to reset
-        config.current = updateStateWithNewData($state.snapshot(config.current) ?? [], jsonRes.data);
-        config.old = updateStateWithNewData($state.snapshot(config.old) ?? [], jsonRes.data);
+        if (res.data.data) {
+          config.current = updateStateWithNewData($state.snapshot(config.current) ?? [], res.data.data);
+          config.old = updateStateWithNewData($state.snapshot(config.old) ?? [], res.data.data);
+        }
       }
 
       toast.success("Ticket category tags sync started.");
@@ -207,57 +204,48 @@
 
     config.saving = true;
 
-    try {
-      const res = await apiClient.put(APIRoutes.ticketCategories(page.params.guildid!), {
-        json: config.current
-          .sort((a, b) => a.index - b.index)
-          .map((cat) => ({
-            _id: cat._id,
-            label: cat.label,
-            guildId: page.params.guildid!,
-            index: cat.index,
-            local: cat.local || undefined,
-          })),
+    const res = await apiClient.put<APITicketCategory[]>(APIRoutes.ticketCategories(), {
+      json: config.current
+        .sort((a, b) => a.index - b.index)
+        .map((cat) => ({
+          _id: cat._id,
+          label: cat.label,
+          guildId: page.params.guildid!,
+          index: cat.index,
+          local: cat.local || undefined,
+        })),
+    });
+
+    if (!res.ok) {
+      toast.error("Failed to save ticket categories.", {
+        description: res.error,
       });
-
-      if (!res.ok) {
-        const error = await res.json<any>();
-        throw new Error(error.message || "Failed to save ticket categories.");
-      }
-
-      const _data = await res.json<APITicketCategory[]>();
-      config.old = [..._data];
-      config.current = [..._data];
+    } else {
+      config.old = [...res.data];
+      config.current = [...res.data];
       syncTags.load();
       toast.success("Ticket categories saved.");
-    } catch (error: any) {
-      toast.error(`Failed to save ticket categories: ${error.message}`);
-    } finally {
-      config.saving = false;
     }
+    config.saving = false;
   }
 
   async function deleteCategory(categoryId: string) {
     config.loading = true;
 
-    try {
-      const res = await apiClient.delete(APIRoutes.ticketCategory(page.params.guildid!, categoryId));
+    const res = await apiClient.delete<APITicketCategory>(APIRoutes.ticketCategory(categoryId));
 
-      if (!res.ok) {
-        const error = await res.json<any>();
-        throw new Error(error.message || "Failed to delete ticket category.");
-      }
-
+    if (!res.ok) {
+      toast.error("Failed to delete ticket category.", {
+        description: res.error,
+      });
+    } else {
       if (config.current) {
         config.current = config.current.filter((cat) => cat._id !== categoryId);
         config.old = [...config.current];
       }
       toast.success("Ticket category deleted.");
-    } catch (error: any) {
-      toast.error(`Failed to delete ticket category: ${error.message}`);
-    } finally {
-      config.loading = false;
     }
+    config.loading = false;
   }
 
   // Reordering functions //
@@ -304,29 +292,22 @@
   });
 
   afterNavigate(async () => {
-    try {
-      const res = await apiClient.get<APITicketCategory[]>(APIRoutes.ticketCategories(page.params.guildid!));
+    const res = await apiClient.get<APITicketCategory[]>(APIRoutes.ticketCategories());
 
-      if (!res.ok) {
-        const error = await res.json<any>();
-        throw new Error(error.message || "Failed to load ticket categories.");
-      }
-
-      const data = await res.json();
-      const normalized = (data ?? []).map((item: APITicketCategory, i: number) => ({
+    if (!res.ok) {
+      toast.error("Failed to load ticket categories.", {
+        description: res.error,
+      });
+    } else {
+      const normalized = (res.data ?? []).map((item: APITicketCategory, i: number) => ({
         ...item,
         index: typeof item.index === "number" ? item.index : i + 1,
       }));
       config.old = [...normalized];
       config.current = [...normalized];
       syncTags.load();
-    } catch (err: any) {
-      toast.error("Failed to load ticket categories.", {
-        description: err.message,
-      });
-    } finally {
-      config.loading = false;
     }
+    config.loading = false;
   });
 
   function resetCfg() {
