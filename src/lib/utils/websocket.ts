@@ -1,20 +1,6 @@
+import type { WsResponseType } from "$lib/sm-types/src/ws";
 import type { APIUser } from "discord-api-types/v10";
 import { io, type Socket } from "socket.io-client";
-
-type WsResponseSuccess<T> = {
-  success: true;
-  data: T;
-  error?: undefined;
-};
-
-type WsResponseError = {
-  success: false;
-  data?: undefined;
-  error: unknown;
-};
-
-export type WsResponseType<T> = WsResponseSuccess<T> | WsResponseError;
-export type WsEventType = keyof EventsMap;
 
 export type EventsMap = {
   test: (data: any, callback: (response: WsResponseType<any>) => void) => void;

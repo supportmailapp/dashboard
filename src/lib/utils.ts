@@ -5,7 +5,7 @@ import { equal } from "@lukez/fast-deep-equal";
 import { twMerge } from "tailwind-merge";
 import { DiscordSnowflake } from "@sapphire/snowflake";
 import { ChannelType } from "discord-api-types/v10";
-import { SpecialChannelType} from "./sm-types/src";
+import { SpecialChannelType } from "./sm-types/src";
 
 dayjs.extend(relativeTime);
 
