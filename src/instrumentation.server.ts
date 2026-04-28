@@ -8,4 +8,5 @@ Sentry.init({
   enableLogs: true,
   enableMetrics: true,
   sendDefaultPii: true,
+  environment: process.env.NODE_ENV,
 });

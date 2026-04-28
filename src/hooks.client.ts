@@ -10,6 +10,7 @@ Sentry.init({
   enableMetrics: true,
   sendDefaultPii: true,
   tunnel: "/api/v1/tunnel",
+  environment: dev ? "development" : "production",
 });
 
 export const handleError: HandleClientError = async ({ error, event, status, message }) => {
