@@ -10,6 +10,10 @@ const config = {
       precompress: false,
     }),
 
+    version: {
+      name: "1.1.0",
+    },
+
     alias: {
       $ui: "src/lib/components/ui",
       $lib: "src/lib",
