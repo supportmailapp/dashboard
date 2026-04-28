@@ -2,7 +2,7 @@
   import { page } from "$app/state";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import { LANGUAGES } from "$lib/constants";
-  import { APIRoutes } from "$lib/urls";
+  import { APIRoutes } from "$lib/urls.svelte";
   import { cn, determineUnsavedChanges, parseIconToURL } from "$lib/utils";
   import { Button } from "$ui/button";
   import * as Select from "$ui/select/index.js";
@@ -61,12 +61,11 @@
       json: $state.snapshot(dbUser),
     });
 
-    const jsonRes = await res.json();
     if (!res.ok) {
-      toast.error(`Failed to save settings: ${(jsonRes as any).message ?? res.statusText}`);
+      toast.error("Failed to save settings", { description: res.error });
     } else {
-      oldUser = { ...jsonRes };
-      dbUser = { ...jsonRes };
+      oldUser = { ...res.data };
+      dbUser = { ...res.data };
       toast.success("Settings saved!");
     }
     loading = false;
@@ -80,12 +79,11 @@
   afterNavigate(async () => {
     loading = true;
     const res = await apiClient.get<OurUser>(APIRoutes.me());
-    const jsonRes = await res.json();
     if (res.ok) {
-      oldUser = { ...jsonRes };
-      dbUser = { ...jsonRes };
+      oldUser = { ...res.data };
+      dbUser = { ...res.data };
     } else {
-      toast.error(`Failed to load settings: ${(jsonRes as any).message ?? res.statusText}`);
+      toast.error("Failed to load settings", { description: res.error });
     }
     loading = false;
   });

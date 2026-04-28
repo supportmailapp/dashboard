@@ -8,9 +8,11 @@ import { canManageBot } from "$lib/server/permissions.js";
 import { json } from "@sveltejs/kit";
 import type { KyResponse } from "ky";
 import z from "zod";
+import { SnowflakeSchema } from "$v1Api/assertions.js";
+import * as Sentry from "@sentry/sveltekit";
 
 const routePredicate = z.object({
-  categoryId: z.string().regex(/^\d+$/, { error: "Malformed categoryId snowflake" }).optional(),
+  categoryId: SnowflakeSchema.optional(),
 });
 
 export async function POST({ locals, request, params }) {
@@ -51,10 +53,14 @@ export async function POST({ locals, request, params }) {
 
   const _body = await request.json().catch(() => null);
 
+  if (!_body) {
+    return JsonErrors.badRequest("Invalid JSON body");
+  }
+
   const valRes = new ZodValidator(routePredicate).validate(_body);
 
   if (!valRes.success) {
-    return JsonErrors.badRequest(String(valRes.error.message ?? valRes.error));
+    return JsonErrors.badRequest(valRes.error.toString());
   }
 
   const { categoryId } = valRes.data;
@@ -95,17 +101,22 @@ export async function POST({ locals, request, params }) {
         }) as KyResponse<ClientAPI.POSTTicketSetupJSONResult>,
     );
 
-  if (!res.ok) {
-    // This only happens on 500 errors
-    return new Response(null, { status: res.status, statusText: res.statusText });
-  }
+  const jsonRes = await res.json().catch(() => ({
+    success: false,
+    error: {
+      code: SMErrorCodes.UnknownError,
+      message: "Invalid JSON response from ticket setup",
+    },
+  }) as ClientAPI.POSTTicketSetupJSONResultError);
 
-  const jsonRes = await res.json();
 
   if (!jsonRes.success) {
     switch (jsonRes.error.code ?? 500) {
       case SMErrorCodes.MissingPermissions:
-        return JsonErrors.forbidden("Bot missing required permissions");
+        return json({
+          message: "Bot is missing permissions.",
+          details: jsonRes.error.permissionsMissing?.join(", ") ?? "Unknown permissions",
+        })
       case SMErrorCodes.CategoryNotFound:
         return JsonErrors.notFound("Category not found");
       case SMErrorCodes.CategoryCreationFailed:

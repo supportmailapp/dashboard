@@ -53,7 +53,7 @@ export async function PUT({ params, request }) {
 
   const valRes = new ZodValidator(PanelSchema).validate(data);
   if (!valRes.success) {
-    return JsonErrors.badRequest(valRes.error.message);
+    return JsonErrors.badRequest(valRes.error);
   }
 
   const panel = await Panel.findOneAndUpdate(

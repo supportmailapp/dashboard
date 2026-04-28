@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { BlacklistScope, EntityType } from "$lib/sm-types";
+  import { BlacklistScopes, EntityType } from "$lib/sm-types";
   import { cn } from "$lib/utils";
   import type { SvelteBitfield } from "$lib/utils/reactiveBitfield.svelte";
   import * as Dropdown from "$ui/dropdown-menu/index.js";
@@ -27,10 +27,10 @@
     sorting = $bindable("newestFirst"),
   }: Props = $props();
 
-  const filterScopeOptions: { value: BlacklistScope; label: string }[] = [
-    { value: BlacklistScope.tickets, label: "Tickets" },
-    { value: BlacklistScope.reports, label: "Reports" },
-    { value: BlacklistScope.tags, label: "Tags" },
+  const filterScopeOptions: { value: ValueOf<typeof BlacklistScopes>; label: string }[] = [
+    { value: BlacklistScopes.tickets, label: "Tickets" },
+    { value: BlacklistScopes.reports, label: "Reports" },
+    { value: BlacklistScopes.tags, label: "Tags" },
   ];
 
   const filterTypeOptions: { value: Exclude<EntityType, EntityType.guild> | -1; label: string }[] = [
@@ -76,25 +76,23 @@
   <div class="flex flex-col gap-2">
     <Label class="text-sm font-medium">
       Filter By Scope
-      <Tooltip.Provider delayDuration={100} disableCloseOnTriggerClick>
-        <Tooltip.Root>
-          <Tooltip.Trigger class="cursor-help">
-            <Info class="size-3.5" />
-          </Tooltip.Trigger>
-          <Tooltip.Content class="max-w-60">
-            <p>
-              Shows results where at least one selected scope matches.<br />
-              Example: If you filter for <strong>Tickets</strong> and <strong>Reports</strong>, you'll also
-              see entries that only have
-              <strong>Tickets</strong>
-              or only
-              <strong>Reports</strong>.<br />
-              If you filter only for <strong>Tickets</strong>, you'll also see entries that have more scopes
-              than just <strong>Tickets</strong>.
-            </p>
-          </Tooltip.Content>
-        </Tooltip.Root>
-      </Tooltip.Provider>
+      <Tooltip.Root delayDuration={100} disableCloseOnTriggerClick>
+        <Tooltip.Trigger class="cursor-help">
+          <Info class="size-3.5" />
+        </Tooltip.Trigger>
+        <Tooltip.Content class="max-w-60">
+          <p>
+            Shows results where at least one selected scope matches.<br />
+            Example: If you filter for <strong>Tickets</strong> and <strong>Reports</strong>, you'll also see
+            entries that only have
+            <strong>Tickets</strong>
+            or only
+            <strong>Reports</strong>.<br />
+            If you filter only for <strong>Tickets</strong>, you'll also see entries that have more scopes
+            than just <strong>Tickets</strong>.
+          </p>
+        </Tooltip.Content>
+      </Tooltip.Root>
     </Label>
     <Dropdown.Root>
       <Dropdown.Trigger

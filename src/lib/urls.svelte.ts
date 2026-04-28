@@ -1,3 +1,4 @@
+import { page } from "$app/state";
 import { env as pubEnv } from "$env/dynamic/public";
 import { RouteBases, Routes } from "discord-api-types/v10";
 
@@ -78,38 +79,39 @@ const APIRoutes = {
     if (manageBotOnly) sParams.set("manageBot", "true");
     return `${API_BASE}/@me/guilds` + (sParams.toString() ? `?${sParams.toString()}` : "");
   },
-  guildChannels: (guildId: string, force = false) =>
-    `${API_GUILD_BASE}/${guildId}/channels${force ? "?cache=false" : ""}` as const,
-  guildChannel: (guildId: string, channelId: string) =>
-    `${API_GUILD_BASE}/${guildId}/channels/${channelId}` as const,
-  guildRoles: (guildId: string, force = false) =>
-    `${API_GUILD_BASE}/${guildId}/roles${force ? "?cache=false" : ""}` as const,
+  guildChannels: (force = false) =>
+    `${API_GUILD_BASE}/${page.params.guildid}/channels${force ? "?cache=false" : ""}` as const,
+  guildChannel: (channelId: string) =>
+    `${API_GUILD_BASE}/${page.params.guildid}/channels/${channelId}` as const,
+  guildRoles: (force = false) =>
+    `${API_GUILD_BASE}/${page.params.guildid}/roles${force ? "?cache=false" : ""}` as const,
+  listGuildEmojis: () => `${API_GUILD_BASE}/${page.params.guildid}/emojis` as const,
 
-  overview: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/overview` as const,
+  overview: () => `${API_GUILD_BASE}/${page.params.guildid}/config/overview` as const,
 
-  tickets: (guildId: string) => `${API_GUILD_BASE}/${guildId}/tickets` as const,
+  tickets: () => `${API_GUILD_BASE}/${page.params.guildid}/tickets` as const,
   /**
    * Returns the URL for a specific guild's tickets configuration.
    */
-  ticketsConfig: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/tickets` as const,
-  ticketSetup: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/tickets/setup` as const,
-  ticketFeedbackSetup: (guildId: string) =>
-    `${API_GUILD_BASE}/${guildId}/config/tickets/feedback/setup` as const,
-  memberSearch: (guildId: string, query: string, filter?: "bot") =>
-    `${API_GUILD_BASE}/${guildId}/member-search?q=${encodeURIComponent(query)}${addFilterParam(filter)}` as const,
-  ticketCategories: (guildId: string, partial?: boolean) =>
-    `${API_GUILD_BASE}/${guildId}/config/tickets/categories${partial ? "?partial=true" : ""}` as const,
-  ticketCategory: (guildId: string, categoryId: string) =>
-    `${API_GUILD_BASE}/${guildId}/config/tickets/categories/${categoryId}` as const,
-  ticketsFeedback: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/tickets/feedback` as const,
-  ticketFeedback: (guildId: string, ticketId: string) =>
-    `${API_GUILD_BASE}/${guildId}/tickets/${ticketId}/feedback` as const,
-  resetTickets: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/tickets/reset` as const,
-  syncTags: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/tickets/categories/sync-tags` as const,
+  ticketsConfig: () => `${API_GUILD_BASE}/${page.params.guildid}/config/tickets` as const,
+  ticketSetup: () => `${API_GUILD_BASE}/${page.params.guildid}/config/tickets/setup` as const,
+  ticketFeedbackSetup: () =>
+    `${API_GUILD_BASE}/${page.params.guildid}/config/tickets/feedback/setup` as const,
+  memberSearch: (query: string, filter?: "bot") =>
+    `${API_GUILD_BASE}/${page.params.guildid}/member-search?q=${encodeURIComponent(query)}${addFilterParam(filter)}` as const,
+  ticketCategories: (partial?: boolean) =>
+    `${API_GUILD_BASE}/${page.params.guildid}/config/tickets/categories${partial ? "?partial=true" : ""}` as const,
+  ticketCategory: (categoryId: string) =>
+    `${API_GUILD_BASE}/${page.params.guildid}/config/tickets/categories/${categoryId}` as const,
+  ticketsFeedback: () => `${API_GUILD_BASE}/${page.params.guildid}/config/tickets/feedback` as const,
+  ticketFeedback: (ticketId: string) =>
+    `${API_GUILD_BASE}/${page.params.guildid}/tickets/${ticketId}/feedback` as const,
+  resetTickets: () => `${API_GUILD_BASE}/${page.params.guildid}/config/tickets/reset` as const,
+  syncTags: () => `${API_GUILD_BASE}/${page.params.guildid}/config/tickets/categories/sync-tags` as const,
 
-  reports: (guildId: string) => `${API_GUILD_BASE}/${guildId}/reports` as const,
-  reportsConfig: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/reports` as const,
-  resetReports: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/reports/reset` as const,
+  reports: () => `${API_GUILD_BASE}/${page.params.guildid}/reports` as const,
+  reportsConfig: () => `${API_GUILD_BASE}/${page.params.guildid}/config/reports` as const,
+  resetReports: () => `${API_GUILD_BASE}/${page.params.guildid}/config/reports/reset` as const,
 
   /**
    * Used for every blacklist operation.
@@ -120,10 +122,10 @@ const APIRoutes = {
    * - `DELETE` - Delete one or more blacklist entries by `_id`
    *   - Expects `{ ids: string[] }` of ObjectIds to delete
    */
-  blacklist: (guildId: string) => `${API_GUILD_BASE}/${guildId}/blacklist` as const,
+  blacklist: () => `${API_GUILD_BASE}/${page.params.guildid}/blacklist` as const,
 
-  tags: (guildId: string, partial?: boolean) =>
-    `${API_GUILD_BASE}/${guildId}/tags${partial ? "?partial=true" : ""}` as const,
+  tags: (partial?: boolean) =>
+    `${API_GUILD_BASE}/${page.params.guildid}/tags${partial ? "?partial=true" : ""}` as const,
 
   /**
    * Used for command configuration operations.
@@ -131,8 +133,8 @@ const APIRoutes = {
    * - `PUT` - Create or update command configurations. Expects an array of command configuration objects. Doesn't need any query parameters.
    * - `DELETE` - Delete command configurations. Requires `path` or `id` query parameter. `path` allows partial matching (^). Path takes precedence over id.
    */
-  commandConfig: (guildId: string, { path, id }: { path?: string; id?: string } = {}) => {
-    const baseUrl = `${API_GUILD_BASE}/${guildId}/config/commands`;
+  commandConfig: ({ path, id }: { path?: string; id?: string } = {}) => {
+    const baseUrl = `${API_GUILD_BASE}/${page.params.guildid}/config/commands`;
     const searchParams = new URLSearchParams();
     if (path) searchParams.set("path", path);
     if (id) searchParams.set("id", id);
@@ -140,14 +142,12 @@ const APIRoutes = {
     return `${baseUrl}?${queryString}`.replace(/\?$/, "");
   },
 
-  panel: (guildId: string) => `${API_GUILD_BASE}/${guildId}/config/panel` as const,
-  sendPanel: (guildId: string) => `${API_GUILD_BASE}/${guildId}/send-panel` as const,
-
-  listGuildEmojis: (guildId: string) => `${API_GUILD_BASE}/${guildId}/emojis` as const,
+  panel: () => `${API_GUILD_BASE}/${page.params.guildid}/config/panel` as const,
+  sendPanel: () => `${API_GUILD_BASE}/${page.params.guildid}/send-panel` as const,
 
   /**
    * Returns the URL for a specific guild.
-   * 
+   *
    * Can only be used by mods and higher.
    */
   guild: (guildId: string) => `${API_GUILD_BASE}/${guildId}` as const,
@@ -165,6 +165,7 @@ const DocsLinks = {
     "https://docs.supportmail.dev/getting-support/preferences/#how-language-is-determined",
   TicketCategories: "https://docs.supportmail.dev/configuration/ticket-categories/",
   EmojiMarkdownFormat: "https://docs.supportmail.dev/guides/emoji-markdown",
+  findIds: "https://support.discord.com/hc/articles/206346498-Where-can-I-find-my-User-Server-Message-ID",
 };
 
 export { APIRoutes, cdnUrls, DISCORD_CDN_BASE, discordUrls, DocsLinks, LegalLinks };

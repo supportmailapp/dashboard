@@ -8,6 +8,7 @@
   import { getManager, setManager } from "$lib/stores/GuildsManager.svelte";
   import { setSnowflakes } from "$lib/stores/SnowflakeControls.svelte";
   import { isVpn } from "$lib/stores/vpn.svelte";
+  import { TooltipProvider } from "$ui/tooltip/index.js";
 
   let { children, data } = $props();
 
@@ -51,7 +52,9 @@
 
 <ModeWatcher />
 
-{@render children?.()}
+<TooltipProvider>
+  {@render children?.()}
+</TooltipProvider>
 
 <Toaster position={"top-center"} richColors visibleToasts={4} closeButton />
 

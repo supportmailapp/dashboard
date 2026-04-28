@@ -27,7 +27,7 @@ export async function PATCH({ locals, request }) {
   const valRes = new ZodValidator(putSchema).validate(body);
 
   if (!valRes.success) {
-    return JsonErrors.badRequest(valRes.error.message);
+    return JsonErrors.badRequest(valRes.error);
   }
 
   const user = await DBUser.findOneAndUpdate(

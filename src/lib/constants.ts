@@ -1,40 +1,40 @@
 // Public constants
 
 import { dev } from "$app/environment";
+import { json } from "@sveltejs/kit";
 import z from "zod";
 
 export const JsonErrors = {
   /**
    * 400 Bad Request
    */
-  badRequest: (message: string = "") => Response.json({ message: message || "Bad Request" }, { status: 400 }),
+  badRequest: (message: string = "") => json({ message: message || "Bad Request" }, { status: 400 }),
   /**
    * 401 Unauthorized
    */
-  unauthorized: (message: string = "") =>
-    Response.json({ message: message || "Unauthorized" }, { status: 401 }),
+  unauthorized: (message: string = "") => json({ message: message || "Unauthorized" }, { status: 401 }),
   /**
    * 403 Forbidden
    */
-  forbidden: (message: string = "") => Response.json({ message: message || "Forbidden" }, { status: 403 }),
+  forbidden: (message: string = "") => json({ message: message || "Forbidden" }, { status: 403 }),
   /**
    * 404 Not Found
    */
-  notFound: (message: string = "") => Response.json({ message: message || "Not Found" }, { status: 404 }),
+  notFound: (message: string = "") => json({ message: message || "Not Found" }, { status: 404 }),
   /**
    * 409 Conflict
    */
-  conflict: (message: string = "") => Response.json({ message: message || "Conflict" }, { status: 409 }),
+  conflict: (message: string = "") => json({ message: message || "Conflict" }, { status: 409 }),
   /**
    * 429 Too Many Requests
    */
   tooManyRequests: (message: string = "") =>
-    Response.json({ message: message || "Too Many Requests" }, { status: 429 }),
+    json({ message: message || "Too Many Requests" }, { status: 429 }),
   /**
    * 500 Internal Server Error
    */
   serverError: (message: string = "") =>
-    Response.json({ message: message || "Internal Server Error" }, { status: 500 }),
+    json({ message: message || "Internal Server Error" }, { status: 500 }),
 } as const;
 
 export const LANGUAGES = [

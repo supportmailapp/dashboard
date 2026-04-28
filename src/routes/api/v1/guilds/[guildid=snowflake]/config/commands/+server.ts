@@ -69,7 +69,7 @@ export async function PUT({ request, params, url }) {
   ).validate(body);
   if (!valRes.success) {
     console.debug("Validation error:", valRes.error);
-    return JsonErrors.badRequest(valRes.error.message);
+    return JsonErrors.badRequest(valRes.error);
   }
 
   const updateQueries = valRes.data.map((data) => {

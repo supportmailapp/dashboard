@@ -10,7 +10,7 @@
   import { SpecialChannelType, type APICommandConfig } from "$lib/sm-types";
   import { cn, determineUnsavedChanges } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
-  import { APIRoutes } from "$lib/urls";
+  import { APIRoutes } from "$lib/urls.svelte";
   import { page } from "$app/state";
   import { afterNavigate } from "$app/navigation";
   import Mention from "$lib/components/discord/Mention.svelte";
@@ -21,7 +21,7 @@
   import { ChannelType } from "discord-api-types/v10";
   import { fade } from "svelte/transition";
   import { GetPermissionsArray, PermissionFlagsBits } from "$lib/utils/permissions.js";
-  import Combobox from "$ui/combobox/Combobox.svelte";
+  import Combobox from "$ui/combobox/combobox.svelte";
   import { BitField } from "$lib/utils/bitfields";
   import { toast } from "svelte-sonner";
   import Button from "$ui/button/button.svelte";
@@ -87,14 +87,11 @@
   }
 
   async function fetchCommand() {
-    const res = await apiClient.get<APICommandConfig[]>(
-      APIRoutes.commandConfig(page.params.guildid!, { path: "blacklist" }),
-    );
+    const res = await apiClient.get<APICommandConfig[]>(APIRoutes.commandConfig({ path: "blacklist" }));
 
     selectedSubcommandPath = "";
     if (res.ok) {
-      const jsonData = await res.json();
-      commands = jsonData.reduce(
+      commands = res.data.reduce(
         (acc, cmd) => {
           acc[cmd.commandPath] = cmd;
           return acc;
@@ -116,13 +113,12 @@
     if (!commands) return;
     loading = true;
 
-    const res = await apiClient.put<APICommandConfig[]>(APIRoutes.commandConfig(page.params.guildid!), {
+    const res = await apiClient.put<APICommandConfig[]>(APIRoutes.commandConfig(), {
       json: Object.values($state.snapshot(commands)),
     });
 
     if (res.ok) {
-      const jsonres = await res.json();
-      commands = jsonres.reduce(
+      commands = res.data.reduce(
         (acc, cmd) => {
           acc[cmd.commandPath] = cmd;
           return acc;
@@ -185,7 +181,7 @@
   async function reset() {
     if (!page.params.guildid) return;
     loading = true;
-    const res = await apiClient.delete(APIRoutes.commandConfig(page.params.guildid, { path: "blacklist" }));
+    const res = await apiClient.delete(APIRoutes.commandConfig({ path: "blacklist" }));
     if (res.ok) {
       toast.success("Command configuration has been reset to default.");
     } else {
@@ -259,7 +255,7 @@
                   >
                     <Plus class="size-4" />
                   </Popover.Trigger>
-                  <Popover.Content>
+                  <Popover.Content class="p-0">
                     <ChannelSelect
                       selectCategories
                       allowCustomChannels

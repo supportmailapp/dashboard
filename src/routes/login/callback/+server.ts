@@ -3,8 +3,8 @@ import { SessionManager } from "$lib/server/auth";
 import { discord } from "$lib/server/constants";
 import { BlacklistEntry } from "$lib/server/db/index.js";
 import { DiscordUserAPI } from "$lib/server/discord";
-import { BlacklistScope, EntityType } from "$lib/sm-types/src/index.js";
-import { discordUrls } from "$lib/urls";
+import { BlacklistScopes, EntityType } from "$lib/sm-types/src/index.js";
+import { discordUrls } from "$lib/urls.svelte.js";
 import { SnowflakeSchema } from "$v1Api/assertions";
 import * as Sentry from "@sentry/sveltekit";
 import { redirect } from "@sveltejs/kit";
@@ -37,7 +37,7 @@ export async function GET({ url, cookies }) {
     const isBlacklisted = await BlacklistEntry.exists({
       guildId: guildId,
       _type: EntityType.guild,
-      scopes: { $bitsAllSet: BlacklistScope.global },
+      scopes: { $bitsAllSet: BlacklistScopes.global },
     });
     if (isBlacklisted) {
       Sentry.logger.info("Blocked OAuth attempt from blacklisted guild", {

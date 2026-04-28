@@ -31,6 +31,10 @@
      * @default "all"
      */
     buttons?: "delete" | "copy" | "all" | "none";
+    /**
+     * For channels, only attempt to fetch the channel once. This is useful for deleted channels, where the API will return a 404.
+     */
+    dontRetry?: boolean;
   };
 
   let {
@@ -39,8 +43,9 @@
     channel,
     channelId,
     class: className,
-    onDelete = () => !!toast.error("This function is not set, please report this bug."),
     buttons = "all",
+    dontRetry,
+    onDelete = () => !!toast.error("This function is not set, please report this bug."),
   }: Props = $props();
   let hovered = $state(false);
 
@@ -63,7 +68,7 @@
   {:else if userId}
     <User {userId} class={className} />
   {:else if channel || channelId}
-    <Channel {channel} class={className} {channelId} />
+    <Channel {channel} class={className} {channelId} {dontRetry} />
   {/if}
 
   {#if (userId || roleId || channel || channelId) && buttons !== "none"}

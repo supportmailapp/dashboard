@@ -1,234 +1,209 @@
 <script lang="ts">
-  import { afterNavigate, goto } from "$app/navigation";
-  import { page } from "$app/state";
-  import SiteHeading from "$lib/components/SiteHeading.svelte";
-  import { ReportStatus } from "$lib/sm-types";
-  import { APIRoutes } from "$lib/urls";
-  import { safeParseInt } from "$lib/utils";
-  import apiClient from "$lib/utils/apiClient";
-  import { Button } from "$ui/button";
+  import { useSearchParams } from "runed/kit";
+  import { searchParamsSchema } from "./searchParams.js";
+  import SiteHeading from "$components/SiteHeading.svelte";
+  import * as Table from "$ui/table/index.js";
+  import * as Field from "$ui/field/index.js";
+  import * as Sheet from "$ui/sheet/index.js";
+  import * as Select from "$ui/select/index.js";
   import * as Pagination from "$ui/pagination/index.js";
-  import * as Tooltip from "$ui/tooltip/index.js";
-  import Files from "@lucide/svelte/icons/files";
-  import * as Empty from "$ui/empty/index.js";
-  import FolderOpen from "@lucide/svelte/icons/folder-open";
-  import equal from "fast-deep-equal/es6";
-  import { toast } from "svelte-sonner";
-  import type { PaginatedReportsResponse } from "$v1Api/guilds/[guildid=snowflake]/reports/+server";
-  import FilterControls, { type ReportSearchScope, type ReportSearchType } from "./FilterControls.svelte";
-  import ReportsTable from "./ReportsTable.svelte";
-  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
+  import Button from "$ui/button/button.svelte";
+  import { buttonVariants } from "$ui/button/button.svelte";
+  import { Badge } from "$ui/badge/index.js";
+  import Input from "$ui/input/input.svelte";
+  import Mention from "$components/discord/Mention.svelte";
+  import Timestamp from "$components/discord/Timestamp.svelte";
+  import { fly } from "svelte/transition";
+  import { afterNavigate } from "$app/navigation";
+  import { ReportStatus } from "$lib/sm-types/src";
+  import { cn } from "$lib/utils.js";
 
-  const pageData = $state({
-    page: safeParseInt(page.url.searchParams.get("page"), 1),
-    perPage: safeParseInt(page.url.searchParams.get("count"), 20),
-    total: null as null | number,
-    totalPages: null as null | number,
-    status: (page.url.searchParams.has("status")
-      ? parseStatus(page.url.searchParams.get("status")!)
-      : null) as ReportStatus | null,
-    search: page.url.searchParams.get("search") || "",
-    searchScope: (page.url.searchParams.get("sscope") || "all") as ReportSearchScope,
-    reportType: (page.url.searchParams.get("type") || "all") as ReportSearchType,
+  const reportStatusOptions: Record<string, string> = {
+    "-1": "All",
+    [ReportStatus.open]: "Open",
+    [ReportStatus.ignored]: "Ignored",
+    [ReportStatus.timeouted]: "Timed Out",
+    [ReportStatus.kicked]: "Kicked",
+    [ReportStatus.banned]: "Banned",
+    [ReportStatus.messageDeleted]: "Message Deleted",
+    [ReportStatus.resolved]: "Resolved",
+  };
+
+  const reportTypeOptions: Record<string, string> = {
+    all: "All",
+    message: "Message Report",
+    user: "User Report",
+  };
+
+  const searchScopeOptions: Record<string, string> = {
+    all: "All Fields",
+    author: "Author",
+    comment: "Comment",
+    message: "Message",
+    moderator: "Moderator",
+    user: "Reported User",
+    reason: "Reason",
+  };
+
+  let { data } = $props();
+
+  let reports = $derived(data.reports.data);
+  let pagination = $derived(data.reports.pagination);
+
+  const params = useSearchParams(searchParamsSchema, {
+    updateURL: true,
+    debounce: 250,
+    pushHistory: true,
+    noScroll: true,
   });
-  /**
-   * Used to determine whether it is allowed to fetch reports again.
-   */
-  let fetchedData = $state.snapshot(pageData);
-  let reportItems = $state<PaginatedReportsResponse["data"]>([]);
-  let reportsStatus = $state<"loading" | "loaded" | "error">("loading");
 
-  async function fetchReports() {
-    if (equal(fetchedData, $state.snapshot(pageData)) && reportsStatus === "loaded") {
-      toast.info("Nothing changed, not fetching reports again.");
-      return;
-    }
-
-    try {
-      reportsStatus = "loading";
-      const searchParams = buildSearchParams(true);
-
-      const res = await apiClient.get<PaginatedReportsResponse>(APIRoutes.reports(page.params.guildid!), {
-        searchParams,
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        reportItems = data.data;
-        pageData.total = data.pagination.totalItems;
-        pageData.perPage = data.pagination.pageSize;
-        pageData.page = data.pagination.page;
-        pageData.totalPages = data.pagination.totalPages;
-        fetchedData = $state.snapshot(pageData);
-        reportsStatus = "loaded";
-      } else {
-        if (res.headers.get("Content-Type")?.includes("application/json")) {
-          const errorData = await res.json();
-          console.error("Error fetching reports:", errorData.error!);
-        } else {
-          console.error("Error fetching reports:", res.statusText);
-        }
-        reportsStatus = "error";
-      }
-    } catch (error) {
-      console.error("Failed to fetch reports:", error);
-      return;
-    }
-  }
-
-  function stringifyStatus(status: ReportStatus | null): StringifiedReportStatus | "all" {
-    switch (status) {
-      case ReportStatus.open:
-        return "open";
-      case ReportStatus.ignored:
-        return "ignored";
-      case ReportStatus.timeouted:
-        return "timeouted";
-      case ReportStatus.kicked:
-        return "kicked";
-      case ReportStatus.banned:
-        return "banned";
-      case ReportStatus.messageDeleted:
-        return "messageDeleted";
-      default:
-        return "all"; // Default to "all" if unknown
-    }
-  }
-
-  function parseStatus(status: string): ReportStatus | null {
-    console.log("Parsing status:", status);
-    switch (status as StringifiedReportStatus) {
-      case "open":
-        return ReportStatus.open;
-      case "ignored":
-        return ReportStatus.ignored;
-      case "timeouted":
-        return ReportStatus.timeouted;
-      case "kicked":
-        return ReportStatus.kicked;
-      case "banned":
-        return ReportStatus.banned;
-      case "messageDeleted":
-        return ReportStatus.messageDeleted;
-      case "resolved":
-        return ReportStatus.resolved;
-      default:
-        return null; // Default to null (all) if unknown
-    }
-  }
-
-  function buildSearchParams(raw = true) {
-    const params = new URLSearchParams();
-    params.set("page", pageData.page.toString());
-    params.set("count", pageData.perPage.toString());
-    if (pageData.status !== null) {
-      params.set("status", raw ? pageData.status.toString() : stringifyStatus(pageData.status)); // For the api, this is the internal enum value
-    }
-    if (pageData.search) {
-      params.set("search", encodeURIComponent(pageData.search));
-    }
-    if (pageData.reportType !== "all") {
-      params.set("type", pageData.reportType);
-    }
-    if (pageData.searchScope !== "all") {
-      params.set("sscope", pageData.searchScope);
-    }
-    return params;
-  }
-
-  function buildUrlWithParams(raw = true) {
-    const params = buildSearchParams(raw);
-    return `${page.url.origin}${page.url.pathname}?${params.toString()}`;
-  }
-
-  afterNavigate(() => {
-    // Sync URL params and fetch when guild changes
-    if (page.params.guildid) {
-      pageData.page = safeParseInt(page.url.searchParams.get("page"), 1);
-      pageData.perPage = safeParseInt(page.url.searchParams.get("count"), 20);
-      pageData.status = page.url.searchParams.has("status")
-        ? parseStatus(page.url.searchParams.get("status")!)
-        : null;
-      pageData.search = page.url.searchParams.get("search") || "";
-      pageData.searchScope = (page.url.searchParams.get("sscope") || "all") as ReportSearchScope;
-      pageData.reportType = (page.url.searchParams.get("type") || "all") as ReportSearchType;
-      fetchReports().then(() => {
-        console.log("Reports fetched successfully");
-      });
-    }
+  afterNavigate(({ from, to }) => {
+    const guildIdChanged = from?.params?.guildid !== to?.params?.guildid;
+    if (!guildIdChanged) return;
+    params.reset();
   });
 </script>
 
 <SiteHeading title="Reports" />
 
-<div class="mb-4 flex flex-col items-start justify-start gap-3">
-  <FilterControls
-    bind:status={() => stringifyStatus(pageData.status), (v) => (pageData.status = parseStatus(v))}
-    bind:search={pageData.search}
-    bind:perPage={pageData.perPage}
-    bind:searchScope={pageData.searchScope}
-    bind:reportType={pageData.reportType}
-  />
-  <div class="grid grid-cols-2 gap-2">
-    <Button variant="default" onclick={fetchReports}>
-      <span class="text-sm">Fetch</span>
-    </Button>
-    <Tooltip.Provider delayDuration={100}>
-      <Tooltip.Root>
-        <Tooltip.Trigger>
-          {#snippet child({ props })}
-            <Button
-              {...props}
-              variant="outline"
-              size="icon"
-              onclick={() => {
-                navigator.clipboard.writeText(buildUrlWithParams(false));
-                toast.success("Link copied to clipboard!");
-              }}
-            >
-              <Files class="size-4" />
-            </Button>
-          {/snippet}
-        </Tooltip.Trigger>
-        <Tooltip.Content>
-          <p>Copy link</p>
-        </Tooltip.Content>
-      </Tooltip.Root>
-    </Tooltip.Provider>
-  </div>
+<Sheet.Root>
+  <Sheet.Trigger class={buttonVariants({ variant: "outline", size: "lg", class: "ms-auto w-fit" })}>
+    Filters
+  </Sheet.Trigger>
+  <Sheet.Content class="w-full p-4 sm:max-w-md">
+    <Field.Group>
+      <Field.Field>
+        <Field.Label>Status</Field.Label>
+        <Select.Root
+          type="single"
+          bind:value={() => String(params.status), (v) => (params.status = Number(v))}
+        >
+          <Select.Trigger>
+            {reportStatusOptions[String(params.status)] ?? "All"}
+          </Select.Trigger>
+          <Select.Content>
+            {#each Object.entries(reportStatusOptions) as [value, label]}
+              <Select.Item {value}>{label}</Select.Item>
+            {/each}
+          </Select.Content>
+        </Select.Root>
+      </Field.Field>
+
+      <Field.Field>
+        <Field.Label>Report Type</Field.Label>
+        <Select.Root type="single" bind:value={params.type}>
+          <Select.Trigger>
+            {reportTypeOptions[params.type] ?? "All"}
+          </Select.Trigger>
+          <Select.Content>
+            {#each Object.entries(reportTypeOptions) as [value, label]}
+              <Select.Item {value}>{label}</Select.Item>
+            {/each}
+          </Select.Content>
+        </Select.Root>
+      </Field.Field>
+
+      <Field.Field>
+        <Field.Label>Search</Field.Label>
+        <Input
+          bind:value={() => params.search, (v) => (params.search = v.replace(/\s{2,}/g, ""))}
+          max={512}
+          placeholder="Search reports..."
+        />
+      </Field.Field>
+
+      <Field.Field>
+        <Field.Label>Search In</Field.Label>
+        <Select.Root type="single" bind:value={params.sscope}>
+          <Select.Trigger>
+            {searchScopeOptions[params.sscope] ?? "All Fields"}
+          </Select.Trigger>
+          <Select.Content>
+            {#each Object.entries(searchScopeOptions) as [value, label]}
+              <Select.Item {value}>{label}</Select.Item>
+            {/each}
+          </Select.Content>
+        </Select.Root>
+        <Field.Description>Which field to search within.</Field.Description>
+      </Field.Field>
+    </Field.Group>
+  </Sheet.Content>
+</Sheet.Root>
+
+{#snippet statusBadge(status: ReportStatus)}
+  <Badge
+    class={cn(
+      "select-none",
+      status === ReportStatus.open && "bg-success/50 text-success-foreground",
+      status === ReportStatus.ignored && "bg-destructive/50 text-destructive-foreground",
+      (status === ReportStatus.timeouted ||
+        status === ReportStatus.kicked ||
+        status === ReportStatus.banned ||
+        status === ReportStatus.messageDeleted ||
+        status === ReportStatus.resolved) &&
+        "bg-warning/50 text-warning-foreground",
+    )}
+  >
+    {reportStatusOptions[String(status)] ?? "Unknown"}
+  </Badge>
+{/snippet}
+
+{#snippet typeBadge(message: string | undefined)}
+  {@const isMessage = !!message}
+  <Badge
+    variant="outline"
+    class={cn(
+      "text-sm select-none",
+      isMessage && "border-blue-600 bg-blue-600/50 text-blue-100",
+      !isMessage && "border-yellow-600 bg-yellow-600/50 text-yellow-100",
+    )}
+  >
+    {isMessage ? "Message" : "User"}
+  </Badge>
+{/snippet}
+
+<div class="overflow-x-auto rounded-md" in:fly={{ x: -30, duration: 200 }}>
+  <Table.Root class="w-full min-w-lg">
+    <Table.Header>
+      <Table.Row>
+        <Table.Head>Status</Table.Head>
+        <Table.Head>Type</Table.Head>
+        <Table.Head>Author</Table.Head>
+        <Table.Head>Reported User</Table.Head>
+        <Table.Head>Created At</Table.Head>
+        <Table.Head></Table.Head>
+      </Table.Row>
+    </Table.Header>
+    <Table.Body>
+      {#each reports as report (report._id)}
+        <Table.Row>
+          <Table.Cell>{@render statusBadge(report.status)}</Table.Cell>
+          <Table.Cell>{@render typeBadge(report.message)}</Table.Cell>
+          <Table.Cell>
+            <Mention userId={report.authorId} buttons="copy" />
+          </Table.Cell>
+          <Table.Cell>
+            <Mention userId={report.userId} buttons="copy" />
+          </Table.Cell>
+          <Table.Cell>
+            <Timestamp date={report.createdAt} format="R" />
+          </Table.Cell>
+          <Table.Cell>
+            <Button href="./reports/{report._id}" variant="outline">View</Button>
+          </Table.Cell>
+        </Table.Row>
+      {/each}
+    </Table.Body>
+  </Table.Root>
 </div>
 
-<div class="flex flex-col items-center">
-  {#if reportsStatus === "loading"}
-    <LoadingSpinner class="mx-auto mt-10" />
-  {:else if reportsStatus === "error"}
-    <div class="text-destructive">Failed to load reports. Please try again later.</div>
-  {:else if reportsStatus === "loaded" && reportItems.length === 0}
-    <Empty.Root>
-      <Empty.Header>
-        <Empty.Media variant="icon">
-          <FolderOpen />
-        </Empty.Media>
-        <Empty.Title>{"No reports found :("}</Empty.Title>
-        <Empty.Description>
-          Either your search/filter criteria did not match any reports, or there are no reports yet.
-        </Empty.Description>
-      </Empty.Header>
-    </Empty.Root>
-  {:else if reportsStatus === "loaded" && reportItems.length > 0}
-    <ReportsTable items={reportItems} />
-  {/if}
-</div>
-
-{#if pageData.total && typeof pageData.totalPages === "number" && pageData.totalPages > 1}
+<div class="mt-4 flex justify-center flex-col items-center gap-2">
   <Pagination.Root
-    page={pageData.page}
-    count={pageData.total}
-    perPage={pageData.perPage}
-    onPageChange={(pageNum) => {
-      pageData.page = pageNum;
-      fetchReports();
-    }}
+    bind:page={params.page}
+    perPage={params.pageSize}
+    count={pagination.total || 0}
+    siblingCount={2}
+    orientation="horizontal"
   >
     {#snippet children({ pages, currentPage })}
       <Pagination.Content>
@@ -254,4 +229,11 @@
       </Pagination.Content>
     {/snippet}
   </Pagination.Root>
-{/if}
+
+  <div class="flex w-fit">
+    <Field.Field orientation="horizontal" class="w-fit">
+      <Field.Label class="w-30">Per Page</Field.Label>
+      <Input type="number" min={10} max={100} bind:value={params.pageSize} />
+    </Field.Field>
+  </div>
+</div>

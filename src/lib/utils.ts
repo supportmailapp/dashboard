@@ -1,11 +1,11 @@
 import { clsx, type ClassValue } from "clsx";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import equal from "fast-deep-equal/es6";
+import { equal } from "@lukez/fast-deep-equal";
 import { twMerge } from "tailwind-merge";
 import { DiscordSnowflake } from "@sapphire/snowflake";
 import { ChannelType } from "discord-api-types/v10";
-import { SpecialChannelType} from "./sm-types/src";
+import { SpecialChannelType } from "./sm-types/src";
 
 dayjs.extend(relativeTime);
 

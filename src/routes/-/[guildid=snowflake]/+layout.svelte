@@ -1,7 +1,7 @@
 <script lang="ts">
   import { afterNavigate, beforeNavigate, invalidate } from "$app/navigation";
   import AppSidebar from "$lib/components/app-sidebar.svelte";
-  import { cdnUrls } from "$lib/urls";
+  import { cdnUrls } from "$lib/urls.svelte";
   import { cn } from "$lib/utils";
   import * as Avatar from "$ui/avatar";
   import * as Sidebar from "$ui/sidebar/index.js";
@@ -9,8 +9,7 @@
   import * as Alert from "$ui/alert/index.js";
   import { Button, buttonVariants } from "$ui/button";
   import { Skeleton } from "$ui/skeleton";
-  import { fade, fly, scale, slide } from "svelte/transition";
-  import { IsMobile } from "$lib/hooks/is-mobile.svelte";
+  import { fade, fly, slide } from "svelte/transition";
   import Mounter from "./Mounter.svelte";
   import ServerSelector from "./ServerSelector.svelte";
   import { mode } from "mode-watcher";
@@ -21,16 +20,14 @@
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import { Portal } from "bits-ui";
   import { useInterval } from "runed";
-  import { cubicInOut } from "svelte/easing";
+  import SidebarHeaderBranding from "./SidebarHeaderBranding.svelte";
 
   let { children } = $props();
 
   let guildsManager = getManager();
   let currentGuild = $derived(guildsManager.currentGuild);
   let guildsSelectOpen = $state(false);
-  Sidebar.useSidebar();
   let vpnAlert = $derived(isVpn.current);
-  const isMobile = new IsMobile();
 
   const randomLoadingMessages = [
     "Just a moment",
@@ -49,7 +46,7 @@
   ];
   let loadingMessageIndex = $state<number>(Math.floor(Math.random() * randomLoadingMessages.length));
 
-  const interval = useInterval(() => 3000, {
+  useInterval(() => 3000, {
     callback: () => {
       loadingMessageIndex = (loadingMessageIndex + 1) % randomLoadingMessages.length;
     },
@@ -127,15 +124,7 @@
 
       <!-- Branding on Right -->
       <div class="flex items-center">
-        <a href="/" class="flex items-center gap-2 transition-opacity duration-150 hover:opacity-70">
-          {#if !isMobile.current}
-            <span class="text-lg font-bold" transition:slide={{ duration: 200, axis: "x" }}>SupportMail</span>
-          {/if}
-          <Avatar.Root class="aspect-square size-8">
-            <Avatar.Image src="/logo.png" alt="Logo" />
-            <Avatar.Fallback>SM</Avatar.Fallback>
-          </Avatar.Root>
-        </a>
+        <SidebarHeaderBranding />
       </div>
     </header>
     <main class="main-content overflow-y-auto p-3 md:p-5" transition:fade={{ duration: 200 }}>

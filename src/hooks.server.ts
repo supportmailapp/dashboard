@@ -16,7 +16,7 @@ import wildcardMatch from "wildcard-match";
 
 export async function init() {
   await dbConnect();
-  console.log("Environment:", env.NODE_ENV);
+  console.log("Environment:", env.NODE_ENV || "production");
   console.log("Server started at", dayjs().toString());
 }
 

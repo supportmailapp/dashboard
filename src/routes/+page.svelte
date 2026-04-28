@@ -6,7 +6,7 @@
   import BackgroundImage from "$lib/components/BackgroundImage.svelte";
   import { getManager } from "$lib/stores/GuildsManager.svelte";
   import { site } from "$lib/stores/site.svelte";
-  import { LegalLinks } from "$lib/urls";
+  import { LegalLinks } from "$lib/urls.svelte";
   import { buttonVariants } from "$ui/button";
   import * as Card from "$ui/card/index.js";
   import * as DropdownMenu from "$ui/dropdown-menu/index.js";

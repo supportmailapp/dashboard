@@ -1,118 +1,122 @@
-import { JsonErrors } from "$lib/constants";
-import { FlattenDocToJSON } from "$lib/server/db";
-import { Ticket } from "$lib/server/db/models/src/ticket";
-import type { ITicket } from "$lib/sm-types";
-import { TicketStatus } from "$lib/sm-types";
-import { safeParseInt } from "$lib/utils.js";
-import type { QueryFilter } from "mongoose";
-import type { TicketSearchScope } from "../../../../../-/[guildid=snowflake]/tickets/FilterControls.svelte";
+import { JsonErrors } from "$lib/constants.js";
+import { Ticket } from "$lib/server/db/index.js";
+import type { FlattenDocResult } from "$lib/server/db/utils.js";
+import type { ITicket, TicketStatus } from "$lib/sm-types/src";
 import { json } from "@sveltejs/kit";
+import type { PipelineStage } from "mongoose";
+import { validateSearchParams } from "runed/kit";
+import { searchParamsSchema } from "../../../../../-/[guildid=snowflake]/tickets/searchParams.js";
+import type { QueryFilter } from "mongoose";
 
-export type PaginatedResponseWithError<T> = PaginatedResponse<T> & {
-  error: string;
-};
+export type APITicket = FlattenDocResult<
+  Omit<ITicket, "createdAt" | "updatedAt" | "category"> & {
+    category: string;
+    createdAt: string;
+    updatedAt: string;
+    closedAt?: string;
+  },
+  true
+>;
 
-export type PaginatedTicketsResponse = PaginatedResponse<DocumentWithId<ITicket & { userId?: string }>>;
+export type APITicketResponse = PaginatedResponse<WithId<APITicket>>;
 
-function sanitizeTicketData(ticket: DocumentWithId<ITicket>): DocumentWithId<ITicket & { userId?: string }> {
-  return Object.assign(ticket, {
-    userId: ticket.alias ? undefined : ticket.userId,
-    feedback: undefined, // Feedback is not provided in the list response
-  } as Partial<ITicket>);
+function makePaginatedResponse(
+  items: APITicketResponse["data"],
+  totalItems: number,
+  page: number,
+  limit: number,
+): APITicketResponse {
+  const totalPages = Math.ceil(totalItems / limit);
+  return {
+    data: items,
+    pagination: {
+      total: totalItems,
+      page: page,
+      limit: limit,
+      pages: totalPages,
+    },
+  };
 }
 
-export async function GET({ locals, url, params }) {
-  if (!locals.isAuthenticated()) return JsonErrors.unauthorized();
+function transformTicketToAPI(ticket: any): APITicket {
+  const { alias, userId, ...rest } = ticket;
+  const returnBase = {
+    ...rest,
+    _id: ticket._id.toString(),
+    category: String(ticket.category),
+    createdAt: ticket.createdAt.toISOString(),
+    updatedAt: ticket.updatedAt.toISOString(),
+    closedAt: ticket.closedAt ? ticket.closedAt.toISOString() : undefined,
+  } as APITicket;
 
-  try {
-    // Parse pagination parameters
-    const Params = {
-      page: safeParseInt(url.searchParams.get("page"), 1, 1),
-      pageSize: safeParseInt(url.searchParams.get("pageSize"), 20, 10, 100),
-      status: safeParseInt(url.searchParams.get("status"), -1, 0, 2) as -1 | TicketStatus | undefined,
-      anonym: url.searchParams.get("anonym") === "true",
-      search: url.searchParams.has("search")
-        ? decodeURIComponent(url.searchParams.get("search")!)
-        : undefined,
-      searchScope: ((url.searchParams.get("sscope") as string) || "all") as TicketSearchScope,
+  // userId cannot be exposed when alias is present, as that would leak the user's identity
+  if (alias) {
+    return {
+      ...returnBase,
+      alias: alias,
     };
-
-    if (Params.status === -1) {
-      Params.status = undefined;
-    }
-
-    const skip = (Params.page - 1) * Params.pageSize;
-
-    // Build filter query
-    const filter: QueryFilter<ITicket> = { guildId: params.guildid };
-
-    if (Params.anonym) {
-      filter.alias = { $exists: true, $ne: null };
-    }
-
-    if (Params.status !== undefined) {
-      filter.status = Params.status;
-    }
-
-    const filterFields = {
-      id: { $regex: Params.search, $options: "i" },
-      postId: { $regex: Params.search, $options: "i" },
-      userId: { $regex: Params.search, $options: "i" },
-    };
-
-    if (Params.search) {
-      switch (Params.searchScope) {
-        case "postid":
-          filter.postId = filterFields.postId;
-          break;
-        case "userid":
-          filter.userId = filterFields.userId;
-          break;
-        case "ticketid":
-          filter.id = filterFields.id;
-          break;
-        default:
-          filter.$or = Object.entries(filterFields).map(([key, value]) => ({
-            [key]: value,
-          }));
-      }
-    }
-
-    // Query tickets for the guild with pagination
-    const [tickets, totalItems] = await Promise.all([
-      Ticket.find(filter, null, {
-        sort: { lastActive: -1 },
-        skip: skip,
-        limit: Params.pageSize,
-      }),
-      Ticket.countDocuments(filter),
-    ]);
-
-    const totalPages = Math.ceil(totalItems / Params.pageSize);
-
-    const response: PaginatedTicketsResponse = {
-      data: tickets.map((d) => FlattenDocToJSON(d, true)).map(sanitizeTicketData),
-      pagination: {
-        page: Params.page,
-        pageSize: Params.pageSize,
-        totalItems,
-        totalPages,
-      },
-    };
-
-    return json(response);
-  } catch (error) {
-    const response: PaginatedTicketsResponse = {
-      data: [],
-      pagination: {
-        page: 1,
-        pageSize: 10,
-        totalItems: 0,
-        totalPages: 0,
-      },
-      error: "Failed to fetch tickets",
-    };
-
-    return Response.json(response, { status: 500 });
   }
+
+  return {
+    ...returnBase,
+    userId: userId,
+  };
+}
+
+export async function GET({ params, url, locals, isSubRequest }) {
+  if (!locals.user && !isSubRequest) return JsonErrors.unauthorized();
+
+  const guildId = params.guildid;
+  const { data } = validateSearchParams(url, searchParamsSchema);
+
+  const skip = (data.page - 1) * data.limit;
+  const statuses: TicketStatus[] | undefined = data.status;
+
+  // const afterTimestamp =
+  //   afterParam && dayjs(afterParam).isValid() && dayjs(afterParam).isBefore(new Date())
+  //     ? dayjs(afterParam).toDate()
+  //     : undefined;
+  // const beforeTimestamp =
+  //   beforeParam && dayjs(beforeParam).isValid() && dayjs(beforeParam).isBefore(new Date())
+  //     ? dayjs(beforeParam).toDate()
+  //     : undefined;
+
+  const matchStage: QueryFilter<ITicket> = { guildId };
+
+  if (data.category.length > 0) {
+    matchStage.category = { $in: data.category };
+  }
+
+  if (data.anonym === true) {
+    matchStage.alias = { $exists: true, $ne: null };
+  } else if (data.anonym === false) {
+    matchStage.$nor = [{ alias: { $exists: true, $ne: null } }];
+  }
+
+  if (data.userId) {
+    // never filter by userId when alias is present, as that would leak the user's identity
+    matchStage.$and = [{ userId: data.userId }, { $or: [{ alias: { $exists: false } }, { alias: null }] }];
+  }
+
+  // if (afterTimestamp) matchStage.createdAt = { $gt: afterTimestamp };
+  // if (beforeTimestamp) matchStage.createdAt = { ...matchStage.createdAt, $lt: beforeTimestamp };
+  if (statuses && statuses.length > 0) {
+    matchStage.status = statuses.length === 1 ? statuses[0] : { $in: statuses };
+  }
+
+  const commentFilter = data.comment?.trim().replace(/\s{2,}/g, "");
+  if (commentFilter) {
+    matchStage.closeComment = { $regex: commentFilter, $options: "i" };
+  }
+
+  const matchStageItem = { $match: matchStage };
+
+  const [tickets, countResult] = await Promise.all([
+    Ticket.aggregate<ITicket>([matchStageItem, { $skip: skip }, { $limit: data.limit }]),
+    Ticket.aggregate([matchStageItem, { $count: "total" }]),
+  ]);
+
+  const totalItems = countResult.length > 0 ? countResult[0].total : 0;
+  const apiTickets = tickets.map(transformTicketToAPI);
+  return json(makePaginatedResponse(apiTickets, totalItems, data.page, data.limit));
 }

@@ -1,7 +1,6 @@
 <script lang="ts">
   import { cn } from "$lib/utils";
   import { SeparatorSpacingSize as SpacingSize } from "discord-api-types/v10";
-  import RemoveButton from "./RemoveButtonWrapper.svelte";
   import Separator from "$ui/separator/separator.svelte";
   import Checkbox from "$ui/checkbox/checkbox.svelte";
   import RemoveButtonWrapper from "./RemoveButtonWrapper.svelte";

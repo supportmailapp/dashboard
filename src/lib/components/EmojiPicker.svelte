@@ -5,17 +5,15 @@
   import { onMount } from "svelte";
   import { SvelteMap } from "svelte/reactivity";
   import apiClient from "$lib/utils/apiClient";
-  import { APIRoutes, DocsLinks } from "$lib/urls";
-  import { page } from "$app/state";
+  import { APIRoutes, DocsLinks } from "$lib/urls.svelte";
   import Input from "$ui/input/input.svelte";
   import LoadingSpinner from "./LoadingSpinner.svelte";
   import { filterByName } from "./panel/Button.svelte";
   import Button from "$ui/button/button.svelte";
-  import { cn } from "$lib/utils";
   import { validateEmoji } from "$lib/utils/formatting";
   import type { IPartialEmoji } from "$lib/sm-types/src";
   import Emoji from "./panel/Emoji.svelte";
-  import ArrowRight from "@lucide/svelte/icons/arrow-right";
+  import { page } from "$app/state";
 
   type EmojiPickCallbackData = { emoji: IPartialEmoji; custom: boolean };
 
@@ -47,14 +45,13 @@
   let otherEmojiData = $derived(validateEmoji(otherEmojiInput || ""));
 
   onMount(async function () {
-    const res = await apiClient.get<APICustomEmoji[]>(APIRoutes.listGuildEmojis("1114825999155200101"));
+    const res = await apiClient.get<APICustomEmoji[]>(APIRoutes.listGuildEmojis());
     if (res.ok) {
-      const data = await res.json();
-      for (const emoji of data) {
+      for (const emoji of res.data) {
         emojis.set(emoji.id, emoji);
       }
     } else {
-      console.error("Failed to fetch emojis:", res.statusText);
+      console.error("Failed to fetch emojis:", res.error);
     }
     loaded = true;
   });

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(/.env.production)",
+      "Read(/.env.development)"
+    ]
+  },
+  "spinnerTipsEnabled": false
+}

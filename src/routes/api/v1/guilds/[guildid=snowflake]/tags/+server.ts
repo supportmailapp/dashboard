@@ -41,7 +41,7 @@ export async function PUT({ request, params }) {
     const valSchema = GetTagSchemaForGuild(params.guildid);
     const valRes = new ZodValidator(valSchema).validate(reqJson);
     if (!valRes.success) {
-      return JsonErrors.badRequest(valRes.error.message);
+      return JsonErrors.badRequest(valRes.error);
     }
     body = valRes.data;
   } catch {

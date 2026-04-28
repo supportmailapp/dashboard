@@ -1,4 +1,4 @@
-import { BlacklistScope, EntityType } from "$lib/sm-types";
+import { BlacklistScopes, EntityType } from "$lib/sm-types";
 import { SvelteBitfield } from "$lib/utils/reactiveBitfield.svelte";
 import type { APIUser } from "discord-api-types/v10";
 import type { APIBlacklistEntry } from "$v1Api/guilds/[guildid=snowflake]/blacklist/+server";
@@ -51,12 +51,12 @@ export const dialogFields = {
     { label: "Role", value: EntityType.role },
   ],
   scopes: [
-    { label: "Tickets", value: BlacklistScope.tickets },
-    { label: "Reports", value: BlacklistScope.reports },
-    { label: "Tags", value: BlacklistScope.tags },
+    { label: "Tickets", value: BlacklistScopes.tickets },
+    { label: "Reports", value: BlacklistScopes.reports },
+    { label: "Tags", value: BlacklistScopes.tags },
   ],
 } as const;
 
-export function toggleScope(entryObj: BLEntry, scopeValue: Exclude<BlacklistScope, BlacklistScope.global>) {
+export function toggleScope(entryObj: BLEntry, scopeValue: number | bigint) {
   entryObj.scopes.toggle(scopeValue);
 }

@@ -65,7 +65,7 @@ export async function PUT({ request, params }) {
   const valRes = new ZodValidator(patchSchema).validate(body);
 
   if (!valRes.success) {
-    return JsonErrors.badRequest(valRes.error.message);
+    return JsonErrors.badRequest(valRes.error);
   }
 
   const { data } = valRes;

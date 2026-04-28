@@ -4,8 +4,8 @@
   import ContentEditorDialog from "$lib/components/ContentEditorDialog.svelte";
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import SaveAlert from "$lib/components/SaveAlert.svelte";
-  import { APIRoutes } from "$lib/urls";
-  import { deepClone, determineUnsavedChanges } from "$lib/utils";
+  import { APIRoutes } from "$lib/urls.svelte";
+  import { deepClone, determineUnsavedChanges } from "$lib/utils.js";
   import apiClient from "$lib/utils/apiClient";
   import Button from "$ui/button/button.svelte";
   import * as Empty from "$ui/empty/index.js";
@@ -97,12 +97,11 @@
 
   async function fetchTags() {
     loading = true;
-    const res = await apiClient.get<APITag[]>(APIRoutes.tags(page.params.guildid!));
+    const res = await apiClient.get<APITag[]>(APIRoutes.tags());
 
-    const jsonRes = await res.json();
     if (res.ok) {
-      tags = jsonRes;
-      fetchedTags = JSON.parse(JSON.stringify(jsonRes));
+      tags = res.data;
+      fetchedTags = JSON.parse(JSON.stringify(res.data));
     } else {
       tags = null;
       fetchedTags = null;
@@ -114,16 +113,15 @@
     if (!tags) return;
     loading = true;
 
-    const res = await apiClient.put<APITag[]>(APIRoutes.tags(page.params.guildid!), {
+    const res = await apiClient.put<APITag[]>(APIRoutes.tags(), {
       json: $state.snapshot(tags),
     });
 
-    const jsonRes = await res.json();
     if (!res.ok) {
-      toast.error(`Failed to save tags: ${(jsonRes as any).message ?? res.statusText}`);
+      toast.error("Failed to save tags", { description: res.error });
     } else {
-      fetchedTags = JSON.parse(JSON.stringify(jsonRes));
-      tags = jsonRes;
+      fetchedTags = [...res.data];
+      tags = [...res.data];
       toast.success("Tags saved!");
     }
     loading = false;
@@ -253,4 +251,7 @@
       if (editTag.data) editTag.data.content = v;
     }
   }
+  onRawTextChange={(v) => {
+    if (editTag.data?._id) updateTagById(editTag.data._id, { content: v });
+  }}
 />

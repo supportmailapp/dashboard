@@ -31,7 +31,7 @@ export async function PUT({ request, params }) {
 
   const valRes = new ZodValidator(FeedbackConfigSchema).validate(body);
   if (!valRes.success) {
-    return JsonErrors.badRequest(valRes.error.message);
+    return JsonErrors.badRequest(valRes.error);
   }
 
   const updatePayload: UpdateQuery<IFeedbackConfig> = {

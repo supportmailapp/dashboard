@@ -1,17 +1,16 @@
 <script lang="ts">
-  import { page } from "$app/state";
-  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
-  import { users } from "$lib/stores/users.svelte";
-  import { APIRoutes } from "$lib/urls";
-  import { cn, parseIconToURL } from "$lib/utils";
-  import apiClient from "$lib/utils/apiClient";
+  import { APIRoutes } from "$lib/urls.svelte";
+  import { cn, parseIconToURL } from "$lib/utils.js";
+  import apiClient from "$lib/utils/apiClient.js";
   import * as Avatar from "$ui/avatar/index.js";
-  import { Button } from "$ui/button";
-  import Input from "$ui/input/input.svelte";
-  import * as ButtonGroup from "$ui/button-group/index.js";
-  import Search from "@lucide/svelte/icons/search";
+  import { Button } from "$ui/button/index.js";
+  import * as InputGroup from "$ui/input-group/index.js";
+  import SearchIcon from "@lucide/svelte/icons/search";
   import type { APIUser } from "discord-api-types/v10";
   import { toast } from "svelte-sonner";
+  import { Debounced, watch } from "runed";
+  import LoadingSpinner from "../LoadingSpinner.svelte";
+  import { users } from "$lib/stores/users.svelte";
 
   type Props = {
     botsOnly?: boolean;
@@ -24,10 +23,9 @@
   let loading = $state({ fetching: false });
   let fetchedUsers = $state<APIUser[]>([]);
   let userSearchInput = $state("");
+  let debouncedSearch = new Debounced(() => userSearchInput, 500);
 
-  async function fetchUsers(e: Event) {
-    e.preventDefault();
-
+  async function fetchUsers() {
     if (!userSearchInput) {
       toast.info("Search input empty!");
       return;
@@ -44,10 +42,10 @@
 
     try {
       const res = await apiClient.get<APIUser[]>(
-        APIRoutes.memberSearch(page.params.guildid!, userSearchInput, botsOnly ? "bot" : undefined),
+        APIRoutes.memberSearch(userSearchInput, botsOnly ? "bot" : undefined),
       );
 
-      const users = await res.json();
+      const users = res.ok ? res.data : [];
       fetchedUsers = excludedUserIds ? users.filter((user) => !excludedUserIds.includes(user.id)) : users;
     } catch (err: any) {
       console.error(err);
@@ -57,38 +55,36 @@
     }
   }
 
+  watch(
+    () => debouncedSearch.current,
+    (val) => {
+      if (val) fetchUsers();
+      else fetchedUsers = [];
+    },
+  );
+
   function selectUser(user: APIUser) {
     return () => onSelect?.(user);
   }
 </script>
 
 <div class="flex flex-col gap-2">
-  <form class="flex w-full flex-row gap-2" onsubmit={fetchUsers}>
-    <ButtonGroup.Root class="w-full">
-      <Input
-        bind:value={userSearchInput}
-        placeholder={botsOnly ? "Bot name or ID" : "Username or ID"}
-        class="h-9 grow"
-        required
-      />
-      <Button
-        type="submit"
-        variant="outline"
-        size="icon"
-        aria-label="Search"
-        class="h-9 px-3"
-        disabled={loading.fetching}
-      >
-        <Search />
-      </Button>
-    </ButtonGroup.Root>
-  </form>
+  <InputGroup.Root>
+    <InputGroup.Input
+      bind:value={userSearchInput}
+      placeholder={botsOnly ? "Bot name or ID" : "Username or ID"}
+      class="h-9 grow"
+    />
+    <InputGroup.Addon align="inline-start">
+      <SearchIcon />
+    </InputGroup.Addon>
+  </InputGroup.Root>
 
   <div class={cn("flex flex-col gap-1", loading.fetching && "pointer-events-none opacity-70 select-none")}>
     <div class="flex max-h-75 w-full flex-col gap-1 overflow-y-auto rounded-md border p-2">
       {#if !fetchedUsers.length && !loading.fetching}
         <p class="text-muted-foreground p-3 text-center text-sm">
-          {userSearchInput ? "No users found." : `Search for ${botsOnly ? "bots" : "users"} above.`}
+          {userSearchInput ? "No users found." : `Search for ${botsOnly ? "bots" : "users"}.`}
         </p>
       {:else if loading.fetching}
         <div class="flex justify-center p-4">

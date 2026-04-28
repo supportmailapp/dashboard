@@ -8,7 +8,16 @@ export async function load({ locals, depends }) {
 
   return {
     user: locals.user,
-    wsToken: locals.user && env.WS_JWT_SECRET ? jwt.sign(locals.user, env.WS_JWT_SECRET) : undefined,
+    wsToken:
+      locals.user && env.WS_JWT_SECRET
+        ? jwt.sign(
+            {
+              scope: "dashboard",
+              id: locals.user.id,
+            },
+            env.WS_JWT_SECRET,
+          )
+        : undefined,
     isVpn: locals.isVpn,
   };
 }

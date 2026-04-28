@@ -47,7 +47,7 @@
   };
 
   class SelectedReport {
-    data = $state<DocumentWithId<IDMReport>>();
+    data = $state<WithId<IDMReport>>();
     open = $state(false);
     selectedAction = $state<"ban_reporter" | "ban_guild" | "manual" | "ignored" | null>(null);
 

@@ -5,7 +5,7 @@
   import Mention from "$lib/components/discord/Mention.svelte";
   import type { DBGuildProjectionReturns } from "$lib/server/db";
   import { getManager } from "$lib/stores/GuildsManager.svelte";
-  import { APIRoutes } from "$lib/urls";
+  import { APIRoutes } from "$lib/urls.svelte";
   import apiClient from "$lib/utils/apiClient";
   import { Button, buttonVariants } from "$ui/button/index.js";
   import XIcon from "@lucide/svelte/icons/x";
@@ -25,54 +25,64 @@
     loading: boolean;
   };
   let {
-    forumId: fetchedForumId,
+    forumId: fetchedForumId = $bindable(),
     oldCfg = $bindable(),
     currentCfg = $bindable(),
     loading = $bindable(),
   }: Props = $props();
 
-  const guildsManager = getManager();
+  const manager = getManager();
   let forum = $state<GuildCoreChannel | null>(null);
-  let channelsLoaded = $derived(guildsManager.channelsLoaded);
-  let channels = $derived(channelsLoaded ? guildsManager.channels : []);
+  let channelsLoaded = $derived(manager.channelsLoaded);
+  let channels = $derived(channelsLoaded ? manager.channels : []);
   let newCategoryId = $state<string | null>(null);
   let categorySelectOpen = $state(false);
   let settingUp = $state(false);
   let dialogOpen = $state(false);
 
   async function setupFn() {
-    try {
-      settingUp = true;
-      const res = await apiClient.post(APIRoutes.ticketSetup(page.params.guildid!), {
-        json: {
-          categoryId: newCategoryId,
-        },
+    settingUp = true;
+    toast.info("Setup in progress", { description: "This may take a few seconds" });
+
+    const res = await apiClient.post<
+      ClientAPI.POSTTicketSetupJSONResultSuccess | { success: false; message: string; details?: string }
+    >(APIRoutes.ticketSetup(), {
+      json: {
+        categoryId: $state.snapshot(newCategoryId) || undefined,
+      },
+    });
+
+    if (!res.ok) {
+      toast.error("Setup failed.", {
+        description: res.error ?? "Invalid response from server. You should tell the dev about this.",
       });
+      return;
+    } else if (!res.data.success) {
+      toast.error(res.data.message, {
+        description: res.data.details ?? "Unknown error occurred.",
+      });
+    } else {
+      const { data } = res.data;
 
-      if (!res.ok) {
-        const errJson = await res.json<any>();
-        const errText = errJson?.message || "Unknown Error";
-        throw new Error(errText);
-      }
+      Object.defineProperty(oldCfg!, "forumId", {
+        value: data.forumId,
+        writable: true,
+        configurable: true,
+      });
+      Object.defineProperty(currentCfg!, "forumId", {
+        value: data.forumId,
+        writable: true,
+        configurable: true,
+      });
+      fetchedForumId = data.forumId;
 
-      toast.info("Setup in progress", { description: "This may take a few seconds" });
-
-      const json = await res.json<TicketConfig>();
-
-      oldCfg = { ...json };
-      currentCfg = { ...json };
-      fetchedForumId = json.forumId!;
+      manager.loadChannels(true);
 
       toast.success("Config updated");
-    } catch (err: any) {
-      toast.error("Setup failed.", {
-        description: String(err.message ?? err),
-      });
-    } finally {
-      settingUp = false;
-      dialogOpen = false;
-      newCategoryId = null;
     }
+    settingUp = false;
+    dialogOpen = false;
+    newCategoryId = null;
   }
 
   $effect(() => {

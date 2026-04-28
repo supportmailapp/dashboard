@@ -1,8 +1,8 @@
 onlyBuiltDependencies:
   - "@sentry/cli"
-  - core-js
-  - esbuild
 
 packages:
   - "."
   - "src/lib/sm-types"
+
+ignoreWorkspaceRootCheck: true

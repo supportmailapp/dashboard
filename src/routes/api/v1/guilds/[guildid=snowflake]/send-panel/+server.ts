@@ -18,7 +18,7 @@ import {
 } from "discord-api-types/v10";
 import userCache from "$lib/server/caches/userGuilds.js";
 import { BurstyRateLimiter, RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
-import equal from "fast-deep-equal";
+import { equal } from "@lukez/fast-deep-equal";
 import { ZodValidator } from "$lib/server/validators/index.js";
 import { PanelSchema } from "$v1Api/assertions.js";
 import clientApi from "$lib/server/utils/clientApi";

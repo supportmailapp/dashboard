@@ -3,8 +3,8 @@
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import * as Select from "$ui/select/index.js";
   import { LANGUAGES } from "$lib/constants";
-  import { APIRoutes, DocsLinks } from "$lib/urls";
-  import { cn } from "$lib/utils";
+  import { APIRoutes, DocsLinks } from "$lib/urls.svelte";
+  import { cn, determineUnsavedChanges } from "$lib/utils";
   import { userDisplayName } from "$lib/utils/formatting";
   import { buttonVariants } from "$ui/button";
   import * as Card from "$ui/card/index.js";
@@ -14,7 +14,6 @@
   import SaveAlert from "$lib/components/SaveAlert.svelte";
   import apiClient from "$lib/utils/apiClient";
   import type { OverviewConfig } from "$v1Api/assertions";
-  import equal from "fast-deep-equal/es6";
   import InfoDialog from "$lib/components/InfoDialog.svelte";
   import { afterNavigate } from "$app/navigation";
 
@@ -25,7 +24,7 @@
     loading: false,
   });
   let unsavedChanges = $derived(
-    !equal(
+    determineUnsavedChanges(
       untrack(() => config.old),
       config.current,
     ),
@@ -38,30 +37,34 @@
     }
 
     config.saving = true;
-    const res = await apiClient.put<OverviewConfig>(APIRoutes.overview(page.params.guildid!), {
+    const res = await apiClient.put<OverviewConfig>(APIRoutes.overview(), {
       json: $state.snapshot(config.current),
     });
 
-    const _data = await res.json();
     if (res.ok) {
-      config.old = { ..._data };
-      config.current = { ..._data };
+      config.old = { ...res.data };
+      config.current = { ...res.data };
       toast.success("Configuration saved successfully.");
     } else {
-      toast.error(`Failed to save configuration: ${(_data as any).message}`);
+      toast.error("Failed to save configuration", {
+        description: res.error,
+      });
     }
     config.saving = false;
   }
 
   afterNavigate(async () => {
-    const initialRes = await apiClient.get<OverviewConfig>(APIRoutes.overview(page.params.guildid!));
+    const initialRes = await apiClient.get<OverviewConfig>(APIRoutes.overview());
 
-    const _data = await initialRes.json();
     if (initialRes.ok) {
-      config.old = { ..._data };
-      config.current = { ..._data };
+      config.old = { ...initialRes.data };
+      config.current = { ...initialRes.data };
     } else {
-      toast.error(`Failed to load configuration: ${(_data as any).message}`);
+      toast.error("Failed to fetch overview configuration", {
+        description: initialRes.error,
+      });
+      config.old = null;
+      config.current = null;
     }
     config.loading = false;
   });

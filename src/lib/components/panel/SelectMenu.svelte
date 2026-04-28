@@ -17,7 +17,7 @@
   import Input from "$ui/input/input.svelte";
   import { cn, SnowflakeUtil } from "$lib/utils";
   import Trash from "@lucide/svelte/icons/trash";
-  import Combobox from "$ui/combobox/Combobox.svelte";
+  import Combobox from "$ui/combobox/combobox.svelte";
   import { filterByName } from "./Button.svelte";
   import Separator from "$ui/separator/separator.svelte";
   import { untrack } from "svelte";

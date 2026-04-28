@@ -2,7 +2,7 @@
   import { page } from "$app/state";
   import { getNextPathFromGuildPath } from "$lib";
   import { getManager } from "$lib/stores/GuildsManager.svelte";
-  import { cdnUrls } from "$lib/urls";
+  import { cdnUrls } from "$lib/urls.svelte";
   import { cn } from "$lib/utils";
   import * as Avatar from "$ui/avatar/index.js";
   import * as Command from "$ui/command/index.js";
@@ -20,7 +20,7 @@
   <div class="h-full bg-transparent md:min-w-md" out:slide={{ duration: 200, axis: "y" }}>
     <div class="max-h-auto h-full py-0.5 scroll-py-1 overflow-hidden">
       {#each new Array(10) as _, index}
-        <Skeleton class="w-full h-12 my-1" delayMs={index * 100} />
+        <Skeleton class="w-full h-12 my-1" animationDelay={index * 100} />
       {/each}
     </div>
   </div>

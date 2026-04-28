@@ -1,10 +1,5 @@
 <script lang="ts">
-  import * as Popover from "$ui/popover/index.js";
-  import Mention from "$lib/components/discord/Mention.svelte";
-  import { buttonVariants } from "$ui/button";
-  import { ChannelType } from "discord-api-types/v10";
   import ConfigCard from "$lib/components/ConfigCard.svelte";
-  import ChannelSelect from "$lib/components/discord/ChannelSelect.svelte";
   import { cn } from "$lib/utils";
 
   type Props = {

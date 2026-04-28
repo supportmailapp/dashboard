@@ -1,6 +1,6 @@
 import type { SMErrorCodes } from "$lib/server/constants";
 import type { DiscordBotAPI, DiscordUserAPI } from "$lib/server/discord";
-import type { IUserToken, PausedUntil } from "$lib/sm-types";
+import type { ITicketCategory, IUserToken, PausedUntil } from "$lib/sm-types";
 import type { GuildsManager } from "$lib/stores/GuildsManager.svelte";
 import type { EventsMap } from "$lib/utils/websocket";
 import type {
@@ -62,6 +62,11 @@ declare global {
       isVpn: boolean;
     }
   }
+
+  type ApiResponse<T> = ({ ok: true; data: T } | { ok: false; error: string }) & {
+    raw: Response;
+    status: number;
+  };
 
   type APICustomEmoji = APIEmoji & { id: string; name: string };
 
@@ -135,6 +140,8 @@ declare global {
     isConfigured: boolean;
   };
 
+  type PartialCategory = WithId<Pick<ITicketCategory, "label" | "emoji" | "index" | "enabled">>;
+
   type APIPausedUntil = Omit<PausedUntil, "date"> & {
     /**
      * Whether something is paused.
@@ -165,7 +172,7 @@ declare global {
     callback?: (data: any) => void,
   ) => Promise<void> | void;
 
-  type DocumentWithId<T> = T & {
+  type WithId<T> = T & {
     _id: string;
   };
 
@@ -184,11 +191,10 @@ declare global {
     data: T[];
     pagination: {
       page: number;
-      pageSize: number;
-      totalItems: number;
-      totalPages: number;
+      limit: number;
+      total: number;
+      pages: number;
     };
-    error?: string;
   };
 
   type TPauseState = {
@@ -220,7 +226,8 @@ declare global {
           | SMErrorCodes.ForumCreationFailed
           | SMErrorCodes.CommunityRequired
           | SMErrorCodes.MissingPermissions
-          | SMErrorCodes.CategoryNotFound;
+          | SMErrorCodes.CategoryNotFound
+          | SMErrorCodes.UnknownError;
         message: string;
         permissionsMissing?: string[];
       };
@@ -263,10 +270,10 @@ declare global {
        *
        * Only given if any were updated!
        */
-      data?: Array<{
+      data?: {
         categoryId: string;
         tagId: string;
-      }>;
+      }[];
       error?: string;
     }
   }
@@ -398,6 +405,8 @@ declare global {
   }
 
   type ComponentWithRemoveHandler<T extends Record<string, any> = {}> = T & { onRemove: () => void };
+
+  type ValueOf<T> = T[keyof T];
 }
 
 export {};

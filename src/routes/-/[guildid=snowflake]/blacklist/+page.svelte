@@ -6,8 +6,8 @@
   import ChevronsRight from "@lucide/svelte/icons/chevrons-right";
   import Plus from "@lucide/svelte/icons/plus";
 
-  import { BlacklistScope, EntityType } from "$lib/sm-types";
-  import equal from "fast-deep-equal/es6";
+  import { BlacklistScopes, EntityType } from "$lib/sm-types";
+  import { equal } from "@lukez/fast-deep-equal";
   import { toast } from "svelte-sonner";
 
   import {
@@ -31,7 +31,7 @@
   import AreYouSureDialog from "$lib/components/AreYouSureDialog.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import Mention from "$lib/components/discord/Mention.svelte";
-  import { APIRoutes } from "$lib/urls";
+  import { APIRoutes } from "$lib/urls.svelte";
   import { cn, safeParseInt } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
   import { SvelteBitfield } from "$lib/utils/reactiveBitfield.svelte.js";
@@ -51,7 +51,7 @@
     totalPages: null as number | null,
     search: "" as string,
     scopes: new SvelteBitfield(
-      BlacklistScope.tickets | BlacklistScope.reports | BlacklistScope.tags,
+      BlacklistScopes.tickets | BlacklistScopes.reports | BlacklistScopes.tags,
     ) as SvelteBitfield,
     filterType: -1 as Exclude<EntityType, EntityType.guild> | -1,
     sorting: "newestFirst" as "newestFirst" | "oldestFirst",
@@ -106,26 +106,23 @@
     }
 
     try {
-      const res = await apiClient.get<PaginatedBlacklistResponse>(APIRoutes.blacklist(page.params.guildid!), {
+      const res = await apiClient.get<PaginatedBlacklistResponse>(APIRoutes.blacklist(), {
         searchParams: buildSearchParams(),
       });
       if (res.ok) {
-        const data = await res.json();
+        const { data } = res;
         entries = data.data;
-        pageData.total = data.pagination.totalItems;
-        pageData.perPage = data.pagination.pageSize;
+        pageData.total = data.pagination.total;
+        pageData.perPage = data.pagination.limit;
         pageData.page = data.pagination.page;
-        pageData.totalPages = data.pagination.totalPages;
+        pageData.totalPages = data.pagination.pages;
         fetchedData = $state.snapshot(pageData);
         pageStatus = "loaded";
         await goto(buildUrlWithParams(), { replaceState: true });
       } else {
-        if (res.headers.get("Content-Type")?.includes("application/json")) {
-          const errorData = await res.json();
-          console.error("Error fetching entries:", errorData.error!);
-        } else {
-          console.error("Error fetching entries:", res.statusText);
-        }
+        toast.error("Failed to fetch blacklist", {
+          description: res.error,
+        });
         pageStatus = "error";
       }
     } catch (error) {
@@ -153,66 +150,55 @@
   }
 
   async function saveEntry(entry: BLEntry, action: "edit" | "add" = "add") {
-    try {
-      if (entry.scopes.size === 0) {
-        toast.error("At least one scope is required.");
-        return;
-      }
+    if (entry.scopes.size === 0) {
+      toast.error("At least one scope is required.");
+      return;
+    }
 
-      const res = await apiClient.put(APIRoutes.blacklist(page.params.guildid!), {
-        json: {
-          id: entry.id,
-          guildId: page.params.guildid!,
-          scopes: entry.scopes.toString(),
-          _type: entry.type,
-        },
+    const res = await apiClient.put<APIBlacklistEntry>(APIRoutes.blacklist(), {
+      json: {
+        id: entry.id,
+        guildId: page.params.guildid!,
+        scopes: entry.scopes.toString(),
+        _type: entry.type,
+      },
+    });
+
+    if (!res.ok) {
+      toast.error(`Failed to ${action === "add" ? "add" : "edit"} entry`, {
+        description: res.error,
       });
-
-      if (!res.ok) {
-        const errorData = await res.json<any>();
-        throw new Error(errorData.message || "Unknown error");
-      }
-
-      const data = await res.json<APIBlacklistEntry>();
+    } else {
+      const { data } = res;
       if (action === "add") {
         entries = [...entries, data];
       } else {
         entries = entries.map((e) => (e._id === data._id ? data : e));
       }
       toast.success("Entry saved!");
-    } catch (err: any) {
-      console.error("Error saving entry:", err);
-      toast.error("Error saving entry", {
-        description: err.message,
-      });
     }
   }
 
   async function deleteEntries(id?: string) {
     const ids = id ? [id] : Array.from(rowSelection.values());
     const singleEntry = ids.length === 1;
-    try {
-      const res = await apiClient.delete(APIRoutes.blacklist(page.params.guildid!), {
-        json: {
-          ids: ids,
-        },
-      });
-      if (!res.ok) {
-        const errorData = await res.json<any>();
-        throw new Error(errorData.message || "Unknown error");
-      }
+    const res = await apiClient.delete(APIRoutes.blacklist(), {
+      json: {
+        ids: ids,
+      },
+    });
 
+    if (!res.ok) {
+      toast.error(`Failed to delete ${singleEntry ? "entry" : "entries"}`, {
+        description: res.error,
+      });
+    } else {
       entries = entries.filter((entry) => !ids.includes(entry._id));
       toast.success(`${singleEntry ? "Entry" : "Entries"} deleted!`);
       if (!id) rowSelection.clear();
       else rowSelection.delete(id);
-    } catch (err: any) {
-      toast.error("Error deleting entries", {
-        description: err.message,
-      });
-    } finally {
-      bulkDeleteConfirmation = false;
     }
+    bulkDeleteConfirmation = false;
   }
 </script>
 

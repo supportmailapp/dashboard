@@ -61,7 +61,7 @@
             {enabled ? "Enabled" : "Disabled"}
           </Label>
         </Tooltip.Trigger>
-        <Tooltip.Content>Setup a ticket forum first, before enabling the ticket system.</Tooltip.Content>
+        <Tooltip.Content>Set up a ticket forum first, before enabling the ticket system.</Tooltip.Content>
       </Tooltip.Root>
     </div>
 
@@ -78,7 +78,7 @@
         <div class="space-y-1">
           <p class="text-sm font-medium">
             Status: <span class="text-muted-foreground">
-              {#if pausedUntil.value}
+              {#if pausedUntil?.value}
                 {#if pausedUntil.date}
                   {@const pausedDate = new Date(pausedUntil.date)}
                   Paused until {dateToLocalString(pausedDate)}

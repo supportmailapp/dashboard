@@ -1,4 +1,4 @@
-import { z } from "zod/mini";
+import * as z from "zod/mini";
 import { ButtonStyle, ComponentType, SeparatorSpacingSize } from "discord-api-types/v10";
 import { SnowflakeUtil } from "$lib/utils";
 
@@ -52,20 +52,30 @@ const SMActionRowButtonSchema = z.xor([
 ]);
 
 // Select schemas
-const SMSelectOptionSchema = z.object({
-  _id: z._default(z.optional(SnowflakeSchema), SnowflakeUtil.generate().toString()),
-  action: z.enum(["ticket:create", "reply"]),
-  value: ObjectIdSchema,
-  label: z.string(),
-  emoji: z.pipe(
-    z.optional(z.string()),
-    z.transform((val) => val || undefined),
-  ),
-  description: z.pipe(
-    z.optional(z.string()),
-    z.transform((val) => val || undefined),
-  ),
-});
+const SMSelectOptionSchema = z
+  .object({
+    _id: z._default(z.optional(SnowflakeSchema), SnowflakeUtil.generate().toString()),
+    action: z.enum(["ticket:create", "reply"]),
+    value: z.pipe(
+      z.xor([ObjectIdSchema, z.literal("")]),
+      z.transform((val) => val || undefined),
+    ), // start a ticket is allowed with empty value - category id is optional here
+    label: z.string(),
+    emoji: z.pipe(
+      z.optional(z.string()),
+      z.transform((val) => val || undefined),
+    ),
+    description: z.pipe(
+      z.optional(z.string()),
+      z.transform((val) => val || undefined),
+    ),
+  })
+  .check(
+    z.refine(
+      (data) => (data.action === "ticket:create" ? true : !!data.value?.length),
+      "Value must be a valid ObjectId when action is not 'ticket:create'",
+    ),
+  );
 
 const ClientSMSelectOptionSchema = z.extend(SMSelectOptionSchema, {
   _id: ObjectIdSchema,

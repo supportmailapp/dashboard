@@ -9,7 +9,7 @@
   import * as DropdownMenu from "$ui/dropdown-menu/index.js";
   import Plus from "@lucide/svelte/icons/plus";
   import type { APIUser } from "discord-api-types/v10";
-  import equal from "fast-deep-equal/es6";
+  import { equal } from "@lukez/fast-deep-equal";
   import Check from "@lucide/svelte/icons/check";
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
   import { cn } from "$lib/utils";

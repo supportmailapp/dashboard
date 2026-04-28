@@ -21,7 +21,7 @@
     type ITicketCategory,
     type MentionableEntity,
   } from "$lib/sm-types";
-  import { APIRoutes } from "$lib/urls.js";
+  import { APIRoutes } from "$lib/urls.svelte.js";
   import { cn, SnowflakeUtil } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient.js";
   import { Badge } from "$ui/badge/index.js";
@@ -33,7 +33,7 @@
   import * as Field from "$ui/field/index.js";
   import { Switch } from "$ui/switch";
   import { ComponentType, type APIUser } from "discord-api-types/v10";
-  import equal from "fast-deep-equal/es6";
+  import { equal } from "@lukez/fast-deep-equal";
   import { onDestroy, untrack } from "svelte";
   import { toast } from "svelte-sonner";
   import { flip } from "svelte/animate";
@@ -49,7 +49,7 @@
 
   let { data } = $props();
 
-  type CategoryData = DocumentWithId<Omit<ITicketCategory, "tag" | "index">>;
+  type CategoryData = WithId<Omit<ITicketCategory, "tag" | "index">>;
 
   const config = $state({
     old: null as CategoryData | null,
@@ -112,26 +112,23 @@
     const payload = $state.snapshot(config.current);
 
     // Remove the index field from the payload
+    // @ts-ignore
+    delete payload.index;
 
-    try {
-      const res = await apiClient.put(APIRoutes.ticketCategory(page.params.guildid!, config.current._id), {
-        json: payload,
+    const res = await apiClient.put<CategoryData>(APIRoutes.ticketCategory(config.current._id), {
+      json: payload,
+    });
+
+    if (!res.ok) {
+      toast.error("Failed to save ticket category.", {
+        description: res.error,
       });
-
-      if (!res.ok) {
-        const error = await res.json<any>();
-        throw new Error(error.message || "Failed to save ticket category.");
-      }
-
-      const _data = await res.json<CategoryData>();
-      config.old = { ..._data };
-      config.current = { ..._data };
+    } else {
+      config.old = { ...res.data };
+      config.current = { ...res.data };
       toast.success("Ticket category saved.");
-    } catch (error: any) {
-      toast.error(`Failed to save ticket category: ${error.message}`);
-    } finally {
-      config.saving = false;
     }
+    config.saving = false;
   }
 
   async function deleteCategory() {
@@ -139,21 +136,17 @@
 
     config.loading = true;
 
-    try {
-      const res = await apiClient.delete(APIRoutes.ticketCategory(page.params.guildid!, config.current._id));
+    const res = await apiClient.delete(APIRoutes.ticketCategory(config.current._id));
 
-      if (!res.ok) {
-        const error = await res.json<any>();
-        throw new Error(error.message || "Failed to delete ticket category.");
-      }
-
+    if (!res.ok) {
+      toast.error("Failed to delete ticket category.", {
+        description: res.error,
+      });
+    } else {
       toast.success("Ticket category deleted.");
       navigateBack();
-    } catch (error: any) {
-      toast.error(`Failed to delete ticket category: ${error.message}`);
-    } finally {
-      config.loading = false;
     }
+    config.loading = false;
   }
 
   function navigateBack() {

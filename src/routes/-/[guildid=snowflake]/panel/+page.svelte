@@ -4,7 +4,7 @@
   import SaveAlert from "$lib/components/SaveAlert.svelte";
   import SiteHeading from "$lib/components/SiteHeading.svelte";
   import type { APIPanel } from "$lib/sm-types/src";
-  import { APIRoutes } from "$lib/urls";
+  import { APIRoutes } from "$lib/urls.svelte";
   import { determineUnsavedChanges } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
   import { toast } from "svelte-sonner";
@@ -40,16 +40,13 @@
     channel: false,
   });
 
-  $inspect(panel?.messageId);
-
   async function fetchPanel() {
     loading = true;
-    const res = await apiClient.get<APIPanel>(APIRoutes.panel(page.params.guildid!));
+    const res = await apiClient.get<APIPanel>(APIRoutes.panel());
 
     if (res.ok) {
-      const jsonRes = await res.json();
-      panel = jsonRes;
-      oldPanel = { ...jsonRes };
+      panel = res.data;
+      oldPanel = { ...res.data };
     } else {
       panel = {
         guildId: page.params.guildid!,
@@ -77,14 +74,13 @@
     saving = true;
     const currentPanel = $state.snapshot(panel);
 
-    const res = await apiClient.put<APIPanel>(APIRoutes.panel(page.params.guildid!), {
+    const res = await apiClient.put<APIPanel>(APIRoutes.panel(), {
       json: currentPanel,
     });
 
     if (res.ok) {
-      const jsonRes = await res.json();
-      panel = jsonRes;
-      oldPanel = { ...jsonRes };
+      panel = res.data;
+      oldPanel = { ...res.data };
       toast.success("Panel saved successfully.");
     } else {
       toast.error("Failed to save panel.");
@@ -105,15 +101,14 @@
     }
     sending = true;
 
-    const res = await apiClient.post<APIMessage>(APIRoutes.sendPanel(page.params.guildid!), {
+    const res = await apiClient.post<APIMessage>(APIRoutes.sendPanel(), {
       json: panel,
     });
 
     if (res.ok) {
       toast.success("Panel sent successfully.");
     } else {
-      const jsonRes = await res.json().catch(() => ({}) as any);
-      toast.error(`Failed to send panel`, { description: `${jsonRes.message ?? "Unknown error"}` });
+      toast.error(`Failed to send panel`, { description: res.error });
     }
     sending = false;
   }

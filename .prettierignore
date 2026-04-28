@@ -10,3 +10,6 @@ dist/
 build/
 .svelte-kit/
 src/lib/utils/twemojiRegex.ts
+
+# special md formatting to save tokens
+CLAUDE.md

@@ -4,7 +4,7 @@
   import { ChannelType } from "discord-api-types/v10";
 
   import { getManager } from "$lib/stores/GuildsManager.svelte";
-  import { APIRoutes } from "$lib/urls";
+  import { APIRoutes } from "$lib/urls.svelte";
   import { cn } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
   import { parseDiscordLink, sortChannels } from "$lib/utils/formatting";
@@ -34,6 +34,7 @@
      */
     selectCategories?: boolean;
     allowCustomChannels?: boolean;
+    onlyCustomChannels?: boolean;
     /**
      * Callback when a channel is selected. When custom channels are allowed,
      * the channel can be anything. Otherwise, it will always be a guild core channel (category depends on `selectCategories`).
@@ -42,11 +43,12 @@
   };
 
   let {
-    selectedId = $bindable(),
+    selectedId,
     channelTypes = [],
     excludedChannelIds,
     selectCategories = false,
     allowCustomChannels = false,
+    onlyCustomChannels = false,
     onSelect,
   }: Props = $props();
   let allowAllChannels = $derived(channelTypes.length === 0);
@@ -131,20 +133,12 @@
       guildsManager.customChannels.get(oldFetchInput) ||
       guildsManager.channels.find((c) => c.id === oldFetchInput);
 
-    try {
-      const res = await apiClient.get(APIRoutes.guildChannel(page.params.guildid!, oldFetchInput));
+    const res = await apiClient.get<APIGuildChannel>(APIRoutes.guildChannel(oldFetchInput));
 
-      if (!res.ok) {
-        buttonLoading = false;
-        throw new Error(`Failed to find channel with ID ${oldFetchInput}`);
-      }
-
-      channel = await res.json<APIGuildChannel>();
-      guildsManager.customChannels.set(channel.id, channel);
-    } catch (err: any) {
+    if (!res.ok) {
       buttonDisabled = true;
       buttonLoading = false;
-      toast.error("Failed to find channel", { description: String(err.message ?? err) });
+      toast.error("Failed to find channel", { description: res.error });
       await new Promise((r) =>
         setTimeout(() => {
           buttonDisabled = false;
@@ -153,6 +147,9 @@
       );
       return;
     }
+
+    channel = res.data;
+    guildsManager.customChannels.set(channel.id, channel);
 
     if (isChannelExcluded(channel as GuildCoreChannel)) {
       toast.error("Channel is excluded.", { description: "Please select a different channel." });
@@ -235,7 +232,7 @@
   </Command.Root>
 {/snippet}
 
-{#if allowCustomChannels}
+{#if allowCustomChannels && !onlyCustomChannels}
   <Tabs.Root value="selectChannel" class="w-full max-w-100">
     <Tabs.List class="w-full">
       <Tabs.Trigger value="selectChannel">Select Channel</Tabs.Trigger>
@@ -275,6 +272,33 @@
       </Button>
     </Tabs.Content>
   </Tabs.Root>
+{:else if onlyCustomChannels}
+  <Field.Group class="gap-3">
+    <Field.Field class="gap-0.5">
+      <Input
+        bind:value={channelIdInput}
+        placeholder="Channel/Thread ID or Link"
+        class="placeholder:text-muted-foreground placeholder:text-sm"
+      />
+      <Field.Description>
+        <a
+          href="http://dis.gd/findmyid?utm_source=supportmail"
+          target="_blank"
+          class="hover:text-accent underline"
+        >
+          Where to find a Channel/Thread ID
+        </a>
+      </Field.Description>
+    </Field.Field>
+    <Button
+      variant={channelButtonStyle}
+      onclick={findChannelByIdOrLink}
+      disabled={buttonDisabled}
+      showLoading={buttonLoading}
+    >
+      Find Channel
+    </Button>
+  </Field.Group>
 {:else}
   {@render channelsCommand()}
 {/if}

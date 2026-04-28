@@ -4,7 +4,7 @@
   import * as Field from "$ui/field/index.js";
   import * as Popover from "$ui/popover/index.js";
   import { EntityType, type MentionableEntity } from "$lib/sm-types/src";
-  import equal from "fast-deep-equal/es6";
+  import { equal } from "@lukez/fast-deep-equal";
   import type { APIUser } from "discord-api-types/v10";
   import Mention from "$lib/components/discord/Mention.svelte";
   import { buttonVariants } from "$ui/button";
