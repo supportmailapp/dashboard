@@ -77,7 +77,7 @@ const SMSelectOptionSchema = z
     ),
   );
 
-const ClientSMSelectOptionSchema = z.extend(SMSelectOptionSchema, {
+const ClientSMSelectOptionSchema = z.safeExtend(SMSelectOptionSchema, {
   _id: ObjectIdSchema,
   local: z.optional(z.boolean()),
 });
