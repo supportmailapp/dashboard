@@ -5,7 +5,7 @@
   import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
   import SaveAlert from "$lib/components/SaveAlert.svelte";
   import { APIRoutes } from "$lib/urls";
-  import { determineUnsavedChanges } from "$lib/utils";
+  import { deepClone, determineUnsavedChanges } from "$lib/utils";
   import apiClient from "$lib/utils/apiClient";
   import Button from "$ui/button/button.svelte";
   import * as Empty from "$ui/empty/index.js";
@@ -53,7 +53,7 @@
       newNameIndex++;
     }
     const newTagName = `new-tag-${newNameIndex}`;
-    const newTagId = new Date().toISOString();
+    const newTagId = crypto.randomUUID();
     const newTag = {
       _id: newTagId, // temp unique id
       local: true,
@@ -127,7 +127,7 @@
 
   function discardChanges() {
     if (!fetchedTags) return;
-    tags = [...fetchedTags];
+    tags = deepClone(fetchedTags);
   }
 
   afterNavigate(async () => {
