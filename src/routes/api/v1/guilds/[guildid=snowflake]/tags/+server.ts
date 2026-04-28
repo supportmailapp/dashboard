@@ -12,6 +12,8 @@ export type APITag = Omit<ITag, "createdAt" | "updatedAt"> & {
   createdAt?: string;
   updatedAt?: string;
   _id?: string;
+  /** Client-only tracking key for unsaved tags — never sent to or stored by the server */
+  _tempId?: string;
   local?: true;
   delete?: true;
 };
@@ -87,7 +89,7 @@ export async function PUT({ request, params }) {
 
   return json(
     allTags
-      .map((tag) => FlattenDocToJSON(tag!))
+      .map((tag) => FlattenDocToJSON(tag!, true))
       .map((tag) => FlattenDateFields(tag, "createdAt", "updatedAt")),
   );
 }

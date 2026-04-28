@@ -46,6 +46,10 @@
 
   let editorTitle = $derived(editTag.data?.name ? `Edit ${editTag.data.name}` : "Edit Tag");
 
+  function tagClientKey(tag: APITag): string {
+    return tag._tempId ?? tag._id!;
+  }
+
   function createTag() {
     if (!tags) return;
     let newNameIndex = 1;
@@ -53,9 +57,9 @@
       newNameIndex++;
     }
     const newTagName = `new-tag-${newNameIndex}`;
-    const newTagId = crypto.randomUUID();
+    const tempId = crypto.randomUUID();
     const newTag = {
-      _id: newTagId, // temp unique id
+      _tempId: tempId,
       local: true,
       guildId: page.params.guildid!,
       name: newTagName,
@@ -66,28 +70,28 @@
 
     tags = [...tags, newTag].sort((a, b) => a.createdAt!.localeCompare(b.createdAt!)) as TagsResponse;
 
-    const addedTag = tags.find((t) => t._id === newTagId);
+    const addedTag = tags.find((t) => t._tempId === tempId);
     if (addedTag) {
       editTag.data = addedTag;
       editTag.open = true;
     }
   }
 
-  function findTagIndex(id: string) {
+  function findTagIndex(clientKey: string) {
     if (!tags) return null;
-    const index = tags.findIndex((t) => t._id === id);
+    const index = tags.findIndex((t) => tagClientKey(t) === clientKey);
     return index === -1 ? null : index;
   }
 
-  function removeTagById(id: string) {
+  function removeTagById(clientKey: string) {
     if (!tags) return;
-    const tagIndex = findTagIndex(id);
+    const tagIndex = findTagIndex(clientKey);
     if (tagIndex !== null) tags[tagIndex].delete = true;
   }
 
-  function updateTagById(id: string, updatedTag: Partial<APITag>) {
+  function updateTagById(clientKey: string, updatedTag: Partial<APITag>) {
     if (!tags) return;
-    const tagIndex = findTagIndex(id);
+    const tagIndex = findTagIndex(clientKey);
     if (tagIndex !== null) tags[tagIndex] = { ...tags[tagIndex], ...updatedTag };
   }
 
@@ -176,14 +180,14 @@
         </Empty.Root>
       {/if}
       {#if filteredTags && filteredTags.length > 0}
-        {#each filteredTags as tag (tag._id)}
+        {#each filteredTags as tag (tagClientKey(tag))}
           <Item.Root variant="outline" class="w-full">
             <Item.Content>
               <Input
                 bind:value={
                   () => tag.name,
                   (v) => {
-                    updateTagById(tag._id!, { name: v });
+                    updateTagById(tagClientKey(tag), { name: v });
                   }
                 }
                 class="font-monospace font-sm w-full max-w-md"
@@ -208,7 +212,7 @@
                 variant="destructive"
                 size="icon-lg"
                 onclick={() => {
-                  removeTagById(tag._id!);
+                  removeTagById(tagClientKey(tag));
                 }}
               >
                 <Trash class="size-5" />

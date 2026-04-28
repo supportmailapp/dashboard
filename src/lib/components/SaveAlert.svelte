@@ -55,7 +55,7 @@
         "fixed bottom-4 left-[50%] z-50 flex w-full max-w-[calc(100%-2rem)] flex-col items-center gap-4 rounded-lg border p-6 shadow-lg ring-0 outline-0 transition-all duration-200 sm:max-w-2xl sm:flex-row",
         jiggling ? "bg-destructive" : "bg-background",
       )}
-      transition:fly={{ y: 50, duration: 200, opacity: 0.5 }}
+      transition:fly={{ y: 100, duration: 200, opacity: 0.5 }}
     >
       <p>You got unsaved changes mate.</p>
       <div
