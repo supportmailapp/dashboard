@@ -1,5 +1,6 @@
 onlyBuiltDependencies:
   - "@sentry/cli"
+  - "esbuild"
 
 packages:
   - "."
